@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { files, users, type InsertFile, type InsertUser, type User } from "@shared/schema";
+import { files, users, equipment, type InsertFile, type InsertUser, type User, type Equipment, type InsertEquipment } from "@shared/schema";
 import { eq } from "drizzle-orm";
 
 export interface IStorage {
@@ -7,6 +7,14 @@ export interface IStorage {
   getUserByReplitId(replitId: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   
+  // Equipamentos
+  getEquipments(): Promise<Equipment[]>;
+  getEquipment(id: number): Promise<Equipment | undefined>;
+  createEquipment(eqp: InsertEquipment): Promise<Equipment>;
+  updateEquipment(id: number, eqp: Partial<InsertEquipment>): Promise<Equipment>;
+  deleteEquipment(id: number): Promise<void>;
+
+  // Backups/Arquivos
   getFiles(userId: number): Promise<typeof files.$inferSelect[]>;
   getFile(id: number): Promise<typeof files.$inferSelect | undefined>;
   createFile(file: InsertFile): Promise<typeof files.$inferSelect>;
@@ -27,6 +35,29 @@ export class DatabaseStorage implements IStorage {
   async createUser(insertUser: InsertUser): Promise<User> {
     const [user] = await db.insert(users).values(insertUser).returning();
     return user;
+  }
+
+  async getEquipments(): Promise<Equipment[]> {
+    return await db.select().from(equipment);
+  }
+
+  async getEquipment(id: number): Promise<Equipment | undefined> {
+    const [eqp] = await db.select().from(equipment).where(eq(equipment.id, id));
+    return eqp;
+  }
+
+  async createEquipment(insertEqp: InsertEquipment): Promise<Equipment> {
+    const [eqp] = await db.insert(equipment).values(insertEqp).returning();
+    return eqp;
+  }
+
+  async updateEquipment(id: number, updateEqp: Partial<InsertEquipment>): Promise<Equipment> {
+    const [eqp] = await db.update(equipment).set(updateEqp).where(eq(equipment.id, id)).returning();
+    return eqp;
+  }
+
+  async deleteEquipment(id: number): Promise<void> {
+    await db.delete(equipment).where(eq(equipment.id, id));
   }
 
   async getFiles(userId: number): Promise<typeof files.$inferSelect[]> {
