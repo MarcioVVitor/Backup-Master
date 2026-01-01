@@ -703,6 +703,30 @@ export async function registerRoutes(
     }
   });
 
+  app.post('/api/admin/users', isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const { username, name, email, role, active } = req.body;
+      if (!username) {
+        return res.status(400).json({ message: "Nome de usuario e obrigatorio" });
+      }
+      const existing = await storage.getUserByUsername(username);
+      if (existing) {
+        return res.status(409).json({ message: "Nome de usuario ja existe" });
+      }
+      const created = await storage.createUser({
+        username,
+        name: name || undefined,
+        email: email || undefined,
+        role: role || 'viewer',
+        active: active !== false,
+      });
+      res.status(201).json(created);
+    } catch (e) {
+      console.error("Error creating user:", e);
+      res.status(500).json({ message: "Erro ao criar usuario" });
+    }
+  });
+
   app.put('/api/admin/users/:id', isAuthenticated, isAdmin, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
@@ -716,6 +740,19 @@ export async function registerRoutes(
       }
       console.error("Error updating user:", e);
       res.status(500).json({ message: "Erro ao atualizar usuario" });
+    }
+  });
+
+  app.delete('/api/admin/users/:id', isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const user = await storage.getUserById(id);
+      if (!user) return res.status(404).json({ message: "Usuario nao encontrado" });
+      await storage.deleteUser(id);
+      res.json({ message: "Usuario excluido com sucesso" });
+    } catch (e) {
+      console.error("Error deleting user:", e);
+      res.status(500).json({ message: "Erro ao excluir usuario" });
     }
   });
 

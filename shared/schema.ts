@@ -146,6 +146,7 @@ export const DEFAULT_MANUFACTURERS = [
 export const SUPPORTED_MANUFACTURERS = DEFAULT_MANUFACTURERS;
 
 // Schemas de inserção
+export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true, replitId: true, isAdmin: true });
 export const insertEquipmentSchema = createInsertSchema(equipment).omit({ id: true, createdAt: true });
 export const insertFileSchema = createInsertSchema(files).omit({ id: true, createdAt: true });
 export const insertBackupHistorySchema = createInsertSchema(backupHistory).omit({ id: true, executedAt: true });
@@ -160,6 +161,7 @@ export const updateUserSchema = createInsertSchema(users).omit({ id: true, repli
 export type User = typeof users.$inferSelect;
 export type UpsertUser = typeof users.$inferInsert;
 export type Equipment = typeof equipment.$inferSelect;
+export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertEquipment = z.infer<typeof insertEquipmentSchema>;
 export type FileRecord = typeof files.$inferSelect;
 export type InsertFile = z.infer<typeof insertFileSchema>;

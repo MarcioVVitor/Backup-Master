@@ -15,7 +15,8 @@ import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Database, Download, Upload, Package, Clock, FileJson, Archive, Users, Palette, User as UserIcon, Save } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Database, Download, Upload, Package, Clock, FileJson, Archive, Users, Palette, User as UserIcon, Save, Plus, Trash2 } from "lucide-react";
 import type { User } from "@shared/schema";
 
 interface SystemInfo {
@@ -53,6 +54,8 @@ export default function AdminPage() {
   const [patchVersion, setPatchVersion] = useState("");
   const [customization, setCustomization] = useState<Customization>({ logoUrl: '', primaryColor: '#0077b6', systemName: 'NBM' });
   const [patchFile, setPatchFile] = useState<File | null>(null);
+  const [isUserDialogOpen, setIsUserDialogOpen] = useState(false);
+  const [newUser, setNewUser] = useState({ username: '', name: '', email: '', role: 'viewer' });
 
   const { data: systemInfo, isLoading: infoLoading } = useQuery<SystemInfo>({
     queryKey: ['/api/admin/system-info'],
@@ -218,6 +221,21 @@ export default function AdminPage() {
     },
   });
 
+  const createUserMutation = useMutation({
+    mutationFn: async (data: { username: string; name?: string; email?: string; role?: string }) => {
+      return apiRequest('POST', '/api/admin/users', data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+      toast({ title: "Usuario criado com sucesso" });
+      setIsUserDialogOpen(false);
+      setNewUser({ username: '', name: '', email: '', role: 'viewer' });
+    },
+    onError: () => {
+      toast({ title: "Erro ao criar usuario", variant: "destructive" });
+    },
+  });
+
   const updateUserMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: Partial<{ role: string; active: boolean }> }) => {
       return apiRequest('PUT', `/api/admin/users/${id}`, data);
@@ -228,6 +246,19 @@ export default function AdminPage() {
     },
     onError: () => {
       toast({ title: "Erro ao atualizar usuario", variant: "destructive" });
+    },
+  });
+
+  const deleteUserMutation = useMutation({
+    mutationFn: async (id: number) => {
+      return apiRequest('DELETE', `/api/admin/users/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+      toast({ title: "Usuario excluido com sucesso" });
+    },
+    onError: () => {
+      toast({ title: "Erro ao excluir usuario", variant: "destructive" });
     },
   });
 
@@ -534,14 +565,90 @@ export default function AdminPage() {
 
         <TabsContent value="users" className="space-y-4">
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5 text-green-500" />
-                Gerenciamento de Usuarios
-              </CardTitle>
-              <CardDescription>
-                Gerencie usuarios e permissoes do sistema
-              </CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between gap-4">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5 text-green-500" />
+                  Gerenciamento de Usuarios
+                </CardTitle>
+                <CardDescription>
+                  Gerencie usuarios e permissoes do sistema
+                </CardDescription>
+              </div>
+              <Dialog open={isUserDialogOpen} onOpenChange={setIsUserDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button data-testid="button-add-user">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Novo Usuario
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Cadastrar Usuario</DialogTitle>
+                  </DialogHeader>
+                  <form onSubmit={(e) => { e.preventDefault(); createUserMutation.mutate(newUser); }} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="newUsername">Nome de Usuario</Label>
+                      <Input
+                        id="newUsername"
+                        placeholder="Ex: joao.silva"
+                        value={newUser.username}
+                        onChange={(e) => setNewUser(prev => ({ ...prev, username: e.target.value }))}
+                        required
+                        data-testid="input-new-username"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="newName">Nome Completo</Label>
+                      <Input
+                        id="newName"
+                        placeholder="Ex: Joao da Silva"
+                        value={newUser.name}
+                        onChange={(e) => setNewUser(prev => ({ ...prev, name: e.target.value }))}
+                        data-testid="input-new-name"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="newEmail">Email</Label>
+                      <Input
+                        id="newEmail"
+                        type="email"
+                        placeholder="Ex: joao@exemplo.com"
+                        value={newUser.email}
+                        onChange={(e) => setNewUser(prev => ({ ...prev, email: e.target.value }))}
+                        data-testid="input-new-email"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="newRole">Nivel de Acesso</Label>
+                      <Select
+                        value={newUser.role}
+                        onValueChange={(value) => setNewUser(prev => ({ ...prev, role: value }))}
+                      >
+                        <SelectTrigger data-testid="select-new-role">
+                          <SelectValue placeholder="Selecione" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="admin">Admin</SelectItem>
+                          <SelectItem value="operator">Operador</SelectItem>
+                          <SelectItem value="viewer">Visualizador</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-muted-foreground">
+                        Admin: acesso total | Operador: executa backups | Visualizador: apenas leitura
+                      </p>
+                    </div>
+                    <div className="flex justify-end gap-2">
+                      <Button type="button" variant="outline" onClick={() => setIsUserDialogOpen(false)}>
+                        Cancelar
+                      </Button>
+                      <Button type="submit" disabled={createUserMutation.isPending || !newUser.username} data-testid="button-save-user">
+                        {createUserMutation.isPending ? "Salvando..." : "Salvar"}
+                      </Button>
+                    </div>
+                  </form>
+                </DialogContent>
+              </Dialog>
             </CardHeader>
             <CardContent>
               {usersLoading ? (
@@ -585,6 +692,27 @@ export default function AdminPage() {
                               data-testid={`switch-active-${u.id}`}
                             />
                           </div>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button size="icon" variant="ghost" data-testid={`button-delete-user-${u.id}`}>
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Excluir Usuario</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Tem certeza que deseja excluir o usuario "{u.name || u.username}"? Esta acao nao pode ser desfeita.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => deleteUserMutation.mutate(u.id)}>
+                                  Excluir
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </div>
                       </div>
                     ))}

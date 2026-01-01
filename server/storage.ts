@@ -34,7 +34,10 @@ export interface IStorage {
   getUserIdByReplitId(replitId: string): Promise<number | null>;
   getUsers(): Promise<User[]>;
   getUserById(id: number): Promise<User | undefined>;
+  getUserByUsername(username: string): Promise<User | undefined>;
+  createUser(data: { username: string; name?: string; email?: string; role?: string; active?: boolean }): Promise<User>;
   updateUser(id: number, data: Partial<{ role: string; active: boolean; name: string; email: string }>): Promise<User | undefined>;
+  deleteUser(id: number): Promise<void>;
 
   getEquipment(): Promise<Equipment[]>;
   getEquipmentById(id: number): Promise<Equipment | undefined>;
@@ -101,9 +104,29 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user;
+  }
+
+  async createUser(data: { username: string; name?: string; email?: string; role?: string; active?: boolean }): Promise<User> {
+    const [created] = await db.insert(users).values({
+      username: data.username,
+      name: data.name || null,
+      email: data.email || null,
+      role: data.role || 'viewer',
+      active: data.active !== false,
+    }).returning();
+    return created;
+  }
+
   async updateUser(id: number, data: Partial<{ role: string; active: boolean; name: string; email: string }>): Promise<User | undefined> {
     const [updated] = await db.update(users).set(data).where(eq(users.id, id)).returning();
     return updated;
+  }
+
+  async deleteUser(id: number): Promise<void> {
+    await db.delete(users).where(eq(users.id, id));
   }
 
   async getEquipment(): Promise<Equipment[]> {
