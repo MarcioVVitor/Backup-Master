@@ -83,6 +83,7 @@ export default function FirmwarePage() {
   const [selectedVendor, setSelectedVendor] = useState<string>("");
   const [isScriptDialogOpen, setIsScriptDialogOpen] = useState(false);
   const [editingScript, setEditingScript] = useState<VendorScript | null>(null);
+  const [expandedVendorSection, setExpandedVendorSection] = useState<{vendor: string, section: 'firmware' | 'equipment' | 'script' | null}>({vendor: '', section: null});
 
   const [formData, setFormData] = useState({
     name: "",
@@ -154,6 +155,39 @@ export default function FirmwarePage() {
     },
     onError: () => {
       toast({ title: "Erro ao excluir firmware", variant: "destructive" });
+    },
+  });
+
+  const deleteScriptMutation = useMutation({
+    mutationFn: async (id: number) => {
+      return apiRequest('DELETE', `/api/scripts/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/scripts'] });
+      toast({ title: "Script excluido com sucesso" });
+      setExpandedVendorSection({vendor: '', section: null});
+    },
+    onError: () => {
+      toast({ title: "Erro ao excluir script", variant: "destructive" });
+    },
+  });
+
+  const saveScriptMutation = useMutation({
+    mutationFn: async (script: VendorScript) => {
+      if (script.id) {
+        return apiRequest('PATCH', `/api/scripts/${script.id}`, script);
+      } else {
+        return apiRequest('POST', '/api/scripts', script);
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/scripts'] });
+      toast({ title: "Script salvo com sucesso" });
+      setIsScriptDialogOpen(false);
+      setEditingScript(null);
+    },
+    onError: () => {
+      toast({ title: "Erro ao salvar script", variant: "destructive" });
     },
   });
 
@@ -579,6 +613,9 @@ export default function FirmwarePage() {
                       const vendorFirmwareList = firmwareList?.filter(f => f.manufacturer === mfr.value) || [];
                       const vendorEquipmentList = equipment?.filter(e => e.manufacturer === mfr.value) || [];
                       const isSelected = selectedVendor === mfr.value;
+                      const isFirmwareExpanded = expandedVendorSection.vendor === mfr.value && expandedVendorSection.section === 'firmware';
+                      const isEquipmentExpanded = expandedVendorSection.vendor === mfr.value && expandedVendorSection.section === 'equipment';
+                      const isScriptExpanded = expandedVendorSection.vendor === mfr.value && expandedVendorSection.section === 'script';
                       
                       return (
                         <Card 
@@ -599,28 +636,190 @@ export default function FirmwarePage() {
                                 {mfr.label}
                               </CardTitle>
                               <div className="flex items-center gap-2">
-                                <Badge variant="outline" className="text-xs">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-6 text-xs px-2"
+                                  onClick={() => setExpandedVendorSection(
+                                    isFirmwareExpanded ? {vendor: '', section: null} : {vendor: mfr.value, section: 'firmware'}
+                                  )}
+                                  data-testid={`button-firmware-${mfr.value}`}
+                                >
+                                  <HardDrive className="h-3 w-3 mr-1" />
                                   {vendorFirmwareList.length} firmware
-                                </Badge>
-                                <Badge variant="outline" className="text-xs">
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-6 text-xs px-2"
+                                  onClick={() => setExpandedVendorSection(
+                                    isEquipmentExpanded ? {vendor: '', section: null} : {vendor: mfr.value, section: 'equipment'}
+                                  )}
+                                  data-testid={`button-equipment-${mfr.value}`}
+                                >
+                                  <Plug className="h-3 w-3 mr-1" />
                                   {vendorEquipmentList.length} equip.
-                                </Badge>
-                                {script && !script.isDefault && (
-                                  <Badge variant="secondary" className="text-xs">Customizado</Badge>
-                                )}
+                                </Button>
+                                <Button
+                                  variant={script && !script.isDefault ? "secondary" : "outline"}
+                                  size="sm"
+                                  className="h-6 text-xs px-2"
+                                  onClick={() => setExpandedVendorSection(
+                                    isScriptExpanded ? {vendor: '', section: null} : {vendor: mfr.value, section: 'script'}
+                                  )}
+                                  data-testid={`button-script-${mfr.value}`}
+                                >
+                                  <Code className="h-3 w-3 mr-1" />
+                                  Script
+                                </Button>
                               </div>
                             </div>
                           </CardHeader>
                           <CardContent className="space-y-3">
-                            <div className="text-sm text-muted-foreground">
-                              <p>{script?.description || "Script padrao"}</p>
-                              <div className="flex items-center gap-2 text-xs mt-1">
-                                <Code className="h-3 w-3" />
-                                <span className="font-mono truncate">{script?.command?.substring(0, 50) || "N/A"}...</span>
+                            {isFirmwareExpanded && (
+                              <div className="p-3 bg-muted/50 rounded-md space-y-2">
+                                <div className="flex items-center justify-between gap-2">
+                                  <h4 className="text-sm font-medium flex items-center gap-1">
+                                    <HardDrive className="h-4 w-4" /> Firmware Disponiveis
+                                  </h4>
+                                  <Button size="sm" variant="ghost" onClick={() => setExpandedVendorSection({vendor: '', section: null})}>
+                                    <ChevronUp className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                                {vendorFirmwareList.length === 0 ? (
+                                  <p className="text-sm text-muted-foreground">Nenhum firmware cadastrado para este fabricante.</p>
+                                ) : (
+                                  <div className="space-y-1">
+                                    {vendorFirmwareList.map(fw => (
+                                      <div key={fw.id} className="flex items-center justify-between gap-2 p-2 bg-background rounded border text-sm">
+                                        <div>
+                                          <span className="font-medium">{fw.name}</span>
+                                          {fw.version && <span className="ml-2 text-muted-foreground">v{fw.version}</span>}
+                                        </div>
+                                        <div className="flex gap-1">
+                                          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleDownload(fw)} title="Baixar">
+                                            <Download className="h-3 w-3" />
+                                          </Button>
+                                          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setSelectedFirmware(fw); setIsExportDialogOpen(true); }} title="Exportar">
+                                            <Upload className="h-3 w-3" />
+                                          </Button>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
                               </div>
-                            </div>
+                            )}
+
+                            {isEquipmentExpanded && (
+                              <div className="p-3 bg-muted/50 rounded-md space-y-2">
+                                <div className="flex items-center justify-between gap-2">
+                                  <h4 className="text-sm font-medium flex items-center gap-1">
+                                    <Plug className="h-4 w-4" /> Equipamentos
+                                  </h4>
+                                  <Button size="sm" variant="ghost" onClick={() => setExpandedVendorSection({vendor: '', section: null})}>
+                                    <ChevronUp className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                                {vendorEquipmentList.length === 0 ? (
+                                  <p className="text-sm text-muted-foreground">Nenhum equipamento cadastrado para este fabricante.</p>
+                                ) : (
+                                  <div className="space-y-1">
+                                    {vendorEquipmentList.map(eq => (
+                                      <div key={eq.id} className="flex items-center justify-between gap-2 p-2 bg-background rounded border text-sm">
+                                        <div>
+                                          <span className="font-medium">{eq.name}</span>
+                                          <span className="ml-2 text-muted-foreground">{eq.ip}</span>
+                                          <Badge variant="outline" className="ml-2 text-xs">{eq.protocol?.toUpperCase() || 'SSH'}</Badge>
+                                        </div>
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          className="h-7"
+                                          onClick={() => {
+                                            setSelectedVendor(mfr.value);
+                                            setSelectedVendorEquipment(eq.id.toString());
+                                            setTerminalOutput([]);
+                                            connectTerminal(eq.id.toString());
+                                          }}
+                                          disabled={wsConnecting}
+                                          data-testid={`button-connect-eq-${eq.id}`}
+                                        >
+                                          <Terminal className="h-3 w-3 mr-1" />
+                                          Conectar
+                                        </Button>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+
+                            {isScriptExpanded && (
+                              <div className="p-3 bg-muted/50 rounded-md space-y-2">
+                                <div className="flex items-center justify-between gap-2">
+                                  <h4 className="text-sm font-medium flex items-center gap-1">
+                                    <Code className="h-4 w-4" /> Script de Atualizacao
+                                  </h4>
+                                  <Button size="sm" variant="ghost" onClick={() => setExpandedVendorSection({vendor: '', section: null})}>
+                                    <ChevronUp className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                                <div className="p-2 bg-background rounded border">
+                                  <p className="text-sm font-medium">{script?.description || "Script padrao"}</p>
+                                  <pre className="text-xs text-muted-foreground font-mono mt-1 whitespace-pre-wrap">{script?.command || "N/A"}</pre>
+                                </div>
+                                <div className="flex gap-2">
+                                  <Button
+                                    size="sm"
+                                    onClick={() => {
+                                      setEditingScript(script || { manufacturer: mfr.value, command: "", description: "" });
+                                      setIsScriptDialogOpen(true);
+                                    }}
+                                    data-testid={`button-edit-script-${mfr.value}`}
+                                  >
+                                    <Edit className="h-4 w-4 mr-1" />
+                                    Editar Script
+                                  </Button>
+                                  {script && !script.isDefault && (
+                                    <AlertDialog>
+                                      <AlertDialogTrigger asChild>
+                                        <Button size="sm" variant="destructive" data-testid={`button-delete-script-${mfr.value}`}>
+                                          <Trash2 className="h-4 w-4 mr-1" />
+                                          Excluir
+                                        </Button>
+                                      </AlertDialogTrigger>
+                                      <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                          <AlertDialogTitle>Excluir Script</AlertDialogTitle>
+                                          <AlertDialogDescription>
+                                            Tem certeza que deseja excluir o script customizado de {mfr.label}? O script padrao sera usado.
+                                          </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                          <AlertDialogAction onClick={() => deleteScriptMutation.mutate(script.id!)}>
+                                            Excluir
+                                          </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                      </AlertDialogContent>
+                                    </AlertDialog>
+                                  )}
+                                </div>
+                              </div>
+                            )}
                             
-                            {isSelected && (
+                            {!isFirmwareExpanded && !isEquipmentExpanded && !isScriptExpanded && (
+                              <div className="text-sm text-muted-foreground">
+                                <p>{script?.description || "Script padrao"}</p>
+                                <div className="flex items-center gap-2 text-xs mt-1">
+                                  <Code className="h-3 w-3" />
+                                  <span className="font-mono truncate">{script?.command?.substring(0, 50) || "N/A"}...</span>
+                                </div>
+                              </div>
+                            )}
+                            
+                            {isSelected && !isFirmwareExpanded && !isEquipmentExpanded && !isScriptExpanded && (
                               <div className="pt-2 border-t space-y-3">
                                 <div>
                                   <Label className="text-xs">Firmware para Atualizacao</Label>
@@ -691,7 +890,7 @@ export default function FirmwarePage() {
                                       setEditingScript(script || { manufacturer: mfr.value, command: "", description: "" });
                                       setIsScriptDialogOpen(true);
                                     }}
-                                    data-testid={`button-edit-script-${mfr.value}`}
+                                    data-testid={`button-edit-script-inline-${mfr.value}`}
                                   >
                                     <Edit className="h-4 w-4 mr-1" />
                                     Editar Script
@@ -803,6 +1002,69 @@ export default function FirmwarePage() {
                 </Button>
               </div>
             </div>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={isScriptDialogOpen} onOpenChange={(open) => { setIsScriptDialogOpen(open); if (!open) setEditingScript(null); }}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>
+                {editingScript?.id ? "Editar Script" : "Criar Script"} - {editingScript ? getManufacturerLabel(editingScript.manufacturer) : ""}
+              </DialogTitle>
+            </DialogHeader>
+            {editingScript && (
+              <form onSubmit={(e) => { e.preventDefault(); saveScriptMutation.mutate(editingScript); }} className="space-y-4">
+                <div>
+                  <Label>Descricao</Label>
+                  <Input
+                    value={editingScript.description || ""}
+                    onChange={(e) => setEditingScript({ ...editingScript, description: e.target.value })}
+                    placeholder="Descricao do script"
+                    data-testid="input-script-description"
+                  />
+                </div>
+                <div>
+                  <Label>Comando de Backup *</Label>
+                  <Textarea
+                    value={editingScript.command}
+                    onChange={(e) => setEditingScript({ ...editingScript, command: e.target.value })}
+                    placeholder="Comando a ser executado para backup (ex: display current-configuration)"
+                    rows={5}
+                    className="font-mono text-sm"
+                    data-testid="input-script-command"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label>Extensao do Arquivo</Label>
+                    <Input
+                      value={editingScript.fileExtension || ""}
+                      onChange={(e) => setEditingScript({ ...editingScript, fileExtension: e.target.value })}
+                      placeholder=".cfg"
+                      data-testid="input-script-extension"
+                    />
+                  </div>
+                  <div>
+                    <Label>Timeout (segundos)</Label>
+                    <Input
+                      type="number"
+                      value={editingScript.timeout || 30}
+                      onChange={(e) => setEditingScript({ ...editingScript, timeout: parseInt(e.target.value) })}
+                      placeholder="30"
+                      data-testid="input-script-timeout"
+                    />
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2">
+                  <Button type="button" variant="outline" onClick={() => { setIsScriptDialogOpen(false); setEditingScript(null); }}>
+                    Cancelar
+                  </Button>
+                  <Button type="submit" disabled={!editingScript.command.trim() || saveScriptMutation.isPending} data-testid="button-save-script">
+                    {saveScriptMutation.isPending ? "Salvando..." : "Salvar"}
+                  </Button>
+                </div>
+              </form>
+            )}
           </DialogContent>
         </Dialog>
       </div>
