@@ -265,7 +265,17 @@ setup_database() {
     sudo -u postgres psql -d ${DB_NAME} -c "GRANT ALL ON SCHEMA public TO ${DB_USER};" 2>/dev/null
     sudo -u postgres psql -d ${DB_NAME} -c "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO ${DB_USER};" 2>/dev/null
     
-    # Salvar credenciais
+    # Exportar variaveis para uso posterior
+    export DB_USER DB_PASSWORD DB_NAME
+    
+    log_success "Banco de dados configurado"
+}
+
+# Criar arquivo de configuracao .env
+create_env_file() {
+    log_info "Criando arquivo de configuracao..."
+    
+    # Usar variaveis exportadas do setup_database
     echo "DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@localhost:5432/${DB_NAME}" > ${NBM_HOME}/.env
     echo "SESSION_SECRET=$(openssl rand -base64 48 | tr -d '/+=')" >> ${NBM_HOME}/.env
     echo "NODE_ENV=production" >> ${NBM_HOME}/.env
@@ -275,7 +285,7 @@ setup_database() {
     chown ${NBM_USER}:${NBM_GROUP} ${NBM_HOME}/.env
     chmod 600 ${NBM_HOME}/.env
     
-    log_success "Banco de dados configurado"
+    log_success "Arquivo .env criado"
 }
 
 # Copiar arquivos da aplicacao
@@ -290,12 +300,7 @@ install_application() {
     if [[ ! -f "${APP_SOURCE}/package.json" ]]; then
         log_info "Baixando aplicacao do GitHub..."
         
-        # Salvar .env se existir
-        if [[ -f "${NBM_HOME}/.env" ]]; then
-            cp ${NBM_HOME}/.env /tmp/nbm_env_backup
-        fi
-        
-        # Remover e recriar diretorio
+        # Remover diretorio existente completamente
         rm -rf ${NBM_HOME}
         mkdir -p ${NBM_HOME}
         chown ${NBM_USER}:${NBM_GROUP} ${NBM_HOME}
@@ -305,13 +310,6 @@ install_application() {
             log_error "Falha ao clonar repositorio"
             exit 1
         }
-        
-        # Restaurar .env se existia
-        if [[ -f "/tmp/nbm_env_backup" ]]; then
-            mv /tmp/nbm_env_backup ${NBM_HOME}/.env
-            chown ${NBM_USER}:${NBM_GROUP} ${NBM_HOME}/.env
-            chmod 600 ${NBM_HOME}/.env
-        fi
         
         log_success "Aplicacao baixada com sucesso"
     else
@@ -552,6 +550,7 @@ main() {
             create_directories
             setup_database
             install_application
+            create_env_file
             install_npm_deps
             build_application
             init_database
