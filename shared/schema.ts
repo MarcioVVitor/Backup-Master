@@ -154,6 +154,7 @@ export const insertFileSchema = createInsertSchema(files).omit({ id: true, creat
 export const insertBackupHistorySchema = createInsertSchema(backupHistory).omit({ id: true, executedAt: true });
 export const insertSettingSchema = createInsertSchema(settings).omit({ updatedAt: true });
 export const insertVendorScriptSchema = createInsertSchema(vendorScripts).omit({ id: true, updatedAt: true });
+export const updateVendorScriptSchema = createInsertSchema(vendorScripts).omit({ id: true, updatedAt: true, manufacturer: true }).partial();
 export const insertManufacturerSchema = createInsertSchema(manufacturers).omit({ id: true, createdAt: true });
 export const insertSystemUpdateSchema = createInsertSchema(systemUpdates).omit({ id: true, appliedAt: true });
 export const insertFirmwareSchema = createInsertSchema(firmware).omit({ id: true, createdAt: true });

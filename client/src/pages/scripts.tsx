@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -8,13 +8,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { Code, Pencil, Plus, RotateCcw, Save, Search, Terminal, Trash2 } from "lucide-react";
+import { Code, Copy, Pencil, Plus, Save, Search, Terminal, Trash2 } from "lucide-react";
 
 interface ManufacturerRecord {
   id: number;
@@ -24,14 +24,16 @@ interface ManufacturerRecord {
 }
 
 interface VendorScript {
-  id?: number;
+  id: number;
   manufacturer: string;
+  name: string;
   command: string;
   description?: string | null;
   fileExtension?: string | null;
   useShell?: boolean | null;
   timeout?: number | null;
-  isDefault?: boolean;
+  isDefault?: boolean | null;
+  updatedAt?: string | null;
 }
 
 export default function ScriptsPage() {
@@ -40,8 +42,10 @@ export default function ScriptsPage() {
   const [editingScript, setEditingScript] = useState<VendorScript | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedManufacturer, setSelectedManufacturer] = useState<string>("all");
   const [formData, setFormData] = useState({
     manufacturer: "",
+    name: "",
     command: "",
     description: "",
     fileExtension: ".cfg",
@@ -49,7 +53,7 @@ export default function ScriptsPage() {
     timeout: 30000,
   });
 
-  const { data: customScripts, isLoading } = useQuery<VendorScript[]>({
+  const { data: scripts, isLoading } = useQuery<VendorScript[]>({
     queryKey: ['/api/scripts'],
     enabled: !!user,
   });
@@ -59,108 +63,131 @@ export default function ScriptsPage() {
     enabled: !!user,
   });
 
-  const [allScripts, setAllScripts] = useState<Record<string, VendorScript>>({});
-  const [loadingScripts, setLoadingScripts] = useState(true);
-
-  const loadAllScripts = async () => {
-    if (!manufacturers) return;
-    setLoadingScripts(true);
-    const scripts: Record<string, VendorScript> = {};
-    for (const mfr of manufacturers) {
-      try {
-        const res = await fetch(`/api/scripts/${mfr.value}`, { credentials: 'include' });
-        if (res.ok) {
-          scripts[mfr.value] = await res.json();
-        }
-      } catch {
-        // ignore
-      }
-    }
-    setAllScripts(scripts);
-    setLoadingScripts(false);
-  };
-
-  useEffect(() => {
-    if (user && manufacturers) {
-      loadAllScripts();
-    }
-  }, [user, manufacturers]);
-
-  const saveMutation = useMutation({
+  const createMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
       return apiRequest('POST', '/api/scripts', data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/scripts'] });
-      loadAllScripts();
-      toast({ title: "Script salvo com sucesso" });
+      toast({ title: "Script criado com sucesso" });
+      setIsAddDialogOpen(false);
+      resetForm();
+    },
+    onError: () => {
+      toast({ title: "Erro ao criar script", variant: "destructive" });
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: Partial<typeof formData> }) => {
+      return apiRequest('PATCH', `/api/scripts/${id}`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/scripts'] });
+      toast({ title: "Script atualizado com sucesso" });
       setEditingScript(null);
     },
     onError: () => {
-      toast({ title: "Erro ao salvar script", variant: "destructive" });
+      toast({ title: "Erro ao atualizar script", variant: "destructive" });
     },
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async (manufacturer: string) => {
-      return apiRequest('DELETE', `/api/scripts/${manufacturer}`);
+    mutationFn: async (id: number) => {
+      return apiRequest('DELETE', `/api/scripts/${id}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/scripts'] });
-      loadAllScripts();
-      toast({ title: "Script resetado para padrao" });
+      toast({ title: "Script excluido com sucesso" });
     },
     onError: () => {
-      toast({ title: "Erro ao resetar script", variant: "destructive" });
+      toast({ title: "Erro ao excluir script", variant: "destructive" });
     },
   });
 
-  const handleEdit = async (manufacturer: string) => {
-    try {
-      const response = await fetch(`/api/scripts/${manufacturer}`, { credentials: 'include' });
-      const script = await response.json();
-      setFormData({
-        manufacturer: script.manufacturer,
-        command: script.command,
-        description: script.description || "",
-        fileExtension: script.fileExtension || ".cfg",
-        useShell: script.useShell ?? true,
-        timeout: script.timeout || 30000,
-      });
-      setEditingScript(script);
-    } catch {
-      toast({ title: "Erro ao carregar script", variant: "destructive" });
-    }
+  const handleEdit = (script: VendorScript) => {
+    setFormData({
+      manufacturer: script.manufacturer,
+      name: script.name,
+      command: script.command,
+      description: script.description || "",
+      fileExtension: script.fileExtension || ".cfg",
+      useShell: script.useShell ?? true,
+      timeout: script.timeout || 30000,
+    });
+    setEditingScript(script);
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSaveEdit = (e: React.FormEvent) => {
     e.preventDefault();
-    saveMutation.mutate(formData);
+    if (!editingScript) return;
+    updateMutation.mutate({
+      id: editingScript.id,
+      data: {
+        name: formData.name,
+        command: formData.command,
+        description: formData.description,
+        fileExtension: formData.fileExtension,
+        useShell: formData.useShell,
+        timeout: formData.timeout,
+      }
+    });
   };
 
-  const getScriptForManufacturer = (manufacturer: string): VendorScript | undefined => {
-    return allScripts[manufacturer];
+  const handleDuplicate = (script: VendorScript) => {
+    setFormData({
+      manufacturer: script.manufacturer,
+      name: script.name + " (copia)",
+      command: script.command,
+      description: script.description || "",
+      fileExtension: script.fileExtension || ".cfg",
+      useShell: script.useShell ?? true,
+      timeout: script.timeout || 30000,
+    });
+    setIsAddDialogOpen(true);
   };
 
-  const isScriptCustomized = (manufacturer: string): boolean => {
-    return customScripts?.some(s => s.manufacturer === manufacturer) ?? false;
-  };
-
-  const filteredManufacturers = useMemo(() => {
-    if (!manufacturers) return [];
-    if (!searchQuery.trim()) return manufacturers;
+  const filteredScripts = useMemo(() => {
+    if (!scripts) return [];
+    let result = scripts;
     
-    const query = searchQuery.toLowerCase();
-    return manufacturers.filter(mfr => 
-      mfr.label.toLowerCase().includes(query) ||
-      mfr.value.toLowerCase().includes(query) ||
-      (allScripts[mfr.value]?.description || '').toLowerCase().includes(query)
-    );
-  }, [manufacturers, searchQuery, allScripts]);
+    if (selectedManufacturer !== "all") {
+      result = result.filter(s => s.manufacturer === selectedManufacturer);
+    }
+    
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(s => 
+        s.name.toLowerCase().includes(query) ||
+        s.manufacturer.toLowerCase().includes(query) ||
+        (s.description || '').toLowerCase().includes(query) ||
+        s.command.toLowerCase().includes(query)
+      );
+    }
+    
+    return result.sort((a, b) => {
+      if (a.manufacturer !== b.manufacturer) {
+        return a.manufacturer.localeCompare(b.manufacturer);
+      }
+      return a.name.localeCompare(b.name);
+    });
+  }, [scripts, searchQuery, selectedManufacturer]);
+
+  const scriptsByManufacturer = useMemo(() => {
+    const grouped: Record<string, VendorScript[]> = {};
+    filteredScripts.forEach(script => {
+      if (!grouped[script.manufacturer]) {
+        grouped[script.manufacturer] = [];
+      }
+      grouped[script.manufacturer].push(script);
+    });
+    return grouped;
+  }, [filteredScripts]);
 
   const resetForm = () => {
     setFormData({
       manufacturer: "",
+      name: "",
       command: "",
       description: "",
       fileExtension: ".cfg",
@@ -176,12 +203,19 @@ export default function ScriptsPage() {
 
   const handleSaveNew = (e: React.FormEvent) => {
     e.preventDefault();
-    saveMutation.mutate(formData, {
-      onSuccess: () => {
-        setIsAddDialogOpen(false);
-        resetForm();
-      }
-    });
+    if (!formData.manufacturer || !formData.name || !formData.command) {
+      toast({ title: "Preencha todos os campos obrigatorios", variant: "destructive" });
+      return;
+    }
+    createMutation.mutate(formData);
+  };
+
+  const getManufacturerColor = (value: string): string => {
+    return manufacturers?.find(m => m.value === value)?.color || '#6b7280';
+  };
+
+  const getManufacturerLabel = (value: string): string => {
+    return manufacturers?.find(m => m.value === value)?.label || value;
   };
 
   if (authLoading) {
@@ -199,11 +233,22 @@ export default function ScriptsPage() {
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <Terminal className="h-6 w-6" />
-            Scripts de Backup
+            Scripts
           </h1>
-          <p className="text-muted-foreground">Gerencie os comandos de backup por fabricante</p>
+          <p className="text-muted-foreground">Gerencie scripts de backup, atualizacao e comandos personalizados por fabricante</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
+          <Select value={selectedManufacturer} onValueChange={setSelectedManufacturer}>
+            <SelectTrigger className="w-40" data-testid="select-filter-manufacturer">
+              <SelectValue placeholder="Fabricante" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos</SelectItem>
+              {manufacturers?.map((m) => (
+                <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -216,84 +261,88 @@ export default function ScriptsPage() {
           </div>
           <Button onClick={handleAddNew} data-testid="button-add-script">
             <Plus className="mr-2 h-4 w-4" />
-            Adicionar
+            Novo Script
           </Button>
         </div>
       </div>
 
-      {loadingScripts || !manufacturers ? (
+      {isLoading || !manufacturers ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-48" />)}
+          {[1, 2, 3, 4, 5, 6].map(i => <Skeleton key={i} className="h-56" />)}
         </div>
-      ) : filteredManufacturers.length === 0 ? (
+      ) : filteredScripts.length === 0 ? (
         <div className="text-center text-muted-foreground py-12">
-          Nenhum script encontrado para "{searchQuery}"
+          {searchQuery || selectedManufacturer !== "all" 
+            ? "Nenhum script encontrado com os filtros aplicados" 
+            : "Nenhum script cadastrado. Clique em 'Novo Script' para adicionar."}
         </div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {filteredManufacturers.map((mfr) => {
-            const script = getScriptForManufacturer(mfr.value);
-            const isCustomized = isScriptCustomized(mfr.value);
-            
-            return (
-              <Card key={mfr.value} className="relative">
-                <CardHeader className="pb-2">
-                  <div className="flex items-center justify-between gap-2">
-                    <Badge style={{ backgroundColor: mfr.color || '#6b7280', color: 'white' }}>
-                      {mfr.label}
-                    </Badge>
-                    {isCustomized && (
-                      <Badge variant="outline" className="text-xs">
-                        Customizado
-                      </Badge>
-                    )}
-                  </div>
-                  <CardTitle className="text-base mt-2">{mfr.label}</CardTitle>
-                  <CardDescription className="text-xs">
-                    {script?.description || `Script de backup para ${mfr.label}`}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="bg-muted rounded-md p-2">
-                    <pre className="text-xs font-mono whitespace-pre-wrap break-all">
-                      {script?.command || 'Carregando...'}
-                    </pre>
-                  </div>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
-                    <span>Extensao: {script?.fileExtension || '.cfg'}</span>
-                    <span>Timeout: {((script?.timeout || 30000) / 1000)}s</span>
-                    <span>Shell: {script?.useShell !== false ? 'Sim' : 'Nao'}</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground border-t pt-2">
-                    Credenciais: usuario, senha e porta do cadastro do equipamento
-                  </p>
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleEdit(mfr.value)}
-                      data-testid={`button-edit-script-${mfr.value}`}
-                    >
-                      <Pencil className="h-3 w-3 mr-1" />
-                      Editar
-                    </Button>
-                    {isCustomized && (
-                      <>
+        <div className="space-y-8">
+          {Object.entries(scriptsByManufacturer).map(([manufacturer, mfrScripts]) => (
+            <div key={manufacturer}>
+              <div className="flex items-center gap-2 mb-4">
+                <Badge 
+                  style={{ backgroundColor: getManufacturerColor(manufacturer), color: 'white' }}
+                  className="text-sm"
+                >
+                  {getManufacturerLabel(manufacturer)}
+                </Badge>
+                <span className="text-sm text-muted-foreground">
+                  {mfrScripts.length} script{mfrScripts.length !== 1 ? 's' : ''}
+                </span>
+              </div>
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {mfrScripts.map((script) => (
+                  <Card key={script.id} className="relative">
+                    <CardHeader className="pb-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <CardTitle className="text-base">{script.name}</CardTitle>
+                        {script.isDefault && (
+                          <Badge variant="secondary" className="text-xs">
+                            Padrao
+                          </Badge>
+                        )}
+                      </div>
+                      <CardDescription className="text-xs line-clamp-2">
+                        {script.description || `Script para ${getManufacturerLabel(manufacturer)}`}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="bg-muted rounded-md p-2 max-h-24 overflow-auto">
+                        <pre className="text-xs font-mono whitespace-pre-wrap break-all">
+                          {script.command.length > 150 ? script.command.substring(0, 150) + '...' : script.command}
+                        </pre>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
+                        <span>Ext: {script.fileExtension || '.cfg'}</span>
+                        <span>Timeout: {((script.timeout || 30000) / 1000)}s</span>
+                        <span>Shell: {script.useShell !== false ? 'Sim' : 'Nao'}</span>
+                      </div>
+                      <div className="flex gap-2 flex-wrap">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleEdit(script)}
+                          data-testid={`button-edit-script-${script.id}`}
+                        >
+                          <Pencil className="h-3 w-3 mr-1" />
+                          Editar
+                        </Button>
                         <Button
                           size="sm"
                           variant="ghost"
-                          onClick={() => deleteMutation.mutate(mfr.value)}
-                          data-testid={`button-reset-script-${mfr.value}`}
+                          onClick={() => handleDuplicate(script)}
+                          data-testid={`button-duplicate-script-${script.id}`}
                         >
-                          <RotateCcw className="h-3 w-3 mr-1" />
-                          Resetar
+                          <Copy className="h-3 w-3 mr-1" />
+                          Duplicar
                         </Button>
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <Button
                               size="sm"
                               variant="ghost"
-                              data-testid={`button-delete-script-${mfr.value}`}
+                              data-testid={`button-delete-script-${script.id}`}
                             >
                               <Trash2 className="h-3 w-3 mr-1" />
                               Excluir
@@ -303,100 +352,123 @@ export default function ScriptsPage() {
                             <AlertDialogHeader>
                               <AlertDialogTitle>Excluir Script</AlertDialogTitle>
                               <AlertDialogDescription>
-                                Tem certeza que deseja excluir o script customizado de "{mfr.label}"?
-                                O script sera resetado para o padrao.
+                                Tem certeza que deseja excluir o script "{script.name}" de {getManufacturerLabel(manufacturer)}?
+                                Esta acao nao pode ser desfeita.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                               <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => deleteMutation.mutate(mfr.value)}>
+                              <AlertDialogAction onClick={() => deleteMutation.mutate(script.id)}>
                                 Excluir
                               </AlertDialogAction>
                             </AlertDialogFooter>
                           </AlertDialogContent>
                         </AlertDialog>
-                      </>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       )}
 
       <Dialog open={!!editingScript} onOpenChange={(open) => !open && setEditingScript(null)}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Code className="h-5 w-5" />
-              Editar Script - {formData.manufacturer}
+              Editar Script
             </DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleSave} className="space-y-4">
+          <form onSubmit={handleSaveEdit} className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label>Fabricante</Label>
+                <Input 
+                  value={getManufacturerLabel(formData.manufacturer)} 
+                  disabled 
+                  className="bg-muted"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-name">Nome do Script *</Label>
+                <Input
+                  id="edit-name"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="Ex: Script de Backup"
+                  required
+                  data-testid="input-edit-script-name"
+                />
+              </div>
+            </div>
             <div className="space-y-2">
-              <Label htmlFor="command">Comando de Backup</Label>
+              <Label htmlFor="edit-command">Comando *</Label>
               <Textarea
-                id="command"
+                id="edit-command"
                 value={formData.command}
                 onChange={(e) => setFormData({ ...formData, command: e.target.value })}
-                rows={4}
+                rows={8}
                 className="font-mono text-sm"
                 required
-                data-testid="textarea-script-command"
+                data-testid="textarea-edit-script-command"
               />
               <p className="text-xs text-muted-foreground">
-                Comando que sera enviado via SSH para exportar a configuracao
+                Placeholders disponiveis: {"{{EQUIPMENT_IP}}"}, {"{{SERVER_IP}}"}, {"{{FIRMWARE_FILE}}"}
               </p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="description">Descricao</Label>
+              <Label htmlFor="edit-description">Descricao</Label>
               <Input
-                id="description"
+                id="edit-description"
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Descricao opcional do script"
-                data-testid="input-script-description"
+                placeholder="Descricao do script"
+                data-testid="input-edit-script-description"
               />
             </div>
-            <div className="grid gap-4 grid-cols-2">
+            <div className="grid gap-4 md:grid-cols-3">
               <div className="space-y-2">
-                <Label htmlFor="fileExtension">Extensao do Arquivo</Label>
+                <Label htmlFor="edit-fileExtension">Extensao</Label>
                 <Input
-                  id="fileExtension"
+                  id="edit-fileExtension"
                   value={formData.fileExtension}
                   onChange={(e) => setFormData({ ...formData, fileExtension: e.target.value })}
                   placeholder=".cfg"
-                  data-testid="input-script-extension"
+                  data-testid="input-edit-script-extension"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="timeout">Timeout (ms)</Label>
+                <Label htmlFor="edit-timeout">Timeout (ms)</Label>
                 <Input
-                  id="timeout"
+                  id="edit-timeout"
                   type="number"
                   value={formData.timeout}
                   onChange={(e) => setFormData({ ...formData, timeout: parseInt(e.target.value) })}
-                  data-testid="input-script-timeout"
+                  data-testid="input-edit-script-timeout"
                 />
               </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <Switch
-                id="useShell"
-                checked={formData.useShell}
-                onCheckedChange={(checked) => setFormData({ ...formData, useShell: checked })}
-                data-testid="switch-script-useshell"
-              />
-              <Label htmlFor="useShell">Usar Shell Interativo</Label>
+              <div className="space-y-2 flex items-end">
+                <div className="flex items-center gap-3 h-9">
+                  <Switch
+                    id="edit-useShell"
+                    checked={formData.useShell}
+                    onCheckedChange={(checked) => setFormData({ ...formData, useShell: checked })}
+                    data-testid="switch-edit-script-useshell"
+                  />
+                  <Label htmlFor="edit-useShell">Shell Interativo</Label>
+                </div>
+              </div>
             </div>
             <div className="flex justify-end gap-2">
               <Button type="button" variant="outline" onClick={() => setEditingScript(null)}>
                 Cancelar
               </Button>
-              <Button type="submit" disabled={saveMutation.isPending} data-testid="button-save-script">
+              <Button type="submit" disabled={updateMutation.isPending} data-testid="button-save-edit-script">
                 <Save className="h-4 w-4 mr-1" />
-                {saveMutation.isPending ? "Salvando..." : "Salvar"}
+                {updateMutation.isPending ? "Salvando..." : "Salvar"}
               </Button>
             </div>
           </form>
@@ -404,43 +476,57 @@ export default function ScriptsPage() {
       </Dialog>
 
       <Dialog open={isAddDialogOpen} onOpenChange={(open) => { setIsAddDialogOpen(open); if (!open) resetForm(); }}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Code className="h-5 w-5" />
-              Novo Script de Backup
+              Novo Script
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSaveNew} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="add-manufacturer">Fabricante</Label>
-              <Select
-                value={formData.manufacturer}
-                onValueChange={(value) => setFormData({ ...formData, manufacturer: value })}
-              >
-                <SelectTrigger data-testid="select-add-script-manufacturer">
-                  <SelectValue placeholder="Selecione o fabricante" />
-                </SelectTrigger>
-                <SelectContent>
-                  {manufacturers?.map((m) => (
-                    <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="add-manufacturer">Fabricante *</Label>
+                <Select
+                  value={formData.manufacturer}
+                  onValueChange={(value) => setFormData({ ...formData, manufacturer: value })}
+                >
+                  <SelectTrigger data-testid="select-add-script-manufacturer">
+                    <SelectValue placeholder="Selecione o fabricante" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {manufacturers?.map((m) => (
+                      <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="add-name">Nome do Script *</Label>
+                <Input
+                  id="add-name"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="Ex: Script de Backup, Script de Reboot"
+                  required
+                  data-testid="input-add-script-name"
+                />
+              </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="add-command">Comando de Backup</Label>
+              <Label htmlFor="add-command">Comando *</Label>
               <Textarea
                 id="add-command"
                 value={formData.command}
                 onChange={(e) => setFormData({ ...formData, command: e.target.value })}
-                rows={4}
+                rows={8}
                 className="font-mono text-sm"
                 required
+                placeholder="show running-config"
                 data-testid="textarea-add-script-command"
               />
               <p className="text-xs text-muted-foreground">
-                Comando que sera enviado via SSH para exportar a configuracao
+                Placeholders disponiveis: {"{{EQUIPMENT_IP}}"}, {"{{SERVER_IP}}"}, {"{{FIRMWARE_FILE}}"}
               </p>
             </div>
             <div className="space-y-2">
@@ -453,9 +539,9 @@ export default function ScriptsPage() {
                 data-testid="input-add-script-description"
               />
             </div>
-            <div className="grid gap-4 grid-cols-2">
+            <div className="grid gap-4 md:grid-cols-3">
               <div className="space-y-2">
-                <Label htmlFor="add-fileExtension">Extensao do Arquivo</Label>
+                <Label htmlFor="add-fileExtension">Extensao</Label>
                 <Input
                   id="add-fileExtension"
                   value={formData.fileExtension}
@@ -474,23 +560,29 @@ export default function ScriptsPage() {
                   data-testid="input-add-script-timeout"
                 />
               </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <Switch
-                id="add-useShell"
-                checked={formData.useShell}
-                onCheckedChange={(checked) => setFormData({ ...formData, useShell: checked })}
-                data-testid="switch-add-script-useshell"
-              />
-              <Label htmlFor="add-useShell">Usar Shell Interativo</Label>
+              <div className="space-y-2 flex items-end">
+                <div className="flex items-center gap-3 h-9">
+                  <Switch
+                    id="add-useShell"
+                    checked={formData.useShell}
+                    onCheckedChange={(checked) => setFormData({ ...formData, useShell: checked })}
+                    data-testid="switch-add-script-useshell"
+                  />
+                  <Label htmlFor="add-useShell">Shell Interativo</Label>
+                </div>
+              </div>
             </div>
             <div className="flex justify-end gap-2">
               <Button type="button" variant="outline" onClick={() => setIsAddDialogOpen(false)}>
                 Cancelar
               </Button>
-              <Button type="submit" disabled={saveMutation.isPending || !formData.manufacturer} data-testid="button-save-new-script">
+              <Button 
+                type="submit" 
+                disabled={createMutation.isPending || !formData.manufacturer || !formData.name || !formData.command} 
+                data-testid="button-save-new-script"
+              >
                 <Save className="h-4 w-4 mr-1" />
-                {saveMutation.isPending ? "Salvando..." : "Adicionar"}
+                {createMutation.isPending ? "Criando..." : "Criar Script"}
               </Button>
             </div>
           </form>

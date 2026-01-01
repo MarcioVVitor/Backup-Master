@@ -3,7 +3,7 @@ import type { Server } from "http";
 import { storage } from "./storage";
 import multer from "multer";
 import { setupAuth, isAuthenticated, registerAuthRoutes, getSession } from "./replit_integrations/auth";
-import { insertEquipmentSchema, insertVendorScriptSchema, insertSystemUpdateSchema, insertFirmwareSchema, SUPPORTED_MANUFACTURERS, USER_ROLES } from "@shared/schema";
+import { insertEquipmentSchema, insertVendorScriptSchema, updateVendorScriptSchema, insertSystemUpdateSchema, insertFirmwareSchema, SUPPORTED_MANUFACTURERS, USER_ROLES } from "@shared/schema";
 import { z } from "zod";
 import { WebSocketServer, WebSocket } from "ws";
 import { Client as SSHClient } from "ssh2";
@@ -419,12 +419,16 @@ export async function registerRoutes(
   app.patch('/api/scripts/:id', isAuthenticated, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      const script = await storage.updateVendorScript(id, req.body);
+      const parsed = updateVendorScriptSchema.parse(req.body);
+      const script = await storage.updateVendorScript(id, parsed);
       if (!script) {
         return res.status(404).json({ message: "Script nao encontrado" });
       }
       res.json(script);
     } catch (e) {
+      if (e instanceof z.ZodError) {
+        return res.status(400).json({ message: "Dados invalidos", errors: e.errors });
+      }
       console.error("Error updating script:", e);
       res.status(500).json({ message: "Erro ao atualizar script" });
     }
