@@ -39,6 +39,7 @@ interface Equipment {
   manufacturer: string;
   protocol?: string;
   port?: number;
+  model?: string;
 }
 
 interface Manufacturer {
@@ -85,6 +86,8 @@ export default function FirmwarePage() {
   const [editingScript, setEditingScript] = useState<VendorScript | null>(null);
   const [expandedVendorSection, setExpandedVendorSection] = useState<{vendor: string, section: 'firmware' | 'equipment' | 'script' | null}>({vendor: '', section: null});
   const [selectedFirmwarePerVendor, setSelectedFirmwarePerVendor] = useState<Record<string, Firmware | null>>({});
+  const [selectedEquipmentPerVendor, setSelectedEquipmentPerVendor] = useState<Record<string, Set<number>>>({});
+  const [equipmentSearchPerVendor, setEquipmentSearchPerVendor] = useState<Record<string, string>>({});
 
   const [formData, setFormData] = useState({
     name: "",
@@ -654,7 +657,7 @@ export default function FirmwarePage() {
                                   {vendorFirmwareList.length} firmware
                                 </Button>
                                 <Button
-                                  variant="outline"
+                                  variant={(selectedEquipmentPerVendor[mfr.value]?.size || 0) > 0 ? "default" : "outline"}
                                   size="sm"
                                   className="h-6 text-xs px-2"
                                   onClick={() => setExpandedVendorSection(
@@ -662,8 +665,14 @@ export default function FirmwarePage() {
                                   )}
                                   data-testid={`button-equipment-${mfr.value}`}
                                 >
-                                  <Plug className="h-3 w-3 mr-1" />
-                                  {vendorEquipmentList.length} equip.
+                                  {(selectedEquipmentPerVendor[mfr.value]?.size || 0) > 0 ? (
+                                    <Check className="h-3 w-3 mr-1" />
+                                  ) : (
+                                    <Plug className="h-3 w-3 mr-1" />
+                                  )}
+                                  {(selectedEquipmentPerVendor[mfr.value]?.size || 0) > 0 
+                                    ? `${selectedEquipmentPerVendor[mfr.value]?.size}/${vendorEquipmentList.length}` 
+                                    : `${vendorEquipmentList.length} equip.`}
                                 </Button>
                                 <Button
                                   variant={script && !script.isDefault ? "secondary" : "outline"}
@@ -738,49 +747,144 @@ export default function FirmwarePage() {
                               </div>
                             )}
 
-                            {isEquipmentExpanded && (
-                              <div className="p-3 bg-muted/50 rounded-md space-y-2">
-                                <div className="flex items-center justify-between gap-2">
-                                  <h4 className="text-sm font-medium flex items-center gap-1">
-                                    <Plug className="h-4 w-4" /> Equipamentos
-                                  </h4>
-                                  <Button size="sm" variant="ghost" onClick={() => setExpandedVendorSection({vendor: '', section: null})}>
-                                    <ChevronUp className="h-4 w-4" />
-                                  </Button>
-                                </div>
-                                {vendorEquipmentList.length === 0 ? (
-                                  <p className="text-sm text-muted-foreground">Nenhum equipamento cadastrado para este fabricante.</p>
-                                ) : (
-                                  <div className="space-y-1">
-                                    {vendorEquipmentList.map(eq => (
-                                      <div key={eq.id} className="flex items-center justify-between gap-2 p-2 bg-background rounded border text-sm">
-                                        <div>
-                                          <span className="font-medium">{eq.name}</span>
-                                          <span className="ml-2 text-muted-foreground">{eq.ip}</span>
-                                          <Badge variant="outline" className="ml-2 text-xs">{eq.protocol?.toUpperCase() || 'SSH'}</Badge>
-                                        </div>
-                                        <Button
-                                          size="sm"
-                                          variant="outline"
-                                          className="h-7"
-                                          onClick={() => {
-                                            setSelectedVendor(mfr.value);
-                                            setSelectedVendorEquipment(eq.id.toString());
-                                            setTerminalOutput([]);
-                                            connectTerminal(eq.id.toString());
-                                          }}
-                                          disabled={wsConnecting}
-                                          data-testid={`button-connect-eq-${eq.id}`}
-                                        >
-                                          <Terminal className="h-3 w-3 mr-1" />
-                                          Conectar
-                                        </Button>
-                                      </div>
-                                    ))}
+                            {isEquipmentExpanded && (() => {
+                              const searchTerm = equipmentSearchPerVendor[mfr.value]?.toLowerCase() || '';
+                              const filteredEquipment = vendorEquipmentList.filter(eq => 
+                                !searchTerm || 
+                                eq.name.toLowerCase().includes(searchTerm) || 
+                                eq.ip.toLowerCase().includes(searchTerm) ||
+                                (eq.model && eq.model.toLowerCase().includes(searchTerm))
+                              );
+                              const selectedSet = selectedEquipmentPerVendor[mfr.value] || new Set<number>();
+                              const allSelected = filteredEquipment.length > 0 && filteredEquipment.every(eq => selectedSet.has(eq.id));
+                              
+                              const toggleEquipment = (eqId: number) => {
+                                setSelectedEquipmentPerVendor(prev => {
+                                  const newSet = new Set(prev[mfr.value] || []);
+                                  if (newSet.has(eqId)) {
+                                    newSet.delete(eqId);
+                                  } else {
+                                    newSet.add(eqId);
+                                  }
+                                  return {...prev, [mfr.value]: newSet};
+                                });
+                              };
+                              
+                              const toggleAll = () => {
+                                setSelectedEquipmentPerVendor(prev => {
+                                  if (allSelected) {
+                                    return {...prev, [mfr.value]: new Set<number>()};
+                                  } else {
+                                    return {...prev, [mfr.value]: new Set(filteredEquipment.map(eq => eq.id))};
+                                  }
+                                });
+                              };
+
+                              return (
+                                <div className="p-3 bg-muted/50 rounded-md space-y-2">
+                                  <div className="flex items-center justify-between gap-2">
+                                    <h4 className="text-sm font-medium flex items-center gap-1">
+                                      <Plug className="h-4 w-4" /> Equipamentos
+                                      {selectedSet.size > 0 && (
+                                        <Badge variant="secondary" className="ml-1">{selectedSet.size} selecionados</Badge>
+                                      )}
+                                    </h4>
+                                    <Button size="sm" variant="ghost" onClick={() => setExpandedVendorSection({vendor: '', section: null})}>
+                                      <ChevronUp className="h-4 w-4" />
+                                    </Button>
                                   </div>
-                                )}
-                              </div>
-                            )}
+                                  
+                                  {vendorEquipmentList.length > 3 && (
+                                    <div className="relative">
+                                      <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                      <Input
+                                        placeholder="Buscar por nome, modelo ou IP..."
+                                        className="pl-8 h-8"
+                                        value={equipmentSearchPerVendor[mfr.value] || ''}
+                                        onChange={(e) => setEquipmentSearchPerVendor(prev => ({...prev, [mfr.value]: e.target.value}))}
+                                        data-testid={`input-search-equipment-${mfr.value}`}
+                                      />
+                                    </div>
+                                  )}
+                                  
+                                  {vendorEquipmentList.length === 0 ? (
+                                    <p className="text-sm text-muted-foreground">Nenhum equipamento cadastrado para este fabricante.</p>
+                                  ) : filteredEquipment.length === 0 ? (
+                                    <p className="text-sm text-muted-foreground">Nenhum equipamento encontrado para "{searchTerm}".</p>
+                                  ) : (
+                                    <div className="space-y-1">
+                                      {filteredEquipment.length > 1 && (
+                                        <div 
+                                          className="flex items-center gap-2 p-2 bg-background/50 rounded border border-dashed text-sm cursor-pointer hover:bg-muted/50"
+                                          onClick={toggleAll}
+                                        >
+                                          <div className={`w-4 h-4 rounded border-2 flex items-center justify-center ${allSelected ? 'border-primary bg-primary' : 'border-muted-foreground'}`}>
+                                            {allSelected && <Check className="h-3 w-3 text-white" />}
+                                          </div>
+                                          <span className="text-muted-foreground">Selecionar todos ({filteredEquipment.length})</span>
+                                        </div>
+                                      )}
+                                      {filteredEquipment.map(eq => {
+                                        const isEqSelected = selectedSet.has(eq.id);
+                                        return (
+                                          <div 
+                                            key={eq.id} 
+                                            className={`flex items-center justify-between gap-2 p-2 rounded border text-sm cursor-pointer transition-colors ${isEqSelected ? 'bg-primary/10 border-primary' : 'bg-background hover:bg-muted/50'}`}
+                                            onClick={() => toggleEquipment(eq.id)}
+                                            data-testid={`equipment-select-${eq.id}`}
+                                          >
+                                            <div className="flex items-center gap-2">
+                                              <div className={`w-4 h-4 rounded border-2 flex items-center justify-center ${isEqSelected ? 'border-primary bg-primary' : 'border-muted-foreground'}`}>
+                                                {isEqSelected && <Check className="h-3 w-3 text-white" />}
+                                              </div>
+                                              <div>
+                                                <span className="font-medium">{eq.name}</span>
+                                                {eq.model && <span className="ml-1 text-muted-foreground text-xs">({eq.model})</span>}
+                                                <span className="ml-2 text-muted-foreground">{eq.ip}</span>
+                                                <Badge variant="outline" className="ml-2 text-xs">{eq.protocol?.toUpperCase() || 'SSH'}</Badge>
+                                              </div>
+                                            </div>
+                                            <Button
+                                              size="sm"
+                                              variant="outline"
+                                              className="h-7"
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                setSelectedVendor(mfr.value);
+                                                setSelectedVendorEquipment(eq.id.toString());
+                                                setTerminalOutput([]);
+                                                connectTerminal(eq.id.toString());
+                                              }}
+                                              disabled={wsConnecting}
+                                              data-testid={`button-connect-eq-${eq.id}`}
+                                            >
+                                              <Terminal className="h-3 w-3 mr-1" />
+                                              Conectar
+                                            </Button>
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+                                  )}
+                                  {selectedSet.size > 0 && (
+                                    <div className="mt-2 p-2 bg-primary/5 rounded border border-primary/20 text-xs flex items-center justify-between">
+                                      <span>
+                                        <span className="text-muted-foreground">Equipamentos selecionados: </span>
+                                        <span className="font-medium">{selectedSet.size} de {vendorEquipmentList.length}</span>
+                                      </span>
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        className="h-6 text-xs"
+                                        onClick={() => setSelectedEquipmentPerVendor(prev => ({...prev, [mfr.value]: new Set<number>()}))}
+                                      >
+                                        Limpar selecao
+                                      </Button>
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })()}
 
                             {isScriptExpanded && (
                               <div className="p-3 bg-muted/50 rounded-md space-y-2">
