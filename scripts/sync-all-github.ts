@@ -1,5 +1,6 @@
 import { Octokit } from '@octokit/rest';
 import * as fs from 'fs';
+import * as path from 'path';
 
 let connectionSettings: any;
 
@@ -52,35 +53,77 @@ async function uploadFile(octokit: Octokit, owner: string, repo: string, filePat
   }
 }
 
+function getAllFiles(dir: string, extensions: string[] = ['.ts', '.tsx', '.css', '.json', '.html']): string[] {
+  const files: string[] = [];
+  if (!fs.existsSync(dir)) return files;
+  
+  const items = fs.readdirSync(dir);
+  for (const item of items) {
+    const fullPath = path.join(dir, item);
+    const stat = fs.statSync(fullPath);
+    if (stat.isDirectory()) {
+      files.push(...getAllFiles(fullPath, extensions));
+    } else if (extensions.some(ext => item.endsWith(ext))) {
+      files.push(fullPath);
+    }
+  }
+  return files;
+}
+
 async function main() {
   const repoName = 'nbm';
-  console.log('Sincronizando arquivos com GitHub...');
+  console.log('Sincronizando TODOS os arquivos com GitHub...');
   
   const octokit = await getGitHubClient();
   const { data: user } = await octokit.users.getAuthenticated();
   const owner = user.login;
   
-  const filesToSync = [
-    { local: 'server/standalone-auth.ts', remote: 'server/standalone-auth.ts' },
-    { local: 'server/routes.ts', remote: 'server/routes.ts' },
-    { local: 'server/static.ts', remote: 'server/static.ts' },
-    { local: 'server/index.ts', remote: 'server/index.ts' },
-    { local: 'shared/models/auth.ts', remote: 'shared/models/auth.ts' },
-    { local: 'shared/schema.ts', remote: 'shared/schema.ts' },
-    { local: 'script/build.ts', remote: 'script/build.ts' },
-    { local: 'client/src/pages/login.tsx', remote: 'client/src/pages/login.tsx' },
-    { local: 'client/src/App.tsx', remote: 'client/src/App.tsx' },
-    { local: 'client/src/hooks/use-auth.ts', remote: 'client/src/hooks/use-auth.ts' },
-    { local: 'client/src/index.css', remote: 'client/src/index.css' },
-    { local: 'client/src/main.tsx', remote: 'client/src/main.tsx' },
-    { local: 'client/index.html', remote: 'client/index.html' },
-    { local: 'tailwind.config.ts', remote: 'tailwind.config.ts' },
-    { local: 'vite.config.ts', remote: 'vite.config.ts' },
-    { local: 'package.json', remote: 'package.json' },
-    { local: 'tsconfig.json', remote: 'tsconfig.json' },
+  const filesToSync: { local: string; remote: string }[] = [];
+  
+  const rootFiles = [
+    'package.json',
+    'tsconfig.json', 
+    'tailwind.config.ts',
+    'vite.config.ts',
+    'drizzle.config.ts',
+    'postcss.config.js',
   ];
   
-  for (const file of filesToSync) {
+  for (const file of rootFiles) {
+    if (fs.existsSync(file)) {
+      filesToSync.push({ local: file, remote: file });
+    }
+  }
+  
+  const directories = [
+    'client/src/components/ui',
+    'client/src/components',
+    'client/src/pages',
+    'client/src/hooks',
+    'client/src/lib',
+    'client/src',
+    'server',
+    'shared',
+    'script',
+    'install',
+  ];
+  
+  for (const dir of directories) {
+    const files = getAllFiles(dir);
+    for (const file of files) {
+      filesToSync.push({ local: file, remote: file });
+    }
+  }
+  
+  if (fs.existsSync('client/index.html')) {
+    filesToSync.push({ local: 'client/index.html', remote: 'client/index.html' });
+  }
+  
+  const uniqueFiles = [...new Map(filesToSync.map(f => [f.local, f])).values()];
+  
+  console.log(`Total de arquivos para sincronizar: ${uniqueFiles.length}`);
+  
+  for (const file of uniqueFiles) {
     if (fs.existsSync(file.local)) {
       await uploadFile(octokit, owner, repoName, file.remote, file.local);
     }
