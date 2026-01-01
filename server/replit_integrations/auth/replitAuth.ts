@@ -52,11 +52,10 @@ function updateUserSession(
 
 async function upsertUser(claims: any) {
   await authStorage.upsertUser({
-    id: claims["sub"],
+    replitId: claims["sub"],
+    username: claims["email"]?.split("@")[0] || claims["sub"],
+    name: [claims["first_name"], claims["last_name"]].filter(Boolean).join(" ") || null,
     email: claims["email"],
-    firstName: claims["first_name"],
-    lastName: claims["last_name"],
-    profileImageUrl: claims["profile_image_url"],
   });
 }
 
