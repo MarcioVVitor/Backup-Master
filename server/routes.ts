@@ -594,6 +594,60 @@ export async function registerRoutes(
     }
   });
 
+  // API - Admin - User Management
+  app.get('/api/admin/users', isAuthenticated, async (req, res) => {
+    try {
+      const usersList = await storage.getUsers();
+      res.json(usersList);
+    } catch (e) {
+      console.error("Error listing users:", e);
+      res.status(500).json({ message: "Erro ao listar usuarios" });
+    }
+  });
+
+  app.put('/api/admin/users/:id', isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { role, active, name, email } = req.body;
+      const updated = await storage.updateUser(id, { role, active, name, email });
+      if (!updated) return res.status(404).json({ message: "Usuario nao encontrado" });
+      res.json(updated);
+    } catch (e) {
+      console.error("Error updating user:", e);
+      res.status(500).json({ message: "Erro ao atualizar usuario" });
+    }
+  });
+
+  // API - Admin - Settings (customization)
+  app.get('/api/admin/customization', isAuthenticated, async (req, res) => {
+    try {
+      const logoUrl = await storage.getSetting('logo_url');
+      const primaryColor = await storage.getSetting('primary_color');
+      const systemName = await storage.getSetting('system_name');
+      res.json({
+        logoUrl: logoUrl || '',
+        primaryColor: primaryColor || '#0077b6',
+        systemName: systemName || 'NBM',
+      });
+    } catch (e) {
+      console.error("Error getting customization:", e);
+      res.status(500).json({ message: "Erro ao obter personalizacao" });
+    }
+  });
+
+  app.post('/api/admin/customization', isAuthenticated, async (req, res) => {
+    try {
+      const { logoUrl, primaryColor, systemName } = req.body;
+      if (logoUrl !== undefined) await storage.setSetting('logo_url', logoUrl);
+      if (primaryColor !== undefined) await storage.setSetting('primary_color', primaryColor);
+      if (systemName !== undefined) await storage.setSetting('system_name', systemName);
+      res.json({ message: "Personalizacao salva com sucesso" });
+    } catch (e) {
+      console.error("Error saving customization:", e);
+      res.status(500).json({ message: "Erro ao salvar personalizacao" });
+    }
+  });
+
   return httpServer;
 }
 

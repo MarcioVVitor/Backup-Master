@@ -22,12 +22,16 @@ import {
   type Manufacturer,
   type InsertManufacturer,
   type SystemUpdate,
-  type InsertSystemUpdate
+  type InsertSystemUpdate,
+  type User
 } from "@shared/schema";
 import { eq, desc, sql, and, gte } from "drizzle-orm";
 
 export interface IStorage {
   getUserIdByReplitId(replitId: string): Promise<number | null>;
+  getUsers(): Promise<User[]>;
+  getUserById(id: number): Promise<User | undefined>;
+  updateUser(id: number, data: Partial<{ role: string; active: boolean; name: string; email: string }>): Promise<User | undefined>;
 
   getEquipment(): Promise<Equipment[]>;
   getEquipmentById(id: number): Promise<Equipment | undefined>;
@@ -78,6 +82,20 @@ export class DatabaseStorage implements IStorage {
   async getUserIdByReplitId(replitId: string): Promise<number | null> {
     const [user] = await db.select().from(users).where(eq(users.replitId, replitId));
     return user?.id || null;
+  }
+
+  async getUsers(): Promise<User[]> {
+    return await db.select().from(users).orderBy(desc(users.createdAt));
+  }
+
+  async getUserById(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
+  }
+
+  async updateUser(id: number, data: Partial<{ role: string; active: boolean; name: string; email: string }>): Promise<User | undefined> {
+    const [updated] = await db.update(users).set(data).where(eq(users.id, id)).returning();
+    return updated;
   }
 
   async getEquipment(): Promise<Equipment[]> {

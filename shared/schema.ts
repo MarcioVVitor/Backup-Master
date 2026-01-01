@@ -14,6 +14,10 @@ export const sessions = pgTable(
   (table) => [index("IDX_session_expire").on(table.expire)]
 );
 
+// Roles de usuario
+export const USER_ROLES = ["admin", "operator", "viewer"] as const;
+export type UserRole = typeof USER_ROLES[number];
+
 // User storage table (matches existing DB)
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
@@ -22,6 +26,8 @@ export const users = pgTable("users", {
   name: text("name"),
   email: text("email"),
   isAdmin: boolean("is_admin").default(false),
+  role: text("role").default("viewer"),
+  active: boolean("active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -129,6 +135,7 @@ export const insertSettingSchema = createInsertSchema(settings).omit({ updatedAt
 export const insertVendorScriptSchema = createInsertSchema(vendorScripts).omit({ id: true, updatedAt: true });
 export const insertManufacturerSchema = createInsertSchema(manufacturers).omit({ id: true, createdAt: true });
 export const insertSystemUpdateSchema = createInsertSchema(systemUpdates).omit({ id: true, appliedAt: true });
+export const updateUserSchema = createInsertSchema(users).omit({ id: true, replitId: true, createdAt: true }).partial();
 
 // Tipos
 export type User = typeof users.$inferSelect;
