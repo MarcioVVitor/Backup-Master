@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -50,10 +50,36 @@ export default function ScriptsPage() {
     timeout: 30000,
   });
 
-  const { data: scripts, isLoading } = useQuery<VendorScript[]>({
+  const { data: customScripts, isLoading } = useQuery<VendorScript[]>({
     queryKey: ['/api/scripts'],
     enabled: !!user,
   });
+
+  const [allScripts, setAllScripts] = useState<Record<string, VendorScript>>({});
+  const [loadingScripts, setLoadingScripts] = useState(true);
+
+  const loadAllScripts = async () => {
+    setLoadingScripts(true);
+    const scripts: Record<string, VendorScript> = {};
+    for (const mfr of SUPPORTED_MANUFACTURERS) {
+      try {
+        const res = await fetch(`/api/scripts/${mfr.value}`, { credentials: 'include' });
+        if (res.ok) {
+          scripts[mfr.value] = await res.json();
+        }
+      } catch {
+        // ignore
+      }
+    }
+    setAllScripts(scripts);
+    setLoadingScripts(false);
+  };
+
+  useEffect(() => {
+    if (user) {
+      loadAllScripts();
+    }
+  }, [user]);
 
   const saveMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
@@ -61,6 +87,7 @@ export default function ScriptsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/scripts'] });
+      loadAllScripts();
       toast({ title: "Script salvo com sucesso" });
       setEditingScript(null);
     },
@@ -75,6 +102,7 @@ export default function ScriptsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/scripts'] });
+      loadAllScripts();
       toast({ title: "Script resetado para padrao" });
     },
     onError: () => {
@@ -106,7 +134,11 @@ export default function ScriptsPage() {
   };
 
   const getScriptForManufacturer = (manufacturer: string): VendorScript | undefined => {
-    return scripts?.find(s => s.manufacturer === manufacturer);
+    return allScripts[manufacturer];
+  };
+
+  const isScriptCustomized = (manufacturer: string): boolean => {
+    return customScripts?.some(s => s.manufacturer === manufacturer) ?? false;
   };
 
   if (authLoading) {
@@ -130,7 +162,7 @@ export default function ScriptsPage() {
         </div>
       </div>
 
-      {isLoading ? (
+      {loadingScripts ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-48" />)}
         </div>
@@ -138,7 +170,7 @@ export default function ScriptsPage() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {SUPPORTED_MANUFACTURERS.map((mfr) => {
             const script = getScriptForManufacturer(mfr.value);
-            const isCustomized = script && !('isDefault' in script);
+            const isCustomized = isScriptCustomized(mfr.value);
             
             return (
               <Card key={mfr.value} className="relative">
@@ -160,14 +192,18 @@ export default function ScriptsPage() {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="bg-muted rounded-md p-2">
-                    <code className="text-xs font-mono break-all">
+                    <pre className="text-xs font-mono whitespace-pre-wrap break-all">
                       {script?.command || 'Carregando...'}
-                    </code>
+                    </pre>
                   </div>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
                     <span>Extensao: {script?.fileExtension || '.cfg'}</span>
+                    <span>Timeout: {((script?.timeout || 30000) / 1000)}s</span>
                     <span>Shell: {script?.useShell !== false ? 'Sim' : 'Nao'}</span>
                   </div>
+                  <p className="text-xs text-muted-foreground border-t pt-2">
+                    Credenciais: usuario, senha e porta do cadastro do equipamento
+                  </p>
                   <div className="flex gap-2">
                     <Button
                       size="sm"

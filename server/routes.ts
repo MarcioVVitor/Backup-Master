@@ -343,13 +343,24 @@ export async function registerRoutes(
     try {
       const script = await storage.getVendorScript(req.params.manufacturer);
       if (!script) {
-        const defaultConfig = getDefaultBackupConfig(req.params.manufacturer);
+        const defaultInfo = getDefaultScriptInfo(req.params.manufacturer);
+        if (defaultInfo) {
+          return res.json({
+            manufacturer: req.params.manufacturer,
+            command: defaultInfo.command,
+            description: defaultInfo.description,
+            fileExtension: defaultInfo.extension,
+            useShell: defaultInfo.useShell,
+            timeout: defaultInfo.timeout,
+            isDefault: true,
+          });
+        }
         return res.json({
           manufacturer: req.params.manufacturer,
-          command: defaultConfig.command,
-          description: `Script padrão para ${req.params.manufacturer}`,
-          fileExtension: defaultConfig.extension,
-          useShell: defaultConfig.useShell,
+          command: 'show running-config',
+          description: 'Script padrao generico. Conexao via SSH usando credenciais do equipamento.',
+          fileExtension: '.txt',
+          useShell: false,
           timeout: 30000,
           isDefault: true,
         });
@@ -422,64 +433,107 @@ async function getBackupConfig(manufacturer: string): Promise<BackupConfig> {
   return getDefaultBackupConfig(manufacturer);
 }
 
+interface VendorDefaultScript {
+  command: string;
+  extension: string;
+  useShell: boolean;
+  timeout: number;
+  description: string;
+  prompt?: RegExp;
+  endPattern?: RegExp;
+}
+
+const DEFAULT_VENDOR_SCRIPTS: Record<string, VendorDefaultScript> = {
+  mikrotik: {
+    command: '/export compact',
+    extension: '.rsc',
+    useShell: true,
+    timeout: 30000,
+    description: 'Exporta configuracao completa do RouterOS em formato RSC. Conexao via SSH usando credenciais do equipamento (usuario, senha, porta do cadastro).',
+    prompt: /\[.*@.*\]\s*>\s*$/,
+    endPattern: /\[.*@.*\]\s*>\s*$/,
+  },
+  huawei: {
+    command: 'screen-length 0 temporary\ndisplay current-configuration',
+    extension: '.cfg',
+    useShell: true,
+    timeout: 60000,
+    description: 'Desabilita paginacao e exporta configuracao atual. Conexao via SSH usando credenciais do equipamento (usuario, senha, porta do cadastro).',
+    prompt: /<.*>|\[.*\]/,
+    endPattern: /return/,
+  },
+  cisco: {
+    command: 'terminal length 0\nshow running-config',
+    extension: '.cfg',
+    useShell: true,
+    timeout: 60000,
+    description: 'Desabilita paginacao e exibe configuracao em execucao. Conexao via SSH usando credenciais do equipamento (usuario, senha, porta do cadastro).',
+    prompt: /[#>]\s*$/,
+  },
+  nokia: {
+    command: 'environment no more\nadmin display-config',
+    extension: '.cfg',
+    useShell: true,
+    timeout: 60000,
+    description: 'Desabilita paginacao e exibe configuracao administrativa. Conexao via SSH usando credenciais do equipamento (usuario, senha, porta do cadastro).',
+    prompt: /[#>]\s*$/,
+  },
+  zte: {
+    command: 'terminal length 0\nshow running-config',
+    extension: '.cfg',
+    useShell: true,
+    timeout: 60000,
+    description: 'Desabilita paginacao e exibe configuracao em execucao. Conexao via SSH usando credenciais do equipamento (usuario, senha, porta do cadastro).',
+    prompt: /[#>]\s*$/,
+  },
+  datacom: {
+    command: 'terminal length 0\nshow running-config',
+    extension: '.cfg',
+    useShell: true,
+    timeout: 60000,
+    description: 'Desabilita paginacao e exibe configuracao em execucao DmOS. Conexao via SSH usando credenciais do equipamento (usuario, senha, porta do cadastro).',
+    prompt: /[#>]\s*$/,
+  },
+  'datacom-dmos': {
+    command: 'terminal length 0\nshow running-config',
+    extension: '.cfg',
+    useShell: true,
+    timeout: 60000,
+    description: 'Desabilita paginacao e exibe configuracao DmOS. Conexao via SSH usando credenciais do equipamento (usuario, senha, porta do cadastro).',
+    prompt: /[#>]\s*$/,
+  },
+  juniper: {
+    command: 'set cli screen-length 0\nshow configuration | display set',
+    extension: '.conf',
+    useShell: true,
+    timeout: 60000,
+    description: 'Desabilita paginacao e exibe configuracao em formato set. Conexao via SSH usando credenciais do equipamento (usuario, senha, porta do cadastro).',
+    prompt: /[#>]\s*$/,
+  },
+};
+
 function getDefaultBackupConfig(manufacturer: string): BackupConfig {
-  const configs: Record<string, BackupConfig> = {
-    mikrotik: {
-      command: '/export',
-      extension: '.rsc',
-      useShell: true,
-      prompt: /\[.*@.*\]\s*>\s*$/,
-      endPattern: /\[.*@.*\]\s*>\s*$/,
-    },
-    huawei: {
-      command: 'display current-configuration',
-      extension: '.cfg',
-      useShell: true,
-      prompt: /<.*>|\[.*\]/,
-      endPattern: /return/,
-    },
-    cisco: {
-      command: 'show running-config',
-      extension: '.cfg',
-      useShell: true,
-      prompt: /[#>]\s*$/,
-    },
-    nokia: {
-      command: 'admin display-config',
-      extension: '.cfg',
-      useShell: true,
-      prompt: /[#>]\s*$/,
-    },
-    zte: {
-      command: 'show running-config',
-      extension: '.cfg',
-      useShell: true,
-      prompt: /[#>]\s*$/,
-    },
-    datacom: {
-      command: 'show running-config',
-      extension: '.cfg',
-      useShell: true,
-      prompt: /[#>]\s*$/,
-    },
-    'datacom-dmos': {
-      command: 'show running-config',
-      extension: '.cfg',
-      useShell: true,
-      prompt: /[#>]\s*$/,
-    },
-    juniper: {
-      command: 'show configuration | display set',
-      extension: '.conf',
-      useShell: true,
-      prompt: /[#>]\s*$/,
-    },
-  };
-  return configs[manufacturer.toLowerCase()] || {
+  const config = DEFAULT_VENDOR_SCRIPTS[manufacturer.toLowerCase()];
+  if (config) {
+    return {
+      command: config.command,
+      extension: config.extension,
+      useShell: config.useShell,
+      timeout: config.timeout,
+      prompt: config.prompt,
+      endPattern: config.endPattern,
+    };
+  }
+  return {
     command: 'show running-config',
     extension: '.txt',
     useShell: false,
+    timeout: 30000,
   };
+}
+
+function getDefaultScriptInfo(manufacturer: string): VendorDefaultScript | null {
+  return DEFAULT_VENDOR_SCRIPTS[manufacturer.toLowerCase()] || null;
 }
 
 // Execução SSH com suporte a shell interativo
@@ -507,7 +561,7 @@ async function executeSSHBackup(equip: any, config: BackupConfig): Promise<strin
           timer = setTimeout(() => {
             cleanup();
             resolve(output);
-          }, 30000);
+          }, config.timeout || 30000);
 
           stream.on('data', (data: Buffer) => {
             output += data.toString();
