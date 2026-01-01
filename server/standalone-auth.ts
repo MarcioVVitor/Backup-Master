@@ -116,7 +116,7 @@ export async function setupStandaloneAuth(app: Express) {
         email: email || null,
         passwordHash: hash,
         passwordSalt: salt,
-        isAdmin: isFirstUser,
+        isAdmin: isFirstUser ? true : false,
         replitId: `local-${crypto.randomUUID()}`,
       }).returning();
       

@@ -59,7 +59,13 @@ function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
   const [location] = useLocation();
 
-  if (isLoading) return <div className="flex h-screen items-center justify-center">Carregando...</div>;
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-background text-foreground">
+        <div className="animate-pulse">Carregando...</div>
+      </div>
+    );
+  }
 
   if (!user) {
     return <Login />;
