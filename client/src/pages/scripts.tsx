@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -8,11 +8,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { Code, Pencil, RotateCcw, Save, Terminal } from "lucide-react";
+import { Code, Pencil, Plus, RotateCcw, Save, Search, Terminal, Trash2 } from "lucide-react";
 
 interface ManufacturerRecord {
   id: number;
@@ -36,6 +38,8 @@ export default function ScriptsPage() {
   const { user, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
   const [editingScript, setEditingScript] = useState<VendorScript | null>(null);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const [formData, setFormData] = useState({
     manufacturer: "",
     command: "",
@@ -142,6 +146,44 @@ export default function ScriptsPage() {
     return customScripts?.some(s => s.manufacturer === manufacturer) ?? false;
   };
 
+  const filteredManufacturers = useMemo(() => {
+    if (!manufacturers) return [];
+    if (!searchQuery.trim()) return manufacturers;
+    
+    const query = searchQuery.toLowerCase();
+    return manufacturers.filter(mfr => 
+      mfr.label.toLowerCase().includes(query) ||
+      mfr.value.toLowerCase().includes(query) ||
+      (allScripts[mfr.value]?.description || '').toLowerCase().includes(query)
+    );
+  }, [manufacturers, searchQuery, allScripts]);
+
+  const resetForm = () => {
+    setFormData({
+      manufacturer: "",
+      command: "",
+      description: "",
+      fileExtension: ".cfg",
+      useShell: true,
+      timeout: 30000,
+    });
+  };
+
+  const handleAddNew = () => {
+    resetForm();
+    setIsAddDialogOpen(true);
+  };
+
+  const handleSaveNew = (e: React.FormEvent) => {
+    e.preventDefault();
+    saveMutation.mutate(formData, {
+      onSuccess: () => {
+        setIsAddDialogOpen(false);
+        resetForm();
+      }
+    });
+  };
+
   if (authLoading) {
     return <div className="p-6"><Skeleton className="h-96 w-full" /></div>;
   }
@@ -161,15 +203,35 @@ export default function ScriptsPage() {
           </h1>
           <p className="text-muted-foreground">Gerencie os comandos de backup por fabricante</p>
         </div>
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Pesquisar scripts..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 w-64"
+              data-testid="input-search-scripts"
+            />
+          </div>
+          <Button onClick={handleAddNew} data-testid="button-add-script">
+            <Plus className="mr-2 h-4 w-4" />
+            Adicionar
+          </Button>
+        </div>
       </div>
 
       {loadingScripts || !manufacturers ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-48" />)}
         </div>
+      ) : filteredManufacturers.length === 0 ? (
+        <div className="text-center text-muted-foreground py-12">
+          Nenhum script encontrado para "{searchQuery}"
+        </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {manufacturers.map((mfr) => {
+          {filteredManufacturers.map((mfr) => {
             const script = getScriptForManufacturer(mfr.value);
             const isCustomized = isScriptCustomized(mfr.value);
             
@@ -216,15 +278,44 @@ export default function ScriptsPage() {
                       Editar
                     </Button>
                     {isCustomized && (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => deleteMutation.mutate(mfr.value)}
-                        data-testid={`button-reset-script-${mfr.value}`}
-                      >
-                        <RotateCcw className="h-3 w-3 mr-1" />
-                        Resetar
-                      </Button>
+                      <>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => deleteMutation.mutate(mfr.value)}
+                          data-testid={`button-reset-script-${mfr.value}`}
+                        >
+                          <RotateCcw className="h-3 w-3 mr-1" />
+                          Resetar
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              data-testid={`button-delete-script-${mfr.value}`}
+                            >
+                              <Trash2 className="h-3 w-3 mr-1" />
+                              Excluir
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Excluir Script</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Tem certeza que deseja excluir o script customizado de "{mfr.label}"?
+                                O script sera resetado para o padrao.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => deleteMutation.mutate(mfr.value)}>
+                                Excluir
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </>
                     )}
                   </div>
                 </CardContent>
@@ -306,6 +397,100 @@ export default function ScriptsPage() {
               <Button type="submit" disabled={saveMutation.isPending} data-testid="button-save-script">
                 <Save className="h-4 w-4 mr-1" />
                 {saveMutation.isPending ? "Salvando..." : "Salvar"}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isAddDialogOpen} onOpenChange={(open) => { setIsAddDialogOpen(open); if (!open) resetForm(); }}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Code className="h-5 w-5" />
+              Novo Script de Backup
+            </DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSaveNew} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="add-manufacturer">Fabricante</Label>
+              <Select
+                value={formData.manufacturer}
+                onValueChange={(value) => setFormData({ ...formData, manufacturer: value })}
+              >
+                <SelectTrigger data-testid="select-add-script-manufacturer">
+                  <SelectValue placeholder="Selecione o fabricante" />
+                </SelectTrigger>
+                <SelectContent>
+                  {manufacturers?.map((m) => (
+                    <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="add-command">Comando de Backup</Label>
+              <Textarea
+                id="add-command"
+                value={formData.command}
+                onChange={(e) => setFormData({ ...formData, command: e.target.value })}
+                rows={4}
+                className="font-mono text-sm"
+                required
+                data-testid="textarea-add-script-command"
+              />
+              <p className="text-xs text-muted-foreground">
+                Comando que sera enviado via SSH para exportar a configuracao
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="add-description">Descricao</Label>
+              <Input
+                id="add-description"
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                placeholder="Descricao opcional do script"
+                data-testid="input-add-script-description"
+              />
+            </div>
+            <div className="grid gap-4 grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="add-fileExtension">Extensao do Arquivo</Label>
+                <Input
+                  id="add-fileExtension"
+                  value={formData.fileExtension}
+                  onChange={(e) => setFormData({ ...formData, fileExtension: e.target.value })}
+                  placeholder=".cfg"
+                  data-testid="input-add-script-extension"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="add-timeout">Timeout (ms)</Label>
+                <Input
+                  id="add-timeout"
+                  type="number"
+                  value={formData.timeout}
+                  onChange={(e) => setFormData({ ...formData, timeout: parseInt(e.target.value) })}
+                  data-testid="input-add-script-timeout"
+                />
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <Switch
+                id="add-useShell"
+                checked={formData.useShell}
+                onCheckedChange={(checked) => setFormData({ ...formData, useShell: checked })}
+                data-testid="switch-add-script-useshell"
+              />
+              <Label htmlFor="add-useShell">Usar Shell Interativo</Label>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={() => setIsAddDialogOpen(false)}>
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={saveMutation.isPending || !formData.manufacturer} data-testid="button-save-new-script">
+                <Save className="h-4 w-4 mr-1" />
+                {saveMutation.isPending ? "Salvando..." : "Adicionar"}
               </Button>
             </div>
           </form>
