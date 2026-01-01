@@ -43,6 +43,7 @@ interface Customization {
   logoUrl: string;
   primaryColor: string;
   systemName: string;
+  serverIp: string;
 }
 
 export default function AdminPage() {
@@ -52,7 +53,7 @@ export default function AdminPage() {
   const [exportProgress, setExportProgress] = useState(0);
   const [patchNotes, setPatchNotes] = useState("");
   const [patchVersion, setPatchVersion] = useState("");
-  const [customization, setCustomization] = useState<Customization>({ logoUrl: '', primaryColor: '#0077b6', systemName: 'NBM' });
+  const [customization, setCustomization] = useState<Customization>({ logoUrl: '', primaryColor: '#0077b6', systemName: 'NBM', serverIp: '' });
   const [patchFile, setPatchFile] = useState<File | null>(null);
   const [isUserDialogOpen, setIsUserDialogOpen] = useState(false);
   const [newUser, setNewUser] = useState({ username: '', name: '', email: '', role: 'viewer' });
@@ -83,6 +84,7 @@ export default function AdminPage() {
         logoUrl: customizationData.logoUrl || '',
         primaryColor: customizationData.primaryColor || '#0077b6',
         systemName: customizationData.systemName || 'NBM',
+        serverIp: customizationData.serverIp || '',
       });
     }
   }, [customizationData]);
@@ -752,6 +754,20 @@ export default function AdminPage() {
                         onChange={(e) => setCustomization(prev => ({ ...prev, systemName: e.target.value }))}
                         data-testid="input-system-name"
                       />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="serverIp">IP do Servidor NBM</Label>
+                      <Input
+                        id="serverIp"
+                        placeholder="192.168.1.100"
+                        value={customization.serverIp || customizationData?.serverIp || ''}
+                        onChange={(e) => setCustomization(prev => ({ ...prev, serverIp: e.target.value }))}
+                        data-testid="input-server-ip"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        IP do servidor Linux onde o NBM esta instalado. Usado nos scripts de atualizacao de firmware.
+                      </p>
                     </div>
 
                     <div className="space-y-2">

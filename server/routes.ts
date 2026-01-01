@@ -20,6 +20,7 @@ const customizationSchema = z.object({
   logoUrl: z.string().optional(),
   primaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
   systemName: z.string().min(1).max(50).optional(),
+  serverIp: z.string().optional(),
 });
 
 const upload = multer({ storage: multer.memoryStorage() });
@@ -766,10 +767,12 @@ export async function registerRoutes(
       const logoUrl = await storage.getSetting('logo_url');
       const primaryColor = await storage.getSetting('primary_color');
       const systemName = await storage.getSetting('system_name');
+      const serverIp = await storage.getSetting('server_ip');
       res.json({
         logoUrl: logoUrl || '',
         primaryColor: primaryColor || '#0077b6',
         systemName: systemName || 'NBM',
+        serverIp: serverIp || '',
       });
     } catch (e) {
       console.error("Error getting customization:", e);
@@ -783,6 +786,7 @@ export async function registerRoutes(
       if (parsed.logoUrl !== undefined) await storage.setSetting('logo_url', parsed.logoUrl);
       if (parsed.primaryColor !== undefined) await storage.setSetting('primary_color', parsed.primaryColor);
       if (parsed.systemName !== undefined) await storage.setSetting('system_name', parsed.systemName);
+      if (parsed.serverIp !== undefined) await storage.setSetting('server_ip', parsed.serverIp);
       res.json({ message: "Personalizacao salva com sucesso" });
     } catch (e) {
       if (e instanceof z.ZodError) {
