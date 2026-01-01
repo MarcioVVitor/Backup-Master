@@ -2,9 +2,12 @@ import type { Express } from "express";
 import type { Server } from "http";
 import { storage } from "./storage";
 import multer from "multer";
-import { setupAuth, isAuthenticated, registerAuthRoutes } from "./replit_integrations/auth";
+import { setupAuth, isAuthenticated, registerAuthRoutes, getSession } from "./replit_integrations/auth";
 import { insertEquipmentSchema, insertVendorScriptSchema, insertSystemUpdateSchema, insertFirmwareSchema, SUPPORTED_MANUFACTURERS, USER_ROLES } from "@shared/schema";
 import { z } from "zod";
+import { WebSocketServer, WebSocket } from "ws";
+import { Client as SSHClient } from "ssh2";
+import net from "net";
 
 const updateUserSchema = z.object({
   role: z.enum(["admin", "operator", "viewer"]).optional(),
@@ -902,6 +905,187 @@ export async function registerRoutes(
       console.error("Error downloading firmware:", e);
       res.status(500).json({ message: "Erro ao baixar firmware" });
     }
+  });
+
+  // WebSocket Terminal Server with authentication
+  const wss = new WebSocketServer({ noServer: true });
+  const sessionParser = getSession();
+  
+  httpServer.on('upgrade', (request: any, socket: any, head: any) => {
+    if (request.url !== '/ws/terminal') {
+      return; // Let other handlers deal with non-terminal upgrades
+    }
+    
+    // Use session parser to validate the session
+    sessionParser(request, {} as any, async () => {
+      try {
+        // Check if session has passport user
+        const passport = request.session?.passport;
+        if (!passport?.user?.claims?.sub) {
+          socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
+          socket.destroy();
+          return;
+        }
+        
+        // Verify user role (admin or operator only)
+        const { db } = await import("./db");
+        const { users } = await import("@shared/schema");
+        const { eq } = await import("drizzle-orm");
+        
+        const [dbUser] = await db.select().from(users).where(eq(users.replitId, passport.user.claims.sub));
+        if (!dbUser || (dbUser.role !== 'admin' && dbUser.role !== 'operator' && !dbUser.isAdmin)) {
+          socket.write('HTTP/1.1 403 Forbidden\r\n\r\n');
+          socket.destroy();
+          return;
+        }
+        
+        // User authenticated and authorized - proceed with WebSocket upgrade
+        wss.handleUpgrade(request, socket, head, (ws) => {
+          (ws as any).userId = dbUser.id;
+          (ws as any).userRole = dbUser.role;
+          wss.emit('connection', ws, request);
+        });
+      } catch (e) {
+        console.error('WebSocket auth error:', e);
+        socket.write('HTTP/1.1 500 Internal Server Error\r\n\r\n');
+        socket.destroy();
+      }
+    });
+  });
+  
+  wss.on('connection', (ws: WebSocket) => {
+    let sshClient: SSHClient | null = null;
+    let telnetSocket: net.Socket | null = null;
+    let stream: any = null;
+    
+    ws.on('message', async (message: Buffer) => {
+      try {
+        const data = JSON.parse(message.toString());
+        
+        if (data.type === 'connect') {
+          const { equipmentId } = data;
+          const equip = await storage.getEquipmentById(equipmentId);
+          
+          if (!equip) {
+            ws.send(JSON.stringify({ type: 'error', message: 'Equipamento nao encontrado' }));
+            return;
+          }
+          
+          if (!equip.username || !equip.password) {
+            ws.send(JSON.stringify({ type: 'error', message: 'Credenciais nao configuradas' }));
+            return;
+          }
+          
+          ws.send(JSON.stringify({ type: 'status', message: `Conectando a ${equip.name} (${equip.ip})...` }));
+          
+          if (equip.protocol === 'telnet') {
+            // Telnet connection
+            telnetSocket = new net.Socket();
+            
+            telnetSocket.connect(equip.port || 23, equip.ip, () => {
+              ws.send(JSON.stringify({ type: 'connected', protocol: 'telnet' }));
+            });
+            
+            telnetSocket.on('data', (data) => {
+              ws.send(JSON.stringify({ type: 'output', data: data.toString() }));
+            });
+            
+            telnetSocket.on('error', (err) => {
+              ws.send(JSON.stringify({ type: 'error', message: `Erro Telnet: ${err.message}` }));
+            });
+            
+            telnetSocket.on('close', () => {
+              ws.send(JSON.stringify({ type: 'disconnected' }));
+            });
+            
+            // Send credentials after connection
+            setTimeout(() => {
+              if (telnetSocket && equip.username) {
+                telnetSocket.write(equip.username + '\n');
+                setTimeout(() => {
+                  if (telnetSocket && equip.password) {
+                    telnetSocket.write(equip.password + '\n');
+                  }
+                }, 1000);
+              }
+            }, 500);
+            
+          } else {
+            // SSH connection
+            sshClient = new SSHClient();
+            
+            sshClient.on('ready', () => {
+              sshClient!.shell((err, shellStream) => {
+                if (err) {
+                  ws.send(JSON.stringify({ type: 'error', message: `Erro ao abrir shell: ${err.message}` }));
+                  return;
+                }
+                
+                stream = shellStream;
+                ws.send(JSON.stringify({ type: 'connected', protocol: 'ssh' }));
+                
+                shellStream.on('data', (data: Buffer) => {
+                  ws.send(JSON.stringify({ type: 'output', data: data.toString() }));
+                });
+                
+                shellStream.on('close', () => {
+                  ws.send(JSON.stringify({ type: 'disconnected' }));
+                  sshClient?.end();
+                });
+              });
+            });
+            
+            sshClient.on('error', (err) => {
+              ws.send(JSON.stringify({ type: 'error', message: `Erro SSH: ${err.message}` }));
+            });
+            
+            sshClient.connect({
+              host: equip.ip,
+              port: equip.port || 22,
+              username: equip.username,
+              password: equip.password,
+              readyTimeout: 10000,
+              algorithms: {
+                kex: ['diffie-hellman-group14-sha1', 'diffie-hellman-group-exchange-sha256', 'ecdh-sha2-nistp256', 'ecdh-sha2-nistp384', 'ecdh-sha2-nistp521'],
+                cipher: ['aes128-ctr', 'aes192-ctr', 'aes256-ctr', 'aes128-cbc', 'aes256-cbc', '3des-cbc'],
+                hmac: ['hmac-sha2-256', 'hmac-sha2-512', 'hmac-sha1'],
+              },
+            });
+          }
+          
+        } else if (data.type === 'input') {
+          // Send command to connected device
+          if (stream) {
+            stream.write(data.command);
+          } else if (telnetSocket) {
+            telnetSocket.write(data.command);
+          }
+          
+        } else if (data.type === 'disconnect') {
+          if (stream) {
+            stream.end();
+            stream = null;
+          }
+          if (sshClient) {
+            sshClient.end();
+            sshClient = null;
+          }
+          if (telnetSocket) {
+            telnetSocket.destroy();
+            telnetSocket = null;
+          }
+        }
+      } catch (e) {
+        console.error('WebSocket message error:', e);
+        ws.send(JSON.stringify({ type: 'error', message: 'Erro ao processar mensagem' }));
+      }
+    });
+    
+    ws.on('close', () => {
+      if (stream) stream.end();
+      if (sshClient) sshClient.end();
+      if (telnetSocket) telnetSocket.destroy();
+    });
   });
 
   return httpServer;

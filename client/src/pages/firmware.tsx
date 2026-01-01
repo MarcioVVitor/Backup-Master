@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,7 +15,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { ChevronDown, ChevronUp, Code, Download, HardDrive, Plus, Search, Send, Terminal, Trash2, Upload } from "lucide-react";
+import { ChevronDown, ChevronUp, Code, Download, Edit, HardDrive, Plug, Plus, Power, Search, Send, Terminal, Trash2, Upload, Wifi, WifiOff } from "lucide-react";
 import { filesize } from "filesize";
 
 interface Firmware {
@@ -37,6 +37,8 @@ interface Equipment {
   name: string;
   ip: string;
   manufacturer: string;
+  protocol?: string;
+  port?: number;
 }
 
 interface Manufacturer {
@@ -70,6 +72,17 @@ export default function FirmwarePage() {
   const [terminalOutput, setTerminalOutput] = useState<string[]>([]);
   const [terminalInput, setTerminalInput] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const terminalRef = useRef<HTMLDivElement>(null);
+  
+  // WebSocket terminal state
+  const wsRef = useRef<WebSocket | null>(null);
+  const [wsConnected, setWsConnected] = useState(false);
+  const [wsConnecting, setWsConnecting] = useState(false);
+  const [selectedVendorEquipment, setSelectedVendorEquipment] = useState<string>("");
+  const [selectedVendorFirmware, setSelectedVendorFirmware] = useState<string>("");
+  const [selectedVendor, setSelectedVendor] = useState<string>("");
+  const [isScriptDialogOpen, setIsScriptDialogOpen] = useState(false);
+  const [editingScript, setEditingScript] = useState<VendorScript | null>(null);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -189,14 +202,86 @@ export default function FirmwarePage() {
     toast({ title: "Exportacao iniciada - veja o terminal" });
   };
 
+  // WebSocket terminal functions
+  const connectTerminal = useCallback((equipmentId: string) => {
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
+      wsRef.current.close();
+    }
+    
+    setWsConnecting(true);
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const ws = new WebSocket(`${protocol}//${window.location.host}/ws/terminal`);
+    wsRef.current = ws;
+    
+    ws.onopen = () => {
+      ws.send(JSON.stringify({ type: 'connect', equipmentId: parseInt(equipmentId) }));
+    };
+    
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (data.type === 'connected') {
+        setWsConnected(true);
+        setWsConnecting(false);
+        setTerminalOutput(prev => [...prev, `[CONECTADO via ${data.protocol?.toUpperCase()}]`]);
+      } else if (data.type === 'output') {
+        setTerminalOutput(prev => [...prev, data.data]);
+      } else if (data.type === 'status') {
+        setTerminalOutput(prev => [...prev, `[STATUS] ${data.message}`]);
+      } else if (data.type === 'error') {
+        setTerminalOutput(prev => [...prev, `[ERRO] ${data.message}`]);
+        setWsConnecting(false);
+      } else if (data.type === 'disconnected') {
+        setWsConnected(false);
+        setTerminalOutput(prev => [...prev, `[DESCONECTADO]`]);
+      }
+      if (terminalRef.current) {
+        terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
+      }
+    };
+    
+    ws.onclose = () => {
+      setWsConnected(false);
+      setWsConnecting(false);
+    };
+    
+    ws.onerror = () => {
+      setTerminalOutput(prev => [...prev, `[ERRO] Falha na conexao WebSocket`]);
+      setWsConnecting(false);
+    };
+  }, []);
+  
+  const disconnectTerminal = useCallback(() => {
+    if (wsRef.current) {
+      wsRef.current.send(JSON.stringify({ type: 'disconnect' }));
+      wsRef.current.close();
+      wsRef.current = null;
+    }
+    setWsConnected(false);
+  }, []);
+  
+  useEffect(() => {
+    return () => {
+      if (wsRef.current) {
+        wsRef.current.close();
+      }
+    };
+  }, []);
+
   const handleTerminalCommand = () => {
     if (!terminalInput.trim()) return;
-    setTerminalOutput(prev => [
-      ...prev,
-      `$ ${terminalInput}`,
-      `[${new Date().toLocaleTimeString()}] Comando enviado (simulacao - SSH nao conectado)`,
-    ]);
+    
+    if (wsConnected && wsRef.current?.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({ type: 'input', command: terminalInput + '\n' }));
+    } else {
+      setTerminalOutput(prev => [...prev, `[ERRO] Terminal nao conectado. Selecione um equipamento e clique em Conectar.`]);
+    }
     setTerminalInput("");
+  };
+  
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleTerminalCommand();
+    }
   };
 
   const filteredFirmware = useMemo(() => {
@@ -485,37 +570,192 @@ export default function FirmwarePage() {
                 </div>
               </div>
 
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {filteredManufacturers.map((mfr) => {
-                  const script = getScriptForManufacturer(mfr.value);
-                  return (
-                    <Card key={mfr.value} data-testid={`card-vendor-${mfr.value}`}>
-                      <CardHeader className="pb-2">
-                        <div className="flex items-center justify-between gap-2">
-                          <CardTitle className="text-base flex items-center gap-2">
-                            <div
-                              className="w-3 h-3 rounded-full"
-                              style={{ backgroundColor: mfr.color || "#6b7280" }}
-                            />
-                            {mfr.label}
-                          </CardTitle>
-                          {script && !script.isDefault && (
-                            <Badge variant="secondary" className="text-xs">Customizado</Badge>
-                          )}
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="text-sm text-muted-foreground space-y-1">
-                          <p>{script?.description || "Script padrao"}</p>
-                          <div className="flex items-center gap-2 text-xs">
-                            <Code className="h-3 w-3" />
-                            <span className="font-mono truncate">{script?.command?.substring(0, 40) || "N/A"}...</span>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
+              <div className="grid gap-4 lg:grid-cols-2">
+                <div className="space-y-4">
+                  <h3 className="text-sm font-medium text-muted-foreground">Scripts de Atualizacao por Fabricante</h3>
+                  <div className="space-y-2">
+                    {filteredManufacturers.map((mfr) => {
+                      const script = getScriptForManufacturer(mfr.value);
+                      const vendorFirmwareList = firmwareList?.filter(f => f.manufacturer === mfr.value) || [];
+                      const vendorEquipmentList = equipment?.filter(e => e.manufacturer === mfr.value) || [];
+                      const isSelected = selectedVendor === mfr.value;
+                      
+                      return (
+                        <Card 
+                          key={mfr.value} 
+                          data-testid={`card-vendor-${mfr.value}`}
+                          className={isSelected ? "ring-2 ring-primary" : ""}
+                        >
+                          <CardHeader className="pb-2">
+                            <div className="flex items-center justify-between gap-2">
+                              <CardTitle 
+                                className="text-base flex items-center gap-2 cursor-pointer"
+                                onClick={() => setSelectedVendor(isSelected ? "" : mfr.value)}
+                              >
+                                <div
+                                  className="w-3 h-3 rounded-full"
+                                  style={{ backgroundColor: mfr.color || "#6b7280" }}
+                                />
+                                {mfr.label}
+                              </CardTitle>
+                              <div className="flex items-center gap-2">
+                                <Badge variant="outline" className="text-xs">
+                                  {vendorFirmwareList.length} firmware
+                                </Badge>
+                                <Badge variant="outline" className="text-xs">
+                                  {vendorEquipmentList.length} equip.
+                                </Badge>
+                                {script && !script.isDefault && (
+                                  <Badge variant="secondary" className="text-xs">Customizado</Badge>
+                                )}
+                              </div>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="space-y-3">
+                            <div className="text-sm text-muted-foreground">
+                              <p>{script?.description || "Script padrao"}</p>
+                              <div className="flex items-center gap-2 text-xs mt-1">
+                                <Code className="h-3 w-3" />
+                                <span className="font-mono truncate">{script?.command?.substring(0, 50) || "N/A"}...</span>
+                              </div>
+                            </div>
+                            
+                            {isSelected && (
+                              <div className="pt-2 border-t space-y-3">
+                                <div>
+                                  <Label className="text-xs">Firmware para Atualizacao</Label>
+                                  <Select 
+                                    value={selectedVendorFirmware} 
+                                    onValueChange={setSelectedVendorFirmware}
+                                  >
+                                    <SelectTrigger className="mt-1" data-testid={`select-firmware-${mfr.value}`}>
+                                      <SelectValue placeholder="Selecione o firmware" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {vendorFirmwareList.map(fw => (
+                                        <SelectItem key={fw.id} value={fw.id.toString()}>
+                                          {fw.name} {fw.version && `v${fw.version}`}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                                
+                                <div>
+                                  <Label className="text-xs">Equipamento</Label>
+                                  <Select 
+                                    value={selectedVendorEquipment} 
+                                    onValueChange={setSelectedVendorEquipment}
+                                  >
+                                    <SelectTrigger className="mt-1" data-testid={`select-equipment-${mfr.value}`}>
+                                      <SelectValue placeholder="Selecione o equipamento" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {vendorEquipmentList.map(eq => (
+                                        <SelectItem key={eq.id} value={eq.id.toString()}>
+                                          {eq.name} ({eq.ip}) - {eq.protocol?.toUpperCase() || "SSH"}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                                
+                                <div className="flex gap-2">
+                                  <Button
+                                    size="sm"
+                                    variant={wsConnected ? "destructive" : "default"}
+                                    onClick={() => {
+                                      if (wsConnected) {
+                                        disconnectTerminal();
+                                      } else if (selectedVendorEquipment) {
+                                        setTerminalOpen(true);
+                                        setTerminalOutput([]);
+                                        connectTerminal(selectedVendorEquipment);
+                                      }
+                                    }}
+                                    disabled={!selectedVendorEquipment || wsConnecting}
+                                    data-testid={`button-connect-${mfr.value}`}
+                                  >
+                                    {wsConnecting ? (
+                                      <>Conectando...</>
+                                    ) : wsConnected ? (
+                                      <><WifiOff className="h-4 w-4 mr-1" /> Desconectar</>
+                                    ) : (
+                                      <><Wifi className="h-4 w-4 mr-1" /> Conectar CLI</>
+                                    )}
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => {
+                                      setEditingScript(script || { manufacturer: mfr.value, command: "", description: "" });
+                                      setIsScriptDialogOpen(true);
+                                    }}
+                                    data-testid={`button-edit-script-${mfr.value}`}
+                                  >
+                                    <Edit className="h-4 w-4 mr-1" />
+                                    Editar Script
+                                  </Button>
+                                </div>
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between gap-2">
+                    <h3 className="text-sm font-medium text-muted-foreground">Terminal CLI Interativo</h3>
+                    {wsConnected && (
+                      <Badge variant="default" className="bg-green-600">
+                        <Wifi className="h-3 w-3 mr-1" /> Conectado
+                      </Badge>
+                    )}
+                  </div>
+                  <Card className="bg-zinc-900 text-zinc-100 overflow-hidden">
+                    <div 
+                      ref={terminalRef}
+                      className="h-[400px] overflow-auto p-3 font-mono text-sm"
+                      data-testid="terminal-output"
+                    >
+                      {terminalOutput.length === 0 ? (
+                        <p className="text-zinc-500">
+                          Selecione um fabricante, escolha o equipamento e clique em "Conectar CLI" para iniciar uma sessao interativa.
+                        </p>
+                      ) : (
+                        terminalOutput.map((line, i) => (
+                          <pre key={i} className="whitespace-pre-wrap break-all">{line}</pre>
+                        ))
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 p-2 border-t border-zinc-700 bg-zinc-800">
+                      <span className="text-zinc-400 font-mono text-sm">
+                        {wsConnected ? ">" : "$"}
+                      </span>
+                      <Input
+                        value={terminalInput}
+                        onChange={(e) => setTerminalInput(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        placeholder={wsConnected ? "Digite um comando..." : "Conecte a um equipamento primeiro..."}
+                        disabled={!wsConnected}
+                        className="flex-1 bg-transparent border-0 text-zinc-100 font-mono text-sm focus-visible:ring-0 placeholder:text-zinc-600"
+                        data-testid="input-terminal-command"
+                      />
+                      <Button 
+                        size="icon" 
+                        variant="ghost" 
+                        onClick={handleTerminalCommand} 
+                        disabled={!wsConnected}
+                        className="text-zinc-400"
+                      >
+                        <Send className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </Card>
+                </div>
               </div>
             </TabsContent>
           </Tabs>
