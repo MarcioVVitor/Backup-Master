@@ -12,6 +12,7 @@ import Execute from "@/pages/execute";
 import Scripts from "@/pages/scripts";
 import Manufacturers from "@/pages/manufacturers";
 import Admin from "@/pages/admin";
+import Firmware from "@/pages/firmware";
 import NotFound from "@/pages/not-found";
 import {
   SidebarProvider,
@@ -76,6 +77,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
     { title: "Backups", url: "/backups", icon: HardDrive },
     { title: "Scripts", url: "/scripts", icon: Terminal },
     { title: "Fabricantes", url: "/manufacturers", icon: Factory },
+    { title: "Firmware", url: "/firmware", icon: HardDrive },
     { title: "Executar", url: "/execute", icon: Play },
     { title: "Administracao", url: "/admin", icon: Settings },
   ];
@@ -181,6 +183,7 @@ function Router() {
       <Route path="/backups" component={Backups} />
       <Route path="/scripts" component={Scripts} />
       <Route path="/manufacturers" component={Manufacturers} />
+      <Route path="/firmware" component={Firmware} />
       <Route path="/execute" component={Execute} />
       <Route path="/admin" component={Admin} />
       <Route component={NotFound} />

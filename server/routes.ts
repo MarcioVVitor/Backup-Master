@@ -699,11 +699,26 @@ export async function registerRoutes(
     }
   });
 
+  const firmwareBodySchema = z.object({
+    name: z.string().optional(),
+    manufacturer: z.string().min(1, "Fabricante obrigatorio"),
+    model: z.string().optional().nullable(),
+    version: z.string().optional().nullable(),
+    description: z.string().optional().nullable(),
+  });
+
   app.post('/api/firmware', isAuthenticated, upload.single('file'), async (req, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ message: "Nenhum arquivo enviado" });
       }
+
+      const parsed = firmwareBodySchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ message: "Dados invalidos", errors: parsed.error.errors });
+      }
+
+      const { name, manufacturer, model, version, description } = parsed.data;
 
       const user = req.user as any;
       const userSub = user?.claims?.sub;
@@ -721,11 +736,9 @@ export async function registerRoutes(
         contentType: req.file.mimetype || 'application/octet-stream',
       });
 
-      const { name, manufacturer, model, version, description } = req.body;
-
       const fw = await storage.createFirmware({
         name: name || req.file.originalname,
-        manufacturer: manufacturer || 'unknown',
+        manufacturer,
         model: model || null,
         version: version || null,
         filename: req.file.originalname,

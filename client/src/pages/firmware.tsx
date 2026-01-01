@@ -1,0 +1,613 @@
+import { useState, useMemo, useRef } from "react";
+import { useAuth } from "@/hooks/use-auth";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useToast } from "@/hooks/use-toast";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { queryClient, apiRequest } from "@/lib/queryClient";
+import { ChevronDown, ChevronUp, Code, Download, HardDrive, Plus, Search, Send, Terminal, Trash2, Upload } from "lucide-react";
+import { filesize } from "filesize";
+
+interface Firmware {
+  id: number;
+  name: string;
+  manufacturer: string;
+  model: string | null;
+  version: string | null;
+  filename: string;
+  objectName: string;
+  size: number;
+  description: string | null;
+  uploadedBy: number | null;
+  createdAt: string | null;
+}
+
+interface Equipment {
+  id: number;
+  name: string;
+  ip: string;
+  manufacturer: string;
+}
+
+interface Manufacturer {
+  id: number;
+  value: string;
+  label: string;
+  color: string | null;
+}
+
+interface VendorScript {
+  id?: number;
+  manufacturer: string;
+  command: string;
+  description?: string | null;
+  fileExtension?: string | null;
+  useShell?: boolean | null;
+  timeout?: number | null;
+  isDefault?: boolean;
+}
+
+export default function FirmwarePage() {
+  const { user, isLoading: authLoading } = useAuth();
+  const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState("firmware");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [vendorSearchQuery, setVendorSearchQuery] = useState("");
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
+  const [selectedFirmware, setSelectedFirmware] = useState<Firmware | null>(null);
+  const [terminalOpen, setTerminalOpen] = useState(false);
+  const [terminalOutput, setTerminalOutput] = useState<string[]>([]);
+  const [terminalInput, setTerminalInput] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [formData, setFormData] = useState({
+    name: "",
+    manufacturer: "",
+    model: "",
+    version: "",
+    description: "",
+  });
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [exportEquipmentId, setExportEquipmentId] = useState<string>("");
+
+  const { data: firmwareList, isLoading: firmwareLoading } = useQuery<Firmware[]>({
+    queryKey: ['/api/firmware'],
+    enabled: !!user,
+  });
+
+  const { data: manufacturers } = useQuery<Manufacturer[]>({
+    queryKey: ['/api/manufacturers'],
+    enabled: !!user,
+  });
+
+  const { data: equipment } = useQuery<Equipment[]>({
+    queryKey: ['/api/equipment'],
+    enabled: !!user,
+  });
+
+  const { data: customScripts } = useQuery<VendorScript[]>({
+    queryKey: ['/api/scripts'],
+    enabled: !!user,
+  });
+
+  const uploadMutation = useMutation({
+    mutationFn: async () => {
+      if (!selectedFile) throw new Error("No file selected");
+      const formDataObj = new FormData();
+      formDataObj.append('file', selectedFile);
+      formDataObj.append('name', formData.name || selectedFile.name);
+      formDataObj.append('manufacturer', formData.manufacturer);
+      formDataObj.append('model', formData.model);
+      formDataObj.append('version', formData.version);
+      formDataObj.append('description', formData.description);
+
+      const res = await fetch('/api/firmware', {
+        method: 'POST',
+        body: formDataObj,
+        credentials: 'include',
+      });
+      if (!res.ok) throw new Error("Upload failed");
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/firmware'] });
+      toast({ title: "Firmware enviado com sucesso" });
+      setIsAddDialogOpen(false);
+      resetForm();
+    },
+    onError: () => {
+      toast({ title: "Erro ao enviar firmware", variant: "destructive" });
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: number) => {
+      return apiRequest('DELETE', `/api/firmware/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/firmware'] });
+      toast({ title: "Firmware excluido com sucesso" });
+    },
+    onError: () => {
+      toast({ title: "Erro ao excluir firmware", variant: "destructive" });
+    },
+  });
+
+  const resetForm = () => {
+    setFormData({ name: "", manufacturer: "", model: "", version: "", description: "" });
+    setSelectedFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleDownload = async (fw: Firmware) => {
+    try {
+      const response = await fetch(`/api/firmware/${fw.id}/download`, { credentials: 'include' });
+      if (!response.ok) throw new Error();
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fw.filename;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch {
+      toast({ title: "Erro ao baixar firmware", variant: "destructive" });
+    }
+  };
+
+  const handleExport = async () => {
+    if (!selectedFirmware || !exportEquipmentId) {
+      toast({ title: "Selecione um equipamento", variant: "destructive" });
+      return;
+    }
+
+    const eq = equipment?.find(e => e.id === parseInt(exportEquipmentId));
+    if (!eq) return;
+
+    setTerminalOpen(true);
+    setTerminalOutput(prev => [
+      ...prev,
+      `[${new Date().toLocaleTimeString()}] Iniciando exportacao de firmware...`,
+      `[${new Date().toLocaleTimeString()}] Firmware: ${selectedFirmware.name} v${selectedFirmware.version || 'N/A'}`,
+      `[${new Date().toLocaleTimeString()}] Destino: ${eq.name} (${eq.ip})`,
+      `[${new Date().toLocaleTimeString()}] Status: Aguardando implementacao de transferencia SSH/SFTP`,
+    ]);
+    setIsExportDialogOpen(false);
+    toast({ title: "Exportacao iniciada - veja o terminal" });
+  };
+
+  const handleTerminalCommand = () => {
+    if (!terminalInput.trim()) return;
+    setTerminalOutput(prev => [
+      ...prev,
+      `$ ${terminalInput}`,
+      `[${new Date().toLocaleTimeString()}] Comando enviado (simulacao - SSH nao conectado)`,
+    ]);
+    setTerminalInput("");
+  };
+
+  const filteredFirmware = useMemo(() => {
+    if (!firmwareList) return [];
+    if (!searchQuery.trim()) return firmwareList;
+    const query = searchQuery.toLowerCase();
+    return firmwareList.filter(fw =>
+      fw.name.toLowerCase().includes(query) ||
+      fw.manufacturer.toLowerCase().includes(query) ||
+      fw.model?.toLowerCase().includes(query) ||
+      fw.version?.toLowerCase().includes(query) ||
+      fw.filename.toLowerCase().includes(query)
+    );
+  }, [firmwareList, searchQuery]);
+
+  const filteredManufacturers = useMemo(() => {
+    if (!manufacturers) return [];
+    if (!vendorSearchQuery.trim()) return manufacturers;
+    const query = vendorSearchQuery.toLowerCase();
+    return manufacturers.filter(mfr =>
+      mfr.label.toLowerCase().includes(query) ||
+      mfr.value.toLowerCase().includes(query)
+    );
+  }, [manufacturers, vendorSearchQuery]);
+
+  const getManufacturerColor = (manufacturer: string): string => {
+    const mfr = manufacturers?.find(m => m.value === manufacturer);
+    return mfr?.color || "#6b7280";
+  };
+
+  const getManufacturerLabel = (manufacturer: string): string => {
+    const mfr = manufacturers?.find(m => m.value === manufacturer);
+    return mfr?.label || manufacturer;
+  };
+
+  const getScriptForManufacturer = (manufacturer: string): VendorScript | undefined => {
+    return customScripts?.find(s => s.manufacturer === manufacturer);
+  };
+
+  if (authLoading) {
+    return (
+      <div className="p-6 space-y-4">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-64 w-full" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <Card className="p-6">
+          <p className="text-muted-foreground">Faca login para acessar esta pagina.</p>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col h-full">
+      <div className="flex-1 overflow-hidden flex flex-col">
+        <div className="p-6 flex-1 overflow-auto">
+          <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
+            <div className="flex items-center gap-2">
+              <HardDrive className="h-6 w-6" />
+              <h1 className="text-2xl font-semibold" data-testid="text-page-title">Firmware</h1>
+            </div>
+          </div>
+
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="mb-4">
+              <TabsTrigger value="firmware" data-testid="tab-firmware">
+                <HardDrive className="h-4 w-4 mr-2" />
+                Firmware
+              </TabsTrigger>
+              <TabsTrigger value="vendors" data-testid="tab-vendors">
+                <Code className="h-4 w-4 mr-2" />
+                Vendors
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="firmware" className="space-y-4">
+              <div className="flex items-center gap-4 flex-wrap">
+                <div className="relative flex-1 min-w-[200px]">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Buscar firmware..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10"
+                    data-testid="input-search-firmware"
+                  />
+                </div>
+                <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button data-testid="button-add-firmware">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Adicionar Firmware
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Adicionar Firmware</DialogTitle>
+                    </DialogHeader>
+                    <form onSubmit={(e) => { e.preventDefault(); uploadMutation.mutate(); }} className="space-y-4">
+                      <div>
+                        <Label>Arquivo *</Label>
+                        <Input
+                          ref={fileInputRef}
+                          type="file"
+                          onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                          data-testid="input-firmware-file"
+                        />
+                      </div>
+                      <div>
+                        <Label>Nome</Label>
+                        <Input
+                          value={formData.name}
+                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                          placeholder="Nome do firmware"
+                          data-testid="input-firmware-name"
+                        />
+                      </div>
+                      <div>
+                        <Label>Fabricante *</Label>
+                        <Select
+                          value={formData.manufacturer}
+                          onValueChange={(v) => setFormData({ ...formData, manufacturer: v })}
+                        >
+                          <SelectTrigger data-testid="select-firmware-manufacturer">
+                            <SelectValue placeholder="Selecione o fabricante" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {manufacturers?.map((mfr) => (
+                              <SelectItem key={mfr.value} value={mfr.value}>
+                                {mfr.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label>Modelo</Label>
+                          <Input
+                            value={formData.model}
+                            onChange={(e) => setFormData({ ...formData, model: e.target.value })}
+                            placeholder="ex: RB4011"
+                            data-testid="input-firmware-model"
+                          />
+                        </div>
+                        <div>
+                          <Label>Versao</Label>
+                          <Input
+                            value={formData.version}
+                            onChange={(e) => setFormData({ ...formData, version: e.target.value })}
+                            placeholder="ex: 7.15.3"
+                            data-testid="input-firmware-version"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <Label>Descricao</Label>
+                        <Textarea
+                          value={formData.description}
+                          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                          placeholder="Descricao opcional"
+                          rows={2}
+                          data-testid="input-firmware-description"
+                        />
+                      </div>
+                      <div className="flex justify-end gap-2">
+                        <Button type="button" variant="outline" onClick={() => { setIsAddDialogOpen(false); resetForm(); }}>
+                          Cancelar
+                        </Button>
+                        <Button
+                          type="submit"
+                          disabled={!selectedFile || !formData.manufacturer || uploadMutation.isPending}
+                          data-testid="button-submit-firmware"
+                        >
+                          {uploadMutation.isPending ? "Enviando..." : "Enviar"}
+                        </Button>
+                      </div>
+                    </form>
+                  </DialogContent>
+                </Dialog>
+              </div>
+
+              {firmwareLoading ? (
+                <div className="space-y-2">
+                  {[1, 2, 3].map(i => <Skeleton key={i} className="h-20 w-full" />)}
+                </div>
+              ) : filteredFirmware.length === 0 ? (
+                <Card>
+                  <CardContent className="py-8 text-center text-muted-foreground">
+                    {searchQuery ? "Nenhum firmware encontrado." : "Nenhum firmware cadastrado."}
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="space-y-2">
+                  {filteredFirmware.map((fw) => (
+                    <Card key={fw.id} data-testid={`card-firmware-${fw.id}`}>
+                      <CardContent className="py-4">
+                        <div className="flex items-center justify-between gap-4 flex-wrap">
+                          <div className="flex items-center gap-3">
+                            <HardDrive className="h-8 w-8 text-muted-foreground" />
+                            <div>
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="font-medium" data-testid={`text-firmware-name-${fw.id}`}>{fw.name}</span>
+                                <Badge
+                                  variant="secondary"
+                                  style={{ backgroundColor: getManufacturerColor(fw.manufacturer) + '20', color: getManufacturerColor(fw.manufacturer) }}
+                                >
+                                  {getManufacturerLabel(fw.manufacturer)}
+                                </Badge>
+                                {fw.version && <Badge variant="outline">v{fw.version}</Badge>}
+                              </div>
+                              <div className="text-sm text-muted-foreground">
+                                {fw.model && <span>{fw.model} - </span>}
+                                <span>{fw.filename}</span>
+                                <span className="mx-2">|</span>
+                                <span>{filesize(fw.size)}</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => handleDownload(fw)}
+                              title="Baixar"
+                              data-testid={`button-download-firmware-${fw.id}`}
+                            >
+                              <Download className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => { setSelectedFirmware(fw); setIsExportDialogOpen(true); }}
+                              title="Exportar para equipamento"
+                              data-testid={`button-export-firmware-${fw.id}`}
+                            >
+                              <Upload className="h-4 w-4" />
+                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button size="icon" variant="ghost" title="Excluir" data-testid={`button-delete-firmware-${fw.id}`}>
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Excluir Firmware</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Tem certeza que deseja excluir "{fw.name}"? Esta acao nao pode ser desfeita.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                  <AlertDialogAction onClick={() => deleteMutation.mutate(fw.id)}>
+                                    Excluir
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="vendors" className="space-y-4">
+              <div className="flex items-center gap-4 flex-wrap">
+                <div className="relative flex-1 min-w-[200px]">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Buscar vendors..."
+                    value={vendorSearchQuery}
+                    onChange={(e) => setVendorSearchQuery(e.target.value)}
+                    className="pl-10"
+                    data-testid="input-search-vendors"
+                  />
+                </div>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {filteredManufacturers.map((mfr) => {
+                  const script = getScriptForManufacturer(mfr.value);
+                  return (
+                    <Card key={mfr.value} data-testid={`card-vendor-${mfr.value}`}>
+                      <CardHeader className="pb-2">
+                        <div className="flex items-center justify-between gap-2">
+                          <CardTitle className="text-base flex items-center gap-2">
+                            <div
+                              className="w-3 h-3 rounded-full"
+                              style={{ backgroundColor: mfr.color || "#6b7280" }}
+                            />
+                            {mfr.label}
+                          </CardTitle>
+                          {script && !script.isDefault && (
+                            <Badge variant="secondary" className="text-xs">Customizado</Badge>
+                          )}
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-sm text-muted-foreground space-y-1">
+                          <p>{script?.description || "Script padrao"}</p>
+                          <div className="flex items-center gap-2 text-xs">
+                            <Code className="h-3 w-3" />
+                            <span className="font-mono truncate">{script?.command?.substring(0, 40) || "N/A"}...</span>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            </TabsContent>
+          </Tabs>
+        </div>
+
+        <Dialog open={isExportDialogOpen} onOpenChange={setIsExportDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Exportar Firmware para Equipamento</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              {selectedFirmware && (
+                <div className="p-3 bg-muted rounded-md">
+                  <p className="font-medium">{selectedFirmware.name}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {getManufacturerLabel(selectedFirmware.manufacturer)} {selectedFirmware.version && `v${selectedFirmware.version}`}
+                  </p>
+                </div>
+              )}
+              <div>
+                <Label>Equipamento de Destino</Label>
+                <Select value={exportEquipmentId} onValueChange={setExportEquipmentId}>
+                  <SelectTrigger data-testid="select-export-equipment">
+                    <SelectValue placeholder="Selecione o equipamento" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {equipment?.filter(e => e.manufacturer === selectedFirmware?.manufacturer).map((eq) => (
+                      <SelectItem key={eq.id} value={eq.id.toString()}>
+                        {eq.name} ({eq.ip})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Mostrando apenas equipamentos {selectedFirmware ? getManufacturerLabel(selectedFirmware.manufacturer) : ""}
+                </p>
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setIsExportDialogOpen(false)}>
+                  Cancelar
+                </Button>
+                <Button onClick={handleExport} disabled={!exportEquipmentId} data-testid="button-confirm-export">
+                  <Send className="h-4 w-4 mr-2" />
+                  Exportar
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      <div className="border-t bg-card">
+        <button
+          onClick={() => setTerminalOpen(!terminalOpen)}
+          className="w-full flex items-center justify-between p-3 hover-elevate"
+          data-testid="button-toggle-terminal"
+        >
+          <div className="flex items-center gap-2">
+            <Terminal className="h-4 w-4" />
+            <span className="font-medium text-sm">Terminal CLI</span>
+          </div>
+          {terminalOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
+        </button>
+
+        {terminalOpen && (
+          <div className="border-t">
+            <ScrollArea className="h-48 bg-zinc-900 text-zinc-100 p-3 font-mono text-sm">
+              {terminalOutput.length === 0 ? (
+                <p className="text-zinc-500">Terminal pronto. Comandos serao executados via SSH.</p>
+              ) : (
+                terminalOutput.map((line, i) => (
+                  <p key={i} className="whitespace-pre-wrap">{line}</p>
+                ))
+              )}
+            </ScrollArea>
+            <div className="flex items-center gap-2 p-2 border-t bg-zinc-900">
+              <span className="text-zinc-400 font-mono text-sm">$</span>
+              <Input
+                value={terminalInput}
+                onChange={(e) => setTerminalInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleTerminalCommand()}
+                placeholder="Digite um comando..."
+                className="flex-1 bg-transparent border-0 text-zinc-100 font-mono text-sm focus-visible:ring-0"
+                data-testid="input-terminal-command"
+              />
+              <Button size="icon" variant="ghost" onClick={handleTerminalCommand} className="text-zinc-400">
+                <Send className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
