@@ -1,202 +1,129 @@
-import { useState } from "react";
-import { useAuth } from "@/hooks/use-auth";
+import { useEquipment } from "@/hooks/use-equipment";
+import { useExecuteBackup } from "@/hooks/use-files";
 import { Button } from "@/components/ui/button";
+import { Play, CheckSquare, Square, Filter } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
+import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { queryClient, apiRequest } from "@/lib/queryClient";
-import { Play, CheckCircle, XCircle, Loader2, Server } from "lucide-react";
-import type { Equipment } from "@shared/schema";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 
 export default function ExecutePage() {
-  const { user, isLoading: authLoading } = useAuth();
-  const { toast } = useToast();
+  const { data: equipment } = useEquipment();
+  const { mutate: executeBackup, isPending } = useExecuteBackup();
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
-  const [results, setResults] = useState<Record<number, { status: 'pending' | 'success' | 'error'; message?: string }>>({});
+  const [searchTerm, setSearchTerm] = useState("");
+  const { toast } = useToast();
 
-  const { data: equipmentList, isLoading } = useQuery<Equipment[]>({
-    queryKey: ['/api/equipment'],
-    enabled: !!user,
-  });
+  const filteredEquipment = equipment?.filter(e => 
+    e.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    e.ip.includes(searchTerm)
+  );
 
-  const executeMutation = useMutation({
-    mutationFn: async (equipmentId: number) => {
-      const response = await apiRequest('POST', `/api/backup/execute/${equipmentId}`);
-      return response;
-    },
-    onSuccess: (data, equipmentId) => {
-      setResults((prev) => ({
-        ...prev,
-        [equipmentId]: { status: 'success', message: 'Backup realizado com sucesso' },
-      }));
-      queryClient.invalidateQueries({ queryKey: ['/api/backups'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/stats'] });
-    },
-    onError: (error: any, equipmentId) => {
-      setResults((prev) => ({
-        ...prev,
-        [equipmentId]: { status: 'error', message: error.message || 'Erro ao executar backup' },
-      }));
-    },
-  });
+  const handleSelectAll = () => {
+    if (selectedIds.length === filteredEquipment?.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(filteredEquipment?.map(e => e.id) || []);
+    }
+  };
 
-  const handleToggle = (id: number) => {
-    setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+  const toggleSelect = (id: number) => {
+    setSelectedIds(prev => 
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
     );
   };
 
-  const handleSelectAll = () => {
-    if (selectedIds.length === (equipmentList?.length || 0)) {
-      setSelectedIds([]);
-    } else {
-      setSelectedIds(equipmentList?.map((e) => e.id) || []);
-    }
-  };
-
-  const handleExecute = async () => {
-    if (selectedIds.length === 0) {
-      toast({ title: "Selecione ao menos um equipamento", variant: "destructive" });
-      return;
-    }
-
-    setResults({});
-    
-    for (const id of selectedIds) {
-      setResults((prev) => ({ ...prev, [id]: { status: 'pending' } }));
-    }
-
-    for (const id of selectedIds) {
-      try {
-        await executeMutation.mutateAsync(id);
-      } catch (e) {
-        // Error already handled in onError
+  const handleExecute = () => {
+    if (selectedIds.length === 0) return;
+    executeBackup(selectedIds, {
+      onSuccess: () => {
+        toast({ title: "Backup iniciado", description: `Iniciando backup de ${selectedIds.length} dispositivos.` });
+        setSelectedIds([]);
+      },
+      onError: () => {
+        toast({ title: "Erro", description: "Falha ao iniciar backup.", variant: "destructive" });
       }
-    }
-
-    toast({ title: "Execução de backups finalizada" });
+    });
   };
-
-  const isExecuting = Object.values(results).some((r) => r.status === 'pending');
-
-  if (authLoading) {
-    return <div className="p-6"><Skeleton className="h-96 w-full" /></div>;
-  }
-
-  if (!user) {
-    window.location.href = '/api/login';
-    return null;
-  }
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between gap-4 flex-wrap">
+    <div className="p-6 md:p-8 space-y-6 animate-enter max-w-5xl mx-auto">
+      <div className="flex flex-col md:flex-row justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Play className="h-6 w-6" />
-            Executar Backup
-          </h1>
-          <p className="text-muted-foreground">Execute backups manualmente</p>
+          <h1 className="text-3xl font-bold tracking-tight">Executar Backup</h1>
+          <p className="text-muted-foreground">Selecione os dispositivos para backup imediato</p>
         </div>
-        <Button 
-          onClick={handleExecute} 
-          disabled={isExecuting || selectedIds.length === 0}
-          data-testid="button-execute-backup"
-        >
-          {isExecuting ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Executando...
-            </>
-          ) : (
-            <>
-              <Play className="mr-2 h-4 w-4" />
-              Executar ({selectedIds.length})
-            </>
-          )}
-        </Button>
+        <div className="flex items-center gap-2">
+           <Input 
+             placeholder="Filtrar..." 
+             className="w-[200px]" 
+             value={searchTerm}
+             onChange={(e) => setSearchTerm(e.target.value)}
+           />
+           <Button onClick={handleExecute} disabled={isPending || selectedIds.length === 0} className="w-full md:w-auto">
+            <Play className="h-4 w-4 mr-2" />
+            {isPending ? "Iniciando..." : `Executar (${selectedIds.length})`}
+          </Button>
+        </div>
       </div>
 
-      {isLoading ? (
-        <Skeleton className="h-96 w-full" />
-      ) : !equipmentList?.length ? (
-        <Card>
-          <CardContent className="p-6 text-center text-muted-foreground">
-            Nenhum equipamento cadastrado. Cadastre equipamentos primeiro.
-          </CardContent>
-        </Card>
-      ) : (
-        <>
-          <div className="flex items-center gap-2">
-            <Checkbox
-              checked={selectedIds.length === equipmentList.length}
-              onCheckedChange={handleSelectAll}
-              id="select-all"
-              data-testid="checkbox-select-all"
-            />
-            <label htmlFor="select-all" className="text-sm cursor-pointer">
-              Selecionar todos ({equipmentList.length} equipamentos)
-            </label>
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <CardTitle>Dispositivos Disponíveis</CardTitle>
+            <Button variant="outline" size="sm" onClick={handleSelectAll}>
+              {selectedIds.length === filteredEquipment?.length ? (
+                <>
+                  <Square className="h-4 w-4 mr-2" /> Desmarcar Todos
+                </>
+              ) : (
+                <>
+                  <CheckSquare className="h-4 w-4 mr-2" /> Selecionar Todos
+                </>
+              )}
+            </Button>
           </div>
-
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {equipmentList.map((equip) => (
-              <Card 
-                key={equip.id} 
-                className={`cursor-pointer transition-colors ${
-                  selectedIds.includes(equip.id) ? 'ring-2 ring-primary' : ''
-                }`}
-                onClick={() => handleToggle(equip.id)}
-                data-testid={`card-equipment-${equip.id}`}
-              >
-                <CardHeader className="pb-2">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      <Checkbox
-                        checked={selectedIds.includes(equip.id)}
-                        onCheckedChange={() => handleToggle(equip.id)}
-                        onClick={(e) => e.stopPropagation()}
-                        data-testid={`checkbox-equipment-${equip.id}`}
-                      />
-                      <Server className="h-4 w-4" />
-                      <CardTitle className="text-base">{equip.name}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {filteredEquipment?.map((item) => {
+              const isSelected = selectedIds.includes(item.id);
+              return (
+                <div 
+                  key={item.id}
+                  onClick={() => toggleSelect(item.id)}
+                  className={`
+                    cursor-pointer p-4 rounded-lg border flex items-center justify-between transition-all
+                    ${isSelected 
+                      ? "border-primary bg-primary/5 shadow-sm" 
+                      : "border-border hover:border-primary/30 hover:bg-muted/50"}
+                  `}
+                >
+                  <div className="flex flex-col overflow-hidden">
+                    <span className="font-medium truncate">{item.name}</span>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                      <span className="font-mono bg-muted px-1.5 py-0.5 rounded">{item.ip}</span>
+                      <span className="uppercase">{item.manufacturer}</span>
                     </div>
-                    {results[equip.id] && (
-                      <>
-                        {results[equip.id].status === 'pending' && (
-                          <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
-                        )}
-                        {results[equip.id].status === 'success' && (
-                          <CheckCircle className="h-4 w-4 text-green-500" />
-                        )}
-                        {results[equip.id].status === 'error' && (
-                          <XCircle className="h-4 w-4 text-red-500" />
-                        )}
-                      </>
-                    )}
                   </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <Badge variant="secondary">{equip.manufacturer}</Badge>
-                    <span className="text-sm text-muted-foreground">{equip.ip}</span>
+                  <div className={`
+                    w-5 h-5 rounded border flex items-center justify-center
+                    ${isSelected ? "bg-primary border-primary text-primary-foreground" : "border-muted-foreground/30"}
+                  `}>
+                    {isSelected && <Play className="h-3 w-3 fill-current" />}
                   </div>
-                  {results[equip.id]?.message && (
-                    <p className={`text-xs mt-2 ${
-                      results[equip.id].status === 'error' ? 'text-red-500' : 'text-green-500'
-                    }`}>
-                      {results[equip.id].message}
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
+                </div>
+              );
+            })}
+            {!filteredEquipment?.length && (
+              <div className="col-span-full py-12 text-center text-muted-foreground">
+                Nenhum equipamento encontrado.
+              </div>
+            )}
           </div>
-        </>
-      )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

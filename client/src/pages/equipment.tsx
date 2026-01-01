@@ -1,413 +1,342 @@
-import { useState, useMemo } from "react";
-import { useAuth } from "@/hooks/use-auth";
+import { useState } from "react";
+import { useEquipment, useCreateEquipment, useUpdateEquipment, useDeleteEquipment } from "@/hooks/use-equipment";
+import { useManufacturers } from "@/hooks/use-settings";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Plus, Search, Pencil, Trash2, Power } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { insertEquipmentSchema, type InsertEquipment, type Equipment } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { queryClient, apiRequest } from "@/lib/queryClient";
-import { Plus, Pencil, Trash2, Server, Search } from "lucide-react";
-import { type Equipment } from "@shared/schema";
-
-interface Manufacturer {
-  id: number;
-  value: string;
-  label: string;
-  color: string | null;
-}
 
 export default function EquipmentPage() {
-  const { user, isLoading: authLoading } = useAuth();
-  const { toast } = useToast();
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingEquipment, setEditingEquipment] = useState<Equipment | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [formData, setFormData] = useState({
-    name: "",
-    ip: "",
-    manufacturer: "",
-    model: "",
-    username: "",
-    password: "",
-    port: 22,
-    protocol: "ssh",
-    enabled: true,
-  });
+  const [searchTerm, setSearchTerm] = useState("");
+  const { data: equipment, isLoading } = useEquipment();
+  const { data: manufacturers } = useManufacturers();
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
 
-  const { data: equipmentList, isLoading } = useQuery<Equipment[]>({
-    queryKey: ['/api/equipment'],
-    enabled: !!user,
-  });
-
-  const { data: manufacturers } = useQuery<Manufacturer[]>({
-    queryKey: ['/api/manufacturers'],
-    enabled: !!user,
-  });
-
-  const filteredEquipment = useMemo(() => {
-    if (!equipmentList) return [];
-    if (!searchQuery.trim()) return equipmentList;
-    
-    const query = searchQuery.toLowerCase();
-    return equipmentList.filter(equip => 
-      equip.name.toLowerCase().includes(query) ||
-      equip.ip.toLowerCase().includes(query) ||
-      equip.manufacturer.toLowerCase().includes(query) ||
-      (equip.model && equip.model.toLowerCase().includes(query))
-    );
-  }, [equipmentList, searchQuery]);
-
-  const getManufacturerColor = (value: string): string | null => {
-    const mfr = manufacturers?.find(m => m.value === value);
-    return mfr?.color || null;
-  };
-
-  const getManufacturerLabel = (value: string): string => {
-    const mfr = manufacturers?.find(m => m.value === value);
-    return mfr?.label || value;
-  };
-
-  const createMutation = useMutation({
-    mutationFn: async (data: typeof formData) => {
-      return apiRequest('POST', '/api/equipment', data);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/equipment'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/stats'] });
-      toast({ title: "Equipamento adicionado com sucesso" });
-      resetForm();
-      setIsDialogOpen(false);
-    },
-    onError: () => {
-      toast({ title: "Erro ao adicionar equipamento", variant: "destructive" });
-    },
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: number; data: typeof formData }) => {
-      return apiRequest('PUT', `/api/equipment/${id}`, data);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/equipment'] });
-      toast({ title: "Equipamento atualizado com sucesso" });
-      resetForm();
-      setIsDialogOpen(false);
-    },
-    onError: () => {
-      toast({ title: "Erro ao atualizar equipamento", variant: "destructive" });
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: async (id: number) => {
-      return apiRequest('DELETE', `/api/equipment/${id}`);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/equipment'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/stats'] });
-      toast({ title: "Equipamento excluido com sucesso" });
-    },
-    onError: () => {
-      toast({ title: "Erro ao excluir equipamento", variant: "destructive" });
-    },
-  });
-
-  const resetForm = () => {
-    setFormData({
-      name: "",
-      ip: "",
-      manufacturer: "",
-      model: "",
-      username: "",
-      password: "",
-      port: 22,
-      protocol: "ssh",
-      enabled: true,
-    });
-    setEditingEquipment(null);
-  };
-
-  const handleEdit = (equipment: Equipment) => {
-    setEditingEquipment(equipment);
-    setFormData({
-      name: equipment.name,
-      ip: equipment.ip,
-      manufacturer: equipment.manufacturer,
-      model: equipment.model || "",
-      username: equipment.username || "",
-      password: "",
-      port: equipment.port || 22,
-      protocol: equipment.protocol || "ssh",
-      enabled: equipment.enabled ?? true,
-    });
-    setIsDialogOpen(true);
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (editingEquipment) {
-      updateMutation.mutate({ id: editingEquipment.id, data: formData });
-    } else {
-      createMutation.mutate(formData);
-    }
-  };
-
-  if (authLoading) {
-    return <div className="p-6"><Skeleton className="h-96 w-full" /></div>;
-  }
-
-  if (!user) {
-    window.location.href = '/api/login';
-    return null;
-  }
+  const filteredEquipment = equipment?.filter(e => 
+    e.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    e.ip.includes(searchTerm)
+  );
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between gap-4 flex-wrap">
+    <div className="p-6 md:p-8 space-y-6 animate-enter">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Server className="h-6 w-6" />
-            Equipamentos
-          </h1>
-          <p className="text-muted-foreground">Gerencie os equipamentos de rede</p>
+          <h1 className="text-3xl font-bold tracking-tight">Equipamentos</h1>
+          <p className="text-muted-foreground">Gerencie seus dispositivos de rede</p>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-2">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Pesquisar por nome, IP, fabricante..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 w-64"
-              data-testid="input-search-equipment"
+              placeholder="Buscar por nome ou IP..."
+              className="pl-9 w-[250px] bg-background"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <Dialog open={isDialogOpen} onOpenChange={(open) => { setIsDialogOpen(open); if (!open) resetForm(); }}>
-            <DialogTrigger asChild>
-              <Button data-testid="button-add-equipment">
-                <Plus className="mr-2 h-4 w-4" />
-                Adicionar
-              </Button>
-            </DialogTrigger>
-          <DialogContent className="max-w-xl">
-            <DialogHeader>
-              <DialogTitle>{editingEquipment ? "Editar Equipamento" : "Novo Equipamento"}</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Nome</Label>
-                  <Input
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    required
-                    data-testid="input-equipment-name"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="ip">IP</Label>
-                  <Input
-                    id="ip"
-                    value={formData.ip}
-                    onChange={(e) => setFormData({ ...formData, ip: e.target.value })}
-                    required
-                    data-testid="input-equipment-ip"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="manufacturer">Fabricante</Label>
-                  <Select
-                    value={formData.manufacturer}
-                    onValueChange={(value) => setFormData({ ...formData, manufacturer: value })}
-                  >
-                    <SelectTrigger data-testid="select-manufacturer">
-                      <SelectValue placeholder="Selecione" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {manufacturers?.map((m) => (
-                        <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="model">Modelo</Label>
-                  <Input
-                    id="model"
-                    value={formData.model}
-                    onChange={(e) => setFormData({ ...formData, model: e.target.value })}
-                    data-testid="input-equipment-model"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="username">Usuario</Label>
-                  <Input
-                    id="username"
-                    value={formData.username}
-                    onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                    data-testid="input-equipment-username"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="password">Senha</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    placeholder={editingEquipment ? "(deixe vazio para manter)" : ""}
-                    data-testid="input-equipment-password"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="protocol">Protocolo</Label>
-                  <Select
-                    value={formData.protocol}
-                    onValueChange={(value) => setFormData({ ...formData, protocol: value, port: value === "telnet" ? 23 : 22 })}
-                  >
-                    <SelectTrigger data-testid="select-protocol">
-                      <SelectValue placeholder="Selecione" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="ssh">SSH</SelectItem>
-                      <SelectItem value="telnet">Telnet</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="port">Porta</Label>
-                  <Input
-                    id="port"
-                    type="number"
-                    value={formData.port}
-                    onChange={(e) => setFormData({ ...formData, port: parseInt(e.target.value) })}
-                    data-testid="input-equipment-port"
-                  />
-                </div>
-                <div className="space-y-2 flex items-center gap-4 pt-6">
-                  <Label htmlFor="enabled">Habilitado</Label>
-                  <Switch
-                    id="enabled"
-                    checked={formData.enabled}
-                    onCheckedChange={(checked) => setFormData({ ...formData, enabled: checked })}
-                    data-testid="switch-equipment-enabled"
-                  />
-                </div>
-              </div>
-              <div className="flex justify-end gap-2">
-                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                  Cancelar
-                </Button>
-                <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending} data-testid="button-save-equipment">
-                  {editingEquipment ? "Salvar" : "Adicionar"}
-                </Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
+          <Button onClick={() => setIsCreateOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Novo Equipamento
+          </Button>
         </div>
       </div>
 
-      <Card>
-        <CardContent className="p-0">
-          {isLoading ? (
-            <div className="p-6">
-              <Skeleton className="h-48 w-full" />
-            </div>
-          ) : !equipmentList?.length ? (
-            <div className="p-6 text-center text-muted-foreground">
-              Nenhum equipamento cadastrado
-            </div>
-          ) : filteredEquipment.length === 0 ? (
-            <div className="p-6 text-center text-muted-foreground">
-              Nenhum equipamento encontrado para "{searchQuery}"
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nome</TableHead>
-                  <TableHead>IP</TableHead>
-                  <TableHead>Fabricante</TableHead>
-                  <TableHead>Modelo</TableHead>
-                  <TableHead>Protocolo</TableHead>
-                  <TableHead>Porta</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Acoes</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredEquipment.map((equip) => (
-                  <TableRow key={equip.id} data-testid={`row-equipment-${equip.id}`}>
-                    <TableCell className="font-medium">{equip.name}</TableCell>
-                    <TableCell className="font-mono text-sm">{equip.ip}</TableCell>
-                    <TableCell>
-                      <Badge style={{ backgroundColor: getManufacturerColor(equip.manufacturer) || '#6b7280', color: 'white' }}>
-                        {getManufacturerLabel(equip.manufacturer)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{equip.model || "-"}</TableCell>
-                    <TableCell>
-                      <Badge variant="outline">{(equip.protocol || "ssh").toUpperCase()}</Badge>
-                    </TableCell>
-                    <TableCell>{equip.port}</TableCell>
-                    <TableCell>
-                      <Badge variant={equip.enabled ? "default" : "secondary"}>
-                        {equip.enabled ? "Ativo" : "Inativo"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        onClick={() => handleEdit(equip)}
-                        data-testid={`button-edit-equipment-${equip.id}`}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            data-testid={`button-delete-equipment-${equip.id}`}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Excluir Equipamento</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Tem certeza que deseja excluir o equipamento "{equip.name}"?
-                              Esta acao nao pode ser desfeita.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => deleteMutation.mutate(equip.id)}>
-                              Excluir
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+      <div className="bg-card rounded-xl border shadow-sm">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Nome</TableHead>
+              <TableHead>Endereço IP</TableHead>
+              <TableHead>Fabricante</TableHead>
+              <TableHead>Protocolo</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="text-right">Ações</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredEquipment?.map((item) => (
+              <TableRow key={item.id}>
+                <TableCell className="font-medium">{item.name}</TableCell>
+                <TableCell className="font-mono text-xs">{item.ip}</TableCell>
+                <TableCell>
+                  <span className="inline-flex items-center px-2 py-1 rounded-md bg-muted text-xs font-medium">
+                    {manufacturers?.find(m => m.value === item.manufacturer)?.label || item.manufacturer}
+                  </span>
+                </TableCell>
+                <TableCell className="uppercase text-xs text-muted-foreground">{item.protocol}:{item.port}</TableCell>
+                <TableCell>
+                  <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium border ${
+                    item.enabled 
+                      ? "bg-green-50/50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800" 
+                      : "bg-gray-100 text-gray-600 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700"
+                  }`}>
+                    <span className={`h-1.5 w-1.5 rounded-full ${item.enabled ? "bg-green-500" : "bg-gray-400"}`} />
+                    {item.enabled ? "Ativo" : "Inativo"}
+                  </div>
+                </TableCell>
+                <TableCell className="text-right">
+                  <div className="flex items-center justify-end gap-2">
+                    <Button variant="ghost" size="icon" onClick={() => setEditingId(item.id)}>
+                      <Pencil className="h-4 w-4 text-muted-foreground" />
+                    </Button>
+                    <DeleteButton id={item.id} name={item.name} />
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+            {!filteredEquipment?.length && !isLoading && (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
+                  Nenhum equipamento encontrado
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
+
+      <CreateEquipmentDialog 
+        open={isCreateOpen} 
+        onOpenChange={setIsCreateOpen} 
+        manufacturers={manufacturers || []} 
+      />
+      
+      {editingId && (
+        <EditEquipmentDialog 
+          open={!!editingId} 
+          onOpenChange={(open) => !open && setEditingId(null)}
+          id={editingId}
+          manufacturers={manufacturers || []}
+          equipment={equipment?.find(e => e.id === editingId)!}
+        />
+      )}
     </div>
+  );
+}
+
+function EquipmentForm({ 
+  onSubmit, 
+  defaultValues, 
+  isPending, 
+  manufacturers 
+}: { 
+  onSubmit: (data: InsertEquipment) => void, 
+  defaultValues?: Partial<InsertEquipment>,
+  isPending: boolean,
+  manufacturers: { value: string, label: string }[] 
+}) {
+  const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm<InsertEquipment>({
+    resolver: zodResolver(insertEquipmentSchema),
+    defaultValues: defaultValues || {
+      port: 22,
+      protocol: 'ssh',
+      enabled: true
+    }
+  });
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label>Nome</Label>
+          <Input {...register("name")} placeholder="Router Core 01" />
+          {errors.name && <span className="text-xs text-red-500">{errors.name.message}</span>}
+        </div>
+        <div className="space-y-2">
+          <Label>Endereço IP</Label>
+          <Input {...register("ip")} placeholder="192.168.1.1" />
+          {errors.ip && <span className="text-xs text-red-500">{errors.ip.message}</span>}
+        </div>
+      </div>
+      
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label>Fabricante</Label>
+          <Select onValueChange={(val) => setValue("manufacturer", val)} defaultValue={defaultValues?.manufacturer}>
+            <SelectTrigger>
+              <SelectValue placeholder="Selecione..." />
+            </SelectTrigger>
+            <SelectContent>
+              {manufacturers.map(m => (
+                <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {errors.manufacturer && <span className="text-xs text-red-500">{errors.manufacturer.message}</span>}
+        </div>
+        <div className="space-y-2">
+          <Label>Modelo</Label>
+          <Input {...register("model")} placeholder="CCR1036" />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label>Usuário</Label>
+          <Input {...register("username")} placeholder="admin" />
+        </div>
+        <div className="space-y-2">
+          <Label>Senha</Label>
+          <Input {...register("password")} type="password" placeholder="••••••" />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label>Porta</Label>
+          <Input 
+            type="number" 
+            {...register("port", { valueAsNumber: true })} 
+            placeholder="22" 
+          />
+        </div>
+        <div className="space-y-2">
+          <Label>Protocolo</Label>
+          <Select onValueChange={(val) => setValue("protocol", val)} defaultValue={defaultValues?.protocol || 'ssh'}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ssh">SSH</SelectItem>
+              <SelectItem value="telnet">Telnet</SelectItem>
+              <SelectItem value="api">API</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <div className="flex justify-end pt-4">
+        <Button type="submit" disabled={isPending}>
+          {isPending ? "Salvando..." : "Salvar Equipamento"}
+        </Button>
+      </div>
+    </form>
+  );
+}
+
+function CreateEquipmentDialog({ open, onOpenChange, manufacturers }: any) {
+  const { mutate, isPending } = useCreateEquipment();
+  const { toast } = useToast();
+
+  const handleSubmit = (data: InsertEquipment) => {
+    mutate(data, {
+      onSuccess: () => {
+        toast({ title: "Sucesso", description: "Equipamento criado com sucesso" });
+        onOpenChange(false);
+      },
+      onError: () => {
+        toast({ title: "Erro", description: "Falha ao criar equipamento", variant: "destructive" });
+      }
+    });
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Novo Equipamento</DialogTitle>
+        </DialogHeader>
+        <EquipmentForm onSubmit={handleSubmit} isPending={isPending} manufacturers={manufacturers} />
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function EditEquipmentDialog({ open, onOpenChange, id, equipment, manufacturers }: any) {
+  const { mutate, isPending } = useUpdateEquipment();
+  const { toast } = useToast();
+
+  const handleSubmit = (data: InsertEquipment) => {
+    mutate({ id, ...data }, {
+      onSuccess: () => {
+        toast({ title: "Sucesso", description: "Equipamento atualizado" });
+        onOpenChange(false);
+      },
+      onError: () => {
+        toast({ title: "Erro", description: "Falha ao atualizar", variant: "destructive" });
+      }
+    });
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Editar Equipamento</DialogTitle>
+        </DialogHeader>
+        <EquipmentForm 
+          onSubmit={handleSubmit} 
+          defaultValues={equipment} 
+          isPending={isPending} 
+          manufacturers={manufacturers} 
+        />
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function DeleteButton({ id, name }: { id: number, name: string }) {
+  const { mutate, isPending } = useDeleteEquipment();
+  const { toast } = useToast();
+  const [open, setOpen] = useState(false);
+
+  const handleDelete = () => {
+    mutate(id, {
+      onSuccess: () => {
+        toast({ title: "Deletado", description: `${name} foi removido.` });
+        setOpen(false);
+      }
+    });
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-600 hover:bg-red-50">
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Excluir Equipamento?</DialogTitle>
+        </DialogHeader>
+        <p className="text-muted-foreground">
+          Tem certeza que deseja excluir <strong>{name}</strong>? Esta ação não pode ser desfeita.
+        </p>
+        <div className="flex justify-end gap-2 mt-4">
+          <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
+          <Button variant="destructive" onClick={handleDelete} disabled={isPending}>
+            {isPending ? "Excluindo..." : "Excluir"}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }

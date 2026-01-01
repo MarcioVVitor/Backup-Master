@@ -1,215 +1,200 @@
-import { useAuth } from "@/hooks/use-auth";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "wouter";
-import { Server, HardDrive, Clock, CheckCircle, LogIn, Database, Activity } from "lucide-react";
-import { filesize } from "filesize";
-
-interface Stats {
-  totalEquipment: number;
-  totalBackups: number;
-  successRate: number;
-  totalSize: number;
-  recentBackups: number;
-  manufacturerStats: { manufacturer: string; count: number }[];
-}
+import { useBackupHistory, useFiles } from "@/hooks/use-files";
+import { useEquipment } from "@/hooks/use-equipment";
+import { StatsCard } from "@/components/StatsCard";
+import { Server, HardDrive, AlertCircle, CheckCircle2, Activity } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { format } from "date-fns";
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+  BarChart,
+  Bar
+} from "recharts";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Home() {
-  const { user, isLoading: authLoading } = useAuth();
+  const { data: equipment, isLoading: loadingEquipment } = useEquipment();
+  const { data: history, isLoading: loadingHistory } = useBackupHistory();
+  const { data: files, isLoading: loadingFiles } = useFiles();
 
-  const { data: stats, isLoading: statsLoading } = useQuery<Stats>({
-    queryKey: ['/api/stats'],
-    enabled: !!user,
+  if (loadingEquipment || loadingHistory || loadingFiles) {
+    return (
+      <div className="p-8 space-y-8">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-32 w-full rounded-xl" />)}
+        </div>
+        <Skeleton className="h-[400px] w-full rounded-xl" />
+      </div>
+    );
+  }
+
+  const totalEquipment = equipment?.length || 0;
+  const totalBackups = files?.length || 0;
+  const failedBackups = history?.filter(h => h.status === 'failed').length || 0;
+  const successRate = history?.length ? Math.round(((history.length - failedBackups) / history.length) * 100) : 100;
+  const totalStorage = files?.reduce((acc, f) => acc + f.size, 0) || 0;
+  const storageFormatted = (totalStorage / (1024 * 1024)).toFixed(2) + ' MB';
+
+  // Prepare chart data
+  const last7Days = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    return d.toISOString().split('T')[0];
+  }).reverse();
+
+  const chartData = last7Days.map(date => {
+    const dayBackups = history?.filter(h => h.executedAt && new Date(h.executedAt).toISOString().split('T')[0] === date) || [];
+    return {
+      date: format(new Date(date), 'MMM dd'),
+      success: dayBackups.filter(h => h.status === 'success').length,
+      failed: dayBackups.filter(h => h.status === 'failed').length,
+    };
   });
 
-  if (authLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Skeleton className="h-12 w-12 rounded-full" />
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-600 to-purple-700">
-        <Card className="w-full max-w-md mx-4">
-          <CardHeader className="text-center">
-            <div className="flex justify-center mb-4">
-              <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
-                <Server className="h-8 w-8 text-white" />
-              </div>
-            </div>
-            <CardTitle className="text-2xl">NBM - Network Backup Manager</CardTitle>
-            <CardDescription>
-              Sistema de backup automatizado para equipamentos de rede
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-center text-muted-foreground text-sm">
-              Suporta: Huawei, Mikrotik, Cisco, Nokia, ZTE, Datacom, Juniper
-            </p>
-            <Button 
-              className="w-full" 
-              size="lg"
-              onClick={() => window.location.href = '/api/login'}
-              data-testid="button-login"
-            >
-              <LogIn className="mr-2 h-4 w-4" />
-              Entrar com Replit
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between gap-4 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-bold" data-testid="text-welcome">
-            Bem-vindo, {user.name || user.email?.split('@')[0] || user.username || 'Usuario'}
-          </h1>
-          <p className="text-muted-foreground">Network Backup Manager v17.0</p>
-        </div>
+    <div className="p-6 md:p-8 space-y-8 animate-enter">
+      <div className="flex flex-col gap-2">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">Dashboard</h1>
+        <p className="text-muted-foreground">Visão geral do sistema de backups</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Equipamentos</CardTitle>
-            <Server className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            {statsLoading ? (
-              <Skeleton className="h-8 w-16" />
-            ) : (
-              <div className="text-2xl font-bold" data-testid="text-equipment-count">
-                {stats?.totalEquipment || 0}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total de Backups</CardTitle>
-            <HardDrive className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            {statsLoading ? (
-              <Skeleton className="h-8 w-16" />
-            ) : (
-              <>
-                <div className="text-2xl font-bold" data-testid="text-backup-count">
-                  {stats?.totalBackups || 0}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  {stats?.totalSize ? filesize(stats.totalSize) : '0 B'} armazenados
-                </p>
-              </>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Taxa de Sucesso</CardTitle>
-            <CheckCircle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            {statsLoading ? (
-              <Skeleton className="h-8 w-16" />
-            ) : (
-              <div className="text-2xl font-bold text-green-600 dark:text-green-400" data-testid="text-success-rate">
-                {stats?.successRate || 100}%
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Ultimas 24h</CardTitle>
-            <Activity className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            {statsLoading ? (
-              <Skeleton className="h-8 w-16" />
-            ) : (
-              <div className="text-2xl font-bold" data-testid="text-recent-backups">
-                {stats?.recentBackups || 0}
-              </div>
-            )}
-            <p className="text-xs text-muted-foreground">backups realizados</p>
-          </CardContent>
-        </Card>
+        <StatsCard
+          title="Equipamentos"
+          value={totalEquipment}
+          description="Total de ativos monitorados"
+          icon={Server}
+          color="text-blue-500"
+        />
+        <StatsCard
+          title="Backups Totais"
+          value={totalBackups}
+          description="Arquivos armazenados"
+          icon={HardDrive}
+          color="text-purple-500"
+        />
+        <StatsCard
+          title="Taxa de Sucesso"
+          value={`${successRate}%`}
+          description="Últimos 30 dias"
+          icon={CheckCircle2}
+          color="text-green-500"
+        />
+        <StatsCard
+          title="Armazenamento"
+          value={storageFormatted}
+          description="Espaço utilizado"
+          icon={Activity}
+          color="text-orange-500"
+        />
       </div>
 
-      {stats?.manufacturerStats && stats.manufacturerStats.length > 0 && (
-        <Card>
+      <div className="grid gap-4 md:grid-cols-7">
+        <Card className="col-span-4 border-none shadow-sm">
           <CardHeader>
-            <CardTitle className="text-sm font-medium">Equipamentos por Fabricante</CardTitle>
+            <CardTitle>Atividade Recente</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-2">
-              {stats.manufacturerStats.map((stat) => (
-                <Badge key={stat.manufacturer} variant="secondary" className="text-sm">
-                  {stat.manufacturer}: {stat.count}
-                </Badge>
-              ))}
-            </div>
+          <CardContent className="pl-2">
+            <ResponsiveContainer width="100%" height={300}>
+              <AreaChart data={chartData}>
+                <defs>
+                  <linearGradient id="colorSuccess" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#22c55e" stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor="#22c55e" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <XAxis dataKey="date" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
+                <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value}`} />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e5e5" />
+                <Tooltip 
+                  contentStyle={{ backgroundColor: 'var(--background)', borderRadius: '8px', border: '1px solid var(--border)' }}
+                />
+                <Area type="monotone" dataKey="success" stroke="#22c55e" fillOpacity={1} fill="url(#colorSuccess)" />
+              </AreaChart>
+            </ResponsiveContainer>
           </CardContent>
         </Card>
-      )}
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <Link href="/equipment">
-          <Card className="cursor-pointer hover-elevate">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Server className="h-5 w-5" />
-                Equipamentos
-              </CardTitle>
-              <CardDescription>
-                Gerenciar equipamentos cadastrados
-              </CardDescription>
-            </CardHeader>
-          </Card>
-        </Link>
-
-        <Link href="/backups">
-          <Card className="cursor-pointer hover-elevate">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <HardDrive className="h-5 w-5" />
-                Backups
-              </CardTitle>
-              <CardDescription>
-                Visualizar e gerenciar backups
-              </CardDescription>
-            </CardHeader>
-          </Card>
-        </Link>
-
-        <Link href="/execute">
-          <Card className="cursor-pointer hover-elevate">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Clock className="h-5 w-5" />
-                Executar Backup
-              </CardTitle>
-              <CardDescription>
-                Executar backup manual
-              </CardDescription>
-            </CardHeader>
-          </Card>
-        </Link>
+        <Card className="col-span-3 border-none shadow-sm">
+          <CardHeader>
+            <CardTitle>Status de Execução</CardTitle>
+          </CardHeader>
+          <CardContent>
+             <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={chartData}>
+                <XAxis dataKey="date" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
+                <Tooltip 
+                  cursor={{fill: 'transparent'}}
+                  contentStyle={{ backgroundColor: 'var(--background)', borderRadius: '8px', border: '1px solid var(--border)' }}
+                />
+                <Bar dataKey="success" name="Sucesso" fill="#22c55e" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="failed" name="Falha" fill="#ef4444" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
       </div>
+
+      <Card className="border-none shadow-sm">
+        <CardHeader>
+          <CardTitle>Últimos Backups</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Equipamento</TableHead>
+                <TableHead>IP</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Duração</TableHead>
+                <TableHead className="text-right">Data</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {history?.slice(0, 5).map((log) => (
+                <TableRow key={log.id}>
+                  <TableCell className="font-medium">{log.equipmentName || 'Desconhecido'}</TableCell>
+                  <TableCell>{log.ip}</TableCell>
+                  <TableCell>
+                    <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      log.status === 'success' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' : 
+                      log.status === 'failed' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300' :
+                      'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'
+                    }`}>
+                      {log.status === 'success' ? 'Sucesso' : log.status === 'failed' ? 'Falha' : 'Pendente'}
+                    </div>
+                  </TableCell>
+                  <TableCell>{log.duration ? `${log.duration.toFixed(1)}s` : '-'}</TableCell>
+                  <TableCell className="text-right">
+                    {log.executedAt ? format(new Date(log.executedAt), 'dd/MM/yyyy HH:mm') : '-'}
+                  </TableCell>
+                </TableRow>
+              ))}
+              {!history?.length && (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                    Nenhum backup registrado
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
     </div>
   );
 }
