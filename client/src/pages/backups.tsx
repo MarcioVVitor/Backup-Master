@@ -79,8 +79,13 @@ export default function BackupsPage() {
     b.filename.toLowerCase().includes(searchTerm.toLowerCase())
   ) || [];
 
-  if (authLoading || !user) {
+  if (authLoading) {
     return <div className="p-6"><Skeleton className="h-96 w-full" /></div>;
+  }
+
+  if (!user) {
+    window.location.href = '/api/login';
+    return null;
   }
 
   return (

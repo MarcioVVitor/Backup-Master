@@ -114,7 +114,7 @@ export default function EquipmentPage() {
       manufacturer: equipment.manufacturer,
       model: equipment.model || "",
       username: equipment.username || "",
-      password: equipment.password || "",
+      password: "", // Password is write-only, leave blank to preserve existing
       port: equipment.port || 22,
       protocol: equipment.protocol || "ssh",
     });
@@ -130,8 +130,13 @@ export default function EquipmentPage() {
     }
   };
 
-  if (authLoading || !user) {
+  if (authLoading) {
     return <div className="p-6"><Skeleton className="h-96 w-full" /></div>;
+  }
+
+  if (!user) {
+    window.location.href = '/api/login';
+    return null;
   }
 
   return (
@@ -218,6 +223,7 @@ export default function EquipmentPage() {
                     type="password"
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    placeholder={editingEquipment ? "(deixe vazio para manter)" : ""}
                     data-testid="input-equipment-password"
                   />
                 </div>

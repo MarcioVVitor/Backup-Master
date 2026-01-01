@@ -3,6 +3,8 @@ import type { Server } from "http";
 import { storage } from "./storage";
 import multer from "multer";
 import { setupAuth, isAuthenticated, registerAuthRoutes } from "./replit_integrations/auth";
+import { insertEquipmentSchema } from "@shared/schema";
+import { z } from "zod";
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -14,11 +16,17 @@ export async function registerRoutes(
   await setupAuth(app);
   registerAuthRoutes(app);
 
+  // Helper to omit password from response (write-only field)
+  const sanitizeEquipment = (equip: any) => {
+    const { password, ...rest } = equip;
+    return rest;
+  };
+
   // API - Equipamentos
   app.get('/api/equipment', isAuthenticated, async (req, res) => {
     try {
       const equipmentList = await storage.getEquipment();
-      res.json(equipmentList);
+      res.json(equipmentList.map(sanitizeEquipment));
     } catch (e) {
       console.error("Error listing equipment:", e);
       res.status(500).json({ message: "Erro ao listar equipamentos" });
@@ -27,9 +35,13 @@ export async function registerRoutes(
 
   app.post('/api/equipment', isAuthenticated, async (req, res) => {
     try {
-      const equipment = await storage.createEquipment(req.body);
-      res.status(201).json(equipment);
+      const parsed = insertEquipmentSchema.parse(req.body);
+      const equipment = await storage.createEquipment(parsed);
+      res.status(201).json(sanitizeEquipment(equipment));
     } catch (e) {
+      if (e instanceof z.ZodError) {
+        return res.status(400).json({ message: "Dados inválidos", errors: e.errors });
+      }
       console.error("Error creating equipment:", e);
       res.status(500).json({ message: "Erro ao criar equipamento" });
     }
@@ -38,10 +50,18 @@ export async function registerRoutes(
   app.put('/api/equipment/:id', isAuthenticated, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      const equipment = await storage.updateEquipment(id, req.body);
+      const parsed = insertEquipmentSchema.partial().parse(req.body);
+      // Only update password if explicitly provided
+      if (parsed.password === '' || parsed.password === undefined) {
+        delete parsed.password;
+      }
+      const equipment = await storage.updateEquipment(id, parsed);
       if (!equipment) return res.status(404).json({ message: "Equipamento não encontrado" });
-      res.json(equipment);
+      res.json(sanitizeEquipment(equipment));
     } catch (e) {
+      if (e instanceof z.ZodError) {
+        return res.status(400).json({ message: "Dados inválidos", errors: e.errors });
+      }
       console.error("Error updating equipment:", e);
       res.status(500).json({ message: "Erro ao atualizar equipamento" });
     }
