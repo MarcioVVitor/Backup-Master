@@ -108,6 +108,9 @@ export const systemUpdates = pgTable("system_updates", {
   id: serial("id").primaryKey(),
   version: text("version").notNull(),
   description: text("description").notNull(),
+  filename: text("filename"),
+  objectName: text("object_name"),
+  size: integer("size"),
   appliedAt: timestamp("applied_at").defaultNow(),
   appliedBy: text("applied_by").notNull(),
 });

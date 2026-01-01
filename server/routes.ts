@@ -542,6 +542,70 @@ export async function registerRoutes(
     }
   });
 
+  app.post('/api/admin/upload-patch', isAuthenticated, upload.single('file'), async (req, res) => {
+    try {
+      const user = req.user as any;
+      const uploadedFile = req.file;
+      if (!uploadedFile) {
+        return res.status(400).json({ message: "Arquivo e obrigatorio" });
+      }
+      const { version, description } = req.body;
+      if (!version || !description) {
+        return res.status(400).json({ message: "Versao e descricao sao obrigatorios" });
+      }
+      const { objectStorageClient } = await import("./replit_integrations/object_storage/objectStorage");
+      const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID;
+      if (!bucketId) {
+        return res.status(500).json({ message: "Object Storage nao configurado" });
+      }
+      const timestamp = Date.now();
+      const objectName = `patches/${timestamp}-${uploadedFile.originalname}`;
+      const bucket = objectStorageClient.bucket(bucketId);
+      const file = bucket.file(objectName);
+      await file.save(uploadedFile.buffer, {
+        contentType: uploadedFile.mimetype,
+        metadata: { version, uploadedBy: user?.name || 'Admin' },
+      });
+      const update = await storage.createSystemUpdate({
+        version,
+        description,
+        filename: uploadedFile.originalname,
+        objectName,
+        size: uploadedFile.size,
+        appliedBy: user?.claims?.sub || user?.name || 'Admin',
+      });
+      res.status(201).json(update);
+    } catch (e) {
+      console.error("Error uploading patch:", e);
+      res.status(500).json({ message: "Erro ao fazer upload do patch" });
+    }
+  });
+
+  app.get('/api/admin/download-patch/:id', isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updates = await storage.getSystemUpdates();
+      const update = updates.find((u: any) => u.id === id);
+      if (!update || !update.objectName) {
+        return res.status(404).json({ message: "Patch nao encontrado" });
+      }
+      const { objectStorageClient } = await import("./replit_integrations/object_storage/objectStorage");
+      const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID;
+      if (!bucketId) {
+        return res.status(500).json({ message: "Object Storage nao configurado" });
+      }
+      const bucket = objectStorageClient.bucket(bucketId);
+      const file = bucket.file(update.objectName);
+      const [buffer] = await file.download();
+      res.setHeader('Content-Disposition', `attachment; filename="${update.filename || 'patch.zip'}"`);
+      res.setHeader('Content-Type', 'application/octet-stream');
+      res.send(buffer);
+    } catch (e) {
+      console.error("Error downloading patch:", e);
+      res.status(500).json({ message: "Erro ao baixar patch" });
+    }
+  });
+
   // API - Admin - Export Database
   app.post('/api/admin/export-database', isAuthenticated, async (req, res) => {
     try {

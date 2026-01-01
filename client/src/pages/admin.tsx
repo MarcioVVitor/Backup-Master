@@ -31,6 +31,9 @@ interface UpdateInfo {
   id: number;
   version: string;
   description: string;
+  filename: string | null;
+  objectName: string | null;
+  size: number | null;
   appliedAt: string;
   appliedBy: string;
 }
@@ -49,6 +52,7 @@ export default function AdminPage() {
   const [patchNotes, setPatchNotes] = useState("");
   const [patchVersion, setPatchVersion] = useState("");
   const [customization, setCustomization] = useState<Customization>({ logoUrl: '', primaryColor: '#0077b6', systemName: 'NBM' });
+  const [patchFile, setPatchFile] = useState<File | null>(null);
 
   const { data: systemInfo, isLoading: infoLoading } = useQuery<SystemInfo>({
     queryKey: ['/api/admin/system-info'],
@@ -184,6 +188,33 @@ export default function AdminPage() {
     },
     onError: () => {
       toast({ title: "Erro ao aplicar atualizacao", variant: "destructive" });
+    },
+  });
+
+  const uploadPatchMutation = useMutation({
+    mutationFn: async ({ file, version, description }: { file: File; version: string; description: string }) => {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('version', version);
+      formData.append('description', description);
+      const response = await fetch('/api/admin/upload-patch', {
+        method: 'POST',
+        credentials: 'include',
+        body: formData,
+      });
+      if (!response.ok) throw new Error('Upload failed');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/updates'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/system-info'] });
+      toast({ title: "Patch enviado com sucesso" });
+      setPatchVersion("");
+      setPatchNotes("");
+      setPatchFile(null);
+    },
+    onError: () => {
+      toast({ title: "Erro ao enviar patch", variant: "destructive" });
     },
   });
 
@@ -377,15 +408,43 @@ export default function AdminPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Package className="h-5 w-5 text-purple-500" />
-                  Registrar Atualizacao
+                  <Upload className="h-5 w-5 text-purple-500" />
+                  Enviar Patch
                 </CardTitle>
                 <CardDescription>
-                  Registre uma nova versao ou patch
+                  Faca upload de arquivos de atualizacao do sistema
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <form onSubmit={(e) => { e.preventDefault(); applyPatchMutation.mutate({ version: patchVersion, description: patchNotes }); }} className="space-y-4">
+                <form onSubmit={(e) => { 
+                  e.preventDefault(); 
+                  if (patchFile) {
+                    uploadPatchMutation.mutate({ file: patchFile, version: patchVersion, description: patchNotes });
+                  } else {
+                    applyPatchMutation.mutate({ version: patchVersion, description: patchNotes });
+                  }
+                }} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="patchFile">Arquivo do Patch</Label>
+                    <div className="border-2 border-dashed border-muted rounded-lg p-4">
+                      <input
+                        id="patchFile"
+                        type="file"
+                        accept=".zip,.tar,.tar.gz,.patch,.sql"
+                        onChange={(e) => setPatchFile(e.target.files?.[0] || null)}
+                        className="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-muted file:text-muted-foreground hover:file:bg-muted/80"
+                        data-testid="input-patch-file"
+                      />
+                      {patchFile && (
+                        <p className="text-xs text-muted-foreground mt-2">
+                          Selecionado: {patchFile.name} ({(patchFile.size / 1024).toFixed(1)} KB)
+                        </p>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Formatos: .zip, .tar, .tar.gz, .patch, .sql
+                    </p>
+                  </div>
                   <div className="space-y-2">
                     <Label htmlFor="version">Versao</Label>
                     <Input
@@ -398,10 +457,10 @@ export default function AdminPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="notes">Notas</Label>
+                    <Label htmlFor="notes">Descricao</Label>
                     <Textarea
                       id="notes"
-                      placeholder="Descreva as mudancas..."
+                      placeholder="Descreva as mudancas desta atualizacao..."
                       value={patchNotes}
                       onChange={(e) => setPatchNotes(e.target.value)}
                       rows={3}
@@ -409,8 +468,13 @@ export default function AdminPage() {
                       data-testid="textarea-patch-notes"
                     />
                   </div>
-                  <Button type="submit" disabled={applyPatchMutation.isPending || !patchVersion || !patchNotes} className="w-full" data-testid="button-apply-patch">
-                    {applyPatchMutation.isPending ? "Aplicando..." : "Aplicar"}
+                  <Button 
+                    type="submit" 
+                    disabled={applyPatchMutation.isPending || uploadPatchMutation.isPending || !patchVersion || !patchNotes} 
+                    className="w-full" 
+                    data-testid="button-apply-patch"
+                  >
+                    {(applyPatchMutation.isPending || uploadPatchMutation.isPending) ? "Enviando..." : (patchFile ? "Enviar Patch" : "Registrar Atualizacao")}
                   </Button>
                 </form>
               </CardContent>
@@ -420,28 +484,44 @@ export default function AdminPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Clock className="h-5 w-5 text-blue-500" />
-                  Historico
+                  Historico de Atualizacoes
                 </CardTitle>
                 <CardDescription>
-                  Atualizacoes aplicadas
+                  Patches e atualizacoes aplicadas
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3 max-h-64 overflow-y-auto">
+                <div className="space-y-3 max-h-80 overflow-y-auto">
                   {!updates?.length ? (
                     <p className="text-sm text-muted-foreground text-center py-4">
                       Nenhuma atualizacao
                     </p>
                   ) : (
                     updates.map((update) => (
-                      <div key={update.id} className="border rounded-md p-3 space-y-1">
+                      <div key={update.id} className="border rounded-md p-3 space-y-2" data-testid={`update-item-${update.id}`}>
                         <div className="flex items-center justify-between gap-2">
                           <Badge variant="outline">v{update.version}</Badge>
                           <span className="text-xs text-muted-foreground">
                             {new Date(update.appliedAt).toLocaleDateString('pt-BR')}
                           </span>
                         </div>
-                        <p className="text-sm text-muted-foreground">{update.description}</p>
+                        <p className="text-sm">{update.description}</p>
+                        {update.filename && (
+                          <div className="flex items-center justify-between gap-2 text-xs">
+                            <span className="text-muted-foreground truncate">
+                              {update.filename} ({update.size ? (update.size / 1024).toFixed(1) + ' KB' : '-'})
+                            </span>
+                            <Button 
+                              size="sm" 
+                              variant="ghost" 
+                              onClick={() => window.open(`/api/admin/download-patch/${update.id}`, '_blank')}
+                              data-testid={`button-download-patch-${update.id}`}
+                            >
+                              <Download className="h-3 w-3 mr-1" />
+                              Baixar
+                            </Button>
+                          </div>
+                        )}
                         <p className="text-xs text-muted-foreground">Por: {update.appliedBy}</p>
                       </div>
                     ))
