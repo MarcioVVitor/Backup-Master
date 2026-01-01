@@ -6,6 +6,8 @@ import {
   backupHistory, 
   settings,
   vendorScripts,
+  manufacturers,
+  DEFAULT_MANUFACTURERS,
   type InsertFile, 
   type InsertEquipment, 
   type Equipment, 
@@ -15,7 +17,9 @@ import {
   type Setting,
   type InsertSetting,
   type VendorScript,
-  type InsertVendorScript
+  type InsertVendorScript,
+  type Manufacturer,
+  type InsertManufacturer
 } from "@shared/schema";
 import { eq, desc, sql, and, gte } from "drizzle-orm";
 
@@ -45,6 +49,12 @@ export interface IStorage {
   getVendorScript(manufacturer: string): Promise<VendorScript | undefined>;
   upsertVendorScript(data: InsertVendorScript): Promise<VendorScript>;
   deleteVendorScript(manufacturer: string): Promise<void>;
+
+  getManufacturers(): Promise<Manufacturer[]>;
+  createManufacturer(data: InsertManufacturer): Promise<Manufacturer>;
+  updateManufacturer(id: number, data: Partial<InsertManufacturer>): Promise<Manufacturer | undefined>;
+  deleteManufacturer(id: number): Promise<void>;
+  seedManufacturers(): Promise<void>;
 
   getStats(): Promise<{
     totalEquipment: number;
@@ -166,6 +176,37 @@ export class DatabaseStorage implements IStorage {
 
   async deleteVendorScript(manufacturer: string): Promise<void> {
     await db.delete(vendorScripts).where(eq(vendorScripts.manufacturer, manufacturer));
+  }
+
+  async getManufacturers(): Promise<Manufacturer[]> {
+    return await db.select().from(manufacturers).orderBy(manufacturers.label);
+  }
+
+  async createManufacturer(data: InsertManufacturer): Promise<Manufacturer> {
+    const [mfr] = await db.insert(manufacturers).values(data).returning();
+    return mfr;
+  }
+
+  async updateManufacturer(id: number, data: Partial<InsertManufacturer>): Promise<Manufacturer | undefined> {
+    const [updated] = await db.update(manufacturers).set(data).where(eq(manufacturers.id, id)).returning();
+    return updated;
+  }
+
+  async deleteManufacturer(id: number): Promise<void> {
+    await db.delete(manufacturers).where(eq(manufacturers.id, id));
+  }
+
+  async seedManufacturers(): Promise<void> {
+    const existing = await this.getManufacturers();
+    if (existing.length === 0) {
+      for (const mfr of DEFAULT_MANUFACTURERS) {
+        await db.insert(manufacturers).values({
+          value: mfr.value,
+          label: mfr.label,
+          color: mfr.color,
+        }).onConflictDoNothing();
+      }
+    }
   }
 
   async getStats(): Promise<{

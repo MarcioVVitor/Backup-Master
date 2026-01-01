@@ -88,8 +88,17 @@ export const vendorScripts = pgTable("vendor_scripts", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// Fabricantes suportados
-export const SUPPORTED_MANUFACTURERS = [
+// Tabela de Fabricantes
+export const manufacturers = pgTable("manufacturers", {
+  id: serial("id").primaryKey(),
+  value: text("value").notNull().unique(),
+  label: text("label").notNull(),
+  color: text("color").default("#6b7280"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Fabricantes padrão (usados para seed inicial)
+export const DEFAULT_MANUFACTURERS = [
   { value: "mikrotik", label: "Mikrotik", color: "#ff6b6b" },
   { value: "huawei", label: "Huawei", color: "#fd79a8" },
   { value: "cisco", label: "Cisco", color: "#0077b6" },
@@ -100,12 +109,16 @@ export const SUPPORTED_MANUFACTURERS = [
   { value: "juniper", label: "Juniper", color: "#84bc41" },
 ] as const;
 
+// Compatibilidade com código existente
+export const SUPPORTED_MANUFACTURERS = DEFAULT_MANUFACTURERS;
+
 // Schemas de inserção
 export const insertEquipmentSchema = createInsertSchema(equipment).omit({ id: true, createdAt: true });
 export const insertFileSchema = createInsertSchema(files).omit({ id: true, createdAt: true });
 export const insertBackupHistorySchema = createInsertSchema(backupHistory).omit({ id: true, executedAt: true });
 export const insertSettingSchema = createInsertSchema(settings).omit({ updatedAt: true });
 export const insertVendorScriptSchema = createInsertSchema(vendorScripts).omit({ id: true, updatedAt: true });
+export const insertManufacturerSchema = createInsertSchema(manufacturers).omit({ id: true, createdAt: true });
 
 // Tipos
 export type User = typeof users.$inferSelect;
@@ -120,3 +133,5 @@ export type Setting = typeof settings.$inferSelect;
 export type InsertSetting = z.infer<typeof insertSettingSchema>;
 export type VendorScript = typeof vendorScripts.$inferSelect;
 export type InsertVendorScript = z.infer<typeof insertVendorScriptSchema>;
+export type Manufacturer = typeof manufacturers.$inferSelect;
+export type InsertManufacturer = z.infer<typeof insertManufacturerSchema>;

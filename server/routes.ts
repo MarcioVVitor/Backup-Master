@@ -396,6 +396,59 @@ export async function registerRoutes(
     }
   });
 
+  // API - Fabricantes
+  app.get('/api/manufacturers', isAuthenticated, async (req, res) => {
+    try {
+      await storage.seedManufacturers();
+      const mfrs = await storage.getManufacturers();
+      res.json(mfrs);
+    } catch (e) {
+      console.error("Error getting manufacturers:", e);
+      res.status(500).json({ message: "Erro ao obter fabricantes" });
+    }
+  });
+
+  app.post('/api/manufacturers', isAuthenticated, async (req, res) => {
+    try {
+      const { value, label, color } = req.body;
+      if (!value || !label) {
+        return res.status(400).json({ message: "value e label sao obrigatorios" });
+      }
+      const mfr = await storage.createManufacturer({ value, label, color });
+      res.status(201).json(mfr);
+    } catch (e: any) {
+      if (e.code === '23505') {
+        return res.status(400).json({ message: "Fabricante ja existe" });
+      }
+      console.error("Error creating manufacturer:", e);
+      res.status(500).json({ message: "Erro ao criar fabricante" });
+    }
+  });
+
+  app.patch('/api/manufacturers/:id', isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { label, color } = req.body;
+      const mfr = await storage.updateManufacturer(id, { label, color });
+      if (!mfr) return res.status(404).json({ message: "Fabricante nao encontrado" });
+      res.json(mfr);
+    } catch (e) {
+      console.error("Error updating manufacturer:", e);
+      res.status(500).json({ message: "Erro ao atualizar fabricante" });
+    }
+  });
+
+  app.delete('/api/manufacturers/:id', isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteManufacturer(id);
+      res.sendStatus(204);
+    } catch (e) {
+      console.error("Error deleting manufacturer:", e);
+      res.status(500).json({ message: "Erro ao excluir fabricante" });
+    }
+  });
+
   // API - Stats
   app.get('/api/stats', isAuthenticated, async (req, res) => {
     try {

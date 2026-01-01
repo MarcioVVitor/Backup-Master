@@ -13,7 +13,13 @@ import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { Code, Pencil, RotateCcw, Save, Terminal } from "lucide-react";
-import { SUPPORTED_MANUFACTURERS } from "@shared/schema";
+
+interface ManufacturerRecord {
+  id: number;
+  value: string;
+  label: string;
+  color: string | null;
+}
 
 interface VendorScript {
   id?: number;
@@ -25,17 +31,6 @@ interface VendorScript {
   timeout?: number | null;
   isDefault?: boolean;
 }
-
-const manufacturerColors: Record<string, string> = {
-  mikrotik: "bg-red-500 text-white",
-  huawei: "bg-pink-500 text-white",
-  cisco: "bg-blue-600 text-white",
-  nokia: "bg-indigo-700 text-white",
-  zte: "bg-cyan-500 text-white",
-  datacom: "bg-teal-500 text-white",
-  "datacom-dmos": "bg-teal-600 text-white",
-  juniper: "bg-green-600 text-white",
-};
 
 export default function ScriptsPage() {
   const { user, isLoading: authLoading } = useAuth();
@@ -55,13 +50,19 @@ export default function ScriptsPage() {
     enabled: !!user,
   });
 
+  const { data: manufacturers } = useQuery<ManufacturerRecord[]>({
+    queryKey: ['/api/manufacturers'],
+    enabled: !!user,
+  });
+
   const [allScripts, setAllScripts] = useState<Record<string, VendorScript>>({});
   const [loadingScripts, setLoadingScripts] = useState(true);
 
   const loadAllScripts = async () => {
+    if (!manufacturers) return;
     setLoadingScripts(true);
     const scripts: Record<string, VendorScript> = {};
-    for (const mfr of SUPPORTED_MANUFACTURERS) {
+    for (const mfr of manufacturers) {
       try {
         const res = await fetch(`/api/scripts/${mfr.value}`, { credentials: 'include' });
         if (res.ok) {
@@ -76,10 +77,10 @@ export default function ScriptsPage() {
   };
 
   useEffect(() => {
-    if (user) {
+    if (user && manufacturers) {
       loadAllScripts();
     }
-  }, [user]);
+  }, [user, manufacturers]);
 
   const saveMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
@@ -162,13 +163,13 @@ export default function ScriptsPage() {
         </div>
       </div>
 
-      {loadingScripts ? (
+      {loadingScripts || !manufacturers ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-48" />)}
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {SUPPORTED_MANUFACTURERS.map((mfr) => {
+          {manufacturers.map((mfr) => {
             const script = getScriptForManufacturer(mfr.value);
             const isCustomized = isScriptCustomized(mfr.value);
             
@@ -176,7 +177,7 @@ export default function ScriptsPage() {
               <Card key={mfr.value} className="relative">
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between gap-2">
-                    <Badge className={manufacturerColors[mfr.value] || 'bg-gray-500 text-white'}>
+                    <Badge style={{ backgroundColor: mfr.color || '#6b7280', color: 'white' }}>
                       {mfr.label}
                     </Badge>
                     {isCustomized && (
