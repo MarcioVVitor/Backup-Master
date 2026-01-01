@@ -95,14 +95,13 @@ update_system() {
 install_system_deps() {
     log_info "Instalando dependencias do sistema..."
     
+    # Pacotes base disponiveis em todas as versoes do Debian
     DEBIAN_FRONTEND=noninteractive apt-get install -y \
         curl \
         wget \
-        gnupg2 \
+        gnupg \
         ca-certificates \
         lsb-release \
-        apt-transport-https \
-        software-properties-common \
         build-essential \
         git \
         openssh-client \
