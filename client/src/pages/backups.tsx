@@ -164,12 +164,12 @@ export default function BackupsPage() {
             data-testid="input-search-backups"
           />
         </div>
-        <Select value={manufacturerFilter} onValueChange={setManufacturerFilter}>
+        <Select value={manufacturerFilter || "all"} onValueChange={(v) => setManufacturerFilter(v === "all" ? "" : v)}>
           <SelectTrigger className="w-48" data-testid="select-manufacturer-filter">
             <SelectValue placeholder="Todos Fabricantes" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Todos Fabricantes</SelectItem>
+            <SelectItem value="all">Todos Fabricantes</SelectItem>
             {SUPPORTED_MANUFACTURERS.map((m) => (
               <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
             ))}
