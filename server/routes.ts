@@ -28,6 +28,14 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 const isAdmin = async (req: any, res: any, next: any) => {
   try {
+    if (isStandalone) {
+      const sessionUser = (req.session as any)?.user;
+      if (!sessionUser?.isAdmin) {
+        return res.status(403).json({ message: "Apenas administradores podem acessar este recurso" });
+      }
+      return next();
+    }
+    
     const user = req.user as any;
     const userSub = user?.claims?.sub;
     if (!userSub) {
