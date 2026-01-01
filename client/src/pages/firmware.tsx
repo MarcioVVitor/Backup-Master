@@ -1024,15 +1024,23 @@ export default function FirmwarePage() {
                   />
                 </div>
                 <div>
-                  <Label>Comando de Backup *</Label>
+                  <Label>Comando de Atualizacao *</Label>
                   <Textarea
                     value={editingScript.command}
                     onChange={(e) => setEditingScript({ ...editingScript, command: e.target.value })}
-                    placeholder="Comando a ser executado para backup (ex: display current-configuration)"
-                    rows={5}
+                    placeholder="Comando a ser executado para atualizacao de firmware"
+                    rows={8}
                     className="font-mono text-sm"
                     data-testid="input-script-command"
                   />
+                  <div className="mt-2 p-3 bg-muted rounded-md text-xs">
+                    <p className="font-medium mb-2">Placeholders disponiveis:</p>
+                    <ul className="space-y-1 text-muted-foreground">
+                      <li><code className="bg-background px-1 rounded">{"{{SERVER_IP}}"}</code> - IP do servidor NBM (configure em Administracao)</li>
+                      <li><code className="bg-background px-1 rounded">{"{{FIRMWARE_FILE}}"}</code> - Nome do arquivo de firmware selecionado</li>
+                      <li><code className="bg-background px-1 rounded">{"{{EQUIPMENT_IP}}"}</code> - IP do equipamento de destino</li>
+                    </ul>
+                  </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
