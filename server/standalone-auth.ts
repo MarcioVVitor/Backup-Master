@@ -85,9 +85,10 @@ export async function setupStandaloneAuth(app: Express) {
           isAdmin: user.isAdmin,
         }
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Login error:", error);
-      res.status(500).json({ message: "Internal server error" });
+      const errorMessage = error?.message || error?.toString() || "Internal server error";
+      res.status(500).json({ message: errorMessage });
     }
   });
 
