@@ -267,22 +267,34 @@ install_application() {
     SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     APP_SOURCE="${SCRIPT_DIR}/../"
     
-    # Verificar se os arquivos existem
+    # Verificar se os arquivos existem localmente
     if [[ ! -f "${APP_SOURCE}/package.json" ]]; then
-        log_info "Arquivos locais nao encontrados, clonando do GitHub..."
+        log_info "Baixando aplicacao do GitHub..."
         
-        # Limpar diretorio se existir conteudo
-        if [[ -d "${NBM_HOME}" ]]; then
-            rm -rf ${NBM_HOME}/*
-            rm -rf ${NBM_HOME}/.[!.]* 2>/dev/null || true
+        # Salvar .env se existir
+        if [[ -f "${NBM_HOME}/.env" ]]; then
+            cp ${NBM_HOME}/.env /tmp/nbm_env_backup
         fi
         
-        cd ${NBM_HOME}
-        git clone https://github.com/MarcioVVitor/nbm.git . || {
-            log_error "Falha ao clonar repositorio. Copie os arquivos manualmente para ${NBM_HOME}"
+        # Remover e recriar diretorio
+        rm -rf ${NBM_HOME}
+        mkdir -p ${NBM_HOME}
+        chown ${NBM_USER}:${NBM_GROUP} ${NBM_HOME}
+        
+        # Clonar repositorio
+        git clone https://github.com/MarcioVVitor/nbm.git ${NBM_HOME} || {
+            log_error "Falha ao clonar repositorio"
             exit 1
         }
-        log_success "Repositorio clonado com sucesso"
+        
+        # Restaurar .env se existia
+        if [[ -f "/tmp/nbm_env_backup" ]]; then
+            mv /tmp/nbm_env_backup ${NBM_HOME}/.env
+            chown ${NBM_USER}:${NBM_GROUP} ${NBM_HOME}/.env
+            chmod 600 ${NBM_HOME}/.env
+        fi
+        
+        log_success "Aplicacao baixada com sucesso"
     else
         # Copiar arquivos principais
         cp -r ${APP_SOURCE}/* ${NBM_HOME}/
