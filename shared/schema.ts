@@ -112,6 +112,21 @@ export const systemUpdates = pgTable("system_updates", {
   appliedBy: text("applied_by").notNull(),
 });
 
+// Tabela de Firmware
+export const firmware = pgTable("firmware", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  manufacturer: text("manufacturer").notNull(),
+  model: text("model"),
+  version: text("version"),
+  filename: text("filename").notNull(),
+  objectName: text("object_name").notNull(),
+  size: integer("size").notNull(),
+  description: text("description"),
+  uploadedBy: integer("uploaded_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Fabricantes padrão (usados para seed inicial)
 export const DEFAULT_MANUFACTURERS = [
   { value: "mikrotik", label: "Mikrotik", color: "#ff6b6b" },
@@ -135,6 +150,7 @@ export const insertSettingSchema = createInsertSchema(settings).omit({ updatedAt
 export const insertVendorScriptSchema = createInsertSchema(vendorScripts).omit({ id: true, updatedAt: true });
 export const insertManufacturerSchema = createInsertSchema(manufacturers).omit({ id: true, createdAt: true });
 export const insertSystemUpdateSchema = createInsertSchema(systemUpdates).omit({ id: true, appliedAt: true });
+export const insertFirmwareSchema = createInsertSchema(firmware).omit({ id: true, createdAt: true });
 export const updateUserSchema = createInsertSchema(users).omit({ id: true, replitId: true, createdAt: true }).partial();
 
 // Tipos
@@ -154,3 +170,5 @@ export type Manufacturer = typeof manufacturers.$inferSelect;
 export type InsertManufacturer = z.infer<typeof insertManufacturerSchema>;
 export type SystemUpdate = typeof systemUpdates.$inferSelect;
 export type InsertSystemUpdate = z.infer<typeof insertSystemUpdateSchema>;
+export type Firmware = typeof firmware.$inferSelect;
+export type InsertFirmware = z.infer<typeof insertFirmwareSchema>;

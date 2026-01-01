@@ -3,7 +3,7 @@ import type { Server } from "http";
 import { storage } from "./storage";
 import multer from "multer";
 import { setupAuth, isAuthenticated, registerAuthRoutes } from "./replit_integrations/auth";
-import { insertEquipmentSchema, insertVendorScriptSchema, insertSystemUpdateSchema, SUPPORTED_MANUFACTURERS, USER_ROLES } from "@shared/schema";
+import { insertEquipmentSchema, insertVendorScriptSchema, insertSystemUpdateSchema, insertFirmwareSchema, SUPPORTED_MANUFACTURERS, USER_ROLES } from "@shared/schema";
 import { z } from "zod";
 
 const updateUserSchema = z.object({
@@ -685,6 +685,108 @@ export async function registerRoutes(
       }
       console.error("Error saving customization:", e);
       res.status(500).json({ message: "Erro ao salvar personalizacao" });
+    }
+  });
+
+  // API - Firmware
+  app.get('/api/firmware', isAuthenticated, async (req, res) => {
+    try {
+      const firmwareList = await storage.getFirmware();
+      res.json(firmwareList);
+    } catch (e) {
+      console.error("Error listing firmware:", e);
+      res.status(500).json({ message: "Erro ao listar firmware" });
+    }
+  });
+
+  app.post('/api/firmware', isAuthenticated, upload.single('file'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "Nenhum arquivo enviado" });
+      }
+
+      const user = req.user as any;
+      const userSub = user?.claims?.sub;
+      const userId = userSub ? await storage.getUserIdByReplitId(userSub) : null;
+
+      const { objectStorageClient } = await import("./replit_integrations/object_storage/objectStorage");
+      const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID;
+      if (!bucketId) return res.status(500).json({ message: "Bucket nao configurado" });
+
+      const objectName = `firmware/${Date.now()}-${req.file.originalname}`;
+      const bucket = objectStorageClient.bucket(bucketId);
+      const file = bucket.file(objectName);
+
+      await file.save(req.file.buffer, {
+        contentType: req.file.mimetype || 'application/octet-stream',
+      });
+
+      const { name, manufacturer, model, version, description } = req.body;
+
+      const fw = await storage.createFirmware({
+        name: name || req.file.originalname,
+        manufacturer: manufacturer || 'unknown',
+        model: model || null,
+        version: version || null,
+        filename: req.file.originalname,
+        objectName,
+        size: req.file.size,
+        description: description || null,
+        uploadedBy: userId,
+      });
+
+      res.status(201).json(fw);
+    } catch (e) {
+      console.error("Error uploading firmware:", e);
+      res.status(500).json({ message: "Erro ao fazer upload do firmware" });
+    }
+  });
+
+  app.delete('/api/firmware/:id', isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const fw = await storage.getFirmwareById(id);
+      if (!fw) return res.status(404).json({ message: "Firmware nao encontrado" });
+
+      const { objectStorageClient } = await import("./replit_integrations/object_storage/objectStorage");
+      const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID;
+      if (bucketId && fw.objectName) {
+        try {
+          const bucket = objectStorageClient.bucket(bucketId);
+          await bucket.file(fw.objectName).delete();
+        } catch (e) {
+          console.error("Error deleting firmware file:", e);
+        }
+      }
+
+      await storage.deleteFirmware(id);
+      res.sendStatus(204);
+    } catch (e) {
+      console.error("Error deleting firmware:", e);
+      res.status(500).json({ message: "Erro ao excluir firmware" });
+    }
+  });
+
+  app.get('/api/firmware/:id/download', isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const fw = await storage.getFirmwareById(id);
+      if (!fw) return res.status(404).json({ message: "Firmware nao encontrado" });
+
+      const { objectStorageClient } = await import("./replit_integrations/object_storage/objectStorage");
+      const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID;
+      if (!bucketId) return res.status(500).json({ message: "Bucket nao configurado" });
+
+      const bucket = objectStorageClient.bucket(bucketId);
+      const file = bucket.file(fw.objectName);
+      const [buffer] = await file.download();
+
+      res.setHeader('Content-Type', 'application/octet-stream');
+      res.setHeader('Content-Disposition', `attachment; filename="${fw.filename}"`);
+      res.send(buffer);
+    } catch (e) {
+      console.error("Error downloading firmware:", e);
+      res.status(500).json({ message: "Erro ao baixar firmware" });
     }
   });
 

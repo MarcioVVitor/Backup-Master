@@ -8,6 +8,7 @@ import {
   vendorScripts,
   manufacturers,
   systemUpdates,
+  firmware,
   DEFAULT_MANUFACTURERS,
   type InsertFile, 
   type InsertEquipment, 
@@ -23,6 +24,8 @@ import {
   type InsertManufacturer,
   type SystemUpdate,
   type InsertSystemUpdate,
+  type Firmware,
+  type InsertFirmware,
   type User
 } from "@shared/schema";
 import { eq, desc, sql, and, gte } from "drizzle-orm";
@@ -65,6 +68,11 @@ export interface IStorage {
 
   getSystemUpdates(): Promise<SystemUpdate[]>;
   createSystemUpdate(data: InsertSystemUpdate): Promise<SystemUpdate>;
+
+  getFirmware(): Promise<Firmware[]>;
+  getFirmwareById(id: number): Promise<Firmware | undefined>;
+  createFirmware(data: InsertFirmware): Promise<Firmware>;
+  deleteFirmware(id: number): Promise<void>;
 
   importData(data: any): Promise<void>;
 
@@ -285,6 +293,24 @@ export class DatabaseStorage implements IStorage {
   async createSystemUpdate(data: InsertSystemUpdate): Promise<SystemUpdate> {
     const [update] = await db.insert(systemUpdates).values(data).returning();
     return update;
+  }
+
+  async getFirmware(): Promise<Firmware[]> {
+    return await db.select().from(firmware).orderBy(desc(firmware.createdAt));
+  }
+
+  async getFirmwareById(id: number): Promise<Firmware | undefined> {
+    const [fw] = await db.select().from(firmware).where(eq(firmware.id, id));
+    return fw;
+  }
+
+  async createFirmware(data: InsertFirmware): Promise<Firmware> {
+    const [fw] = await db.insert(firmware).values(data).returning();
+    return fw;
+  }
+
+  async deleteFirmware(id: number): Promise<void> {
+    await db.delete(firmware).where(eq(firmware.id, id));
   }
 
   async importData(data: any): Promise<void> {
