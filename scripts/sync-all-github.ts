@@ -65,6 +65,9 @@ async function main() {
     { local: 'server/routes.ts', remote: 'server/routes.ts' },
     { local: 'shared/models/auth.ts', remote: 'shared/models/auth.ts' },
     { local: 'script/build.ts', remote: 'script/build.ts' },
+    { local: 'client/src/pages/login.tsx', remote: 'client/src/pages/login.tsx' },
+    { local: 'client/src/App.tsx', remote: 'client/src/App.tsx' },
+    { local: 'client/src/hooks/use-auth.ts', remote: 'client/src/hooks/use-auth.ts' },
   ];
   
   for (const file of filesToSync) {

@@ -14,6 +14,7 @@ import Scripts from "@/pages/scripts";
 import Manufacturers from "@/pages/manufacturers";
 import Admin from "@/pages/admin";
 import Firmware from "@/pages/firmware";
+import Login from "@/pages/login";
 import NotFound from "@/pages/not-found";
 
 import {
@@ -61,14 +62,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
   if (isLoading) return <div className="flex h-screen items-center justify-center">Carregando...</div>;
 
   if (!user) {
-    // If auth is enabled but user not logged in, Replit Auth usually handles redirect.
-    // We can show a simple login landing here just in case.
-    return (
-      <div className="flex h-screen items-center justify-center flex-col gap-4">
-        <h1 className="text-2xl font-bold">Network Backup Manager</h1>
-        <Button onClick={() => window.location.href = "/api/login"}>Login com Replit</Button>
-      </div>
-    );
+    return <Login />;
   }
 
   const menuItems = [
@@ -137,7 +131,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
                 size="icon"
                 variant="ghost"
                 className="h-7 w-7"
-                onClick={() => window.location.href = '/api/logout'}
+                onClick={() => fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).then(() => window.location.reload())}
               >
                 <LogOut className="h-3.5 w-3.5" />
               </Button>
