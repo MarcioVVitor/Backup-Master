@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -8,30 +8,28 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { Plus, Pencil, Trash2, Server } from "lucide-react";
-import { SUPPORTED_MANUFACTURERS, type Equipment } from "@shared/schema";
+import { Plus, Pencil, Trash2, Server, Search } from "lucide-react";
+import { type Equipment } from "@shared/schema";
 
-const manufacturerColors: Record<string, string> = {
-  mikrotik: "bg-red-500 text-white",
-  huawei: "bg-pink-500 text-white",
-  cisco: "bg-blue-600 text-white",
-  nokia: "bg-indigo-700 text-white",
-  zte: "bg-cyan-500 text-white",
-  datacom: "bg-teal-500 text-white",
-  "datacom-dmos": "bg-teal-600 text-white",
-  juniper: "bg-green-600 text-white",
-};
+interface Manufacturer {
+  id: number;
+  value: string;
+  label: string;
+  color: string | null;
+}
 
 export default function EquipmentPage() {
   const { user, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingEquipment, setEditingEquipment] = useState<Equipment | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
   const [formData, setFormData] = useState({
     name: "",
     ip: "",
@@ -48,6 +46,34 @@ export default function EquipmentPage() {
     queryKey: ['/api/equipment'],
     enabled: !!user,
   });
+
+  const { data: manufacturers } = useQuery<Manufacturer[]>({
+    queryKey: ['/api/manufacturers'],
+    enabled: !!user,
+  });
+
+  const filteredEquipment = useMemo(() => {
+    if (!equipmentList) return [];
+    if (!searchQuery.trim()) return equipmentList;
+    
+    const query = searchQuery.toLowerCase();
+    return equipmentList.filter(equip => 
+      equip.name.toLowerCase().includes(query) ||
+      equip.ip.toLowerCase().includes(query) ||
+      equip.manufacturer.toLowerCase().includes(query) ||
+      (equip.model && equip.model.toLowerCase().includes(query))
+    );
+  }, [equipmentList, searchQuery]);
+
+  const getManufacturerColor = (value: string): string | null => {
+    const mfr = manufacturers?.find(m => m.value === value);
+    return mfr?.color || null;
+  };
+
+  const getManufacturerLabel = (value: string): string => {
+    const mfr = manufacturers?.find(m => m.value === value);
+    return mfr?.label || value;
+  };
 
   const createMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
@@ -153,13 +179,24 @@ export default function EquipmentPage() {
           </h1>
           <p className="text-muted-foreground">Gerencie os equipamentos de rede</p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={(open) => { setIsDialogOpen(open); if (!open) resetForm(); }}>
-          <DialogTrigger asChild>
-            <Button data-testid="button-add-equipment">
-              <Plus className="mr-2 h-4 w-4" />
-              Adicionar
-            </Button>
-          </DialogTrigger>
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Pesquisar por nome, IP, fabricante..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 w-64"
+              data-testid="input-search-equipment"
+            />
+          </div>
+          <Dialog open={isDialogOpen} onOpenChange={(open) => { setIsDialogOpen(open); if (!open) resetForm(); }}>
+            <DialogTrigger asChild>
+              <Button data-testid="button-add-equipment">
+                <Plus className="mr-2 h-4 w-4" />
+                Adicionar
+              </Button>
+            </DialogTrigger>
           <DialogContent className="max-w-xl">
             <DialogHeader>
               <DialogTitle>{editingEquipment ? "Editar Equipamento" : "Novo Equipamento"}</DialogTitle>
@@ -196,7 +233,7 @@ export default function EquipmentPage() {
                       <SelectValue placeholder="Selecione" />
                     </SelectTrigger>
                     <SelectContent>
-                      {SUPPORTED_MANUFACTURERS.map((m) => (
+                      {manufacturers?.map((m) => (
                         <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
                       ))}
                     </SelectContent>
@@ -262,6 +299,7 @@ export default function EquipmentPage() {
             </form>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       <Card>
@@ -273,6 +311,10 @@ export default function EquipmentPage() {
           ) : !equipmentList?.length ? (
             <div className="p-6 text-center text-muted-foreground">
               Nenhum equipamento cadastrado
+            </div>
+          ) : filteredEquipment.length === 0 ? (
+            <div className="p-6 text-center text-muted-foreground">
+              Nenhum equipamento encontrado para "{searchQuery}"
             </div>
           ) : (
             <Table>
@@ -288,13 +330,13 @@ export default function EquipmentPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {equipmentList.map((equip) => (
+                {filteredEquipment.map((equip) => (
                   <TableRow key={equip.id} data-testid={`row-equipment-${equip.id}`}>
                     <TableCell className="font-medium">{equip.name}</TableCell>
                     <TableCell className="font-mono text-sm">{equip.ip}</TableCell>
                     <TableCell>
-                      <Badge className={manufacturerColors[equip.manufacturer] || 'bg-gray-500 text-white'}>
-                        {equip.manufacturer}
+                      <Badge style={{ backgroundColor: getManufacturerColor(equip.manufacturer) || '#6b7280', color: 'white' }}>
+                        {getManufacturerLabel(equip.manufacturer)}
                       </Badge>
                     </TableCell>
                     <TableCell>{equip.model || "-"}</TableCell>
@@ -313,14 +355,32 @@ export default function EquipmentPage() {
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        onClick={() => deleteMutation.mutate(equip.id)}
-                        data-testid={`button-delete-equipment-${equip.id}`}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            data-testid={`button-delete-equipment-${equip.id}`}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Excluir Equipamento</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Tem certeza que deseja excluir o equipamento "{equip.name}"?
+                              Esta acao nao pode ser desfeita.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => deleteMutation.mutate(equip.id)}>
+                              Excluir
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </TableCell>
                   </TableRow>
                 ))}
