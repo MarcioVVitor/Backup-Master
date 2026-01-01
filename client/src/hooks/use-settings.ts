@@ -50,7 +50,7 @@ export function useDeleteFirmware() {
 // Users
 export function useUsers() {
   return useQuery<User[]>({
-    queryKey: ["/api/users"],
+    queryKey: ["/api/admin/users"],
   });
 }
 
@@ -58,9 +58,9 @@ export function useUpdateUserRole() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, role, isAdmin }: { id: number; role: string; isAdmin: boolean }) => {
-      const res = await apiRequest("PUT", `/api/users/${id}`, { role, isAdmin });
+      const res = await apiRequest("PUT", `/api/admin/users/${id}`, { role, isAdmin });
       return res.json();
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["/api/users"] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] }),
   });
 }
