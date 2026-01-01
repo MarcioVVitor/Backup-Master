@@ -273,7 +273,7 @@ install_application() {
         log_info "Clonando do repositorio GitHub..."
         
         cd ${NBM_HOME}
-        git clone https://github.com/seu-usuario/nbm.git . 2>/dev/null || {
+        git clone https://github.com/MarcioVVitor/nbm.git . || {
             log_error "Falha ao clonar repositorio. Copie os arquivos manualmente para ${NBM_HOME}"
             exit 1
         }
