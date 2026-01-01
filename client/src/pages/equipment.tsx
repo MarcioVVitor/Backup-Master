@@ -249,7 +249,7 @@ export default function EquipmentPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="username">Usuario SSH</Label>
+                  <Label htmlFor="username">Usuario</Label>
                   <Input
                     id="username"
                     value={formData.username}
@@ -258,7 +258,7 @@ export default function EquipmentPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="password">Senha SSH</Label>
+                  <Label htmlFor="password">Senha</Label>
                   <Input
                     id="password"
                     type="password"
@@ -267,6 +267,21 @@ export default function EquipmentPage() {
                     placeholder={editingEquipment ? "(deixe vazio para manter)" : ""}
                     data-testid="input-equipment-password"
                   />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="protocol">Protocolo</Label>
+                  <Select
+                    value={formData.protocol}
+                    onValueChange={(value) => setFormData({ ...formData, protocol: value, port: value === "telnet" ? 23 : 22 })}
+                  >
+                    <SelectTrigger data-testid="select-protocol">
+                      <SelectValue placeholder="Selecione" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ssh">SSH</SelectItem>
+                      <SelectItem value="telnet">Telnet</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="port">Porta</Label>
@@ -324,6 +339,7 @@ export default function EquipmentPage() {
                   <TableHead>IP</TableHead>
                   <TableHead>Fabricante</TableHead>
                   <TableHead>Modelo</TableHead>
+                  <TableHead>Protocolo</TableHead>
                   <TableHead>Porta</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Acoes</TableHead>
@@ -340,6 +356,9 @@ export default function EquipmentPage() {
                       </Badge>
                     </TableCell>
                     <TableCell>{equip.model || "-"}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{(equip.protocol || "ssh").toUpperCase()}</Badge>
+                    </TableCell>
                     <TableCell>{equip.port}</TableCell>
                     <TableCell>
                       <Badge variant={equip.enabled ? "default" : "secondary"}>
