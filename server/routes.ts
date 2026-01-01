@@ -3,10 +3,44 @@ import type { Server } from "http";
 import { storage } from "./storage";
 import multer from "multer";
 import { setupAuth, isAuthenticated, registerAuthRoutes } from "./replit_integrations/auth";
-import { insertEquipmentSchema, insertVendorScriptSchema, insertSystemUpdateSchema, SUPPORTED_MANUFACTURERS } from "@shared/schema";
+import { insertEquipmentSchema, insertVendorScriptSchema, insertSystemUpdateSchema, SUPPORTED_MANUFACTURERS, USER_ROLES } from "@shared/schema";
 import { z } from "zod";
 
+const updateUserSchema = z.object({
+  role: z.enum(["admin", "operator", "viewer"]).optional(),
+  active: z.boolean().optional(),
+  name: z.string().optional(),
+  email: z.string().email().optional().or(z.literal('')),
+});
+
+const customizationSchema = z.object({
+  logoUrl: z.string().optional(),
+  primaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+  systemName: z.string().min(1).max(50).optional(),
+});
+
 const upload = multer({ storage: multer.memoryStorage() });
+
+const isAdmin = async (req: any, res: any, next: any) => {
+  try {
+    const user = req.user as any;
+    const userSub = user?.claims?.sub;
+    if (!userSub) {
+      return res.status(403).json({ message: "Acesso negado" });
+    }
+    const { db } = await import("./db");
+    const { users } = await import("@shared/schema");
+    const { eq } = await import("drizzle-orm");
+    const [dbUser] = await db.select().from(users).where(eq(users.replitId, userSub));
+    if (!dbUser || (dbUser.role !== 'admin' && !dbUser.isAdmin)) {
+      return res.status(403).json({ message: "Apenas administradores podem acessar este recurso" });
+    }
+    next();
+  } catch (e) {
+    console.error("Error checking admin:", e);
+    res.status(500).json({ message: "Erro ao verificar permissao" });
+  }
+};
 
 export async function registerRoutes(
   httpServer: Server,
@@ -594,8 +628,8 @@ export async function registerRoutes(
     }
   });
 
-  // API - Admin - User Management
-  app.get('/api/admin/users', isAuthenticated, async (req, res) => {
+  // API - Admin - User Management (admin only)
+  app.get('/api/admin/users', isAuthenticated, isAdmin, async (req, res) => {
     try {
       const usersList = await storage.getUsers();
       res.json(usersList);
@@ -605,14 +639,17 @@ export async function registerRoutes(
     }
   });
 
-  app.put('/api/admin/users/:id', isAuthenticated, async (req, res) => {
+  app.put('/api/admin/users/:id', isAuthenticated, isAdmin, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      const { role, active, name, email } = req.body;
-      const updated = await storage.updateUser(id, { role, active, name, email });
+      const parsed = updateUserSchema.parse(req.body);
+      const updated = await storage.updateUser(id, parsed);
       if (!updated) return res.status(404).json({ message: "Usuario nao encontrado" });
       res.json(updated);
     } catch (e) {
+      if (e instanceof z.ZodError) {
+        return res.status(400).json({ message: "Dados invalidos", errors: e.errors });
+      }
       console.error("Error updating user:", e);
       res.status(500).json({ message: "Erro ao atualizar usuario" });
     }
@@ -635,14 +672,17 @@ export async function registerRoutes(
     }
   });
 
-  app.post('/api/admin/customization', isAuthenticated, async (req, res) => {
+  app.post('/api/admin/customization', isAuthenticated, isAdmin, async (req, res) => {
     try {
-      const { logoUrl, primaryColor, systemName } = req.body;
-      if (logoUrl !== undefined) await storage.setSetting('logo_url', logoUrl);
-      if (primaryColor !== undefined) await storage.setSetting('primary_color', primaryColor);
-      if (systemName !== undefined) await storage.setSetting('system_name', systemName);
+      const parsed = customizationSchema.parse(req.body);
+      if (parsed.logoUrl !== undefined) await storage.setSetting('logo_url', parsed.logoUrl);
+      if (parsed.primaryColor !== undefined) await storage.setSetting('primary_color', parsed.primaryColor);
+      if (parsed.systemName !== undefined) await storage.setSetting('system_name', parsed.systemName);
       res.json({ message: "Personalizacao salva com sucesso" });
     } catch (e) {
+      if (e instanceof z.ZodError) {
+        return res.status(400).json({ message: "Dados invalidos", errors: e.errors });
+      }
       console.error("Error saving customization:", e);
       res.status(500).json({ message: "Erro ao salvar personalizacao" });
     }

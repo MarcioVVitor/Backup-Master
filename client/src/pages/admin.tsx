@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,7 +15,7 @@ import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Database, Download, Upload, Package, Clock, FileJson, Archive, Users, Palette, User as UserIcon, Save, Check, X } from "lucide-react";
+import { Database, Download, Upload, Package, Clock, FileJson, Archive, Users, Palette, User as UserIcon, Save } from "lucide-react";
 import type { User } from "@shared/schema";
 
 interface SystemInfo {
@@ -69,6 +69,16 @@ export default function AdminPage() {
     queryKey: ['/api/admin/customization'],
     enabled: !!user,
   });
+
+  useEffect(() => {
+    if (customizationData) {
+      setCustomization({
+        logoUrl: customizationData.logoUrl || '',
+        primaryColor: customizationData.primaryColor || '#0077b6',
+        systemName: customizationData.systemName || 'NBM',
+      });
+    }
+  }, [customizationData]);
 
   const exportDbMutation = useMutation({
     mutationFn: async () => {
