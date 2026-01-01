@@ -270,6 +270,7 @@ setup_database() {
     echo "SESSION_SECRET=$(openssl rand -base64 48 | tr -d '/+=')" >> ${NBM_HOME}/.env
     echo "NODE_ENV=production" >> ${NBM_HOME}/.env
     echo "PORT=${NBM_PORT}" >> ${NBM_HOME}/.env
+    echo "STANDALONE=true" >> ${NBM_HOME}/.env
     
     chown ${NBM_USER}:${NBM_GROUP} ${NBM_HOME}/.env
     chmod 600 ${NBM_HOME}/.env

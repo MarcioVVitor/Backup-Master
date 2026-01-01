@@ -2,12 +2,13 @@ import type { Express } from "express";
 import type { Server } from "http";
 import { storage } from "./storage";
 import multer from "multer";
-import { setupAuth, isAuthenticated, registerAuthRoutes, getSession } from "./replit_integrations/auth";
 import { insertEquipmentSchema, insertVendorScriptSchema, updateVendorScriptSchema, insertSystemUpdateSchema, insertFirmwareSchema, SUPPORTED_MANUFACTURERS, USER_ROLES } from "@shared/schema";
 import { z } from "zod";
 import { WebSocketServer, WebSocket } from "ws";
 import { Client as SSHClient } from "ssh2";
 import net from "net";
+
+const isStandalone = !process.env.REPL_ID;
 
 const updateUserSchema = z.object({
   role: z.enum(["admin", "operator", "viewer"]).optional(),
@@ -50,8 +51,22 @@ export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
-  await setupAuth(app);
-  registerAuthRoutes(app);
+  let isAuthenticated: any;
+  let getSession: any;
+  
+  if (isStandalone) {
+    const standaloneAuth = await import("./standalone-auth");
+    getSession = standaloneAuth.getSession;
+    app.use(getSession());
+    await standaloneAuth.setupStandaloneAuth(app);
+    isAuthenticated = standaloneAuth.isAuthenticated;
+  } else {
+    const replitAuth = await import("./replit_integrations/auth");
+    getSession = replitAuth.getSession;
+    await replitAuth.setupAuth(app);
+    replitAuth.registerAuthRoutes(app);
+    isAuthenticated = replitAuth.isAuthenticated;
+  }
 
   const sanitizeEquipment = (equip: any) => {
     const { password, ...rest } = equip;
@@ -928,33 +943,43 @@ export async function registerRoutes(
   
   httpServer.on('upgrade', (request: any, socket: any, head: any) => {
     if (request.url !== '/ws/terminal') {
-      return; // Let other handlers deal with non-terminal upgrades
+      return;
     }
     
-    // Use session parser to validate the session
     sessionParser(request, {} as any, async () => {
       try {
-        // Check if session has passport user
-        const passport = request.session?.passport;
-        if (!passport?.user?.claims?.sub) {
-          socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
-          socket.destroy();
-          return;
-        }
-        
-        // Verify user role (admin or operator only)
         const { db } = await import("./db");
         const { users } = await import("@shared/schema");
         const { eq } = await import("drizzle-orm");
         
-        const [dbUser] = await db.select().from(users).where(eq(users.replitId, passport.user.claims.sub));
+        let dbUser: any = null;
+        
+        if (isStandalone) {
+          const sessionUser = request.session?.user;
+          if (!sessionUser?.id) {
+            socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
+            socket.destroy();
+            return;
+          }
+          const [user] = await db.select().from(users).where(eq(users.id, sessionUser.id));
+          dbUser = user;
+        } else {
+          const passport = request.session?.passport;
+          if (!passport?.user?.claims?.sub) {
+            socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
+            socket.destroy();
+            return;
+          }
+          const [user] = await db.select().from(users).where(eq(users.replitId, passport.user.claims.sub));
+          dbUser = user;
+        }
+        
         if (!dbUser || (dbUser.role !== 'admin' && dbUser.role !== 'operator' && !dbUser.isAdmin)) {
           socket.write('HTTP/1.1 403 Forbidden\r\n\r\n');
           socket.destroy();
           return;
         }
         
-        // User authenticated and authorized - proceed with WebSocket upgrade
         wss.handleUpgrade(request, socket, head, (ws) => {
           (ws as any).userId = dbUser.id;
           (ws as any).userRole = dbUser.role;

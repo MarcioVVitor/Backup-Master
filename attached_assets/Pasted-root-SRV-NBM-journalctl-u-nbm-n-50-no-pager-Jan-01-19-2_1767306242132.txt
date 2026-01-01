@@ -1,0 +1,62 @@
+root@SRV-NBM[~]# journalctl -u nbm -n 50 --no-pager
+Jan 01 19:23:28 SRV-NBM nbm[13964]:     at async /opt/nbm/dist/index.cjs:161:1608 {
+Jan 01 19:23:28 SRV-NBM nbm[13964]:   code: 'ERR_INVALID_ARG_TYPE',
+Jan 01 19:23:28 SRV-NBM nbm[13964]:   [cause]: undefined
+Jan 01 19:23:28 SRV-NBM nbm[13964]: }
+Jan 01 19:23:28 SRV-NBM nbm[13964]: Node.js v20.19.6
+Jan 01 19:23:28 SRV-NBM systemd[1]: nbm.service: Main process exited, code=exited, status=1/FAILURE
+Jan 01 19:23:28 SRV-NBM systemd[1]: nbm.service: Failed with result 'exit-code'.
+Jan 01 19:23:28 SRV-NBM systemd[1]: nbm.service: Consumed 693ms CPU time, 67M memory peak.
+Jan 01 19:23:38 SRV-NBM systemd[1]: nbm.service: Scheduled restart job, restart counter is at 60.
+Jan 01 19:23:38 SRV-NBM systemd[1]: Started nbm.service - NBM - Network Backup Manager.
+Jan 01 19:23:39 SRV-NBM nbm[13980]: file:///opt/nbm/node_modules/openid-client/build/index.js:89
+Jan 01 19:23:39 SRV-NBM nbm[13980]:     const err = new TypeError(message, { cause });
+Jan 01 19:23:39 SRV-NBM nbm[13980]:                 ^
+Jan 01 19:23:39 SRV-NBM nbm[13980]: TypeError: "clientId" must be a non-empty string
+Jan 01 19:23:39 SRV-NBM nbm[13980]:     at CodedTypeError (file:///opt/nbm/node_modules/openid-client/build/index.js:89:17)
+Jan 01 19:23:39 SRV-NBM nbm[13980]:     at new Configuration (file:///opt/nbm/node_modules/openid-client/build/index.js:463:19)
+Jan 01 19:23:39 SRV-NBM nbm[13980]:     at Object.discovery (file:///opt/nbm/node_modules/openid-client/build/index.js:244:22)
+Jan 01 19:23:39 SRV-NBM nbm[13980]:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+Jan 01 19:23:39 SRV-NBM nbm[13980]:     at async YO.maxAge (/opt/nbm/dist/index.cjs:145:2414)
+Jan 01 19:23:39 SRV-NBM nbm[13980]:     at async tb (/opt/nbm/dist/index.cjs:145:3282)
+Jan 01 19:23:39 SRV-NBM nbm[13980]:     at async NI (/opt/nbm/dist/index.cjs:145:5929)
+Jan 01 19:23:39 SRV-NBM nbm[13980]:     at async /opt/nbm/dist/index.cjs:161:1608 {
+Jan 01 19:23:39 SRV-NBM nbm[13980]:   code: 'ERR_INVALID_ARG_TYPE',
+Jan 01 19:23:39 SRV-NBM nbm[13980]:   [cause]: undefined
+Jan 01 19:23:39 SRV-NBM nbm[13980]: }
+Jan 01 19:23:39 SRV-NBM nbm[13980]: Node.js v20.19.6
+Jan 01 19:23:39 SRV-NBM systemd[1]: nbm.service: Main process exited, code=exited, status=1/FAILURE
+Jan 01 19:23:39 SRV-NBM systemd[1]: nbm.service: Failed with result 'exit-code'.
+Jan 01 19:23:39 SRV-NBM systemd[1]: nbm.service: Consumed 646ms CPU time, 67.2M memory peak.
+Jan 01 19:23:49 SRV-NBM systemd[1]: nbm.service: Scheduled restart job, restart counter is at 61.
+Jan 01 19:23:49 SRV-NBM systemd[1]: Started nbm.service - NBM - Network Backup Manager.
+Jan 01 19:23:50 SRV-NBM nbm[13995]: file:///opt/nbm/node_modules/openid-client/build/index.js:89
+Jan 01 19:23:50 SRV-NBM nbm[13995]:     const err = new TypeError(message, { cause });
+Jan 01 19:23:50 SRV-NBM nbm[13995]:                 ^
+Jan 01 19:23:50 SRV-NBM nbm[13995]: TypeError: "clientId" must be a non-empty string
+Jan 01 19:23:50 SRV-NBM nbm[13995]:     at CodedTypeError (file:///opt/nbm/node_modules/openid-client/build/index.js:89:17)
+Jan 01 19:23:50 SRV-NBM nbm[13995]:     at new Configuration (file:///opt/nbm/node_modules/openid-client/build/index.js:463:19)
+Jan 01 19:23:50 SRV-NBM nbm[13995]:     at Object.discovery (file:///opt/nbm/node_modules/openid-client/build/index.js:244:22)
+Jan 01 19:23:50 SRV-NBM nbm[13995]:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+Jan 01 19:23:50 SRV-NBM nbm[13995]:     at async YO.maxAge (/opt/nbm/dist/index.cjs:145:2414)
+Jan 01 19:23:50 SRV-NBM nbm[13995]:     at async tb (/opt/nbm/dist/index.cjs:145:3282)
+Jan 01 19:23:50 SRV-NBM nbm[13995]:     at async NI (/opt/nbm/dist/index.cjs:145:5929)
+Jan 01 19:23:50 SRV-NBM nbm[13995]:     at async /opt/nbm/dist/index.cjs:161:1608 {
+Jan 01 19:23:50 SRV-NBM nbm[13995]:   code: 'ERR_INVALID_ARG_TYPE',
+Jan 01 19:23:50 SRV-NBM nbm[13995]:   [cause]: undefined
+Jan 01 19:23:50 SRV-NBM nbm[13995]: }
+Jan 01 19:23:50 SRV-NBM nbm[13995]: Node.js v20.19.6
+Jan 01 19:23:50 SRV-NBM systemd[1]: nbm.service: Main process exited, code=exited, status=1/FAILURE
+Jan 01 19:23:50 SRV-NBM systemd[1]: nbm.service: Failed with result 'exit-code'.
+Jan 01 19:23:50 SRV-NBM systemd[1]: nbm.service: Consumed 661ms CPU time, 67M memory peak.
+root@SRV-NBM[~]# 
+
+
+
+
+
+
+
+
+
+
