@@ -368,6 +368,7 @@ export async function registerRoutes(
   // API - Scripts de Backup por Fabricante
   app.get('/api/scripts', isAuthenticated, async (req, res) => {
     try {
+      await storage.seedDefaultScripts();
       const scripts = await storage.getVendorScripts();
       res.json(scripts);
     } catch (e) {

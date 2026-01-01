@@ -78,6 +78,7 @@ export interface IStorage {
   deleteFirmware(id: number): Promise<void>;
 
   importData(data: any): Promise<void>;
+  seedDefaultScripts(): Promise<void>;
 
   getStats(): Promise<{
     totalEquipment: number;
@@ -334,6 +335,107 @@ export class DatabaseStorage implements IStorage {
 
   async deleteFirmware(id: number): Promise<void> {
     await db.delete(firmware).where(eq(firmware.id, id));
+  }
+
+  async seedDefaultScripts(): Promise<void> {
+    const defaultScripts: Record<string, { command: string; description: string; fileExtension: string }> = {
+      huawei: {
+        command: `# Script de Atualizacao Huawei
+# Placeholders: {{SERVER_IP}}, {{FIRMWARE_FILE}}, {{EQUIPMENT_IP}}
+ftp {{SERVER_IP}}
+get {{FIRMWARE_FILE}}
+quit
+system-view
+upgrade startup {{FIRMWARE_FILE}}
+return
+save
+y
+reboot
+y`,
+        description: "Script padrao de atualizacao via FTP para equipamentos Huawei",
+        fileExtension: ".cc",
+      },
+      mikrotik: {
+        command: `# Script de Atualizacao Mikrotik
+# Placeholders: {{SERVER_IP}}, {{FIRMWARE_FILE}}, {{EQUIPMENT_IP}}
+/tool fetch url="http://{{SERVER_IP}}/firmware/{{FIRMWARE_FILE}}" mode=http
+/system routerboard upgrade
+/system reboot`,
+        description: "Script padrao de atualizacao via HTTP para roteadores Mikrotik",
+        fileExtension: ".npk",
+      },
+      cisco: {
+        command: `# Script de Atualizacao Cisco IOS
+# Placeholders: {{SERVER_IP}}, {{FIRMWARE_FILE}}, {{EQUIPMENT_IP}}
+copy http://{{SERVER_IP}}/firmware/{{FIRMWARE_FILE}} flash:
+configure terminal
+boot system flash:{{FIRMWARE_FILE}}
+end
+write memory
+reload`,
+        description: "Script padrao de atualizacao via HTTP para equipamentos Cisco",
+        fileExtension: ".bin",
+      },
+      nokia: {
+        command: `# Script de Atualizacao Nokia SR
+# Placeholders: {{SERVER_IP}}, {{FIRMWARE_FILE}}, {{EQUIPMENT_IP}}
+file copy ftp://{{SERVER_IP}}/firmware/{{FIRMWARE_FILE}} cf3:/
+admin software-management package install {{FIRMWARE_FILE}}
+admin reboot now`,
+        description: "Script padrao de atualizacao via FTP para equipamentos Nokia",
+        fileExtension: ".tim",
+      },
+      zte: {
+        command: `# Script de Atualizacao ZTE
+# Placeholders: {{SERVER_IP}}, {{FIRMWARE_FILE}}, {{EQUIPMENT_IP}}
+upgrade patch http://{{SERVER_IP}}/firmware/{{FIRMWARE_FILE}}
+reboot system`,
+        description: "Script padrao de atualizacao via HTTP para equipamentos ZTE",
+        fileExtension: ".bin",
+      },
+      datacom: {
+        command: `# Script de Atualizacao Datacom
+# Placeholders: {{SERVER_IP}}, {{FIRMWARE_FILE}}, {{EQUIPMENT_IP}}
+copy tftp://{{SERVER_IP}}/firmware/{{FIRMWARE_FILE}} flash:
+image install {{FIRMWARE_FILE}}
+save
+reload`,
+        description: "Script padrao de atualizacao via TFTP para switches Datacom",
+        fileExtension: ".bin",
+      },
+      "datacom-dmos": {
+        command: `# Script de Atualizacao Datacom DMOS
+# Placeholders: {{SERVER_IP}}, {{FIRMWARE_FILE}}, {{EQUIPMENT_IP}}
+system download ftp://{{SERVER_IP}}/firmware/{{FIRMWARE_FILE}}
+system install {{FIRMWARE_FILE}}
+write memory
+reload`,
+        description: "Script padrao de atualizacao via FTP para Datacom DMOS",
+        fileExtension: ".pkg",
+      },
+      juniper: {
+        command: `# Script de Atualizacao Juniper Junos
+# Placeholders: {{SERVER_IP}}, {{FIRMWARE_FILE}}, {{EQUIPMENT_IP}}
+file copy http://{{SERVER_IP}}/firmware/{{FIRMWARE_FILE}} /var/tmp/
+request system software add /var/tmp/{{FIRMWARE_FILE}} no-validate
+request system reboot`,
+        description: "Script padrao de atualizacao via HTTP para roteadores Juniper",
+        fileExtension: ".tgz",
+      },
+    };
+
+    for (const [manufacturer, script] of Object.entries(defaultScripts)) {
+      const existing = await this.getVendorScript(manufacturer);
+      if (!existing) {
+        await db.insert(vendorScripts).values({
+          manufacturer,
+          command: script.command,
+          description: script.description,
+          fileExtension: script.fileExtension,
+          timeout: 300000,
+        }).onConflictDoNothing();
+      }
+    }
   }
 
   async importData(data: any): Promise<void> {
