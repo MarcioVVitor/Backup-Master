@@ -59,9 +59,11 @@ export interface IStorage {
   getAllSettings(): Promise<Setting[]>;
 
   getVendorScripts(): Promise<VendorScript[]>;
-  getVendorScript(manufacturer: string): Promise<VendorScript | undefined>;
-  upsertVendorScript(data: InsertVendorScript): Promise<VendorScript>;
-  deleteVendorScript(manufacturer: string): Promise<void>;
+  getVendorScriptsByManufacturer(manufacturer: string): Promise<VendorScript[]>;
+  getVendorScriptById(id: number): Promise<VendorScript | undefined>;
+  createVendorScript(data: InsertVendorScript): Promise<VendorScript>;
+  updateVendorScript(id: number, data: Partial<InsertVendorScript>): Promise<VendorScript | undefined>;
+  deleteVendorScript(id: number): Promise<void>;
 
   getManufacturers(): Promise<Manufacturer[]>;
   createManufacturer(data: InsertManufacturer): Promise<Manufacturer>;
@@ -205,35 +207,30 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getVendorScripts(): Promise<VendorScript[]> {
-    return await db.select().from(vendorScripts).orderBy(vendorScripts.manufacturer);
+    return await db.select().from(vendorScripts).orderBy(vendorScripts.manufacturer, vendorScripts.name);
   }
 
-  async getVendorScript(manufacturer: string): Promise<VendorScript | undefined> {
-    const [script] = await db.select().from(vendorScripts).where(eq(vendorScripts.manufacturer, manufacturer));
+  async getVendorScriptsByManufacturer(manufacturer: string): Promise<VendorScript[]> {
+    return await db.select().from(vendorScripts).where(eq(vendorScripts.manufacturer, manufacturer)).orderBy(vendorScripts.name);
+  }
+
+  async getVendorScriptById(id: number): Promise<VendorScript | undefined> {
+    const [script] = await db.select().from(vendorScripts).where(eq(vendorScripts.id, id));
     return script;
   }
 
-  async upsertVendorScript(data: InsertVendorScript): Promise<VendorScript> {
-    const [script] = await db
-      .insert(vendorScripts)
-      .values(data)
-      .onConflictDoUpdate({
-        target: vendorScripts.manufacturer,
-        set: { 
-          command: data.command,
-          description: data.description,
-          fileExtension: data.fileExtension,
-          useShell: data.useShell,
-          timeout: data.timeout,
-          updatedAt: new Date(),
-        },
-      })
-      .returning();
+  async createVendorScript(data: InsertVendorScript): Promise<VendorScript> {
+    const [script] = await db.insert(vendorScripts).values(data).returning();
     return script;
   }
 
-  async deleteVendorScript(manufacturer: string): Promise<void> {
-    await db.delete(vendorScripts).where(eq(vendorScripts.manufacturer, manufacturer));
+  async updateVendorScript(id: number, data: Partial<InsertVendorScript>): Promise<VendorScript | undefined> {
+    const [script] = await db.update(vendorScripts).set({ ...data, updatedAt: new Date() }).where(eq(vendorScripts.id, id)).returning();
+    return script;
+  }
+
+  async deleteVendorScript(id: number): Promise<void> {
+    await db.delete(vendorScripts).where(eq(vendorScripts.id, id));
   }
 
   async getManufacturers(): Promise<Manufacturer[]> {
@@ -338,101 +335,56 @@ export class DatabaseStorage implements IStorage {
   }
 
   async seedDefaultScripts(): Promise<void> {
-    const defaultScripts: Record<string, { command: string; description: string; fileExtension: string }> = {
-      huawei: {
-        command: `# Script de Atualizacao Huawei
-# Placeholders: {{SERVER_IP}}, {{FIRMWARE_FILE}}, {{EQUIPMENT_IP}}
-ftp {{SERVER_IP}}
-get {{FIRMWARE_FILE}}
-quit
-system-view
-upgrade startup {{FIRMWARE_FILE}}
-return
-save
-y
-reboot
-y`,
-        description: "Script padrao de atualizacao via FTP para equipamentos Huawei",
-        fileExtension: ".cc",
-      },
-      mikrotik: {
-        command: `# Script de Atualizacao Mikrotik
-# Placeholders: {{SERVER_IP}}, {{FIRMWARE_FILE}}, {{EQUIPMENT_IP}}
-/tool fetch url="http://{{SERVER_IP}}/firmware/{{FIRMWARE_FILE}}" mode=http
-/system routerboard upgrade
-/system reboot`,
-        description: "Script padrao de atualizacao via HTTP para roteadores Mikrotik",
-        fileExtension: ".npk",
-      },
-      cisco: {
-        command: `# Script de Atualizacao Cisco IOS
-# Placeholders: {{SERVER_IP}}, {{FIRMWARE_FILE}}, {{EQUIPMENT_IP}}
-copy http://{{SERVER_IP}}/firmware/{{FIRMWARE_FILE}} flash:
-configure terminal
-boot system flash:{{FIRMWARE_FILE}}
-end
-write memory
-reload`,
-        description: "Script padrao de atualizacao via HTTP para equipamentos Cisco",
-        fileExtension: ".bin",
-      },
-      nokia: {
-        command: `# Script de Atualizacao Nokia SR
-# Placeholders: {{SERVER_IP}}, {{FIRMWARE_FILE}}, {{EQUIPMENT_IP}}
-file copy ftp://{{SERVER_IP}}/firmware/{{FIRMWARE_FILE}} cf3:/
-admin software-management package install {{FIRMWARE_FILE}}
-admin reboot now`,
-        description: "Script padrao de atualizacao via FTP para equipamentos Nokia",
-        fileExtension: ".tim",
-      },
-      zte: {
-        command: `# Script de Atualizacao ZTE
-# Placeholders: {{SERVER_IP}}, {{FIRMWARE_FILE}}, {{EQUIPMENT_IP}}
-upgrade patch http://{{SERVER_IP}}/firmware/{{FIRMWARE_FILE}}
-reboot system`,
-        description: "Script padrao de atualizacao via HTTP para equipamentos ZTE",
-        fileExtension: ".bin",
-      },
-      datacom: {
-        command: `# Script de Atualizacao Datacom
-# Placeholders: {{SERVER_IP}}, {{FIRMWARE_FILE}}, {{EQUIPMENT_IP}}
-copy tftp://{{SERVER_IP}}/firmware/{{FIRMWARE_FILE}} flash:
-image install {{FIRMWARE_FILE}}
-save
-reload`,
-        description: "Script padrao de atualizacao via TFTP para switches Datacom",
-        fileExtension: ".bin",
-      },
-      "datacom-dmos": {
-        command: `# Script de Atualizacao Datacom DMOS
-# Placeholders: {{SERVER_IP}}, {{FIRMWARE_FILE}}, {{EQUIPMENT_IP}}
-system download ftp://{{SERVER_IP}}/firmware/{{FIRMWARE_FILE}}
-system install {{FIRMWARE_FILE}}
-write memory
-reload`,
-        description: "Script padrao de atualizacao via FTP para Datacom DMOS",
-        fileExtension: ".pkg",
-      },
-      juniper: {
-        command: `# Script de Atualizacao Juniper Junos
-# Placeholders: {{SERVER_IP}}, {{FIRMWARE_FILE}}, {{EQUIPMENT_IP}}
-file copy http://{{SERVER_IP}}/firmware/{{FIRMWARE_FILE}} /var/tmp/
-request system software add /var/tmp/{{FIRMWARE_FILE}} no-validate
-request system reboot`,
-        description: "Script padrao de atualizacao via HTTP para roteadores Juniper",
-        fileExtension: ".tgz",
-      },
+    const defaultUpdateScripts: Record<string, { command: string; description: string; fileExtension: string }> = {
+      huawei: { command: `# Script de Atualizacao Huawei\n# Placeholders: {{SERVER_IP}}, {{FIRMWARE_FILE}}, {{EQUIPMENT_IP}}\nftp {{SERVER_IP}}\nget {{FIRMWARE_FILE}}\nquit\nsystem-view\nupgrade startup {{FIRMWARE_FILE}}\nreturn\nsave\ny\nreboot\ny`, description: "Script padrao de atualizacao via FTP para equipamentos Huawei", fileExtension: ".cc" },
+      mikrotik: { command: `# Script de Atualizacao Mikrotik\n# Placeholders: {{SERVER_IP}}, {{FIRMWARE_FILE}}, {{EQUIPMENT_IP}}\n/tool fetch url="http://{{SERVER_IP}}/firmware/{{FIRMWARE_FILE}}" mode=http\n/system routerboard upgrade\n/system reboot`, description: "Script padrao de atualizacao via HTTP para roteadores Mikrotik", fileExtension: ".npk" },
+      cisco: { command: `# Script de Atualizacao Cisco IOS\n# Placeholders: {{SERVER_IP}}, {{FIRMWARE_FILE}}, {{EQUIPMENT_IP}}\ncopy http://{{SERVER_IP}}/firmware/{{FIRMWARE_FILE}} flash:\nconfigure terminal\nboot system flash:{{FIRMWARE_FILE}}\nend\nwrite memory\nreload`, description: "Script padrao de atualizacao via HTTP para equipamentos Cisco", fileExtension: ".bin" },
+      nokia: { command: `# Script de Atualizacao Nokia SR\n# Placeholders: {{SERVER_IP}}, {{FIRMWARE_FILE}}, {{EQUIPMENT_IP}}\nfile copy ftp://{{SERVER_IP}}/firmware/{{FIRMWARE_FILE}} cf3:/\nadmin software-management package install {{FIRMWARE_FILE}}\nadmin reboot now`, description: "Script padrao de atualizacao via FTP para equipamentos Nokia", fileExtension: ".tim" },
+      zte: { command: `# Script de Atualizacao ZTE\n# Placeholders: {{SERVER_IP}}, {{FIRMWARE_FILE}}, {{EQUIPMENT_IP}}\nupgrade patch http://{{SERVER_IP}}/firmware/{{FIRMWARE_FILE}}\nreboot system`, description: "Script padrao de atualizacao via HTTP para equipamentos ZTE", fileExtension: ".bin" },
+      datacom: { command: `# Script de Atualizacao Datacom\n# Placeholders: {{SERVER_IP}}, {{FIRMWARE_FILE}}, {{EQUIPMENT_IP}}\ncopy tftp://{{SERVER_IP}}/firmware/{{FIRMWARE_FILE}} flash:\nimage install {{FIRMWARE_FILE}}\nsave\nreload`, description: "Script padrao de atualizacao via TFTP para switches Datacom", fileExtension: ".bin" },
+      "datacom-dmos": { command: `# Script de Atualizacao Datacom DMOS\n# Placeholders: {{SERVER_IP}}, {{FIRMWARE_FILE}}, {{EQUIPMENT_IP}}\nsystem download ftp://{{SERVER_IP}}/firmware/{{FIRMWARE_FILE}}\nsystem install {{FIRMWARE_FILE}}\nwrite memory\nreload`, description: "Script padrao de atualizacao via FTP para Datacom DMOS", fileExtension: ".pkg" },
+      juniper: { command: `# Script de Atualizacao Juniper Junos\n# Placeholders: {{SERVER_IP}}, {{FIRMWARE_FILE}}, {{EQUIPMENT_IP}}\nfile copy http://{{SERVER_IP}}/firmware/{{FIRMWARE_FILE}} /var/tmp/\nrequest system software add /var/tmp/{{FIRMWARE_FILE}} no-validate\nrequest system reboot`, description: "Script padrao de atualizacao via HTTP para roteadores Juniper", fileExtension: ".tgz" },
     };
 
-    for (const [manufacturer, script] of Object.entries(defaultScripts)) {
-      const existing = await this.getVendorScript(manufacturer);
-      if (!existing) {
+    const defaultBackupScripts: Record<string, { command: string; description: string; fileExtension: string }> = {
+      huawei: { command: `# Script de Backup Huawei\n# Placeholders: {{EQUIPMENT_IP}}\ndisplay current-configuration`, description: "Script padrao de backup para equipamentos Huawei", fileExtension: ".cfg" },
+      mikrotik: { command: `# Script de Backup Mikrotik\n# Placeholders: {{EQUIPMENT_IP}}\n/export`, description: "Script padrao de backup para roteadores Mikrotik", fileExtension: ".rsc" },
+      cisco: { command: `# Script de Backup Cisco IOS\n# Placeholders: {{EQUIPMENT_IP}}\nshow running-config`, description: "Script padrao de backup para equipamentos Cisco", fileExtension: ".cfg" },
+      nokia: { command: `# Script de Backup Nokia SR\n# Placeholders: {{EQUIPMENT_IP}}\nadmin display-config`, description: "Script padrao de backup para equipamentos Nokia", fileExtension: ".cfg" },
+      zte: { command: `# Script de Backup ZTE\n# Placeholders: {{EQUIPMENT_IP}}\nshow running-config`, description: "Script padrao de backup para equipamentos ZTE", fileExtension: ".cfg" },
+      datacom: { command: `# Script de Backup Datacom\n# Placeholders: {{EQUIPMENT_IP}}\nshow running-config`, description: "Script padrao de backup para switches Datacom", fileExtension: ".cfg" },
+      "datacom-dmos": { command: `# Script de Backup Datacom DMOS\n# Placeholders: {{EQUIPMENT_IP}}\nshow configuration`, description: "Script padrao de backup para Datacom DMOS", fileExtension: ".cfg" },
+      juniper: { command: `# Script de Backup Juniper Junos\n# Placeholders: {{EQUIPMENT_IP}}\nshow configuration | display set`, description: "Script padrao de backup para roteadores Juniper", fileExtension: ".cfg" },
+    };
+
+    const existingScripts = await this.getVendorScripts();
+    
+    for (const [manufacturer, script] of Object.entries(defaultUpdateScripts)) {
+      const exists = existingScripts.some(s => s.manufacturer === manufacturer && s.name === "Script de Atualizacao");
+      if (!exists) {
         await db.insert(vendorScripts).values({
           manufacturer,
+          name: "Script de Atualizacao",
           command: script.command,
           description: script.description,
           fileExtension: script.fileExtension,
           timeout: 300000,
+          isDefault: true,
+        }).onConflictDoNothing();
+      }
+    }
+
+    for (const [manufacturer, script] of Object.entries(defaultBackupScripts)) {
+      const exists = existingScripts.some(s => s.manufacturer === manufacturer && s.name === "Script de Backup");
+      if (!exists) {
+        await db.insert(vendorScripts).values({
+          manufacturer,
+          name: "Script de Backup",
+          command: script.command,
+          description: script.description,
+          fileExtension: script.fileExtension,
+          timeout: 60000,
+          isDefault: true,
         }).onConflictDoNothing();
       }
     }

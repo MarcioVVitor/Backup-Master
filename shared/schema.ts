@@ -82,15 +82,17 @@ export const settings = pgTable("settings", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// Tabela de Scripts de Backup por Fabricante
+// Tabela de Scripts por Fabricante (backup, atualizacao, reboot, etc.)
 export const vendorScripts = pgTable("vendor_scripts", {
   id: serial("id").primaryKey(),
-  manufacturer: text("manufacturer").notNull().unique(),
+  manufacturer: text("manufacturer").notNull(),
+  name: text("name").notNull(),
   command: text("command").notNull(),
   description: text("description"),
   fileExtension: text("file_extension").default(".cfg"),
   useShell: boolean("use_shell").default(true),
   timeout: integer("timeout").default(30000),
+  isDefault: boolean("is_default").default(false),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 

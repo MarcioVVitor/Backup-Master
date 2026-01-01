@@ -380,29 +380,20 @@ export async function registerRoutes(
 
   app.get('/api/scripts/:manufacturer', isAuthenticated, async (req, res) => {
     try {
-      const script = await storage.getVendorScript(req.params.manufacturer);
+      const scripts = await storage.getVendorScriptsByManufacturer(req.params.manufacturer);
+      res.json(scripts);
+    } catch (e) {
+      console.error("Error getting scripts:", e);
+      res.status(500).json({ message: "Erro ao obter scripts" });
+    }
+  });
+
+  app.get('/api/scripts/id/:id', isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const script = await storage.getVendorScriptById(id);
       if (!script) {
-        const defaultInfo = getDefaultScriptInfo(req.params.manufacturer);
-        if (defaultInfo) {
-          return res.json({
-            manufacturer: req.params.manufacturer,
-            command: defaultInfo.command,
-            description: defaultInfo.description,
-            fileExtension: defaultInfo.extension,
-            useShell: defaultInfo.useShell,
-            timeout: defaultInfo.timeout,
-            isDefault: true,
-          });
-        }
-        return res.json({
-          manufacturer: req.params.manufacturer,
-          command: 'show running-config',
-          description: 'Script padrao generico. Conexao via SSH usando credenciais do equipamento.',
-          fileExtension: '.txt',
-          useShell: false,
-          timeout: 30000,
-          isDefault: true,
-        });
+        return res.status(404).json({ message: "Script nao encontrado" });
       }
       res.json(script);
     } catch (e) {
@@ -414,7 +405,7 @@ export async function registerRoutes(
   app.post('/api/scripts', isAuthenticated, async (req, res) => {
     try {
       const parsed = insertVendorScriptSchema.parse(req.body);
-      const script = await storage.upsertVendorScript(parsed);
+      const script = await storage.createVendorScript(parsed);
       res.status(201).json(script);
     } catch (e) {
       if (e instanceof z.ZodError) {
@@ -425,13 +416,28 @@ export async function registerRoutes(
     }
   });
 
-  app.delete('/api/scripts/:manufacturer', isAuthenticated, async (req, res) => {
+  app.patch('/api/scripts/:id', isAuthenticated, async (req, res) => {
     try {
-      await storage.deleteVendorScript(req.params.manufacturer);
+      const id = parseInt(req.params.id);
+      const script = await storage.updateVendorScript(id, req.body);
+      if (!script) {
+        return res.status(404).json({ message: "Script nao encontrado" });
+      }
+      res.json(script);
+    } catch (e) {
+      console.error("Error updating script:", e);
+      res.status(500).json({ message: "Erro ao atualizar script" });
+    }
+  });
+
+  app.delete('/api/scripts/:id', isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteVendorScript(id);
       res.sendStatus(204);
     } catch (e) {
-      console.error("Error setting:", e);
-      res.status(500).json({ message: "Erro ao salvar configuração" });
+      console.error("Error deleting script:", e);
+      res.status(500).json({ message: "Erro ao excluir script" });
     }
   });
 
@@ -1107,13 +1113,14 @@ interface BackupConfig {
 }
 
 async function getBackupConfig(manufacturer: string): Promise<BackupConfig> {
-  const storedScript = await storage.getVendorScript(manufacturer);
-  if (storedScript) {
+  const storedScripts = await storage.getVendorScriptsByManufacturer(manufacturer);
+  const backupScript = storedScripts.find(s => s.name.toLowerCase().includes('backup'));
+  if (backupScript) {
     return {
-      command: storedScript.command,
-      extension: storedScript.fileExtension || '.cfg',
-      useShell: storedScript.useShell ?? true,
-      timeout: storedScript.timeout || 30000,
+      command: backupScript.command,
+      extension: backupScript.fileExtension || '.cfg',
+      useShell: backupScript.useShell ?? true,
+      timeout: backupScript.timeout || 30000,
     };
   }
   return getDefaultBackupConfig(manufacturer);
