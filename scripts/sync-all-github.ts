@@ -63,11 +63,21 @@ async function main() {
   const filesToSync = [
     { local: 'server/standalone-auth.ts', remote: 'server/standalone-auth.ts' },
     { local: 'server/routes.ts', remote: 'server/routes.ts' },
+    { local: 'server/static.ts', remote: 'server/static.ts' },
+    { local: 'server/index.ts', remote: 'server/index.ts' },
     { local: 'shared/models/auth.ts', remote: 'shared/models/auth.ts' },
+    { local: 'shared/schema.ts', remote: 'shared/schema.ts' },
     { local: 'script/build.ts', remote: 'script/build.ts' },
     { local: 'client/src/pages/login.tsx', remote: 'client/src/pages/login.tsx' },
     { local: 'client/src/App.tsx', remote: 'client/src/App.tsx' },
     { local: 'client/src/hooks/use-auth.ts', remote: 'client/src/hooks/use-auth.ts' },
+    { local: 'client/src/index.css', remote: 'client/src/index.css' },
+    { local: 'client/src/main.tsx', remote: 'client/src/main.tsx' },
+    { local: 'client/index.html', remote: 'client/index.html' },
+    { local: 'tailwind.config.ts', remote: 'tailwind.config.ts' },
+    { local: 'vite.config.ts', remote: 'vite.config.ts' },
+    { local: 'package.json', remote: 'package.json' },
+    { local: 'tsconfig.json', remote: 'tsconfig.json' },
   ];
   
   for (const file of filesToSync) {
