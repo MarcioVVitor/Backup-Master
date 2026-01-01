@@ -324,8 +324,8 @@ install_npm_deps() {
     
     cd ${NBM_HOME}
     
-    # Instalar como usuario nbm
-    sudo -u ${NBM_USER} npm ci --production 2>/dev/null || sudo -u ${NBM_USER} npm install --production
+    # Instalar TODAS as dependencias (incluindo dev para build)
+    sudo -u ${NBM_USER} npm install
     
     log_success "Dependencias Node.js instaladas"
 }
@@ -339,8 +339,17 @@ build_application() {
     # Carregar variaveis de ambiente
     source ${NBM_HOME}/.env
     
-    # Build
-    sudo -u ${NBM_USER} npm run build
+    # Build usando npx para encontrar tsx
+    sudo -u ${NBM_USER} -E npx tsx script/build.ts || {
+        log_error "Falha ao compilar aplicacao"
+        exit 1
+    }
+    
+    # Verificar se o build foi criado
+    if [[ ! -f "${NBM_HOME}/dist/index.cjs" ]]; then
+        log_error "Arquivo dist/index.cjs nao foi criado"
+        exit 1
+    fi
     
     log_success "Aplicacao compilada"
 }
@@ -354,8 +363,11 @@ init_database() {
     # Carregar variaveis de ambiente
     source ${NBM_HOME}/.env
     
-    # Push schema
-    sudo -u ${NBM_USER} -E npm run db:push
+    # Push schema usando npx
+    sudo -u ${NBM_USER} -E npx drizzle-kit push || {
+        log_error "Falha ao inicializar banco de dados"
+        exit 1
+    }
     
     log_success "Esquema do banco de dados inicializado"
 }

@@ -1,0 +1,145 @@
+[OK] Banco de dados configurado
+[INFO] Instalando aplicacao NBM...
+[INFO] Baixando aplicacao do GitHub...
+Cloning into '/opt/nbm'...
+remote: Enumerating objects: 605, done.
+remote: Total 605 (delta 0), reused 0 (delta 0), pack-reused 605 (from 1)
+Receiving objects: 100% (605/605), 254.53 KiB | 4.24 MiB/s, done.
+Resolving deltas: 100% (289/289), done.
+[OK] Aplicacao baixada com sucesso
+[OK] Arquivos da aplicacao instalados
+[INFO] Instalando dependencias Node.js...
+
+added 553 packages, and audited 554 packages in 18s
+
+76 packages are looking for funding
+  run `npm fund` for details
+
+3 high severity vulnerabilities
+
+To address all issues, run:
+  npm audit fix
+
+Run `npm audit` for details.
+[OK] Dependencias Node.js instaladas
+[INFO] Compilando aplicacao...
+
+> rest-express@1.0.0 build
+> tsx script/build.ts
+
+sh: 1: tsx: not found
+[OK] Aplicacao compilada
+[INFO] Inicializando esquema do banco de dados...
+
+> rest-express@1.0.0 db:push
+> drizzle-kit push
+
+sh: 1: drizzle-kit: not found
+[OK] Esquema do banco de dados inicializado
+[INFO] Criando servico systemd...
+Created symlink '/etc/systemd/system/multi-user.target.wants/nbm.service' → '/etc/systemd/system/nbm.service'.
+[OK] Servico systemd criado
+[INFO] Configurando firewall...
+[WARN] Nenhum firewall detectado. Configure manualmente a porta 5000
+[INFO] Criando usuario administrador...
+[WARN] O primeiro usuario a fazer login sera o administrador do sistema
+[OK] Configuracao de administrador concluida
+[INFO] Iniciando servico NBM...
+[ERROR] Falha ao iniciar servico NBM
+[INFO] Verifique os logs: journalctl -u nbm -f
+root@SRV-NBM[~]# journalctl -u nbm -f
+Jan 01 19:13:28 SRV-NBM nbm[10652]:     at Module._resolveFilename (node:internal/modules/cjs/loader:1207:15)
+Jan 01 19:13:28 SRV-NBM nbm[10652]:     at Module._load (node:internal/modules/cjs/loader:1038:27)
+Jan 01 19:13:28 SRV-NBM nbm[10652]:     at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:164:12)
+Jan 01 19:13:28 SRV-NBM nbm[10652]:     at node:internal/main/run_main_module:28:49 {
+Jan 01 19:13:28 SRV-NBM nbm[10652]:   code: 'MODULE_NOT_FOUND',
+Jan 01 19:13:28 SRV-NBM nbm[10652]:   requireStack: []
+Jan 01 19:13:28 SRV-NBM nbm[10652]: }
+Jan 01 19:13:28 SRV-NBM nbm[10652]: Node.js v20.19.6
+Jan 01 19:13:28 SRV-NBM systemd[1]: nbm.service: Main process exited, code=exited, status=1/FAILURE
+Jan 01 19:13:28 SRV-NBM systemd[1]: nbm.service: Failed with result 'exit-code'.
+Jan 01 19:13:38 SRV-NBM systemd[1]: nbm.service: Scheduled restart job, restart counter is at 2.
+Jan 01 19:13:38 SRV-NBM systemd[1]: Started nbm.service - NBM - Network Backup Manager.
+Jan 01 19:13:38 SRV-NBM nbm[10663]: node:internal/modules/cjs/loader:1210
+Jan 01 19:13:38 SRV-NBM nbm[10663]:   throw err;
+Jan 01 19:13:38 SRV-NBM nbm[10663]:   ^
+Jan 01 19:13:38 SRV-NBM nbm[10663]: Error: Cannot find module '/opt/nbm/dist/index.cjs'
+Jan 01 19:13:38 SRV-NBM nbm[10663]:     at Module._resolveFilename (node:internal/modules/cjs/loader:1207:15)
+Jan 01 19:13:38 SRV-NBM nbm[10663]:     at Module._load (node:internal/modules/cjs/loader:1038:27)
+Jan 01 19:13:38 SRV-NBM nbm[10663]:     at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:164:12)
+Jan 01 19:13:38 SRV-NBM nbm[10663]:     at node:internal/main/run_main_module:28:49 {
+Jan 01 19:13:38 SRV-NBM nbm[10663]:   code: 'MODULE_NOT_FOUND',
+Jan 01 19:13:38 SRV-NBM nbm[10663]:   requireStack: []
+Jan 01 19:13:38 SRV-NBM nbm[10663]: }
+Jan 01 19:13:38 SRV-NBM nbm[10663]: Node.js v20.19.6
+Jan 01 19:13:38 SRV-NBM systemd[1]: nbm.service: Main process exited, code=exited, status=1/FAILURE
+Jan 01 19:13:38 SRV-NBM systemd[1]: nbm.service: Failed with result 'exit-code'.
+
+Jan 01 19:13:48 SRV-NBM systemd[1]: nbm.service: Scheduled restart job, restart counter is at 3.
+Jan 01 19:13:48 SRV-NBM systemd[1]: Started nbm.service - NBM - Network Backup Manager.
+Jan 01 19:13:49 SRV-NBM nbm[10673]: node:internal/modules/cjs/loader:1210
+Jan 01 19:13:49 SRV-NBM nbm[10673]:   throw err;
+Jan 01 19:13:49 SRV-NBM nbm[10673]:   ^
+Jan 01 19:13:49 SRV-NBM nbm[10673]: Error: Cannot find module '/opt/nbm/dist/index.cjs'
+Jan 01 19:13:49 SRV-NBM nbm[10673]:     at Module._resolveFilename (node:internal/modules/cjs/loader:1207:15)
+Jan 01 19:13:49 SRV-NBM nbm[10673]:     at Module._load (node:internal/modules/cjs/loader:1038:27)
+Jan 01 19:13:49 SRV-NBM nbm[10673]:     at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:164:12)
+Jan 01 19:13:49 SRV-NBM nbm[10673]:     at node:internal/main/run_main_module:28:49 {
+Jan 01 19:13:49 SRV-NBM nbm[10673]:   code: 'MODULE_NOT_FOUND',
+Jan 01 19:13:49 SRV-NBM nbm[10673]:   requireStack: []
+Jan 01 19:13:49 SRV-NBM nbm[10673]: }
+Jan 01 19:13:49 SRV-NBM nbm[10673]: Node.js v20.19.6
+Jan 01 19:13:49 SRV-NBM systemd[1]: nbm.service: Main process exited, code=exited, status=1/FAILURE
+Jan 01 19:13:49 SRV-NBM systemd[1]: nbm.service: Failed with result 'exit-code'.
+
+Jan 01 19:13:59 SRV-NBM systemd[1]: nbm.service: Scheduled restart job, restart counter is at 4.
+Jan 01 19:13:59 SRV-NBM systemd[1]: Started nbm.service - NBM - Network Backup Manager.
+Jan 01 19:13:59 SRV-NBM nbm[10684]: node:internal/modules/cjs/loader:1210
+Jan 01 19:13:59 SRV-NBM nbm[10684]:   throw err;
+Jan 01 19:13:59 SRV-NBM nbm[10684]:   ^
+Jan 01 19:13:59 SRV-NBM nbm[10684]: Error: Cannot find module '/opt/nbm/dist/index.cjs'
+Jan 01 19:13:59 SRV-NBM nbm[10684]:     at Module._resolveFilename (node:internal/modules/cjs/loader:1207:15)
+Jan 01 19:13:59 SRV-NBM nbm[10684]:     at Module._load (node:internal/modules/cjs/loader:1038:27)
+Jan 01 19:13:59 SRV-NBM nbm[10684]:     at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:164:12)
+Jan 01 19:13:59 SRV-NBM nbm[10684]:     at node:internal/main/run_main_module:28:49 {
+Jan 01 19:13:59 SRV-NBM nbm[10684]:   code: 'MODULE_NOT_FOUND',
+Jan 01 19:13:59 SRV-NBM nbm[10684]:   requireStack: []
+Jan 01 19:13:59 SRV-NBM nbm[10684]: }
+Jan 01 19:13:59 SRV-NBM nbm[10684]: Node.js v20.19.6
+Jan 01 19:13:59 SRV-NBM systemd[1]: nbm.service: Main process exited, code=exited, status=1/FAILURE
+Jan 01 19:13:59 SRV-NBM systemd[1]: nbm.service: Failed with result 'exit-code'.
+Jan 01 19:14:09 SRV-NBM systemd[1]: nbm.service: Scheduled restart job, restart counter is at 5.
+Jan 01 19:14:09 SRV-NBM systemd[1]: Started nbm.service - NBM - Network Backup Manager.
+Jan 01 19:14:09 SRV-NBM nbm[10695]: node:internal/modules/cjs/loader:1210
+Jan 01 19:14:09 SRV-NBM nbm[10695]:   throw err;
+Jan 01 19:14:09 SRV-NBM nbm[10695]:   ^
+Jan 01 19:14:09 SRV-NBM nbm[10695]: Error: Cannot find module '/opt/nbm/dist/index.cjs'
+Jan 01 19:14:09 SRV-NBM nbm[10695]:     at Module._resolveFilename (node:internal/modules/cjs/loader:1207:15)
+Jan 01 19:14:09 SRV-NBM nbm[10695]:     at Module._load (node:internal/modules/cjs/loader:1038:27)
+Jan 01 19:14:09 SRV-NBM nbm[10695]:     at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:164:12)
+Jan 01 19:14:09 SRV-NBM nbm[10695]:     at node:internal/main/run_main_module:28:49 {
+Jan 01 19:14:09 SRV-NBM nbm[10695]:   code: 'MODULE_NOT_FOUND',
+Jan 01 19:14:09 SRV-NBM nbm[10695]:   requireStack: []
+Jan 01 19:14:09 SRV-NBM nbm[10695]: }
+Jan 01 19:14:09 SRV-NBM nbm[10695]: Node.js v20.19.6
+Jan 01 19:14:09 SRV-NBM systemd[1]: nbm.service: Main process exited, code=exited, status=1/FAILURE
+Jan 01 19:14:09 SRV-NBM systemd[1]: nbm.service: Failed with result 'exit-code'.
+
+
+Jan 01 19:14:19 SRV-NBM systemd[1]: nbm.service: Scheduled restart job, restart counter is at 6.
+Jan 01 19:14:19 SRV-NBM systemd[1]: Started nbm.service - NBM - Network Backup Manager.
+Jan 01 19:14:19 SRV-NBM nbm[10706]: node:internal/modules/cjs/loader:1210
+Jan 01 19:14:19 SRV-NBM nbm[10706]:   throw err;
+Jan 01 19:14:19 SRV-NBM nbm[10706]:   ^
+Jan 01 19:14:19 SRV-NBM nbm[10706]: Error: Cannot find module '/opt/nbm/dist/index.cjs'
+Jan 01 19:14:19 SRV-NBM nbm[10706]:     at Module._resolveFilename (node:internal/modules/cjs/loader:1207:15)
+Jan 01 19:14:19 SRV-NBM nbm[10706]:     at Module._load (node:internal/modules/cjs/loader:1038:27)
+Jan 01 19:14:19 SRV-NBM nbm[10706]:     at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:164:12)
+Jan 01 19:14:19 SRV-NBM nbm[10706]:     at node:internal/main/run_main_module:28:49 {
+Jan 01 19:14:19 SRV-NBM nbm[10706]:   code: 'MODULE_NOT_FOUND',
+Jan 01 19:14:19 SRV-NBM nbm[10706]:   requireStack: []
+Jan 01 19:14:19 SRV-NBM nbm[10706]: }
+Jan 01 19:14:19 SRV-NBM nbm[10706]: Node.js v20.19.6
+Jan 01 19:14:19 SRV-NBM systemd[1]: nbm.service: Main process exited, code=exited, status=1/FAILURE
+Jan 01 19:14:19 SRV-NBM systemd[1]: nbm.service: Failed with result 'exit-code'.
+
