@@ -269,14 +269,20 @@ install_application() {
     
     # Verificar se os arquivos existem
     if [[ ! -f "${APP_SOURCE}/package.json" ]]; then
-        log_error "Arquivos da aplicacao nao encontrados em ${APP_SOURCE}"
-        log_info "Clonando do repositorio GitHub..."
+        log_info "Arquivos locais nao encontrados, clonando do GitHub..."
+        
+        # Limpar diretorio se existir conteudo
+        if [[ -d "${NBM_HOME}" ]]; then
+            rm -rf ${NBM_HOME}/*
+            rm -rf ${NBM_HOME}/.[!.]* 2>/dev/null || true
+        fi
         
         cd ${NBM_HOME}
         git clone https://github.com/MarcioVVitor/nbm.git . || {
             log_error "Falha ao clonar repositorio. Copie os arquivos manualmente para ${NBM_HOME}"
             exit 1
         }
+        log_success "Repositorio clonado com sucesso"
     else
         # Copiar arquivos principais
         cp -r ${APP_SOURCE}/* ${NBM_HOME}/
