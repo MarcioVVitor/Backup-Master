@@ -1,0 +1,184 @@
+root@SRV-NBM[~]# sudo rm -rf /opt/nbm
+rm -f install.sh
+wget https://github.com/MarcioVVitor/nbm/releases/download/v1.0.0/install.sh
+chmod +x install.sh
+sudo ./install.sh install
+--2026-01-01 19:18:38--  https://github.com/MarcioVVitor/nbm/releases/download/v1.0.0/install.sh
+Resolving github.com (github.com)... 4.228.31.150
+Connecting to github.com (github.com)|4.228.31.150|:443... connected.
+HTTP request sent, awaiting response... 302 Found
+Location: https://release-assets.githubusercontent.com/github-production-release-asset/1126256330/b3b90a49-aacb-4859-8cce-1b5a96731c9a?sp=r&sv=2018-11-09&sr=b&spr=https&se=2026-01-01T22%3A57%3A59Z&rscd=attachment%3B+filename%3Dinstall.sh&rsct=application%2Foctet-stream&skoid=96c2d410-5711-43a1-aedd-ab1947aa7ab0&sktid=398a6654-997b-47e9-b12b-9515b896b4de&skt=2026-01-01T21%3A57%3A15Z&ske=2026-01-01T22%3A57%3A59Z&sks=b&skv=2018-11-09&sig=kvf%2Bv%2BD%2BaOTCi%2FWMOF1IBDER7xJRQe6TD5LW4lRUIs8%3D&jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmVsZWFzZS1hc3NldHMuZ2l0aHVidXNlcmNvbnRlbnQuY29tIiwia2V5Ijoia2V5MSIsImV4cCI6MTc2NzMwNjIxOCwibmJmIjoxNzY3MzA1OTE4LCJwYXRoIjoicmVsZWFzZWFzc2V0cHJvZHVjdGlvbi5ibG9iLmNvcmUud2luZG93cy5uZXQifQ.ZSQxk01bAGki3-d3pRlzUhjTTOHZ9R6fnbEUd5IyWcw&response-content-disposition=attachment%3B%20filename%3Dinstall.sh&response-content-type=application%2Foctet-stream [following]
+--2026-01-01 19:18:38--  https://release-assets.githubusercontent.com/github-production-release-asset/1126256330/b3b90a49-aacb-4859-8cce-1b5a96731c9a?sp=r&sv=2018-11-09&sr=b&spr=https&se=2026-01-01T22%3A57%3A59Z&rscd=attachment%3B+filename%3Dinstall.sh&rsct=application%2Foctet-stream&skoid=96c2d410-5711-43a1-aedd-ab1947aa7ab0&sktid=398a6654-997b-47e9-b12b-9515b896b4de&skt=2026-01-01T21%3A57%3A15Z&ske=2026-01-01T22%3A57%3A59Z&sks=b&skv=2018-11-09&sig=kvf%2Bv%2BD%2BaOTCi%2FWMOF1IBDER7xJRQe6TD5LW4lRUIs8%3D&jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmVsZWFzZS1hc3NldHMuZ2l0aHVidXNlcmNvbnRlbnQuY29tIiwia2V5Ijoia2V5MSIsImV4cCI6MTc2NzMwNjIxOCwibmJmIjoxNzY3MzA1OTE4LCJwYXRoIjoicmVsZWFzZWFzc2V0cHJvZHVjdGlvbi5ibG9iLmNvcmUud2luZG93cy5uZXQifQ.ZSQxk01bAGki3-d3pRlzUhjTTOHZ9R6fnbEUd5IyWcw&response-content-disposition=attachment%3B%20filename%3Dinstall.sh&response-content-type=application%2Foctet-stream
+Resolving release-assets.githubusercontent.com (release-assets.githubusercontent.com)... 185.199.109.133, 185.199.111.133, 185.199.110.133, ...
+Connecting to release-assets.githubusercontent.com (release-assets.githubusercontent.com)|185.199.109.133|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 15558 (15K) [application/octet-stream]
+Saving to: ‘install.sh’
+
+install.sh                        100%[============================================================>]  15.19K  --.-KB/s    in 0.001s  
+
+2026-01-01 19:18:38 (11.9 MB/s) - ‘install.sh’ saved [15558/15558]
+
+
+============================================================
+     _   _ ____  __  __ 
+    | \ | |  _ \|  \/  |
+    |  \| | |_) | |\/| |
+    | |\  |  __/| |  | |
+    |_| \_|_|   |_|  |_|
+
+    Network Backup Manager - Instalador
+    Versao 1.0.0 para Debian 13
+============================================================
+
+[INFO] Verificando sistema operacional...
+[OK] Sistema operacional verificado: Debian 13.2
+[INFO] Atualizando lista de pacotes...
+W: https://deb.nodesource.com/node_20.x/dists/nodistro/InRelease: Policy will reject signature within a year, see --audit for details
+[OK] Lista de pacotes atualizada
+[INFO] Instalando dependencias do sistema...
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+curl is already the newest version (8.14.1-2+deb13u2).
+wget is already the newest version (1.25.0-2).
+gnupg is already the newest version (2.4.7-21).
+ca-certificates is already the newest version (20250419).
+lsb-release is already the newest version (12.1-1).
+build-essential is already the newest version (12.12).
+git is already the newest version (1:2.47.3-0+deb13u1).
+openssh-client is already the newest version (1:10.0p1-7).
+openssl is already the newest version (3.5.4-1~deb13u1).
+sudo is already the newest version (1.9.16p2-3).
+unzip is already the newest version (6.0-29).
+zip is already the newest version (3.0-15).
+tar is already the newest version (1.35+dfsg-3.1).
+gzip is already the newest version (1.13-1).
+0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
+[OK] Dependencias do sistema instaladas
+[INFO] Instalando Node.js 20...
+[OK] Node.js v20.19.6 ja instalado
+[INFO] Instalando PostgreSQL 15...
+[OK] PostgreSQL ja instalado
+[INFO] Criando usuario e grupo do sistema...
+[OK] Usuario nbm criado
+[INFO] Criando diretorios...
+[OK] Diretorios criados
+[INFO] Configurando banco de dados...
+GRANT
+[OK] Banco de dados configurado
+[INFO] Instalando aplicacao NBM...
+[INFO] Baixando aplicacao do GitHub...
+Cloning into '/opt/nbm'...
+remote: Enumerating objects: 609, done.
+remote: Counting objects: 100% (4/4), done.
+remote: Compressing objects: 100% (3/3), done.
+remote: Total 609 (delta 0), reused 0 (delta 0), pack-reused 605 (from 1)
+Receiving objects: 100% (609/609), 255.78 KiB | 4.33 MiB/s, done.
+Resolving deltas: 100% (289/289), done.
+[OK] Aplicacao baixada com sucesso
+[OK] Arquivos da aplicacao instalados
+[INFO] Instalando dependencias Node.js...
+npm warn deprecated node-domexception@1.0.0: Use your platform's native DOMException instead
+
+added 651 packages, and audited 652 packages in 21s
+
+91 packages are looking for funding
+  run `npm fund` for details
+
+3 high severity vulnerabilities
+
+To address all issues, run:
+  npm audit fix
+
+Run `npm audit` for details.
+npm notice
+npm notice New major version of npm available! 10.8.2 -> 11.7.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.7.0
+npm notice To update run: npm install -g npm@11.7.0
+npm notice
+[OK] Dependencias Node.js instaladas
+[INFO] Compilando aplicacao...
+building client...
+vite v7.3.0 building client environment for production...
+✓ 1846 modules transformed.
+../dist/public/index.html                   2.01 kB │ gzip:   0.77 kB
+../dist/public/assets/index--7kWv6AD.css    6.40 kB │ gzip:   1.42 kB
+../dist/public/assets/index-D-k_rTTF.js   588.88 kB │ gzip: 169.97 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 4.98s
+building server...
+
+  dist/index.cjs  1.3mb ⚠️
+
+⚡ Done in 138ms
+npm notice
+npm notice New major version of npm available! 10.8.2 -> 11.7.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.7.0
+npm notice To update run: npm install -g npm@11.7.0
+npm notice
+[OK] Aplicacao compilada
+[INFO] Inicializando esquema do banco de dados...
+No config path provided, using default 'drizzle.config.ts'
+Reading config file '/opt/nbm/drizzle.config.ts'
+Using 'pg' driver for database querying
+[⣷] Pulling schema from database...
+error: password authentication failed for user "nbm"
+    at /opt/nbm/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Object.query (/opt/nbm/node_modules/drizzle-kit/bin.cjs:80622:26)
+    at async fromDatabase2 (/opt/nbm/node_modules/drizzle-kit/bin.cjs:19276:25) {
+  length: 99,
+  severity: 'FATAL',
+  code: '28P01',
+  detail: undefined,
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'auth.c',
+  line: '334',
+  routine: 'auth_failed'
+}
+npm notice
+npm notice New major version of npm available! 10.8.2 -> 11.7.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.7.0
+npm notice To update run: npm install -g npm@11.7.0
+npm notice
+[OK] Esquema do banco de dados inicializado
+[INFO] Criando servico systemd...
+[OK] Servico systemd criado
+[INFO] Configurando firewall...
+[WARN] Nenhum firewall detectado. Configure manualmente a porta 5000
+[INFO] Criando usuario administrador...
+[WARN] O primeiro usuario a fazer login sera o administrador do sistema
+[OK] Configuracao de administrador concluida
+[INFO] Iniciando servico NBM...
+[ERROR] Falha ao iniciar servico NBM
+[INFO] Verifique os logs: journalctl -u nbm -f
+root@SRV-NBM[~]# ajor version of npm available! 10.8.2 -> 11.7.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.7.0
+npm notice To update run: npm install -g npm@11.7.0
+npm notice
+[OK] Esquema do banco de dados inicializado
+[INFO] Criando servico systemd...
+[OK] Servico systemd criado
+[INFO] Configurando firewall...
+[WARN] Nenhum firewall detectado. Configure manualmente a porta 5000
+[INFO] Criando usuario administrador...
+[WARN] O primeiro usuario a fazer login sera o administrador do sistema
+[OK] Configuracao de administrador concluida
+[INFO] Iniciando servico NBM...
+[ERROR] Falha ao iniciar servico NBM
+[INFO] Verifique os logs: journalctl -u nbm -f
+root@SRV-NBM[~]# 
