@@ -1,10 +1,10 @@
 import { Switch, Route, Link, useLocation } from "wouter";
-import { useState, useEffect } from "react";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/use-auth";
+import { ThemeProvider, useTheme } from "@/contexts/theme-context";
 import Home from "@/pages/home";
 import Equipment from "@/pages/equipment";
 import Backups from "@/pages/backups";
@@ -29,25 +29,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 function ThemeToggle() {
-  const [isDark, setIsDark] = useState(false);
-
-  useEffect(() => {
-    const stored = localStorage.getItem('theme');
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const shouldBeDark = stored === 'dark' || (!stored && prefersDark);
-    setIsDark(shouldBeDark);
-    document.documentElement.classList.toggle('dark', shouldBeDark);
-  }, []);
-
-  const toggle = () => {
-    const newValue = !isDark;
-    setIsDark(newValue);
-    document.documentElement.classList.toggle('dark', newValue);
-    localStorage.setItem('theme', newValue ? 'dark' : 'light');
-  };
+  const { isDark, toggleDark } = useTheme();
 
   return (
-    <Button size="icon" variant="ghost" onClick={toggle} data-testid="button-theme-toggle">
+    <Button size="icon" variant="ghost" onClick={toggleDark} data-testid="button-theme-toggle">
       {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
     </Button>
   );
@@ -194,12 +179,14 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <AppLayout>
-          <Router />
-        </AppLayout>
-        <Toaster />
-      </TooltipProvider>
+      <ThemeProvider>
+        <TooltipProvider>
+          <AppLayout>
+            <Router />
+          </AppLayout>
+          <Toaster />
+        </TooltipProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

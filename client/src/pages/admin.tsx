@@ -16,7 +16,9 @@ import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Database, Download, Upload, Package, Clock, FileJson, Archive, Users, Palette, User as UserIcon, Save, Plus, Trash2 } from "lucide-react";
+import { Database, Download, Upload, Package, Clock, FileJson, Archive, Users, Palette, User as UserIcon, Save, Plus, Trash2, Check, Sun, Moon, Settings } from "lucide-react";
+import { useTheme } from "@/contexts/theme-context";
+import { THEMES } from "@/lib/themes";
 import type { User } from "@shared/schema";
 
 interface SystemInfo {
@@ -49,6 +51,7 @@ interface Customization {
 export default function AdminPage() {
   const { user, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
+  const { themeId, isDark, setTheme, setDark } = useTheme();
   const [isExporting, setIsExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState(0);
   const [patchNotes, setPatchNotes] = useState("");
@@ -735,10 +738,90 @@ export default function AdminPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Palette className="h-5 w-5 text-pink-500" />
-                Personalizacao do Sistema
+                Tema da Interface
               </CardTitle>
               <CardDescription>
-                Personalize a aparencia do sistema
+                Escolha um tema visual para todo o sistema
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="flex items-center gap-4 mb-4">
+                <Label>Modo</Label>
+                <div className="flex items-center gap-2 bg-muted rounded-lg p-1">
+                  <Button
+                    size="sm"
+                    variant={!isDark ? "default" : "ghost"}
+                    onClick={() => setDark(false)}
+                    className="gap-2"
+                    data-testid="button-light-mode"
+                  >
+                    <Sun className="h-4 w-4" />
+                    Claro
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={isDark ? "default" : "ghost"}
+                    onClick={() => setDark(true)}
+                    className="gap-2"
+                    data-testid="button-dark-mode"
+                  >
+                    <Moon className="h-4 w-4" />
+                    Escuro
+                  </Button>
+                </div>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                {THEMES.map((theme) => (
+                  <button
+                    key={theme.id}
+                    onClick={() => setTheme(theme.id)}
+                    className={`relative p-3 rounded-lg border-2 transition-all text-left hover-elevate ${
+                      themeId === theme.id 
+                        ? 'border-primary ring-2 ring-primary/20' 
+                        : 'border-border'
+                    }`}
+                    data-testid={`button-theme-${theme.id}`}
+                  >
+                    {themeId === theme.id && (
+                      <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+                        <Check className="h-3 w-3 text-primary-foreground" />
+                      </div>
+                    )}
+                    <div className="flex gap-1 mb-2">
+                      <div 
+                        className="w-6 h-6 rounded-md border"
+                        style={{ backgroundColor: theme.preview.background }}
+                      />
+                      <div 
+                        className="w-6 h-6 rounded-md border"
+                        style={{ backgroundColor: theme.preview.sidebar }}
+                      />
+                      <div 
+                        className="w-6 h-6 rounded-md border"
+                        style={{ backgroundColor: theme.preview.primary }}
+                      />
+                      <div 
+                        className="w-6 h-6 rounded-md border"
+                        style={{ backgroundColor: theme.preview.accent }}
+                      />
+                    </div>
+                    <div className="font-medium text-sm">{theme.name}</div>
+                    <div className="text-xs text-muted-foreground line-clamp-2">{theme.description}</div>
+                  </button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Settings className="h-5 w-5 text-blue-500" />
+                Configuracoes Gerais
+              </CardTitle>
+              <CardDescription>
+                Personalize nome, logotipo e configuracoes do sistema
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -785,7 +868,7 @@ export default function AdminPage() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="primaryColor">Cor Principal</Label>
+                      <Label htmlFor="primaryColor">Cor de Destaque</Label>
                       <div className="flex gap-2">
                         <Input
                           id="primaryColor"
@@ -852,7 +935,7 @@ export default function AdminPage() {
                   data-testid="button-save-customization"
                 >
                   <Save className="h-4 w-4 mr-2" />
-                  {saveCustomizationMutation.isPending ? "Salvando..." : "Salvar Personalizacao"}
+                  {saveCustomizationMutation.isPending ? "Salvando..." : "Salvar Configuracoes"}
                 </Button>
               </form>
             </CardContent>
