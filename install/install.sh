@@ -6,7 +6,8 @@
 # Versao: 1.0.0
 # ============================================================================
 
-set -e
+# Nao usar set -e para evitar saida prematura
+# set -e
 
 # Cores para output
 RED='\033[0;31m'
@@ -94,7 +95,7 @@ update_system() {
 install_system_deps() {
     log_info "Instalando dependencias do sistema..."
     
-    apt-get install -y -qq \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y \
         curl \
         wget \
         gnupg2 \
@@ -110,10 +111,14 @@ install_system_deps() {
         unzip \
         zip \
         tar \
-        gzip \
-        2>/dev/null
+        gzip
     
-    log_success "Dependencias do sistema instaladas"
+    if [ $? -eq 0 ]; then
+        log_success "Dependencias do sistema instaladas"
+    else
+        log_error "Falha ao instalar dependencias do sistema"
+        exit 1
+    fi
 }
 
 # Instalar Node.js
@@ -129,10 +134,18 @@ install_nodejs() {
     fi
     
     # Adicionar repositorio NodeSource
-    curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash - > /dev/null 2>&1
-    apt-get install -y -qq nodejs 2>/dev/null
+    log_info "Adicionando repositorio NodeSource..."
+    curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash -
     
-    log_success "Node.js $(node -v) instalado"
+    log_info "Instalando nodejs..."
+    DEBIAN_FRONTEND=noninteractive apt-get install -y nodejs
+    
+    if command -v node &> /dev/null; then
+        log_success "Node.js $(node -v) instalado"
+    else
+        log_error "Falha ao instalar Node.js"
+        exit 1
+    fi
 }
 
 # Instalar PostgreSQL
@@ -141,21 +154,31 @@ install_postgresql() {
     
     if command -v psql &> /dev/null; then
         log_success "PostgreSQL ja instalado"
+        systemctl enable postgresql 2>/dev/null || true
+        systemctl start postgresql 2>/dev/null || true
         return
     fi
     
     # Adicionar repositorio PostgreSQL
+    log_info "Adicionando repositorio PostgreSQL..."
     echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list
     curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /etc/apt/trusted.gpg.d/postgresql.gpg
     
-    apt-get update -qq
-    apt-get install -y -qq postgresql-${POSTGRES_VERSION} postgresql-contrib-${POSTGRES_VERSION} 2>/dev/null
+    apt-get update
+    
+    log_info "Instalando postgresql-${POSTGRES_VERSION}..."
+    DEBIAN_FRONTEND=noninteractive apt-get install -y postgresql-${POSTGRES_VERSION} postgresql-contrib-${POSTGRES_VERSION}
     
     # Iniciar servico
     systemctl enable postgresql
     systemctl start postgresql
     
-    log_success "PostgreSQL ${POSTGRES_VERSION} instalado e iniciado"
+    if command -v psql &> /dev/null; then
+        log_success "PostgreSQL ${POSTGRES_VERSION} instalado e iniciado"
+    else
+        log_error "Falha ao instalar PostgreSQL"
+        exit 1
+    fi
 }
 
 # Criar usuario e grupo NBM
