@@ -6,8 +6,28 @@
 # Versao: 1.0.0
 # ============================================================================
 
-# Nao usar set -e para evitar saida prematura
-# set -e
+# Verificar se o script foi executado corretamente (nao via source)
+if [[ "${BASH_SOURCE[0]}" != "${0}" ]]; then
+    echo ""
+    echo "ERRO: Nao execute o script com 'source' ou '.'"
+    echo ""
+    echo "Uso correto:"
+    echo "  sudo ./install.sh install"
+    echo ""
+    return 1 2>/dev/null || exit 1
+fi
+
+# Verificar argumento
+if [[ "$1" != "install" && "$1" != "uninstall" ]]; then
+    echo ""
+    echo "Uso: $0 {install|uninstall}"
+    echo ""
+    echo "Exemplos:"
+    echo "  sudo $0 install     # Instalar NBM"
+    echo "  sudo $0 uninstall   # Desinstalar NBM"
+    echo ""
+    exit 1
+fi
 
 # Cores para output
 RED='\033[0;31m'
