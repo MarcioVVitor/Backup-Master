@@ -7,6 +7,7 @@ import {
   settings,
   vendorScripts,
   manufacturers,
+  systemUpdates,
   DEFAULT_MANUFACTURERS,
   type InsertFile, 
   type InsertEquipment, 
@@ -19,7 +20,9 @@ import {
   type VendorScript,
   type InsertVendorScript,
   type Manufacturer,
-  type InsertManufacturer
+  type InsertManufacturer,
+  type SystemUpdate,
+  type InsertSystemUpdate
 } from "@shared/schema";
 import { eq, desc, sql, and, gte } from "drizzle-orm";
 
@@ -55,6 +58,11 @@ export interface IStorage {
   updateManufacturer(id: number, data: Partial<InsertManufacturer>): Promise<Manufacturer | undefined>;
   deleteManufacturer(id: number): Promise<void>;
   seedManufacturers(): Promise<void>;
+
+  getSystemUpdates(): Promise<SystemUpdate[]>;
+  createSystemUpdate(data: InsertSystemUpdate): Promise<SystemUpdate>;
+
+  importData(data: any): Promise<void>;
 
   getStats(): Promise<{
     totalEquipment: number;
@@ -250,6 +258,57 @@ export class DatabaseStorage implements IStorage {
         count: Number(s.count),
       })),
     };
+  }
+
+  async getSystemUpdates(): Promise<SystemUpdate[]> {
+    return await db.select().from(systemUpdates).orderBy(desc(systemUpdates.appliedAt));
+  }
+
+  async createSystemUpdate(data: InsertSystemUpdate): Promise<SystemUpdate> {
+    const [update] = await db.insert(systemUpdates).values(data).returning();
+    return update;
+  }
+
+  async importData(data: any): Promise<void> {
+    if (data.manufacturers && Array.isArray(data.manufacturers)) {
+      for (const mfr of data.manufacturers) {
+        await db.insert(manufacturers).values({
+          value: mfr.value,
+          label: mfr.label,
+          color: mfr.color,
+        }).onConflictDoNothing();
+      }
+    }
+
+    if (data.equipment && Array.isArray(data.equipment)) {
+      for (const equip of data.equipment) {
+        const { id, createdAt, ...equipData } = equip;
+        await db.insert(equipment).values(equipData).onConflictDoNothing();
+      }
+    }
+
+    if (data.scripts && Array.isArray(data.scripts)) {
+      for (const script of data.scripts) {
+        const { id, updatedAt, ...scriptData } = script;
+        await db.insert(vendorScripts).values(scriptData).onConflictDoNothing();
+      }
+    }
+
+    if (data.settings && Array.isArray(data.settings)) {
+      for (const setting of data.settings) {
+        await db.insert(settings).values({
+          key: setting.key,
+          value: setting.value,
+        }).onConflictDoNothing();
+      }
+    }
+
+    if (data.updates && Array.isArray(data.updates)) {
+      for (const update of data.updates) {
+        const { id, appliedAt, ...updateData } = update;
+        await db.insert(systemUpdates).values(updateData).onConflictDoNothing();
+      }
+    }
   }
 }
 

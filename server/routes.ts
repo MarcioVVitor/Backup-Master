@@ -3,7 +3,7 @@ import type { Server } from "http";
 import { storage } from "./storage";
 import multer from "multer";
 import { setupAuth, isAuthenticated, registerAuthRoutes } from "./replit_integrations/auth";
-import { insertEquipmentSchema, insertVendorScriptSchema, SUPPORTED_MANUFACTURERS } from "@shared/schema";
+import { insertEquipmentSchema, insertVendorScriptSchema, insertSystemUpdateSchema, SUPPORTED_MANUFACTURERS } from "@shared/schema";
 import { z } from "zod";
 
 const upload = multer({ storage: multer.memoryStorage() });
@@ -457,6 +457,140 @@ export async function registerRoutes(
     } catch (e) {
       console.error("Error getting stats:", e);
       res.status(500).json({ message: "Erro ao obter estatísticas" });
+    }
+  });
+
+  // API - Admin - System Info
+  app.get('/api/admin/system-info', isAuthenticated, async (req, res) => {
+    try {
+      const stats = await storage.getStats();
+      const scripts = await storage.getVendorScripts();
+      res.json({
+        version: process.env.APP_VERSION || '1.0.0',
+        dbSize: 'N/A',
+        totalEquipment: stats.totalEquipment,
+        totalBackups: stats.totalBackups,
+        totalScripts: scripts.length,
+        lastBackup: null,
+      });
+    } catch (e) {
+      console.error("Error getting system info:", e);
+      res.status(500).json({ message: "Erro ao obter informacoes do sistema" });
+    }
+  });
+
+  // API - Admin - System Updates
+  app.get('/api/admin/updates', isAuthenticated, async (req, res) => {
+    try {
+      const updates = await storage.getSystemUpdates();
+      res.json(updates);
+    } catch (e) {
+      console.error("Error getting updates:", e);
+      res.status(500).json({ message: "Erro ao obter atualizacoes" });
+    }
+  });
+
+  app.post('/api/admin/apply-patch', isAuthenticated, async (req, res) => {
+    try {
+      const user = req.user as any;
+      const parsed = insertSystemUpdateSchema.parse({
+        ...req.body,
+        appliedBy: user?.claims?.sub || user?.name || 'Admin',
+      });
+      const update = await storage.createSystemUpdate(parsed);
+      res.status(201).json(update);
+    } catch (e) {
+      if (e instanceof z.ZodError) {
+        return res.status(400).json({ message: "Dados invalidos", errors: e.errors });
+      }
+      console.error("Error applying patch:", e);
+      res.status(500).json({ message: "Erro ao aplicar atualizacao" });
+    }
+  });
+
+  // API - Admin - Export Database
+  app.post('/api/admin/export-database', isAuthenticated, async (req, res) => {
+    try {
+      const equipment = await storage.getEquipment();
+      const backups = await storage.getBackups();
+      const scripts = await storage.getVendorScripts();
+      const manufacturers = await storage.getManufacturers();
+      const updates = await storage.getSystemUpdates();
+
+      const exportData = {
+        exportedAt: new Date().toISOString(),
+        version: process.env.APP_VERSION || '1.0.0',
+        data: {
+          equipment,
+          backups,
+          scripts,
+          manufacturers,
+          updates,
+        }
+      };
+
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Content-Disposition', 'attachment; filename="nbm-database-backup.json"');
+      res.json(exportData);
+    } catch (e) {
+      console.error("Error exporting database:", e);
+      res.status(500).json({ message: "Erro ao exportar banco de dados" });
+    }
+  });
+
+  // API - Admin - Export Full System
+  app.post('/api/admin/export-full', isAuthenticated, async (req, res) => {
+    try {
+      const equipment = await storage.getEquipment();
+      const backups = await storage.getBackups();
+      const scripts = await storage.getVendorScripts();
+      const manufacturers = await storage.getManufacturers();
+      const updates = await storage.getSystemUpdates();
+      const settings = await storage.getAllSettings();
+
+      const exportData = {
+        exportedAt: new Date().toISOString(),
+        version: process.env.APP_VERSION || '1.0.0',
+        type: 'full-backup',
+        data: {
+          equipment,
+          backups,
+          scripts,
+          manufacturers,
+          updates,
+          settings,
+        }
+      };
+
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Content-Disposition', 'attachment; filename="nbm-full-backup.json"');
+      res.json(exportData);
+    } catch (e) {
+      console.error("Error exporting full backup:", e);
+      res.status(500).json({ message: "Erro ao exportar backup completo" });
+    }
+  });
+
+  // API - Admin - Import Database
+  app.post('/api/admin/import-database', isAuthenticated, upload.single('backup'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "Nenhum arquivo enviado" });
+      }
+
+      const content = req.file.buffer.toString('utf-8');
+      const importData = JSON.parse(content);
+
+      if (!importData.data) {
+        return res.status(400).json({ message: "Formato de backup invalido" });
+      }
+
+      await storage.importData(importData.data);
+
+      res.json({ message: "Backup restaurado com sucesso", importedAt: new Date().toISOString() });
+    } catch (e) {
+      console.error("Error importing database:", e);
+      res.status(500).json({ message: "Erro ao importar banco de dados" });
     }
   });
 

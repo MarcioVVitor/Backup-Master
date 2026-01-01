@@ -97,6 +97,15 @@ export const manufacturers = pgTable("manufacturers", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Tabela de Atualizacoes do Sistema
+export const systemUpdates = pgTable("system_updates", {
+  id: serial("id").primaryKey(),
+  version: text("version").notNull(),
+  description: text("description").notNull(),
+  appliedAt: timestamp("applied_at").defaultNow(),
+  appliedBy: text("applied_by").notNull(),
+});
+
 // Fabricantes padrão (usados para seed inicial)
 export const DEFAULT_MANUFACTURERS = [
   { value: "mikrotik", label: "Mikrotik", color: "#ff6b6b" },
@@ -119,6 +128,7 @@ export const insertBackupHistorySchema = createInsertSchema(backupHistory).omit(
 export const insertSettingSchema = createInsertSchema(settings).omit({ updatedAt: true });
 export const insertVendorScriptSchema = createInsertSchema(vendorScripts).omit({ id: true, updatedAt: true });
 export const insertManufacturerSchema = createInsertSchema(manufacturers).omit({ id: true, createdAt: true });
+export const insertSystemUpdateSchema = createInsertSchema(systemUpdates).omit({ id: true, appliedAt: true });
 
 // Tipos
 export type User = typeof users.$inferSelect;
@@ -135,3 +145,5 @@ export type VendorScript = typeof vendorScripts.$inferSelect;
 export type InsertVendorScript = z.infer<typeof insertVendorScriptSchema>;
 export type Manufacturer = typeof manufacturers.$inferSelect;
 export type InsertManufacturer = z.infer<typeof insertManufacturerSchema>;
+export type SystemUpdate = typeof systemUpdates.$inferSelect;
+export type InsertSystemUpdate = z.infer<typeof insertSystemUpdateSchema>;

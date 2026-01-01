@@ -11,6 +11,7 @@ import Backups from "@/pages/backups";
 import Execute from "@/pages/execute";
 import Scripts from "@/pages/scripts";
 import Manufacturers from "@/pages/manufacturers";
+import Admin from "@/pages/admin";
 import NotFound from "@/pages/not-found";
 import {
   SidebarProvider,
@@ -22,7 +23,7 @@ import {
   SidebarMenuButton,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { Home as HomeIcon, Server, HardDrive, Play, LogOut, Sun, Moon, Search, Terminal, Factory } from "lucide-react";
+import { Home as HomeIcon, Server, HardDrive, Play, LogOut, Sun, Moon, Search, Terminal, Factory, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -76,6 +77,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
     { title: "Scripts", url: "/scripts", icon: Terminal },
     { title: "Fabricantes", url: "/manufacturers", icon: Factory },
     { title: "Executar", url: "/execute", icon: Play },
+    { title: "Administracao", url: "/admin", icon: Settings },
   ];
 
   const style = {
@@ -180,6 +182,7 @@ function Router() {
       <Route path="/scripts" component={Scripts} />
       <Route path="/manufacturers" component={Manufacturers} />
       <Route path="/execute" component={Execute} />
+      <Route path="/admin" component={Admin} />
       <Route component={NotFound} />
     </Switch>
   );
