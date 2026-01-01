@@ -15,7 +15,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { ChevronDown, ChevronUp, Code, Download, Edit, HardDrive, Plug, Plus, Power, Search, Send, Terminal, Trash2, Upload, Wifi, WifiOff } from "lucide-react";
+import { Check, ChevronDown, ChevronUp, Code, Download, Edit, HardDrive, Plug, Plus, Power, Search, Send, Terminal, Trash2, Upload, Wifi, WifiOff } from "lucide-react";
 import { filesize } from "filesize";
 
 interface Firmware {
@@ -84,6 +84,7 @@ export default function FirmwarePage() {
   const [isScriptDialogOpen, setIsScriptDialogOpen] = useState(false);
   const [editingScript, setEditingScript] = useState<VendorScript | null>(null);
   const [expandedVendorSection, setExpandedVendorSection] = useState<{vendor: string, section: 'firmware' | 'equipment' | 'script' | null}>({vendor: '', section: null});
+  const [selectedFirmwarePerVendor, setSelectedFirmwarePerVendor] = useState<Record<string, Firmware | null>>({});
 
   const [formData, setFormData] = useState({
     name: "",
@@ -637,7 +638,7 @@ export default function FirmwarePage() {
                               </CardTitle>
                               <div className="flex items-center gap-2">
                                 <Button
-                                  variant="outline"
+                                  variant={selectedFirmwarePerVendor[mfr.value] ? "default" : "outline"}
                                   size="sm"
                                   className="h-6 text-xs px-2"
                                   onClick={() => setExpandedVendorSection(
@@ -645,7 +646,11 @@ export default function FirmwarePage() {
                                   )}
                                   data-testid={`button-firmware-${mfr.value}`}
                                 >
-                                  <HardDrive className="h-3 w-3 mr-1" />
+                                  {selectedFirmwarePerVendor[mfr.value] ? (
+                                    <Check className="h-3 w-3 mr-1" />
+                                  ) : (
+                                    <HardDrive className="h-3 w-3 mr-1" />
+                                  )}
                                   {vendorFirmwareList.length} firmware
                                 </Button>
                                 <Button
@@ -690,22 +695,44 @@ export default function FirmwarePage() {
                                   <p className="text-sm text-muted-foreground">Nenhum firmware cadastrado para este fabricante.</p>
                                 ) : (
                                   <div className="space-y-1">
-                                    {vendorFirmwareList.map(fw => (
-                                      <div key={fw.id} className="flex items-center justify-between gap-2 p-2 bg-background rounded border text-sm">
-                                        <div>
-                                          <span className="font-medium">{fw.name}</span>
-                                          {fw.version && <span className="ml-2 text-muted-foreground">v{fw.version}</span>}
+                                    {vendorFirmwareList.map(fw => {
+                                      const isSelected = selectedFirmwarePerVendor[mfr.value]?.id === fw.id;
+                                      return (
+                                        <div 
+                                          key={fw.id} 
+                                          className={`flex items-center justify-between gap-2 p-2 rounded border text-sm cursor-pointer transition-colors ${isSelected ? 'bg-primary/10 border-primary' : 'bg-background hover:bg-muted/50'}`}
+                                          onClick={() => setSelectedFirmwarePerVendor(prev => ({...prev, [mfr.value]: isSelected ? null : fw}))}
+                                          data-testid={`firmware-select-${fw.id}`}
+                                        >
+                                          <div className="flex items-center gap-2">
+                                            <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${isSelected ? 'border-primary bg-primary' : 'border-muted-foreground'}`}>
+                                              {isSelected && <div className="w-2 h-2 rounded-full bg-white" />}
+                                            </div>
+                                            <div>
+                                              <span className="font-medium">{fw.name}</span>
+                                              {fw.version && <span className="ml-2 text-muted-foreground">v{fw.version}</span>}
+                                            </div>
+                                          </div>
+                                          <div className="flex gap-1">
+                                            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); handleDownload(fw); }} title="Baixar">
+                                              <Download className="h-3 w-3" />
+                                            </Button>
+                                            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); setSelectedFirmware(fw); setIsExportDialogOpen(true); }} title="Exportar">
+                                              <Upload className="h-3 w-3" />
+                                            </Button>
+                                          </div>
                                         </div>
-                                        <div className="flex gap-1">
-                                          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleDownload(fw)} title="Baixar">
-                                            <Download className="h-3 w-3" />
-                                          </Button>
-                                          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setSelectedFirmware(fw); setIsExportDialogOpen(true); }} title="Exportar">
-                                            <Upload className="h-3 w-3" />
-                                          </Button>
-                                        </div>
+                                      );
+                                    })}
+                                    {selectedFirmwarePerVendor[mfr.value] && (
+                                      <div className="mt-2 p-2 bg-primary/5 rounded border border-primary/20 text-xs">
+                                        <span className="text-muted-foreground">Firmware selecionado: </span>
+                                        <span className="font-medium">{selectedFirmwarePerVendor[mfr.value]?.name}</span>
+                                        {selectedFirmwarePerVendor[mfr.value]?.version && (
+                                          <span className="ml-1">v{selectedFirmwarePerVendor[mfr.value]?.version}</span>
+                                        )}
                                       </div>
-                                    ))}
+                                    )}
                                   </div>
                                 )}
                               </div>
