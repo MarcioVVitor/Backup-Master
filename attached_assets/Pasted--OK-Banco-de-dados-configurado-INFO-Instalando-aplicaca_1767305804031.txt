@@ -1,0 +1,58 @@
+[OK] Banco de dados configurado
+[INFO] Instalando aplicacao NBM...
+[INFO] Baixando aplicacao do GitHub...
+Cloning into '/opt/nbm'...
+remote: Enumerating objects: 605, done.
+remote: Total 605 (delta 0), reused 0 (delta 0), pack-reused 605 (from 1)
+Receiving objects: 100% (605/605), 254.53 KiB | 4.04 MiB/s, done.
+Resolving deltas: 100% (289/289), done.
+[OK] Aplicacao baixada com sucesso
+[OK] Arquivos da aplicacao instalados
+[INFO] Instalando dependencias Node.js...
+npm warn deprecated node-domexception@1.0.0: Use your platform's native DOMException instead
+
+added 651 packages, and audited 652 packages in 21s
+
+91 packages are looking for funding
+  run `npm fund` for details
+
+3 high severity vulnerabilities
+
+To address all issues, run:
+  npm audit fix
+
+Run `npm audit` for details.
+npm notice
+npm notice New major version of npm available! 10.8.2 -> 11.7.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.7.0
+npm notice To update run: npm install -g npm@11.7.0
+npm notice
+[OK] Dependencias Node.js instaladas
+[INFO] Compilando aplicacao...
+
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/opt/nbm/script/build.ts' imported from /opt/nbm/
+    at finalizeResolution (node:internal/modules/esm/resolve:283:11)
+    at moduleResolve (node:internal/modules/esm/resolve:952:10)
+    at defaultResolve (node:internal/modules/esm/resolve:1188:11)
+    at nextResolve (node:internal/modules/esm/hooks:864:28)
+    at resolveBase (file:///opt/nbm/node_modules/tsx/dist/esm/index.mjs?1767305780261:2:3744)
+    at resolveDirectory (file:///opt/nbm/node_modules/tsx/dist/esm/index.mjs?1767305780261:2:4243)
+    at resolveTsPaths (file:///opt/nbm/node_modules/tsx/dist/esm/index.mjs?1767305780261:2:4984)
+    at resolve (file:///opt/nbm/node_modules/tsx/dist/esm/index.mjs?1767305780261:2:5361)
+    at nextResolve (node:internal/modules/esm/hooks:864:28)
+    at Hooks.resolve (node:internal/modules/esm/hooks:306:30) {
+  code: 'ERR_MODULE_NOT_FOUND',
+  url: 'file:///opt/nbm/script/build.ts'
+}
+
+Node.js v20.19.6
+npm notice
+npm notice New major version of npm available! 10.8.2 -> 11.7.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.7.0
+npm notice To update run: npm install -g npm@11.7.0
+npm notice
+[ERROR] Falha ao compilar aplicacao
+root@SRV-NBM[~]# 
