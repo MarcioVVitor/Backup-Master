@@ -9,6 +9,7 @@ import Home from "@/pages/home";
 import Equipment from "@/pages/equipment";
 import Backups from "@/pages/backups";
 import Execute from "@/pages/execute";
+import Scripts from "@/pages/scripts";
 import NotFound from "@/pages/not-found";
 import {
   SidebarProvider,
@@ -20,7 +21,7 @@ import {
   SidebarMenuButton,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { Home as HomeIcon, Server, HardDrive, Play, LogOut, Sun, Moon, Search } from "lucide-react";
+import { Home as HomeIcon, Server, HardDrive, Play, LogOut, Sun, Moon, Search, Terminal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -71,6 +72,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
     { title: "Dashboard", url: "/", icon: HomeIcon },
     { title: "Equipamentos", url: "/equipment", icon: Server },
     { title: "Backups", url: "/backups", icon: HardDrive },
+    { title: "Scripts", url: "/scripts", icon: Terminal },
     { title: "Executar", url: "/execute", icon: Play },
   ];
 
@@ -173,6 +175,7 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/equipment" component={Equipment} />
       <Route path="/backups" component={Backups} />
+      <Route path="/scripts" component={Scripts} />
       <Route path="/execute" component={Execute} />
       <Route component={NotFound} />
     </Switch>

@@ -76,6 +76,18 @@ export const settings = pgTable("settings", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Tabela de Scripts de Backup por Fabricante
+export const vendorScripts = pgTable("vendor_scripts", {
+  id: serial("id").primaryKey(),
+  manufacturer: text("manufacturer").notNull().unique(),
+  command: text("command").notNull(),
+  description: text("description"),
+  fileExtension: text("file_extension").default(".cfg"),
+  useShell: boolean("use_shell").default(true),
+  timeout: integer("timeout").default(30000),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Fabricantes suportados
 export const SUPPORTED_MANUFACTURERS = [
   { value: "mikrotik", label: "Mikrotik", color: "#ff6b6b" },
@@ -93,6 +105,7 @@ export const insertEquipmentSchema = createInsertSchema(equipment).omit({ id: tr
 export const insertFileSchema = createInsertSchema(files).omit({ id: true, createdAt: true });
 export const insertBackupHistorySchema = createInsertSchema(backupHistory).omit({ id: true, executedAt: true });
 export const insertSettingSchema = createInsertSchema(settings).omit({ updatedAt: true });
+export const insertVendorScriptSchema = createInsertSchema(vendorScripts).omit({ id: true, updatedAt: true });
 
 // Tipos
 export type User = typeof users.$inferSelect;
@@ -105,3 +118,5 @@ export type BackupHistoryRecord = typeof backupHistory.$inferSelect;
 export type InsertBackupHistory = z.infer<typeof insertBackupHistorySchema>;
 export type Setting = typeof settings.$inferSelect;
 export type InsertSetting = z.infer<typeof insertSettingSchema>;
+export type VendorScript = typeof vendorScripts.$inferSelect;
+export type InsertVendorScript = z.infer<typeof insertVendorScriptSchema>;

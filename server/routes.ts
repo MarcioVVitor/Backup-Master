@@ -3,7 +3,7 @@ import type { Server } from "http";
 import { storage } from "./storage";
 import multer from "multer";
 import { setupAuth, isAuthenticated, registerAuthRoutes } from "./replit_integrations/auth";
-import { insertEquipmentSchema, SUPPORTED_MANUFACTURERS } from "@shared/schema";
+import { insertEquipmentSchema, insertVendorScriptSchema, SUPPORTED_MANUFACTURERS } from "@shared/schema";
 import { z } from "zod";
 
 const upload = multer({ storage: multer.memoryStorage() });
@@ -245,7 +245,7 @@ export async function registerRoutes(
     });
 
     try {
-      const config = getBackupConfig(equip.manufacturer);
+      const config = await getBackupConfig(equip.manufacturer);
       const result = await executeSSHBackup(equip, config);
 
       const { objectStorageClient } = await import("./replit_integrations/object_storage/objectStorage");
@@ -328,6 +328,63 @@ export async function registerRoutes(
     }
   });
 
+  // API - Scripts de Backup por Fabricante
+  app.get('/api/scripts', isAuthenticated, async (req, res) => {
+    try {
+      const scripts = await storage.getVendorScripts();
+      res.json(scripts);
+    } catch (e) {
+      console.error("Error getting scripts:", e);
+      res.status(500).json({ message: "Erro ao obter scripts" });
+    }
+  });
+
+  app.get('/api/scripts/:manufacturer', isAuthenticated, async (req, res) => {
+    try {
+      const script = await storage.getVendorScript(req.params.manufacturer);
+      if (!script) {
+        const defaultConfig = getDefaultBackupConfig(req.params.manufacturer);
+        return res.json({
+          manufacturer: req.params.manufacturer,
+          command: defaultConfig.command,
+          description: `Script padrão para ${req.params.manufacturer}`,
+          fileExtension: defaultConfig.extension,
+          useShell: defaultConfig.useShell,
+          timeout: 30000,
+          isDefault: true,
+        });
+      }
+      res.json(script);
+    } catch (e) {
+      console.error("Error getting script:", e);
+      res.status(500).json({ message: "Erro ao obter script" });
+    }
+  });
+
+  app.post('/api/scripts', isAuthenticated, async (req, res) => {
+    try {
+      const parsed = insertVendorScriptSchema.parse(req.body);
+      const script = await storage.upsertVendorScript(parsed);
+      res.status(201).json(script);
+    } catch (e) {
+      if (e instanceof z.ZodError) {
+        return res.status(400).json({ message: "Dados inválidos", errors: e.errors });
+      }
+      console.error("Error saving script:", e);
+      res.status(500).json({ message: "Erro ao salvar script" });
+    }
+  });
+
+  app.delete('/api/scripts/:manufacturer', isAuthenticated, async (req, res) => {
+    try {
+      await storage.deleteVendorScript(req.params.manufacturer);
+      res.sendStatus(204);
+    } catch (e) {
+      console.error("Error setting:", e);
+      res.status(500).json({ message: "Erro ao salvar configuração" });
+    }
+  });
+
   // API - Stats
   app.get('/api/stats', isAuthenticated, async (req, res) => {
     try {
@@ -347,11 +404,25 @@ interface BackupConfig {
   command: string;
   extension: string;
   useShell: boolean;
+  timeout?: number;
   prompt?: RegExp;
   endPattern?: RegExp;
 }
 
-function getBackupConfig(manufacturer: string): BackupConfig {
+async function getBackupConfig(manufacturer: string): Promise<BackupConfig> {
+  const storedScript = await storage.getVendorScript(manufacturer);
+  if (storedScript) {
+    return {
+      command: storedScript.command,
+      extension: storedScript.fileExtension || '.cfg',
+      useShell: storedScript.useShell ?? true,
+      timeout: storedScript.timeout || 30000,
+    };
+  }
+  return getDefaultBackupConfig(manufacturer);
+}
+
+function getDefaultBackupConfig(manufacturer: string): BackupConfig {
   const configs: Record<string, BackupConfig> = {
     mikrotik: {
       command: '/export',

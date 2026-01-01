@@ -5,6 +5,7 @@ import {
   users, 
   backupHistory, 
   settings,
+  vendorScripts,
   type InsertFile, 
   type InsertEquipment, 
   type Equipment, 
@@ -12,7 +13,9 @@ import {
   type BackupHistoryRecord,
   type InsertBackupHistory,
   type Setting,
-  type InsertSetting
+  type InsertSetting,
+  type VendorScript,
+  type InsertVendorScript
 } from "@shared/schema";
 import { eq, desc, sql, and, gte } from "drizzle-orm";
 
@@ -37,6 +40,11 @@ export interface IStorage {
   getSetting(key: string): Promise<string | null>;
   setSetting(key: string, value: string): Promise<void>;
   getAllSettings(): Promise<Setting[]>;
+
+  getVendorScripts(): Promise<VendorScript[]>;
+  getVendorScript(manufacturer: string): Promise<VendorScript | undefined>;
+  upsertVendorScript(data: InsertVendorScript): Promise<VendorScript>;
+  deleteVendorScript(manufacturer: string): Promise<void>;
 
   getStats(): Promise<{
     totalEquipment: number;
@@ -126,6 +134,38 @@ export class DatabaseStorage implements IStorage {
 
   async getAllSettings(): Promise<Setting[]> {
     return await db.select().from(settings);
+  }
+
+  async getVendorScripts(): Promise<VendorScript[]> {
+    return await db.select().from(vendorScripts).orderBy(vendorScripts.manufacturer);
+  }
+
+  async getVendorScript(manufacturer: string): Promise<VendorScript | undefined> {
+    const [script] = await db.select().from(vendorScripts).where(eq(vendorScripts.manufacturer, manufacturer));
+    return script;
+  }
+
+  async upsertVendorScript(data: InsertVendorScript): Promise<VendorScript> {
+    const [script] = await db
+      .insert(vendorScripts)
+      .values(data)
+      .onConflictDoUpdate({
+        target: vendorScripts.manufacturer,
+        set: { 
+          command: data.command,
+          description: data.description,
+          fileExtension: data.fileExtension,
+          useShell: data.useShell,
+          timeout: data.timeout,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+    return script;
+  }
+
+  async deleteVendorScript(manufacturer: string): Promise<void> {
+    await db.delete(vendorScripts).where(eq(vendorScripts.manufacturer, manufacturer));
   }
 
   async getStats(): Promise<{
