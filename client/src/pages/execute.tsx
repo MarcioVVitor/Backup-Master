@@ -24,7 +24,7 @@ export default function ExecutePage() {
 
   const executeMutation = useMutation({
     mutationFn: async (equipmentId: number) => {
-      const response = await apiRequest(`/api/backup/execute/${equipmentId}`, { method: 'POST' });
+      const response = await apiRequest('POST', `/api/backup/execute/${equipmentId}`);
       return response;
     },
     onSuccess: (data, equipmentId) => {

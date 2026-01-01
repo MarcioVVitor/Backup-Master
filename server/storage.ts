@@ -1,36 +1,59 @@
 import { db } from "./db";
-import { files, equipment, users, type InsertFile, type InsertEquipment, type Equipment, type FileRecord } from "@shared/schema";
-import { eq, desc, sql } from "drizzle-orm";
+import { 
+  files, 
+  equipment, 
+  users, 
+  backupHistory, 
+  settings,
+  type InsertFile, 
+  type InsertEquipment, 
+  type Equipment, 
+  type FileRecord,
+  type BackupHistoryRecord,
+  type InsertBackupHistory,
+  type Setting,
+  type InsertSetting
+} from "@shared/schema";
+import { eq, desc, sql, and, gte } from "drizzle-orm";
 
 export interface IStorage {
-  // Users
   getUserIdByReplitId(replitId: string): Promise<number | null>;
 
-  // Equipment
   getEquipment(): Promise<Equipment[]>;
   getEquipmentById(id: number): Promise<Equipment | undefined>;
   createEquipment(data: InsertEquipment): Promise<Equipment>;
   updateEquipment(id: number, data: Partial<InsertEquipment>): Promise<Equipment | undefined>;
   deleteEquipment(id: number): Promise<void>;
 
-  // Backups
   getBackups(): Promise<FileRecord[]>;
   getBackup(id: number): Promise<FileRecord | undefined>;
   createBackup(data: InsertFile): Promise<FileRecord>;
   deleteBackup(id: number): Promise<void>;
 
-  // Stats
-  getStats(): Promise<{ totalEquipment: number; totalBackups: number; successRate: number }>;
+  getBackupHistory(): Promise<BackupHistoryRecord[]>;
+  createBackupHistory(data: InsertBackupHistory): Promise<BackupHistoryRecord>;
+  updateBackupHistory(id: number, data: Partial<InsertBackupHistory>): Promise<BackupHistoryRecord | undefined>;
+
+  getSetting(key: string): Promise<string | null>;
+  setSetting(key: string, value: string): Promise<void>;
+  getAllSettings(): Promise<Setting[]>;
+
+  getStats(): Promise<{
+    totalEquipment: number;
+    totalBackups: number;
+    successRate: number;
+    totalSize: number;
+    recentBackups: number;
+    manufacturerStats: { manufacturer: string; count: number }[];
+  }>;
 }
 
 export class DatabaseStorage implements IStorage {
-  // Users
   async getUserIdByReplitId(replitId: string): Promise<number | null> {
     const [user] = await db.select().from(users).where(eq(users.replitId, replitId));
     return user?.id || null;
   }
 
-  // Equipment
   async getEquipment(): Promise<Equipment[]> {
     return await db.select().from(equipment).orderBy(desc(equipment.createdAt));
   }
@@ -54,7 +77,6 @@ export class DatabaseStorage implements IStorage {
     await db.delete(equipment).where(eq(equipment.id, id));
   }
 
-  // Backups
   async getBackups(): Promise<FileRecord[]> {
     return await db.select().from(files).orderBy(desc(files.createdAt));
   }
@@ -73,19 +95,79 @@ export class DatabaseStorage implements IStorage {
     await db.delete(files).where(eq(files.id, id));
   }
 
-  // Stats
-  async getStats(): Promise<{ totalEquipment: number; totalBackups: number; successRate: number }> {
+  async getBackupHistory(): Promise<BackupHistoryRecord[]> {
+    return await db.select().from(backupHistory).orderBy(desc(backupHistory.executedAt));
+  }
+
+  async createBackupHistory(data: InsertBackupHistory): Promise<BackupHistoryRecord> {
+    const [record] = await db.insert(backupHistory).values(data).returning();
+    return record;
+  }
+
+  async updateBackupHistory(id: number, data: Partial<InsertBackupHistory>): Promise<BackupHistoryRecord | undefined> {
+    const [updated] = await db.update(backupHistory).set(data).where(eq(backupHistory.id, id)).returning();
+    return updated;
+  }
+
+  async getSetting(key: string): Promise<string | null> {
+    const [setting] = await db.select().from(settings).where(eq(settings.key, key));
+    return setting?.value || null;
+  }
+
+  async setSetting(key: string, value: string): Promise<void> {
+    await db
+      .insert(settings)
+      .values({ key, value })
+      .onConflictDoUpdate({
+        target: settings.key,
+        set: { value, updatedAt: new Date() },
+      });
+  }
+
+  async getAllSettings(): Promise<Setting[]> {
+    return await db.select().from(settings);
+  }
+
+  async getStats(): Promise<{
+    totalEquipment: number;
+    totalBackups: number;
+    successRate: number;
+    totalSize: number;
+    recentBackups: number;
+    manufacturerStats: { manufacturer: string; count: number }[];
+  }> {
     const [equipCount] = await db.select({ count: sql<number>`count(*)` }).from(equipment);
     const [backupCount] = await db.select({ count: sql<number>`count(*)` }).from(files);
     const [successCount] = await db.select({ count: sql<number>`count(*)` }).from(files).where(eq(files.status, 'success'));
+    const [sizeSum] = await db.select({ total: sql<number>`coalesce(sum(size), 0)` }).from(files);
+    
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const [recentCount] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(files)
+      .where(gte(files.createdAt, oneDayAgo));
+
+    const manufacturerStats = await db
+      .select({
+        manufacturer: equipment.manufacturer,
+        count: sql<number>`count(*)`,
+      })
+      .from(equipment)
+      .groupBy(equipment.manufacturer);
 
     const total = Number(backupCount?.count || 0);
     const success = Number(successCount?.count || 0);
-    
+
     return {
       totalEquipment: Number(equipCount?.count || 0),
       totalBackups: total,
       successRate: total > 0 ? Math.round((success / total) * 100) : 100,
+      totalSize: Number(sizeSum?.total || 0),
+      recentBackups: Number(recentCount?.count || 0),
+      manufacturerStats: manufacturerStats.map(s => ({
+        manufacturer: s.manufacturer,
+        count: Number(s.count),
+      })),
     };
   }
 }

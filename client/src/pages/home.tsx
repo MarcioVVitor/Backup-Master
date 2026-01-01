@@ -2,14 +2,25 @@ import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
-import { Server, HardDrive, Clock, CheckCircle, LogIn } from "lucide-react";
+import { Server, HardDrive, Clock, CheckCircle, LogIn, Database, Activity } from "lucide-react";
+import { filesize } from "filesize";
+
+interface Stats {
+  totalEquipment: number;
+  totalBackups: number;
+  successRate: number;
+  totalSize: number;
+  recentBackups: number;
+  manufacturerStats: { manufacturer: string; count: number }[];
+}
 
 export default function Home() {
   const { user, isLoading: authLoading } = useAuth();
 
-  const { data: stats, isLoading: statsLoading } = useQuery({
+  const { data: stats, isLoading: statsLoading } = useQuery<Stats>({
     queryKey: ['/api/stats'],
     enabled: !!user,
   });
@@ -28,7 +39,9 @@ export default function Home() {
         <Card className="w-full max-w-md mx-4">
           <CardHeader className="text-center">
             <div className="flex justify-center mb-4">
-              <Server className="h-16 w-16 text-primary" />
+              <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+                <Server className="h-8 w-8 text-white" />
+              </div>
             </div>
             <CardTitle className="text-2xl">NBM - Network Backup Manager</CardTitle>
             <CardDescription>
@@ -59,13 +72,10 @@ export default function Home() {
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
           <h1 className="text-2xl font-bold" data-testid="text-welcome">
-            Bem-vindo, {user.name || user.email?.split('@')[0] || user.username || 'Usuário'}
+            Bem-vindo, {user.name || user.email?.split('@')[0] || user.username || 'Usuario'}
           </h1>
           <p className="text-muted-foreground">Network Backup Manager v17.0</p>
         </div>
-        <Button variant="outline" onClick={() => window.location.href = '/api/logout'} data-testid="button-logout">
-          Sair
-        </Button>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -94,9 +104,14 @@ export default function Home() {
             {statsLoading ? (
               <Skeleton className="h-8 w-16" />
             ) : (
-              <div className="text-2xl font-bold" data-testid="text-backup-count">
-                {stats?.totalBackups || 0}
-              </div>
+              <>
+                <div className="text-2xl font-bold" data-testid="text-backup-count">
+                  {stats?.totalBackups || 0}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {stats?.totalSize ? filesize(stats.totalSize) : '0 B'} armazenados
+                </p>
+              </>
             )}
           </CardContent>
         </Card>
@@ -110,7 +125,7 @@ export default function Home() {
             {statsLoading ? (
               <Skeleton className="h-8 w-16" />
             ) : (
-              <div className="text-2xl font-bold text-green-600" data-testid="text-success-rate">
+              <div className="text-2xl font-bold text-green-600 dark:text-green-400" data-testid="text-success-rate">
                 {stats?.successRate || 100}%
               </div>
             )}
@@ -119,16 +134,38 @@ export default function Home() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Status</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Ultimas 24h</CardTitle>
+            <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600" data-testid="text-status">
-              Online
-            </div>
+            {statsLoading ? (
+              <Skeleton className="h-8 w-16" />
+            ) : (
+              <div className="text-2xl font-bold" data-testid="text-recent-backups">
+                {stats?.recentBackups || 0}
+              </div>
+            )}
+            <p className="text-xs text-muted-foreground">backups realizados</p>
           </CardContent>
         </Card>
       </div>
+
+      {stats?.manufacturerStats && stats.manufacturerStats.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm font-medium">Equipamentos por Fabricante</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-2">
+              {stats.manufacturerStats.map((stat) => (
+                <Badge key={stat.manufacturer} variant="secondary" className="text-sm">
+                  {stat.manufacturer}: {stat.count}
+                </Badge>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Link href="/equipment">

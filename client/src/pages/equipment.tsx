@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
@@ -13,18 +14,18 @@ import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { Plus, Pencil, Trash2, Server } from "lucide-react";
-import type { Equipment } from "@shared/schema";
+import { SUPPORTED_MANUFACTURERS, type Equipment } from "@shared/schema";
 
-const MANUFACTURERS = [
-  { value: "huawei", label: "Huawei" },
-  { value: "mikrotik", label: "Mikrotik" },
-  { value: "cisco", label: "Cisco" },
-  { value: "nokia", label: "Nokia" },
-  { value: "zte", label: "ZTE" },
-  { value: "datacom", label: "Datacom" },
-  { value: "datacom-dmos", label: "Datacom DMOS" },
-  { value: "juniper", label: "Juniper" },
-];
+const manufacturerColors: Record<string, string> = {
+  mikrotik: "bg-red-500 text-white",
+  huawei: "bg-pink-500 text-white",
+  cisco: "bg-blue-600 text-white",
+  nokia: "bg-indigo-700 text-white",
+  zte: "bg-cyan-500 text-white",
+  datacom: "bg-teal-500 text-white",
+  "datacom-dmos": "bg-teal-600 text-white",
+  juniper: "bg-green-600 text-white",
+};
 
 export default function EquipmentPage() {
   const { user, isLoading: authLoading } = useAuth();
@@ -40,6 +41,7 @@ export default function EquipmentPage() {
     password: "",
     port: 22,
     protocol: "ssh",
+    enabled: true,
   });
 
   const { data: equipmentList, isLoading } = useQuery<Equipment[]>({
@@ -49,7 +51,7 @@ export default function EquipmentPage() {
 
   const createMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
-      return apiRequest('/api/equipment', { method: 'POST', body: JSON.stringify(data) });
+      return apiRequest('POST', '/api/equipment', data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/equipment'] });
@@ -65,7 +67,7 @@ export default function EquipmentPage() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: typeof formData }) => {
-      return apiRequest(`/api/equipment/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+      return apiRequest('PUT', `/api/equipment/${id}`, data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/equipment'] });
@@ -80,12 +82,12 @@ export default function EquipmentPage() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      return apiRequest(`/api/equipment/${id}`, { method: 'DELETE' });
+      return apiRequest('DELETE', `/api/equipment/${id}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/equipment'] });
       queryClient.invalidateQueries({ queryKey: ['/api/stats'] });
-      toast({ title: "Equipamento excluído com sucesso" });
+      toast({ title: "Equipamento excluido com sucesso" });
     },
     onError: () => {
       toast({ title: "Erro ao excluir equipamento", variant: "destructive" });
@@ -102,6 +104,7 @@ export default function EquipmentPage() {
       password: "",
       port: 22,
       protocol: "ssh",
+      enabled: true,
     });
     setEditingEquipment(null);
   };
@@ -114,9 +117,10 @@ export default function EquipmentPage() {
       manufacturer: equipment.manufacturer,
       model: equipment.model || "",
       username: equipment.username || "",
-      password: "", // Password is write-only, leave blank to preserve existing
+      password: "",
       port: equipment.port || 22,
       protocol: equipment.protocol || "ssh",
+      enabled: equipment.enabled ?? true,
     });
     setIsDialogOpen(true);
   };
@@ -156,7 +160,7 @@ export default function EquipmentPage() {
               Adicionar
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-w-xl">
             <DialogHeader>
               <DialogTitle>{editingEquipment ? "Editar Equipamento" : "Novo Equipamento"}</DialogTitle>
             </DialogHeader>
@@ -192,7 +196,7 @@ export default function EquipmentPage() {
                       <SelectValue placeholder="Selecione" />
                     </SelectTrigger>
                     <SelectContent>
-                      {MANUFACTURERS.map((m) => (
+                      {SUPPORTED_MANUFACTURERS.map((m) => (
                         <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
                       ))}
                     </SelectContent>
@@ -208,7 +212,7 @@ export default function EquipmentPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="username">Usuário SSH</Label>
+                  <Label htmlFor="username">Usuario SSH</Label>
                   <Input
                     id="username"
                     value={formData.username}
@@ -235,6 +239,15 @@ export default function EquipmentPage() {
                     value={formData.port}
                     onChange={(e) => setFormData({ ...formData, port: parseInt(e.target.value) })}
                     data-testid="input-equipment-port"
+                  />
+                </div>
+                <div className="space-y-2 flex items-center gap-4 pt-6">
+                  <Label htmlFor="enabled">Habilitado</Label>
+                  <Switch
+                    id="enabled"
+                    checked={formData.enabled}
+                    onCheckedChange={(checked) => setFormData({ ...formData, enabled: checked })}
+                    data-testid="switch-equipment-enabled"
                   />
                 </div>
               </div>
@@ -271,16 +284,18 @@ export default function EquipmentPage() {
                   <TableHead>Modelo</TableHead>
                   <TableHead>Porta</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Ações</TableHead>
+                  <TableHead className="text-right">Acoes</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {equipmentList.map((equip) => (
                   <TableRow key={equip.id} data-testid={`row-equipment-${equip.id}`}>
                     <TableCell className="font-medium">{equip.name}</TableCell>
-                    <TableCell>{equip.ip}</TableCell>
+                    <TableCell className="font-mono text-sm">{equip.ip}</TableCell>
                     <TableCell>
-                      <Badge variant="secondary">{equip.manufacturer}</Badge>
+                      <Badge className={manufacturerColors[equip.manufacturer] || 'bg-gray-500 text-white'}>
+                        {equip.manufacturer}
+                      </Badge>
                     </TableCell>
                     <TableCell>{equip.model || "-"}</TableCell>
                     <TableCell>{equip.port}</TableCell>

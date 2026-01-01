@@ -3,6 +3,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
@@ -10,31 +11,55 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { Download, Trash2, Eye, HardDrive, Search, Upload } from "lucide-react";
+import { Download, Trash2, Eye, HardDrive, Search, Upload, FileText } from "lucide-react";
 import { filesize } from "filesize";
-import type { FileRecord } from "@shared/schema";
+import { SUPPORTED_MANUFACTURERS } from "@shared/schema";
+
+interface BackupRecord {
+  id: number;
+  filename: string;
+  size: number;
+  status: string | null;
+  createdAt: string | null;
+  equipmentName?: string;
+  manufacturer?: string;
+  ip?: string;
+}
+
+const manufacturerColors: Record<string, string> = {
+  mikrotik: "bg-red-500 text-white",
+  huawei: "bg-pink-500 text-white",
+  cisco: "bg-blue-600 text-white",
+  nokia: "bg-indigo-700 text-white",
+  zte: "bg-cyan-500 text-white",
+  datacom: "bg-teal-500 text-white",
+  "datacom-dmos": "bg-teal-600 text-white",
+  juniper: "bg-green-600 text-white",
+};
 
 export default function BackupsPage() {
   const { user, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
-  const [viewContent, setViewContent] = useState<{ filename: string; content: string } | null>(null);
+  const [manufacturerFilter, setManufacturerFilter] = useState("");
+  const [viewContent, setViewContent] = useState<{ filename: string; content: string; truncated: boolean } | null>(null);
+  const [isViewLoading, setIsViewLoading] = useState(false);
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-  const { data: backupsData, isLoading } = useQuery<{ success: boolean; total: number; backups: FileRecord[] }>({
+  const { data: backupsData, isLoading } = useQuery<{ success: boolean; total: number; backups: BackupRecord[] }>({
     queryKey: ['/api/backups'],
     enabled: !!user,
   });
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      return apiRequest(`/api/backups/${id}`, { method: 'DELETE' });
+      return apiRequest('DELETE', `/api/backups/${id}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/backups'] });
       queryClient.invalidateQueries({ queryKey: ['/api/stats'] });
-      toast({ title: "Backup excluído com sucesso" });
+      toast({ title: "Backup excluido com sucesso" });
     },
     onError: () => {
       toast({ title: "Erro ao excluir backup", variant: "destructive" });
@@ -65,8 +90,29 @@ export default function BackupsPage() {
     },
   });
 
-  const handleDownload = (backup: FileRecord) => {
+  const handleDownload = (backup: BackupRecord) => {
     window.open(`/api/backups/${backup.id}/download`, '_blank');
+  };
+
+  const handleView = async (backup: BackupRecord) => {
+    setIsViewLoading(true);
+    try {
+      const response = await fetch(`/api/backups/${backup.id}/view`, { credentials: 'include' });
+      const data = await response.json();
+      if (data.success) {
+        setViewContent({
+          filename: data.filename,
+          content: data.content,
+          truncated: data.truncated,
+        });
+      } else {
+        toast({ title: "Erro ao visualizar backup", variant: "destructive" });
+      }
+    } catch {
+      toast({ title: "Erro ao visualizar backup", variant: "destructive" });
+    } finally {
+      setIsViewLoading(false);
+    }
   };
 
   const handleUpload = () => {
@@ -75,9 +121,12 @@ export default function BackupsPage() {
     }
   };
 
-  const filteredBackups = backupsData?.backups?.filter((b) =>
-    b.filename.toLowerCase().includes(searchTerm.toLowerCase())
-  ) || [];
+  const filteredBackups = backupsData?.backups?.filter((b) => {
+    const matchSearch = b.filename.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (b.equipmentName?.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchManufacturer = !manufacturerFilter || b.manufacturer === manufacturerFilter;
+    return matchSearch && matchManufacturer;
+  }) || [];
 
   if (authLoading) {
     return <div className="p-6"><Skeleton className="h-96 w-full" /></div>;
@@ -104,7 +153,7 @@ export default function BackupsPage() {
         </Button>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 flex-wrap">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -115,6 +164,17 @@ export default function BackupsPage() {
             data-testid="input-search-backups"
           />
         </div>
+        <Select value={manufacturerFilter} onValueChange={setManufacturerFilter}>
+          <SelectTrigger className="w-48" data-testid="select-manufacturer-filter">
+            <SelectValue placeholder="Todos Fabricantes" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="">Todos Fabricantes</SelectItem>
+            {SUPPORTED_MANUFACTURERS.map((m) => (
+              <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       <Card>
@@ -131,17 +191,32 @@ export default function BackupsPage() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead>Equipamento</TableHead>
                   <TableHead>Arquivo</TableHead>
+                  <TableHead>Fabricante</TableHead>
                   <TableHead>Tamanho</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Data</TableHead>
-                  <TableHead className="text-right">Ações</TableHead>
+                  <TableHead className="text-right">Acoes</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredBackups.map((backup) => (
                   <TableRow key={backup.id} data-testid={`row-backup-${backup.id}`}>
-                    <TableCell className="font-medium">{backup.filename}</TableCell>
+                    <TableCell className="font-medium">{backup.equipmentName || '-'}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <FileText className="h-4 w-4 text-muted-foreground" />
+                        {backup.filename}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {backup.manufacturer ? (
+                        <Badge className={manufacturerColors[backup.manufacturer] || 'bg-gray-500 text-white'}>
+                          {backup.manufacturer}
+                        </Badge>
+                      ) : '-'}
+                    </TableCell>
                     <TableCell>{filesize(backup.size)}</TableCell>
                     <TableCell>
                       <Badge variant={backup.status === 'success' ? 'default' : 'destructive'}>
@@ -152,6 +227,15 @@ export default function BackupsPage() {
                       {backup.createdAt ? new Date(backup.createdAt).toLocaleString('pt-BR') : '-'}
                     </TableCell>
                     <TableCell className="text-right">
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => handleView(backup)}
+                        disabled={isViewLoading}
+                        data-testid={`button-view-backup-${backup.id}`}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
                       <Button
                         size="icon"
                         variant="ghost"
@@ -207,11 +291,24 @@ export default function BackupsPage() {
       <Dialog open={!!viewContent} onOpenChange={() => setViewContent(null)}>
         <DialogContent className="max-w-4xl max-h-[80vh] overflow-auto">
           <DialogHeader>
-            <DialogTitle>{viewContent?.filename}</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              {viewContent?.filename}
+            </DialogTitle>
           </DialogHeader>
-          <pre className="bg-muted p-4 rounded-md text-sm overflow-auto max-h-96">
+          {viewContent?.truncated && (
+            <div className="text-sm text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950 p-2 rounded-md">
+              Conteudo truncado (mostrando primeiros 50KB)
+            </div>
+          )}
+          <pre className="bg-muted p-4 rounded-md text-xs font-mono overflow-auto max-h-96 whitespace-pre-wrap">
             {viewContent?.content}
           </pre>
+          <div className="flex justify-end">
+            <Button variant="outline" onClick={() => setViewContent(null)}>
+              Fechar
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
