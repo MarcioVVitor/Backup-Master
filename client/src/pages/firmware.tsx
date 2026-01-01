@@ -60,6 +60,30 @@ interface VendorScript {
   isDefault?: boolean;
 }
 
+interface TerminalTheme {
+  id: string;
+  name: string;
+  background: string;
+  foreground: string;
+  prompt: string;
+  placeholder: string;
+  border: string;
+  inputBg: string;
+}
+
+const terminalThemes: TerminalTheme[] = [
+  { id: 'default', name: 'Default', background: '#18181b', foreground: '#f4f4f5', prompt: '#a1a1aa', placeholder: '#52525b', border: '#3f3f46', inputBg: '#27272a' },
+  { id: 'dracula', name: 'Dracula', background: '#282a36', foreground: '#f8f8f2', prompt: '#bd93f9', placeholder: '#6272a4', border: '#44475a', inputBg: '#1e1f29' },
+  { id: 'monokai', name: 'Monokai', background: '#272822', foreground: '#f8f8f2', prompt: '#a6e22e', placeholder: '#75715e', border: '#49483e', inputBg: '#1e1e1e' },
+  { id: 'solarized', name: 'Solarized Dark', background: '#002b36', foreground: '#839496', prompt: '#2aa198', placeholder: '#586e75', border: '#073642', inputBg: '#073642' },
+  { id: 'onedark', name: 'One Dark', background: '#282c34', foreground: '#abb2bf', prompt: '#61afef', placeholder: '#5c6370', border: '#3e4452', inputBg: '#21252b' },
+  { id: 'nord', name: 'Nord', background: '#2e3440', foreground: '#eceff4', prompt: '#88c0d0', placeholder: '#4c566a', border: '#3b4252', inputBg: '#3b4252' },
+  { id: 'gruvbox', name: 'Gruvbox', background: '#282828', foreground: '#ebdbb2', prompt: '#b8bb26', placeholder: '#928374', border: '#3c3836', inputBg: '#1d2021' },
+  { id: 'material', name: 'Material', background: '#263238', foreground: '#eeffff', prompt: '#89ddff', placeholder: '#546e7a', border: '#37474f', inputBg: '#1e272c' },
+  { id: 'tokyo', name: 'Tokyo Night', background: '#1a1b26', foreground: '#c0caf5', prompt: '#7aa2f7', placeholder: '#565f89', border: '#24283b', inputBg: '#16161e' },
+  { id: 'matrix', name: 'Matrix', background: '#0d0208', foreground: '#00ff41', prompt: '#008f11', placeholder: '#003b00', border: '#003b00', inputBg: '#050505' },
+];
+
 export default function FirmwarePage() {
   const { user, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
@@ -88,6 +112,7 @@ export default function FirmwarePage() {
   const [selectedFirmwarePerVendor, setSelectedFirmwarePerVendor] = useState<Record<string, Firmware | null>>({});
   const [selectedEquipmentPerVendor, setSelectedEquipmentPerVendor] = useState<Record<string, Set<number>>>({});
   const [equipmentSearchPerVendor, setEquipmentSearchPerVendor] = useState<Record<string, string>>({});
+  const [terminalTheme, setTerminalTheme] = useState<TerminalTheme>(terminalThemes[0]);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -1037,32 +1062,61 @@ export default function FirmwarePage() {
                 </div>
                 
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
                     <h3 className="text-sm font-medium text-muted-foreground">Terminal CLI Interativo</h3>
-                    {wsConnected && (
-                      <Badge variant="default" className="bg-green-600">
-                        <Wifi className="h-3 w-3 mr-1" /> Conectado
-                      </Badge>
-                    )}
+                    <div className="flex items-center gap-2">
+                      <Select value={terminalTheme.id} onValueChange={(v) => setTerminalTheme(terminalThemes.find(t => t.id === v) || terminalThemes[0])}>
+                        <SelectTrigger className="h-7 text-xs w-[140px]" data-testid="select-terminal-theme">
+                          <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: terminalTheme.background, border: `1px solid ${terminalTheme.border}` }} />
+                            <SelectValue />
+                          </div>
+                        </SelectTrigger>
+                        <SelectContent>
+                          {terminalThemes.map((theme) => (
+                            <SelectItem key={theme.id} value={theme.id}>
+                              <div className="flex items-center gap-2">
+                                <div 
+                                  className="w-4 h-4 rounded-sm flex items-center justify-center text-xs font-mono"
+                                  style={{ backgroundColor: theme.background, color: theme.foreground, border: `1px solid ${theme.border}` }}
+                                >
+                                  A
+                                </div>
+                                {theme.name}
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {wsConnected && (
+                        <Badge variant="default" className="bg-green-600">
+                          <Wifi className="h-3 w-3 mr-1" /> Conectado
+                        </Badge>
+                      )}
+                    </div>
                   </div>
-                  <Card className="bg-zinc-900 text-zinc-100 overflow-hidden">
+                  <Card className="overflow-hidden" style={{ backgroundColor: terminalTheme.background, color: terminalTheme.foreground }}>
                     <div 
                       ref={terminalRef}
                       className="h-[400px] overflow-auto p-3 font-mono text-sm"
                       data-testid="terminal-output"
+                      style={{ color: terminalTheme.foreground }}
                     >
                       {terminalOutput.length === 0 ? (
-                        <p className="text-zinc-500">
+                        <p style={{ color: terminalTheme.placeholder }}>
                           Selecione um fabricante, escolha o equipamento e clique em "Conectar CLI" para iniciar uma sessao interativa.
                         </p>
                       ) : (
                         terminalOutput.map((line, i) => (
-                          <pre key={i} className="whitespace-pre-wrap break-all">{line}</pre>
+                          <pre key={i} className="whitespace-pre-wrap break-all" style={{ color: terminalTheme.foreground }}>{line}</pre>
                         ))
                       )}
                     </div>
-                    <div className="flex items-center gap-2 p-2 border-t border-zinc-700 bg-zinc-800">
-                      <span className="text-zinc-400 font-mono text-sm">
+                    <div 
+                      className="flex items-center gap-2 p-2"
+                      style={{ backgroundColor: terminalTheme.inputBg, borderTop: `1px solid ${terminalTheme.border}` }}
+                    >
+                      <span className="font-mono text-sm" style={{ color: terminalTheme.prompt }}>
                         {wsConnected ? ">" : "$"}
                       </span>
                       <Input
@@ -1071,7 +1125,8 @@ export default function FirmwarePage() {
                         onKeyDown={handleKeyDown}
                         placeholder={wsConnected ? "Digite um comando..." : "Conecte a um equipamento primeiro..."}
                         disabled={!wsConnected}
-                        className="flex-1 bg-transparent border-0 text-zinc-100 font-mono text-sm focus-visible:ring-0 placeholder:text-zinc-600"
+                        className="flex-1 bg-transparent border-0 font-mono text-sm focus-visible:ring-0"
+                        style={{ color: terminalTheme.foreground }}
                         data-testid="input-terminal-command"
                       />
                       <Button 
@@ -1079,7 +1134,7 @@ export default function FirmwarePage() {
                         variant="ghost" 
                         onClick={handleTerminalCommand} 
                         disabled={!wsConnected}
-                        className="text-zinc-400"
+                        style={{ color: terminalTheme.prompt }}
                       >
                         <Send className="h-4 w-4" />
                       </Button>
