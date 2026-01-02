@@ -55,9 +55,13 @@ import {
 } from "lucide-react";
 
 export default function AdminPage() {
-  const { data: users, isLoading: usersLoading } = useUsers();
+  const { data: users, isLoading: usersLoading, error: usersError } = useUsers();
   const { mutate: updateUser } = useUpdateUserRole();
   const { toast } = useToast();
+  
+  if (usersError) {
+    console.error("Admin page error:", usersError);
+  }
   
   const [serverIp, setServerIp] = useState("");
   const [systemName, setSystemName] = useState("NBM");
