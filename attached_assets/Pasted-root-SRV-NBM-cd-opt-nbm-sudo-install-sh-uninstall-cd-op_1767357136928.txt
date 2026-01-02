@@ -1,0 +1,84 @@
+root@SRV-NBM[~]# cd /opt/nbm                          
+sudo ./install.sh uninstall
+cd /opt                    
+sudo rm -rf nbm                                                 
+sudo mkdir nbm && cd nbm
+sudo wget https://github.com/MarcioVVitor/nbm/releases/download/v1.0.0/install.sh
+sudo chmod +x install.sh                                                         
+sudo ./install.sh install                                                        
+sudo: ./install.sh: command not found
+--2026-01-02 09:32:06--  https://github.com/MarcioVVitor/nbm/releases/download/v1.0.0/install.sh
+Resolving github.com (github.com)... 4.228.31.150
+Connecting to github.com (github.com)|4.228.31.150|:443... connected.
+HTTP request sent, awaiting response... 302 Found
+Location: https://release-assets.githubusercontent.com/github-production-release-asset/1126256330/44337b93-c6fd-427b-83cb-8894d140f6eb?sp=r&sv=2018-11-09&sr=b&spr=https&se=2026-01-02T13%3A29%3A49Z&rscd=attachment%3B+filename%3Dinstall.sh&rsct=application%2Foctet-stream&skoid=96c2d410-5711-43a1-aedd-ab1947aa7ab0&sktid=398a6654-997b-47e9-b12b-9515b896b4de&skt=2026-01-02T12%3A28%3A58Z&ske=2026-01-02T13%3A29%3A49Z&sks=b&skv=2018-11-09&sig=tjEDB0ml2IsdFZM9Mu6npCorNL7RO3xdNPhPm%2FDBX6M%3D&jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmVsZWFzZS1hc3NldHMuZ2l0aHVidXNlcmNvbnRlbnQuY29tIiwia2V5Ijoia2V5MSIsImV4cCI6MTc2NzM1NzM0NSwibmJmIjoxNzY3MzU3MDQ1LCJwYXRoIjoicmVsZWFzZWFzc2V0cHJvZHVjdGlvbi5ibG9iLmNvcmUud2luZG93cy5uZXQifQ.2BV-9wBKuMU8tDWwUZxQZpAQ4QsfCKZdyX4sK_PSUGU&response-content-disposition=attachment%3B%20filename%3Dinstall.sh&response-content-type=application%2Foctet-stream [following]
+--2026-01-02 09:32:06--  https://release-assets.githubusercontent.com/github-production-release-asset/1126256330/44337b93-c6fd-427b-83cb-8894d140f6eb?sp=r&sv=2018-11-09&sr=b&spr=https&se=2026-01-02T13%3A29%3A49Z&rscd=attachment%3B+filename%3Dinstall.sh&rsct=application%2Foctet-stream&skoid=96c2d410-5711-43a1-aedd-ab1947aa7ab0&sktid=398a6654-997b-47e9-b12b-9515b896b4de&skt=2026-01-02T12%3A28%3A58Z&ske=2026-01-02T13%3A29%3A49Z&sks=b&skv=2018-11-09&sig=tjEDB0ml2IsdFZM9Mu6npCorNL7RO3xdNPhPm%2FDBX6M%3D&jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmVsZWFzZS1hc3NldHMuZ2l0aHVidXNlcmNvbnRlbnQuY29tIiwia2V5Ijoia2V5MSIsImV4cCI6MTc2NzM1NzM0NSwibmJmIjoxNzY3MzU3MDQ1LCJwYXRoIjoicmVsZWFzZWFzc2V0cHJvZHVjdGlvbi5ibG9iLmNvcmUud2luZG93cy5uZXQifQ.2BV-9wBKuMU8tDWwUZxQZpAQ4QsfCKZdyX4sK_PSUGU&response-content-disposition=attachment%3B%20filename%3Dinstall.sh&response-content-type=application%2Foctet-stream
+Resolving release-assets.githubusercontent.com (release-assets.githubusercontent.com)... 185.199.108.133, 185.199.111.133, 185.199.109.133, ...
+Connecting to release-assets.githubusercontent.com (release-assets.githubusercontent.com)|185.199.108.133|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 16400 (16K) [application/octet-stream]
+Saving to: ‘install.sh’
+
+install.sh                      100%[=====================================================>]  16.02K  --.-KB/s    in 0.002s  
+
+2026-01-02 09:32:06 (9.11 MB/s) - ‘install.sh’ saved [16400/16400]
+
+
+============================================================
+     _   _ ____  __  __ 
+    | \ | |  _ \|  \/  |
+    |  \| | |_) | |\/| |
+    | |\  |  __/| |  | |
+    |_| \_|_|   |_|  |_|
+
+    Network Backup Manager - Instalador
+    Versao 1.0.0 para Debian 13
+============================================================
+
+[INFO] Verificando sistema operacional...
+[OK] Sistema operacional verificado: Debian 13.2
+[INFO] Atualizando lista de pacotes...
+W: https://deb.nodesource.com/node_20.x/dists/nodistro/InRelease: Policy will reject signature within a year, see --audit for details
+[OK] Lista de pacotes atualizada
+[INFO] Instalando dependencias do sistema...
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+curl is already the newest version (8.14.1-2+deb13u2).
+wget is already the newest version (1.25.0-2).
+gnupg is already the newest version (2.4.7-21).
+ca-certificates is already the newest version (20250419).
+lsb-release is already the newest version (12.1-1).
+build-essential is already the newest version (12.12).
+git is already the newest version (1:2.47.3-0+deb13u1).
+openssh-client is already the newest version (1:10.0p1-7).
+openssl is already the newest version (3.5.4-1~deb13u1).
+sudo is already the newest version (1.9.16p2-3).
+unzip is already the newest version (6.0-29).
+zip is already the newest version (3.0-15).
+tar is already the newest version (1.35+dfsg-3.1).
+gzip is already the newest version (1.13-1).
+0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
+[OK] Dependencias do sistema instaladas
+[INFO] Instalando Node.js 20...
+[OK] Node.js v20.19.6 ja instalado
+[INFO] Instalando PostgreSQL 15...
+[OK] PostgreSQL ja instalado
+[INFO] Criando usuario e grupo do sistema...
+[OK] Usuario nbm criado
+[INFO] Criando diretorios...
+[OK] Diretorios criados
+[INFO] Configurando banco de dados...
+[INFO] Atualizando senha do usuario PostgreSQL...
+ALTER ROLE
+GRANT
+GRANT
+ALTER DEFAULT PRIVILEGES
+[OK] Banco de dados configurado
+[INFO] Instalando aplicacao NBM...
+[INFO] Baixando aplicacao do GitHub...
+Cloning into '/opt/nbm'...
+fatal: Unable to read current working directory: No such file or directory
+fatal: remote helper 'https' aborted session
+[ERROR] Falha ao clonar repositorio
+root@SRV-NBM[/opt/nbm]# 
