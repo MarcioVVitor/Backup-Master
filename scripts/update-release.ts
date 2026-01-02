@@ -64,7 +64,7 @@ async function main() {
     console.log(`Release encontrada: ${release.id}`);
     
     // Remover assets antigos
-    const filesToUpload = ['install.sh', 'fix-nbm.sh'];
+    const filesToUpload = ['install.sh', 'fix-nbm.sh', 'update.sh'];
     for (const asset of release.assets) {
       if (filesToUpload.includes(asset.name)) {
         console.log(`Removendo asset antigo: ${asset.name}`);
@@ -78,8 +78,13 @@ async function main() {
     
     // Upload dos scripts
     for (const fileName of filesToUpload) {
+      const filePath = `install/${fileName}`;
+      if (!fs.existsSync(filePath)) {
+        console.log(`Arquivo nao encontrado: ${filePath}, pulando...`);
+        continue;
+      }
       console.log(`Enviando ${fileName}...`);
-      const fileContent = fs.readFileSync(`install/${fileName}`);
+      const fileContent = fs.readFileSync(filePath);
       
       await octokit.repos.uploadReleaseAsset({
         owner,
@@ -91,7 +96,12 @@ async function main() {
     }
     
     console.log('Scripts atualizados com sucesso!');
-    console.log(`\nPara baixar:\nwget https://github.com/${owner}/${repoName}/releases/download/${version}/install.sh`);
+    console.log(`\nPara atualizar instalacao existente:`);
+    console.log(`wget https://github.com/${owner}/${repoName}/releases/download/${version}/update.sh`);
+    console.log('chmod +x update.sh');
+    console.log('sudo ./update.sh');
+    console.log(`\nPara nova instalacao:`);
+    console.log(`wget https://github.com/${owner}/${repoName}/releases/download/${version}/install.sh`);
     console.log('chmod +x install.sh');
     console.log('sudo ./install.sh install');
     
