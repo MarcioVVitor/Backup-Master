@@ -242,6 +242,22 @@ setup_database() {
     DB_NAME="nbm"
     DB_USER="nbm"
     
+    # Encontrar pg_hba.conf e configurar autenticacao md5
+    PG_HBA=$(sudo -u postgres psql -tAc "SHOW hba_file" 2>/dev/null | tr -d ' ')
+    if [[ -f "$PG_HBA" ]]; then
+        # Verificar se ja existe entrada para nbm
+        if ! grep -q "^host.*${DB_NAME}.*${DB_USER}" "$PG_HBA" 2>/dev/null; then
+            log_info "Configurando autenticacao PostgreSQL..."
+            # Adicionar regra ANTES das regras existentes de host
+            sed -i "/^# IPv4 local connections/a host    ${DB_NAME}    ${DB_USER}    127.0.0.1/32    scram-sha-256" "$PG_HBA"
+            sed -i "/^# IPv6 local connections/a host    ${DB_NAME}    ${DB_USER}    ::1/128         scram-sha-256" "$PG_HBA"
+            # Adicionar tambem para conexao local via socket
+            sed -i "/^# .local. is for Unix domain socket/a local   ${DB_NAME}    ${DB_USER}                    scram-sha-256" "$PG_HBA"
+            # Recarregar configuracao
+            systemctl reload postgresql 2>/dev/null || sudo -u postgres pg_ctl reload -D /var/lib/postgresql/${POSTGRES_VERSION}/main 2>/dev/null || true
+        fi
+    fi
+    
     # Verificar se usuario ja existe e atualizar senha, ou criar novo
     USER_EXISTS=$(sudo -u postgres psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='${DB_USER}'" 2>/dev/null)
     
