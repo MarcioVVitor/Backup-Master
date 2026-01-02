@@ -242,20 +242,34 @@ setup_database() {
     DB_NAME="nbm"
     DB_USER="nbm"
     
-    # Encontrar pg_hba.conf e configurar autenticacao md5
+    # Encontrar pg_hba.conf e configurar autenticacao por senha
     PG_HBA=$(sudo -u postgres psql -tAc "SHOW hba_file" 2>/dev/null | tr -d ' ')
     if [[ -f "$PG_HBA" ]]; then
-        # Verificar se ja existe entrada para nbm
-        if ! grep -q "^host.*${DB_NAME}.*${DB_USER}" "$PG_HBA" 2>/dev/null; then
-            log_info "Configurando autenticacao PostgreSQL..."
-            # Adicionar regra ANTES das regras existentes de host
-            sed -i "/^# IPv4 local connections/a host    ${DB_NAME}    ${DB_USER}    127.0.0.1/32    scram-sha-256" "$PG_HBA"
-            sed -i "/^# IPv6 local connections/a host    ${DB_NAME}    ${DB_USER}    ::1/128         scram-sha-256" "$PG_HBA"
-            # Adicionar tambem para conexao local via socket
-            sed -i "/^# .local. is for Unix domain socket/a local   ${DB_NAME}    ${DB_USER}                    scram-sha-256" "$PG_HBA"
-            # Recarregar configuracao
-            systemctl reload postgresql 2>/dev/null || sudo -u postgres pg_ctl reload -D /var/lib/postgresql/${POSTGRES_VERSION}/main 2>/dev/null || true
-        fi
+        log_info "Configurando autenticacao PostgreSQL em: $PG_HBA"
+        # Remover entradas antigas do nbm se existirem
+        sed -i "/^local.*${DB_NAME}.*${DB_USER}/d" "$PG_HBA"
+        sed -i "/^host.*${DB_NAME}.*${DB_USER}/d" "$PG_HBA"
+        
+        # Criar arquivo temporario com novas regras no inicio
+        {
+            echo "# NBM database authentication rules"
+            echo "local   ${DB_NAME}    ${DB_USER}                    md5"
+            echo "host    ${DB_NAME}    ${DB_USER}    127.0.0.1/32    md5"
+            echo "host    ${DB_NAME}    ${DB_USER}    ::1/128         md5"
+            echo ""
+            cat "$PG_HBA"
+        } > "${PG_HBA}.new"
+        
+        # Substituir arquivo original
+        mv "${PG_HBA}.new" "$PG_HBA"
+        chown postgres:postgres "$PG_HBA"
+        chmod 640 "$PG_HBA"
+        
+        # Recarregar configuracao
+        systemctl reload postgresql 2>/dev/null || sudo -u postgres pg_ctl reload -D /var/lib/postgresql/*/main 2>/dev/null || true
+        log_success "pg_hba.conf configurado"
+    else
+        log_warn "pg_hba.conf nao encontrado em: $PG_HBA"
     fi
     
     # Verificar se usuario ja existe e atualizar senha, ou criar novo
