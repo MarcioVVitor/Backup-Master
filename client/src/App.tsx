@@ -14,6 +14,7 @@ import Scripts from "@/pages/scripts";
 import Manufacturers from "@/pages/manufacturers";
 import Admin from "@/pages/admin";
 import Firmware from "@/pages/firmware";
+import TerminalPage from "@/pages/terminal";
 import Login from "@/pages/login";
 import NotFound from "@/pages/not-found";
 
@@ -40,7 +41,8 @@ import {
   Terminal, 
   Factory, 
   Settings,
-  FileCode
+  FileCode,
+  TerminalSquare
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -78,6 +80,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
     { title: "Scripts", url: "/scripts", icon: Terminal },
     { title: "Fabricantes", url: "/manufacturers", icon: Factory },
     { title: "Firmware", url: "/firmware", icon: FileCode },
+    { title: "Terminal", url: "/terminal", icon: TerminalSquare },
     { title: "Executar", url: "/execute", icon: Play },
     { title: "Administração", url: "/admin", icon: Settings },
   ];
@@ -173,6 +176,7 @@ function Router() {
       <Route path="/scripts" component={Scripts} />
       <Route path="/manufacturers" component={Manufacturers} />
       <Route path="/firmware" component={Firmware} />
+      <Route path="/terminal" component={TerminalPage} />
       <Route path="/execute" component={Execute} />
       <Route path="/admin" component={Admin} />
       <Route component={NotFound} />

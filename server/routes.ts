@@ -743,20 +743,31 @@ export async function registerRoutes(
 
   app.post('/api/admin/users', isAuthenticated, isAdmin, async (req, res) => {
     try {
-      const { username, name, email, role, active } = req.body;
+      const { username, password, name, email, role, isAdmin: userIsAdmin, active } = req.body;
       if (!username) {
         return res.status(400).json({ message: "Nome de usuario e obrigatorio" });
+      }
+      if (!password) {
+        return res.status(400).json({ message: "Senha e obrigatoria" });
       }
       const existing = await storage.getUserByUsername(username);
       if (existing) {
         return res.status(409).json({ message: "Nome de usuario ja existe" });
       }
+      
+      const { hashPassword, generateSalt } = await import('./standalone-auth');
+      const salt = generateSalt();
+      const hash = hashPassword(password, salt);
+      
       const created = await storage.createUser({
         username,
         name: name || undefined,
         email: email || undefined,
         role: role || 'viewer',
+        isAdmin: userIsAdmin || false,
         active: active !== false,
+        passwordHash: hash,
+        passwordSalt: salt,
       });
       res.status(201).json(created);
     } catch (e) {

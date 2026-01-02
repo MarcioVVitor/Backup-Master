@@ -35,6 +35,7 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { 
@@ -49,7 +50,12 @@ import {
   HardDrive,
   Users,
   Loader2,
-  AlertCircle
+  AlertCircle,
+  Plus,
+  Trash2,
+  Shield,
+  Eye,
+  Edit
 } from "lucide-react";
 
 interface User {
@@ -59,6 +65,7 @@ interface User {
   email: string | null;
   role: string | null;
   isAdmin: boolean;
+  createdAt: string | null;
 }
 
 interface SystemInfo {
@@ -76,6 +83,12 @@ interface Customization {
   logoUrl: string;
 }
 
+const PERMISSION_LEVELS = [
+  { value: "admin", label: "Administrador", description: "Acesso total ao sistema", icon: Shield, color: "text-red-500" },
+  { value: "operator", label: "Operador", description: "Pode executar backups e gerenciar equipamentos", icon: Edit, color: "text-blue-500" },
+  { value: "viewer", label: "Visualizador", description: "Apenas visualização", icon: Eye, color: "text-green-500" },
+];
+
 export default function AdminPage() {
   const { toast } = useToast();
   
@@ -85,6 +98,12 @@ export default function AdminPage() {
   const [logoUrl, setLogoUrl] = useState("");
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [backupFile, setBackupFile] = useState<File | null>(null);
+  const [createUserOpen, setCreateUserOpen] = useState(false);
+  const [newUsername, setNewUsername] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [newEmail, setNewEmail] = useState("");
+  const [newRole, setNewRole] = useState("viewer");
+  const [newIsAdmin, setNewIsAdmin] = useState(false);
 
   const { data: users = [], isLoading: usersLoading, error: usersError } = useQuery<User[]>({
     queryKey: ["/api/admin/users"],
@@ -107,6 +126,49 @@ export default function AdminPage() {
       if (customization.logoUrl) setLogoUrl(customization.logoUrl);
     }
   }, [customization]);
+
+  const createUser = useMutation({
+    mutationFn: async (data: { username: string; password: string; email?: string; role: string; isAdmin: boolean }) => {
+      const response = await fetch("/api/admin/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(data)
+      });
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.message || "Failed to create user");
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      setCreateUserOpen(false);
+      resetCreateForm();
+      toast({ title: "Usuário criado com sucesso" });
+    },
+    onError: (err: Error) => {
+      toast({ title: err.message || "Erro ao criar usuário", variant: "destructive" });
+    }
+  });
+
+  const deleteUser = useMutation({
+    mutationFn: async (id: number) => {
+      const response = await fetch(`/api/admin/users/${id}`, {
+        method: "DELETE",
+        credentials: "include"
+      });
+      if (!response.ok) throw new Error("Failed to delete user");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      toast({ title: "Usuário removido" });
+    },
+    onError: () => {
+      toast({ title: "Erro ao remover usuário", variant: "destructive" });
+    }
+  });
 
   const updateUserRole = useMutation({
     mutationFn: async (data: { id: number; role: string; isAdmin: boolean }) => {
@@ -210,6 +272,32 @@ export default function AdminPage() {
     }
   });
 
+  const resetCreateForm = () => {
+    setNewUsername("");
+    setNewPassword("");
+    setNewEmail("");
+    setNewRole("viewer");
+    setNewIsAdmin(false);
+  };
+
+  const handleCreateUser = () => {
+    if (newUsername && newPassword) {
+      createUser.mutate({
+        username: newUsername,
+        password: newPassword,
+        email: newEmail || undefined,
+        role: newRole,
+        isAdmin: newIsAdmin
+      });
+    }
+  };
+
+  const handleDeleteUser = (id: number, username: string) => {
+    if (confirm(`Tem certeza que deseja remover o usuário "${username}"?`)) {
+      deleteUser.mutate(id);
+    }
+  };
+
   const handleRoleChange = (userId: number, role: string) => {
     const user = users.find(u => u.id === userId);
     if (user) {
@@ -237,6 +325,18 @@ export default function AdminPage() {
     if (backupFile) {
       importDatabase.mutate(backupFile);
     }
+  };
+
+  const getRoleBadge = (role: string | null) => {
+    const level = PERMISSION_LEVELS.find(l => l.value === role);
+    if (!level) return <Badge variant="outline">Desconhecido</Badge>;
+    const Icon = level.icon;
+    return (
+      <Badge variant="outline" className={`${level.color} border-current`}>
+        <Icon className="h-3 w-3 mr-1" />
+        {level.label}
+      </Badge>
+    );
   };
 
   const isAccessDenied = usersError && (usersError as any)?.message?.includes("403");
@@ -270,9 +370,116 @@ export default function AdminPage() {
 
         <TabsContent value="users" className="space-y-4">
           <Card>
-            <CardHeader>
-              <CardTitle>Usuários</CardTitle>
-              <CardDescription>Gerencie quem tem acesso ao sistema</CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between gap-4 space-y-0">
+              <div>
+                <CardTitle>Usuários</CardTitle>
+                <CardDescription>Gerencie quem tem acesso ao sistema</CardDescription>
+              </div>
+              <Dialog open={createUserOpen} onOpenChange={setCreateUserOpen}>
+                <DialogTrigger asChild>
+                  <Button data-testid="button-create-user">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Novo Usuário
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Criar Novo Usuário</DialogTitle>
+                    <DialogDescription>
+                      Adicione um novo usuário ao sistema com as permissões desejadas
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="newUsername">Nome de Usuário</Label>
+                      <Input 
+                        id="newUsername"
+                        value={newUsername}
+                        onChange={(e) => setNewUsername(e.target.value)}
+                        placeholder="usuario123"
+                        data-testid="input-new-username"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="newPassword">Senha</Label>
+                      <Input 
+                        id="newPassword"
+                        type="password"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        placeholder="Senha segura"
+                        data-testid="input-new-password"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="newEmail">Email (opcional)</Label>
+                      <Input 
+                        id="newEmail"
+                        type="email"
+                        value={newEmail}
+                        onChange={(e) => setNewEmail(e.target.value)}
+                        placeholder="email@exemplo.com"
+                        data-testid="input-new-email"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Nível de Permissão</Label>
+                      <div className="space-y-2">
+                        {PERMISSION_LEVELS.map((level) => {
+                          const Icon = level.icon;
+                          return (
+                            <div 
+                              key={level.value}
+                              className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                                newRole === level.value ? 'border-primary bg-primary/5' : 'hover:bg-muted/50'
+                              }`}
+                              onClick={() => setNewRole(level.value)}
+                              data-testid={`option-role-${level.value}`}
+                            >
+                              <Icon className={`h-5 w-5 ${level.color}`} />
+                              <div className="flex-1">
+                                <p className="font-medium text-sm">{level.label}</p>
+                                <p className="text-xs text-muted-foreground">{level.description}</p>
+                              </div>
+                              <div className={`w-4 h-4 rounded-full border-2 ${
+                                newRole === level.value ? 'border-primary bg-primary' : 'border-muted-foreground'
+                              }`} />
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between p-3 rounded-lg border">
+                      <div>
+                        <p className="font-medium text-sm">Acesso Administrativo</p>
+                        <p className="text-xs text-muted-foreground">Permite gerenciar outros usuários</p>
+                      </div>
+                      <Switch 
+                        checked={newIsAdmin} 
+                        onCheckedChange={setNewIsAdmin}
+                        data-testid="switch-new-admin"
+                      />
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => { setCreateUserOpen(false); resetCreateForm(); }}>
+                      Cancelar
+                    </Button>
+                    <Button 
+                      onClick={handleCreateUser} 
+                      disabled={!newUsername || !newPassword || createUser.isPending}
+                      data-testid="button-confirm-create-user"
+                    >
+                      {createUser.isPending ? (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <Plus className="h-4 w-4 mr-2" />
+                      )}
+                      Criar Usuário
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </CardHeader>
             <CardContent>
               {usersLoading ? (
@@ -291,8 +498,9 @@ export default function AdminPage() {
                     <TableRow>
                       <TableHead>Usuário</TableHead>
                       <TableHead>Email</TableHead>
-                      <TableHead>Função</TableHead>
+                      <TableHead>Permissão</TableHead>
                       <TableHead>Admin</TableHead>
+                      <TableHead className="w-[50px]"></TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -303,7 +511,10 @@ export default function AdminPage() {
                             <div className="p-1.5 bg-muted rounded-full">
                               <UserIcon className="h-4 w-4" />
                             </div>
-                            {user.username}
+                            <div>
+                              <p>{user.username}</p>
+                              {user.name && <p className="text-xs text-muted-foreground">{user.name}</p>}
+                            </div>
                           </div>
                         </TableCell>
                         <TableCell>{user.email || "-"}</TableCell>
@@ -312,13 +523,15 @@ export default function AdminPage() {
                             defaultValue={user.role || "viewer"} 
                             onValueChange={(val) => handleRoleChange(user.id, val)}
                           >
-                            <SelectTrigger className="w-[130px] h-8" data-testid={`select-role-${user.id}`}>
+                            <SelectTrigger className="w-[140px] h-8" data-testid={`select-role-${user.id}`}>
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="admin">Administrador</SelectItem>
-                              <SelectItem value="operator">Operador</SelectItem>
-                              <SelectItem value="viewer">Visualizador</SelectItem>
+                              {PERMISSION_LEVELS.map((level) => (
+                                <SelectItem key={level.value} value={level.value}>
+                                  {level.label}
+                                </SelectItem>
+                              ))}
                             </SelectContent>
                           </Select>
                         </TableCell>
@@ -329,15 +542,54 @@ export default function AdminPage() {
                             data-testid={`switch-admin-${user.id}`}
                           />
                         </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:text-red-500"
+                            onClick={() => handleDeleteUser(user.id, user.username)}
+                            data-testid={`button-delete-user-${user.id}`}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
               ) : (
                 <div className="text-center py-8 text-muted-foreground">
-                  Nenhum usuário encontrado
+                  <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>Nenhum usuário encontrado</p>
+                  <p className="text-sm">Clique em "Novo Usuário" para adicionar</p>
                 </div>
               )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="h-5 w-5" />
+                Níveis de Permissão
+              </CardTitle>
+              <CardDescription>Entenda o que cada nível de acesso permite</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 md:grid-cols-3">
+                {PERMISSION_LEVELS.map((level) => {
+                  const Icon = level.icon;
+                  return (
+                    <div key={level.value} className="p-4 rounded-lg border bg-muted/20">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Icon className={`h-5 w-5 ${level.color}`} />
+                        <p className="font-semibold">{level.label}</p>
+                      </div>
+                      <p className="text-sm text-muted-foreground">{level.description}</p>
+                    </div>
+                  );
+                })}
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

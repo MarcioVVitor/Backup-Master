@@ -35,8 +35,8 @@ export interface IStorage {
   getUsers(): Promise<User[]>;
   getUserById(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(data: { username: string; name?: string; email?: string; role?: string; active?: boolean }): Promise<User>;
-  updateUser(id: number, data: Partial<{ role: string; active: boolean; name: string; email: string }>): Promise<User | undefined>;
+  createUser(data: { username: string; name?: string; email?: string; role?: string; isAdmin?: boolean; active?: boolean; passwordHash?: string; passwordSalt?: string }): Promise<User>;
+  updateUser(id: number, data: Partial<{ role: string; isAdmin: boolean; active: boolean; name: string; email: string }>): Promise<User | undefined>;
   deleteUser(id: number): Promise<void>;
 
   getEquipment(): Promise<Equipment[]>;
@@ -112,13 +112,16 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
-  async createUser(data: { username: string; name?: string; email?: string; role?: string; active?: boolean }): Promise<User> {
+  async createUser(data: { username: string; name?: string; email?: string; role?: string; isAdmin?: boolean; active?: boolean; passwordHash?: string; passwordSalt?: string }): Promise<User> {
     const [created] = await db.insert(users).values({
       username: data.username,
       name: data.name || null,
       email: data.email || null,
       role: data.role || 'viewer',
+      isAdmin: data.isAdmin || false,
       active: data.active !== false,
+      passwordHash: data.passwordHash || null,
+      passwordSalt: data.passwordSalt || null,
     }).returning();
     return created;
   }

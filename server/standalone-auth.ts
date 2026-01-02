@@ -8,11 +8,11 @@ import crypto from "crypto";
 
 let sharedSessionMiddleware: RequestHandler | null = null;
 
-function hashPassword(password: string, salt: string): string {
+export function hashPassword(password: string, salt: string): string {
   return crypto.pbkdf2Sync(password, salt, 10000, 64, "sha512").toString("hex");
 }
 
-function generateSalt(): string {
+export function generateSalt(): string {
   return crypto.randomBytes(32).toString("hex");
 }
 
