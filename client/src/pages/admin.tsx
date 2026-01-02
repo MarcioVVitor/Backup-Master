@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useUsers, useUpdateUserRole } from "@/hooks/use-settings";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -39,7 +38,6 @@ import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { 
-  Shield, 
   User as UserIcon, 
   Settings, 
   Database, 
@@ -48,20 +46,38 @@ import {
   Server,
   Palette,
   Save,
-  RefreshCw,
   HardDrive,
   Users,
-  Loader2
+  Loader2,
+  AlertCircle
 } from "lucide-react";
 
+interface User {
+  id: number;
+  username: string;
+  name: string | null;
+  email: string | null;
+  role: string | null;
+  isAdmin: boolean;
+}
+
+interface SystemInfo {
+  version: string;
+  nodeVersion: string;
+  environment: string;
+  equipmentCount: number;
+  backupCount: number;
+}
+
+interface Customization {
+  serverIp: string;
+  systemName: string;
+  primaryColor: string;
+  logoUrl: string;
+}
+
 export default function AdminPage() {
-  const { data: users, isLoading: usersLoading, error: usersError } = useUsers();
-  const { mutate: updateUser } = useUpdateUserRole();
   const { toast } = useToast();
-  
-  if (usersError) {
-    console.error("Admin page error:", usersError);
-  }
   
   const [serverIp, setServerIp] = useState("");
   const [systemName, setSystemName] = useState("NBM");
@@ -70,26 +86,50 @@ export default function AdminPage() {
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [backupFile, setBackupFile] = useState<File | null>(null);
 
-  const { data: customization, isLoading: customLoading } = useQuery({
+  const { data: users = [], isLoading: usersLoading, error: usersError } = useQuery<User[]>({
+    queryKey: ["/api/admin/users"],
+    retry: false,
+  });
+
+  const { data: customization } = useQuery<Customization>({
     queryKey: ["/api/admin/customization"],
   });
 
-  const { data: systemInfo } = useQuery({
+  const { data: systemInfo } = useQuery<SystemInfo>({
     queryKey: ["/api/admin/system-info"],
   });
 
   useEffect(() => {
     if (customization) {
-      const c = customization as any;
-      if (c.serverIp) setServerIp(c.serverIp);
-      if (c.systemName) setSystemName(c.systemName);
-      if (c.primaryColor) setPrimaryColor(c.primaryColor);
-      if (c.logoUrl) setLogoUrl(c.logoUrl);
+      if (customization.serverIp) setServerIp(customization.serverIp);
+      if (customization.systemName) setSystemName(customization.systemName);
+      if (customization.primaryColor) setPrimaryColor(customization.primaryColor);
+      if (customization.logoUrl) setLogoUrl(customization.logoUrl);
     }
   }, [customization]);
 
+  const updateUserRole = useMutation({
+    mutationFn: async (data: { id: number; role: string; isAdmin: boolean }) => {
+      const response = await fetch(`/api/admin/users/${data.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ role: data.role, isAdmin: data.isAdmin })
+      });
+      if (!response.ok) throw new Error("Failed to update user");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      toast({ title: "Usuário atualizado" });
+    },
+    onError: () => {
+      toast({ title: "Erro ao atualizar usuário", variant: "destructive" });
+    }
+  });
+
   const saveCustomization = useMutation({
-    mutationFn: async (data: any) => {
+    mutationFn: async (data: Partial<Customization>) => {
       return apiRequest("/api/admin/customization", "POST", data);
     },
     onSuccess: () => {
@@ -171,17 +211,16 @@ export default function AdminPage() {
   });
 
   const handleRoleChange = (userId: number, role: string) => {
-    updateUser({ id: userId, role, isAdmin: role === 'admin' }, {
-      onSuccess: () => toast({ title: "Permissão atualizada" })
-    });
+    const user = users.find(u => u.id === userId);
+    if (user) {
+      updateUserRole.mutate({ id: userId, role, isAdmin: user.isAdmin });
+    }
   };
 
   const handleAdminToggle = (userId: number, isAdmin: boolean) => {
-    const user = users?.find(u => u.id === userId);
+    const user = users.find(u => u.id === userId);
     if (user) {
-      updateUser({ id: userId, role: user.role || 'viewer', isAdmin }, {
-        onSuccess: () => toast({ title: "Status de admin atualizado" })
-      });
+      updateUserRole.mutate({ id: userId, role: user.role || "viewer", isAdmin });
     }
   };
 
@@ -200,8 +239,10 @@ export default function AdminPage() {
     }
   };
 
+  const isAccessDenied = usersError && (usersError as any)?.message?.includes("403");
+
   return (
-    <div className="p-6 md:p-8 space-y-6 animate-enter">
+    <div className="p-6 md:p-8 space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Administração</h1>
         <p className="text-muted-foreground">Gestão de usuários e configurações do sistema</p>
@@ -234,53 +275,69 @@ export default function AdminPage() {
               <CardDescription>Gerencie quem tem acesso ao sistema</CardDescription>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Usuário</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Função</TableHead>
-                    <TableHead>Admin</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {users?.map((user) => (
-                    <TableRow key={user.id} data-testid={`row-user-${user.id}`}>
-                      <TableCell className="font-medium">
-                        <div className="flex items-center gap-2">
-                          <div className="p-1.5 bg-muted rounded-full">
-                            <UserIcon className="h-4 w-4" />
-                          </div>
-                          {user.username}
-                        </div>
-                      </TableCell>
-                      <TableCell>{user.email || "-"}</TableCell>
-                      <TableCell>
-                        <Select 
-                          defaultValue={user.role || 'viewer'} 
-                          onValueChange={(val) => handleRoleChange(user.id, val)}
-                        >
-                          <SelectTrigger className="w-[130px] h-8" data-testid={`select-role-${user.id}`}>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="admin">Administrador</SelectItem>
-                            <SelectItem value="operator">Operador</SelectItem>
-                            <SelectItem value="viewer">Visualizador</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </TableCell>
-                      <TableCell>
-                        <Switch 
-                          checked={!!user.isAdmin} 
-                          onCheckedChange={(val) => handleAdminToggle(user.id, val)}
-                          data-testid={`switch-admin-${user.id}`}
-                        />
-                      </TableCell>
+              {usersLoading ? (
+                <div className="flex justify-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                </div>
+              ) : isAccessDenied ? (
+                <div className="flex flex-col items-center justify-center py-8 text-center">
+                  <AlertCircle className="h-12 w-12 text-yellow-500 mb-4" />
+                  <p className="text-lg font-medium">Acesso Restrito</p>
+                  <p className="text-muted-foreground">Apenas administradores podem gerenciar usuários</p>
+                </div>
+              ) : users.length > 0 ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Usuário</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Função</TableHead>
+                      <TableHead>Admin</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {users.map((user) => (
+                      <TableRow key={user.id} data-testid={`row-user-${user.id}`}>
+                        <TableCell className="font-medium">
+                          <div className="flex items-center gap-2">
+                            <div className="p-1.5 bg-muted rounded-full">
+                              <UserIcon className="h-4 w-4" />
+                            </div>
+                            {user.username}
+                          </div>
+                        </TableCell>
+                        <TableCell>{user.email || "-"}</TableCell>
+                        <TableCell>
+                          <Select 
+                            defaultValue={user.role || "viewer"} 
+                            onValueChange={(val) => handleRoleChange(user.id, val)}
+                          >
+                            <SelectTrigger className="w-[130px] h-8" data-testid={`select-role-${user.id}`}>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="admin">Administrador</SelectItem>
+                              <SelectItem value="operator">Operador</SelectItem>
+                              <SelectItem value="viewer">Visualizador</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+                        <TableCell>
+                          <Switch 
+                            checked={!!user.isAdmin} 
+                            onCheckedChange={(val) => handleAdminToggle(user.id, val)}
+                            data-testid={`switch-admin-${user.id}`}
+                          />
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  Nenhum usuário encontrado
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -491,19 +548,19 @@ export default function AdminPage() {
                 <div className="p-4 bg-muted/50 rounded-lg">
                   <p className="text-sm text-muted-foreground">Versão do Sistema</p>
                   <p className="text-lg font-semibold" data-testid="text-version">
-                    {(systemInfo as any)?.version || "17.0.0"}
+                    {systemInfo?.version || "17.0.0"}
                   </p>
                 </div>
                 <div className="p-4 bg-muted/50 rounded-lg">
                   <p className="text-sm text-muted-foreground">Node.js</p>
                   <p className="text-lg font-semibold" data-testid="text-node-version">
-                    {(systemInfo as any)?.nodeVersion || "N/A"}
+                    {systemInfo?.nodeVersion || "N/A"}
                   </p>
                 </div>
                 <div className="p-4 bg-muted/50 rounded-lg">
                   <p className="text-sm text-muted-foreground">Ambiente</p>
                   <p className="text-lg font-semibold" data-testid="text-environment">
-                    {(systemInfo as any)?.environment || "production"}
+                    {systemInfo?.environment || "production"}
                   </p>
                 </div>
                 <div className="p-4 bg-muted/50 rounded-lg">
@@ -515,13 +572,13 @@ export default function AdminPage() {
                 <div className="p-4 bg-muted/50 rounded-lg">
                   <p className="text-sm text-muted-foreground">Total de Equipamentos</p>
                   <p className="text-lg font-semibold" data-testid="text-equipment-count">
-                    {(systemInfo as any)?.equipmentCount || "0"}
+                    {systemInfo?.equipmentCount || "0"}
                   </p>
                 </div>
                 <div className="p-4 bg-muted/50 rounded-lg">
                   <p className="text-sm text-muted-foreground">Total de Backups</p>
                   <p className="text-lg font-semibold" data-testid="text-backup-count">
-                    {(systemInfo as any)?.backupCount || "0"}
+                    {systemInfo?.backupCount || "0"}
                   </p>
                 </div>
               </div>

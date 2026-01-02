@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { useFirmware, useDeleteFirmware } from "@/hooks/use-settings";
-import { useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -34,13 +33,30 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
 import { format } from "date-fns";
-import { SUPPORTED_MANUFACTURERS } from "@shared/schema";
+
+const MANUFACTURERS = [
+  { value: "mikrotik", label: "Mikrotik" },
+  { value: "huawei", label: "Huawei" },
+  { value: "cisco", label: "Cisco" },
+  { value: "nokia", label: "Nokia" },
+  { value: "zte", label: "ZTE" },
+  { value: "datacom", label: "Datacom" },
+  { value: "datacom-dmos", label: "Datacom DMOS" },
+  { value: "juniper", label: "Juniper" },
+];
+
+interface Firmware {
+  id: number;
+  name: string;
+  version: string;
+  manufacturer: string;
+  filename: string;
+  size: number;
+  createdAt: string;
+}
 
 export default function FirmwarePage() {
-  const { data: firmware, isLoading } = useFirmware();
-  const { mutate: deleteFirmware } = useDeleteFirmware();
   const { toast } = useToast();
-
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [firmwareName, setFirmwareName] = useState("");
@@ -48,6 +64,10 @@ export default function FirmwarePage() {
   const [manufacturer, setManufacturer] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [filterManufacturer, setFilterManufacturer] = useState("all");
+
+  const { data: firmware = [], isLoading, error } = useQuery<Firmware[]>({
+    queryKey: ["/api/firmware"],
+  });
 
   const uploadFirmware = useMutation({
     mutationFn: async (data: { file: File; name: string; version: string; manufacturer: string }) => {
@@ -64,8 +84,8 @@ export default function FirmwarePage() {
       });
       
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Upload failed");
+        const err = await response.json();
+        throw new Error(err.message || "Upload failed");
       }
       return response.json();
     },
@@ -75,8 +95,26 @@ export default function FirmwarePage() {
       resetForm();
       toast({ title: "Firmware enviado com sucesso" });
     },
-    onError: (error: any) => {
-      toast({ title: error.message || "Erro ao enviar firmware", variant: "destructive" });
+    onError: (err: Error) => {
+      toast({ title: err.message || "Erro ao enviar firmware", variant: "destructive" });
+    }
+  });
+
+  const deleteFirmware = useMutation({
+    mutationFn: async (id: number) => {
+      const response = await fetch(`/api/firmware/${id}`, {
+        method: "DELETE",
+        credentials: "include"
+      });
+      if (!response.ok) throw new Error("Delete failed");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/firmware"] });
+      toast({ title: "Firmware excluído" });
+    },
+    onError: () => {
+      toast({ title: "Erro ao excluir firmware", variant: "destructive" });
     }
   });
 
@@ -89,9 +127,7 @@ export default function FirmwarePage() {
 
   const handleDelete = (id: number) => {
     if (confirm("Excluir este firmware?")) {
-      deleteFirmware(id, {
-        onSuccess: () => toast({ title: "Firmware excluído" })
-      });
+      deleteFirmware.mutate(id);
     }
   };
 
@@ -106,7 +142,7 @@ export default function FirmwarePage() {
     }
   };
 
-  const handleDownload = async (fw: any) => {
+  const handleDownload = async (fw: Firmware) => {
     try {
       const response = await fetch(`/api/firmware/${fw.id}/download`, {
         credentials: "include"
@@ -121,20 +157,33 @@ export default function FirmwarePage() {
       a.click();
       window.URL.revokeObjectURL(url);
       toast({ title: "Download iniciado" });
-    } catch (error) {
+    } catch (err) {
       toast({ title: "Erro ao baixar firmware", variant: "destructive" });
     }
   };
 
-  const filteredFirmware = firmware?.filter((fw) => {
+  const filteredFirmware = firmware.filter((fw) => {
     const matchesSearch = fw.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          (fw.version || "").toLowerCase().includes(searchTerm.toLowerCase());
     const matchesManufacturer = filterManufacturer === "all" || fw.manufacturer === filterManufacturer;
     return matchesSearch && matchesManufacturer;
   });
 
+  if (error) {
+    return (
+      <div className="p-6 md:p-8">
+        <div className="text-center py-12">
+          <p className="text-red-500">Erro ao carregar firmwares</p>
+          <Button variant="outline" className="mt-4" onClick={() => window.location.reload()}>
+            Tentar novamente
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="p-6 md:p-8 space-y-6 animate-enter">
+    <div className="p-6 md:p-8 space-y-6">
       <div className="flex flex-col gap-4 md:flex-row md:justify-between md:items-center">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Firmware</h1>
@@ -181,7 +230,7 @@ export default function FirmwarePage() {
                     <SelectValue placeholder="Selecione o fabricante" />
                   </SelectTrigger>
                   <SelectContent>
-                    {SUPPORTED_MANUFACTURERS.map((mfr) => (
+                    {MANUFACTURERS.map((mfr) => (
                       <SelectItem key={mfr.value} value={mfr.value}>
                         {mfr.label}
                       </SelectItem>
@@ -254,7 +303,7 @@ export default function FirmwarePage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todos os fabricantes</SelectItem>
-              {SUPPORTED_MANUFACTURERS.map((mfr) => (
+              {MANUFACTURERS.map((mfr) => (
                 <SelectItem key={mfr.value} value={mfr.value}>
                   {mfr.label}
                 </SelectItem>
@@ -269,7 +318,7 @@ export default function FirmwarePage() {
           <div className="col-span-full flex justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
           </div>
-        ) : filteredFirmware?.length ? (
+        ) : filteredFirmware.length > 0 ? (
           filteredFirmware.map((fw) => (
             <Card key={fw.id} data-testid={`card-firmware-${fw.id}`}>
               <CardHeader className="pb-3 flex flex-row items-start justify-between gap-2 space-y-0">
@@ -291,7 +340,7 @@ export default function FirmwarePage() {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Tamanho:</span>
-                    <span>{(fw.size / (1024 * 1024)).toFixed(2)} MB</span>
+                    <span>{((fw.size || 0) / (1024 * 1024)).toFixed(2)} MB</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Data:</span>
