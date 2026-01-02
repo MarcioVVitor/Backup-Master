@@ -242,6 +242,9 @@ setup_database() {
     DB_NAME="nbm"
     DB_USER="nbm"
     
+    # Mudar para diretorio temporario para evitar erro de permissao do postgres
+    pushd /tmp > /dev/null
+    
     # Encontrar pg_hba.conf e configurar autenticacao por senha
     PG_HBA=$(sudo -u postgres psql -tAc "SHOW hba_file" 2>/dev/null | tr -d ' ')
     if [[ -f "$PG_HBA" ]]; then
@@ -249,6 +252,7 @@ setup_database() {
         # Remover entradas antigas do nbm se existirem
         sed -i "/^local.*${DB_NAME}.*${DB_USER}/d" "$PG_HBA"
         sed -i "/^host.*${DB_NAME}.*${DB_USER}/d" "$PG_HBA"
+        sed -i "/^# NBM database/d" "$PG_HBA"
         
         # Criar arquivo temporario com novas regras no inicio
         {
@@ -266,7 +270,8 @@ setup_database() {
         chmod 640 "$PG_HBA"
         
         # Recarregar configuracao
-        systemctl reload postgresql 2>/dev/null || sudo -u postgres pg_ctl reload -D /var/lib/postgresql/*/main 2>/dev/null || true
+        systemctl reload postgresql 2>/dev/null || true
+        sleep 1
         log_success "pg_hba.conf configurado"
     else
         log_warn "pg_hba.conf nao encontrado em: $PG_HBA"
@@ -294,6 +299,9 @@ setup_database() {
     sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE ${DB_NAME} TO ${DB_USER};" 2>/dev/null
     sudo -u postgres psql -d ${DB_NAME} -c "GRANT ALL ON SCHEMA public TO ${DB_USER};" 2>/dev/null
     sudo -u postgres psql -d ${DB_NAME} -c "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO ${DB_USER};" 2>/dev/null
+    
+    # Voltar ao diretorio original
+    popd > /dev/null
     
     # Exportar variaveis para uso posterior
     export DB_USER DB_PASSWORD DB_NAME
