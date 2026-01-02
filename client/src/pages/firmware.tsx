@@ -128,7 +128,7 @@ export default function FirmwarePage() {
 
   const filteredFirmware = firmware?.filter((fw) => {
     const matchesSearch = fw.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         fw.version.toLowerCase().includes(searchTerm.toLowerCase());
+                         (fw.version || "").toLowerCase().includes(searchTerm.toLowerCase());
     const matchesManufacturer = filterManufacturer === "all" || fw.manufacturer === filterManufacturer;
     return matchesSearch && matchesManufacturer;
   });
@@ -182,8 +182,8 @@ export default function FirmwarePage() {
                   </SelectTrigger>
                   <SelectContent>
                     {SUPPORTED_MANUFACTURERS.map((mfr) => (
-                      <SelectItem key={mfr} value={mfr}>
-                        {mfr.charAt(0).toUpperCase() + mfr.slice(1)}
+                      <SelectItem key={mfr.value} value={mfr.value}>
+                        {mfr.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -255,8 +255,8 @@ export default function FirmwarePage() {
             <SelectContent>
               <SelectItem value="all">Todos os fabricantes</SelectItem>
               {SUPPORTED_MANUFACTURERS.map((mfr) => (
-                <SelectItem key={mfr} value={mfr}>
-                  {mfr.charAt(0).toUpperCase() + mfr.slice(1)}
+                <SelectItem key={mfr.value} value={mfr.value}>
+                  {mfr.label}
                 </SelectItem>
               ))}
             </SelectContent>
