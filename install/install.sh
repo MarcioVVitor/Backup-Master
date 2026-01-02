@@ -302,14 +302,17 @@ install_application() {
         
         # Remover diretorio existente completamente
         rm -rf ${NBM_HOME}
-        mkdir -p ${NBM_HOME}
-        chown ${NBM_USER}:${NBM_GROUP} ${NBM_HOME}
+        
+        # Mudar para /tmp antes de clonar para evitar erro de diretorio inexistente
+        cd /tmp
         
         # Clonar repositorio
         git clone https://github.com/MarcioVVitor/nbm.git ${NBM_HOME} || {
             log_error "Falha ao clonar repositorio"
             exit 1
         }
+        
+        chown -R ${NBM_USER}:${NBM_GROUP} ${NBM_HOME}
         
         log_success "Aplicacao baixada com sucesso"
     else
