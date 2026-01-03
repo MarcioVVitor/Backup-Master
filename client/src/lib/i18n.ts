@@ -169,6 +169,10 @@ type TranslationKeys = {
     selectScript: string;
     selectEquipment: string;
     executeRecovery: string;
+    searchFirmware: string;
+    allManufacturers: string;
+    noFirmwareAvailable: string;
+    clickToAdd: string;
   };
   terminal: {
     title: string;
@@ -186,6 +190,13 @@ type TranslationKeys = {
     welcomeMessage: string;
     historyHelp: string;
     selectToStart: string;
+    keyboardShortcuts: string;
+    previousCommand: string;
+    nextCommand: string;
+    arrowUp: string;
+    arrowDown: string;
+    typeCommand: string;
+    send: string;
   };
   admin: {
     title: string;
@@ -241,6 +252,8 @@ type TranslationKeys = {
     selectRole: string;
     unknownRole: string;
     default: string;
+    systemThemes: string;
+    selectTheme: string;
   };
   login: {
     title: string;
@@ -397,7 +410,7 @@ export const translations: Translations = {
     },
     firmware: {
       title: "Firmware",
-      subtitle: "Repositório de imagens e recuperação",
+      subtitle: "Repositório de imagens e recuperação de sistema",
       repository: "Repositório",
       recovery: "Recuperação",
       uploadFirmware: "Upload Firmware",
@@ -408,6 +421,10 @@ export const translations: Translations = {
       selectScript: "Selecione o script",
       selectEquipment: "Selecione o equipamento",
       executeRecovery: "Executar Recuperação",
+      searchFirmware: "Buscar firmware...",
+      allManufacturers: "Todos os fabricantes",
+      noFirmwareAvailable: "Nenhum firmware disponível",
+      clickToAdd: "Clique em 'Upload Firmware' para adicionar",
     },
     terminal: {
       title: "Terminal",
@@ -425,6 +442,13 @@ export const translations: Translations = {
       welcomeMessage: "Selecione um equipamento e clique em 'Conectar' para iniciar.",
       historyHelp: "Use as setas para cima/baixo para navegar no histórico de comandos.",
       selectToStart: "Selecione um equipamento para iniciar",
+      keyboardShortcuts: "Atalhos de Teclado",
+      previousCommand: "Comando anterior",
+      nextCommand: "Próximo comando",
+      arrowUp: "Seta para cima",
+      arrowDown: "Seta para baixo",
+      typeCommand: "Digite um comando...",
+      send: "Enviar",
     },
     admin: {
       title: "Administração",
@@ -480,6 +504,8 @@ export const translations: Translations = {
       selectRole: "Nível de Permissão",
       unknownRole: "Desconhecido",
       default: "Padrão",
+      systemThemes: "Temas do Sistema",
+      selectTheme: "Selecione o tema",
     },
     login: {
       title: "NBM - Network Backup Manager",
@@ -632,7 +658,7 @@ export const translations: Translations = {
     },
     firmware: {
       title: "Firmware",
-      subtitle: "Image repository and recovery",
+      subtitle: "Image repository and system recovery",
       repository: "Repository",
       recovery: "Recovery",
       uploadFirmware: "Upload Firmware",
@@ -643,6 +669,10 @@ export const translations: Translations = {
       selectScript: "Select script",
       selectEquipment: "Select equipment",
       executeRecovery: "Execute Recovery",
+      searchFirmware: "Search firmware...",
+      allManufacturers: "All manufacturers",
+      noFirmwareAvailable: "No firmware available",
+      clickToAdd: "Click 'Upload Firmware' to add",
     },
     terminal: {
       title: "Terminal",
@@ -660,6 +690,13 @@ export const translations: Translations = {
       welcomeMessage: "Select equipment and click 'Connect' to start.",
       historyHelp: "Use arrow keys up/down to navigate command history.",
       selectToStart: "Select equipment to start",
+      keyboardShortcuts: "Keyboard Shortcuts",
+      previousCommand: "Previous command",
+      nextCommand: "Next command",
+      arrowUp: "Arrow up",
+      arrowDown: "Arrow down",
+      typeCommand: "Type a command...",
+      send: "Send",
     },
     admin: {
       title: "Administration",
@@ -715,6 +752,8 @@ export const translations: Translations = {
       selectRole: "Permission Level",
       unknownRole: "Unknown",
       default: "Default",
+      systemThemes: "System Themes",
+      selectTheme: "Select theme",
     },
     login: {
       title: "NBM - Network Backup Manager",
@@ -867,7 +906,7 @@ export const translations: Translations = {
     },
     firmware: {
       title: "Firmware",
-      subtitle: "Repositorio de imágenes y recuperación",
+      subtitle: "Repositorio de imágenes y recuperación del sistema",
       repository: "Repositorio",
       recovery: "Recuperación",
       uploadFirmware: "Subir Firmware",
@@ -878,6 +917,10 @@ export const translations: Translations = {
       selectScript: "Seleccione el script",
       selectEquipment: "Seleccione el equipo",
       executeRecovery: "Ejecutar Recuperación",
+      searchFirmware: "Buscar firmware...",
+      allManufacturers: "Todos los fabricantes",
+      noFirmwareAvailable: "Ningún firmware disponible",
+      clickToAdd: "Haga clic en 'Subir Firmware' para agregar",
     },
     terminal: {
       title: "Terminal",
@@ -895,6 +938,13 @@ export const translations: Translations = {
       welcomeMessage: "Seleccione un equipo y haga clic en 'Conectar' para iniciar.",
       historyHelp: "Use las flechas arriba/abajo para navegar en el historial de comandos.",
       selectToStart: "Seleccione un equipo para iniciar",
+      keyboardShortcuts: "Atajos de Teclado",
+      previousCommand: "Comando anterior",
+      nextCommand: "Próximo comando",
+      arrowUp: "Flecha arriba",
+      arrowDown: "Flecha abajo",
+      typeCommand: "Escriba un comando...",
+      send: "Enviar",
     },
     admin: {
       title: "Administración",
@@ -950,6 +1000,8 @@ export const translations: Translations = {
       selectRole: "Nivel de Permiso",
       unknownRole: "Desconocido",
       default: "Predeterminado",
+      systemThemes: "Temas del Sistema",
+      selectTheme: "Seleccione tema",
     },
     login: {
       title: "NBM - Network Backup Manager",
@@ -1102,7 +1154,7 @@ export const translations: Translations = {
     },
     firmware: {
       title: "Firmware",
-      subtitle: "Dépôt d'images et récupération",
+      subtitle: "Dépôt d'images et récupération système",
       repository: "Dépôt",
       recovery: "Récupération",
       uploadFirmware: "Envoyer Firmware",
@@ -1113,6 +1165,10 @@ export const translations: Translations = {
       selectScript: "Sélectionnez le script",
       selectEquipment: "Sélectionnez l'équipement",
       executeRecovery: "Exécuter Récupération",
+      searchFirmware: "Rechercher firmware...",
+      allManufacturers: "Tous les fabricants",
+      noFirmwareAvailable: "Aucun firmware disponible",
+      clickToAdd: "Cliquez sur 'Envoyer Firmware' pour ajouter",
     },
     terminal: {
       title: "Terminal",
@@ -1130,6 +1186,13 @@ export const translations: Translations = {
       welcomeMessage: "Sélectionnez un équipement et cliquez sur 'Connecter' pour démarrer.",
       historyHelp: "Utilisez les flèches haut/bas pour naviguer dans l'historique des commandes.",
       selectToStart: "Sélectionnez un équipement pour démarrer",
+      keyboardShortcuts: "Raccourcis Clavier",
+      previousCommand: "Commande précédente",
+      nextCommand: "Commande suivante",
+      arrowUp: "Flèche haut",
+      arrowDown: "Flèche bas",
+      typeCommand: "Tapez une commande...",
+      send: "Envoyer",
     },
     admin: {
       title: "Administration",
@@ -1185,6 +1248,8 @@ export const translations: Translations = {
       selectRole: "Niveau de Permission",
       unknownRole: "Inconnu",
       default: "Par Défaut",
+      systemThemes: "Thèmes du Système",
+      selectTheme: "Sélectionnez thème",
     },
     login: {
       title: "NBM - Network Backup Manager",
@@ -1337,7 +1402,7 @@ export const translations: Translations = {
     },
     firmware: {
       title: "Firmware",
-      subtitle: "Image-Repository und Wiederherstellung",
+      subtitle: "Image-Repository und Systemwiederherstellung",
       repository: "Repository",
       recovery: "Wiederherstellung",
       uploadFirmware: "Firmware Hochladen",
@@ -1348,6 +1413,10 @@ export const translations: Translations = {
       selectScript: "Skript auswählen",
       selectEquipment: "Gerät auswählen",
       executeRecovery: "Wiederherstellung Ausführen",
+      searchFirmware: "Firmware suchen...",
+      allManufacturers: "Alle Hersteller",
+      noFirmwareAvailable: "Keine Firmware verfügbar",
+      clickToAdd: "Klicken Sie auf 'Firmware Hochladen' um hinzuzufügen",
     },
     terminal: {
       title: "Terminal",
@@ -1365,6 +1434,13 @@ export const translations: Translations = {
       welcomeMessage: "Wählen Sie ein Gerät und klicken Sie auf 'Verbinden' um zu starten.",
       historyHelp: "Verwenden Sie Pfeil hoch/runter um im Befehlsverlauf zu navigieren.",
       selectToStart: "Gerät auswählen um zu starten",
+      keyboardShortcuts: "Tastenkürzel",
+      previousCommand: "Vorheriger Befehl",
+      nextCommand: "Nächster Befehl",
+      arrowUp: "Pfeil hoch",
+      arrowDown: "Pfeil runter",
+      typeCommand: "Befehl eingeben...",
+      send: "Senden",
     },
     admin: {
       title: "Verwaltung",
@@ -1420,6 +1496,8 @@ export const translations: Translations = {
       selectRole: "Berechtigungsebene",
       unknownRole: "Unbekannt",
       default: "Standard",
+      systemThemes: "System-Designs",
+      selectTheme: "Design auswählen",
     },
     login: {
       title: "NBM - Network Backup Manager",

@@ -223,6 +223,7 @@ const TERMINAL_THEMES: TerminalTheme[] = [
 
 export default function FirmwarePage() {
   const { toast } = useToast();
+  const { t } = useI18n();
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [firmwareName, setFirmwareName] = useState("");
@@ -627,8 +628,8 @@ export default function FirmwarePage() {
     <div className="p-6 md:p-8 space-y-6">
       <div className="flex flex-col gap-4 md:flex-row md:justify-between md:items-center">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Firmware</h1>
-          <p className="text-muted-foreground">Repositório de imagens e recuperação de sistema</p>
+          <h1 className="text-3xl font-bold tracking-tight">{t.firmware.title}</h1>
+          <p className="text-muted-foreground">{t.firmware.subtitle}</p>
         </div>
       </div>
 
@@ -636,11 +637,11 @@ export default function FirmwarePage() {
         <TabsList>
           <TabsTrigger value="repository" data-testid="tab-repository">
             <FileCode className="h-4 w-4 mr-2" />
-            Repositório
+            {t.firmware.repository}
           </TabsTrigger>
           <TabsTrigger value="recovery" data-testid="tab-recovery">
             <RotateCcw className="h-4 w-4 mr-2" />
-            Recuperação
+            {t.firmware.recovery}
           </TabsTrigger>
         </TabsList>
 
@@ -650,7 +651,7 @@ export default function FirmwarePage() {
               <div className="relative flex-1 max-w-sm">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input 
-                  placeholder="Buscar firmware..." 
+                  placeholder={t.firmware.searchFirmware} 
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
@@ -671,10 +672,10 @@ export default function FirmwarePage() {
                 <Filter className="h-4 w-4 text-muted-foreground" />
                 <Select value={filterManufacturer} onValueChange={setFilterManufacturer}>
                   <SelectTrigger className="w-[180px]" data-testid="select-filter-manufacturer">
-                    <SelectValue placeholder="Filtrar por fabricante" />
+                    <SelectValue placeholder={t.firmware.selectManufacturer} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todos os fabricantes</SelectItem>
+                    <SelectItem value="all">{t.firmware.allManufacturers}</SelectItem>
                     {MANUFACTURERS.map((mfr) => (
                       <SelectItem key={mfr.value} value={mfr.value}>
                         {mfr.label}
@@ -687,7 +688,7 @@ export default function FirmwarePage() {
             <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
               <DialogTrigger asChild>
                 <Button data-testid="button-upload-firmware">
-                  <Upload className="h-4 w-4 mr-2" /> Upload Firmware
+                  <Upload className="h-4 w-4 mr-2" /> {t.firmware.uploadFirmware}
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-md">

@@ -609,7 +609,7 @@ export default function TerminalPage() {
                 value={commandInput}
                 onChange={(e) => setCommandInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Digite um comando..."
+                placeholder={t.terminal.typeCommand}
                 className="flex-1 font-mono"
                 style={{
                   backgroundColor: 'transparent',
@@ -624,7 +624,7 @@ export default function TerminalPage() {
                 data-testid="button-send-command"
               >
                 <Send className="h-4 w-4 mr-2" />
-                Enviar
+                {t.terminal.send}
               </Button>
             </div>
           )}
@@ -635,22 +635,22 @@ export default function TerminalPage() {
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
             <Settings className="h-4 w-4" />
-            Atalhos de Teclado
+            {t.terminal.keyboardShortcuts}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid gap-2 md:grid-cols-3 text-sm">
             <div className="flex items-center justify-between p-2 bg-muted/50 rounded">
-              <span>Enviar comando</span>
+              <span>{t.terminal.sendCommand}</span>
               <Badge variant="outline">Enter</Badge>
             </div>
             <div className="flex items-center justify-between p-2 bg-muted/50 rounded">
-              <span>Comando anterior</span>
-              <Badge variant="outline">Seta para cima</Badge>
+              <span>{t.terminal.previousCommand}</span>
+              <Badge variant="outline">{t.terminal.arrowUp}</Badge>
             </div>
             <div className="flex items-center justify-between p-2 bg-muted/50 rounded">
-              <span>Próximo comando</span>
-              <Badge variant="outline">Seta para baixo</Badge>
+              <span>{t.terminal.nextCommand}</span>
+              <Badge variant="outline">{t.terminal.arrowDown}</Badge>
             </div>
           </div>
         </CardContent>
