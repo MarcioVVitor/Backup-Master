@@ -507,6 +507,90 @@ export default function BackupsPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {selectedBackups.size > 0 && (
+        <div className="fixed bottom-0 left-0 right-0 bg-background border-t shadow-lg p-4 z-50">
+          <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <Badge variant="secondary" className="text-sm px-3 py-1">
+                {selectedBackups.size} selecionado(s)
+              </Badge>
+            </div>
+            <div className="flex items-center gap-2">
+              {selectedBackups.size === 1 && (
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    const id = Array.from(selectedBackups)[0];
+                    const file = files?.find(f => f.id === id);
+                    if (file) handleView(id, file.filename);
+                  }}
+                  data-testid="button-fixed-view"
+                >
+                  <Eye className="h-4 w-4 mr-2" />
+                  Visualizar
+                </Button>
+              )}
+              {selectedBackups.size === 1 && (
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    const id = Array.from(selectedBackups)[0];
+                    const file = files?.find(f => f.id === id);
+                    if (file) handleDownload(id, file.filename);
+                  }}
+                  data-testid="button-fixed-download"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Download
+                </Button>
+              )}
+              <AlertDialog open={bulkDeleteOpen} onOpenChange={setBulkDeleteOpen}>
+                <AlertDialogTrigger asChild>
+                  <Button 
+                    variant="destructive"
+                    data-testid="button-fixed-delete"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Excluir ({selectedBackups.size})
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Excluir {selectedBackups.size} Backup(s)?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Esta ação excluirá permanentemente os backups selecionados. Esta ação não pode ser desfeita.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel disabled={isDeletingBulk}>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction 
+                      className="bg-red-600 hover:bg-red-700" 
+                      onClick={handleBulkDelete}
+                      disabled={isDeletingBulk}
+                    >
+                      {isDeletingBulk ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Excluindo...
+                        </>
+                      ) : (
+                        'Excluir'
+                      )}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+              <Button
+                variant="ghost"
+                onClick={() => setSelectedBackups(new Set())}
+              >
+                Cancelar
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

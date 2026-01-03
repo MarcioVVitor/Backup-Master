@@ -77,7 +77,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
   const menuItems = [
     { title: "Dashboard", url: "/", icon: HomeIcon },
     { title: "Equipamentos", url: "/equipment", icon: Server },
-    { title: "Executar Backup", url: "/backup-execute", icon: Play },
+    { title: "Scheduler", url: "/backup-execute", icon: Play },
     { title: "Backups", url: "/backups", icon: HardDrive },
     { title: "Scripts", url: "/scripts", icon: Terminal },
     { title: "Fabricantes", url: "/manufacturers", icon: Factory },
