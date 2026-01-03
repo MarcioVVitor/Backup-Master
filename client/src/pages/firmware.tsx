@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,7 +16,13 @@ import {
   Play,
   Server,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Terminal,
+  Palette,
+  Square,
+  Send,
+  Wifi,
+  WifiOff
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import {
@@ -82,9 +88,137 @@ interface Equipment {
   id: number;
   name: string;
   ip: string;
+  port?: number;
   manufacturer: string;
   model: string | null;
 }
+
+interface TerminalLine {
+  type: 'input' | 'output' | 'error' | 'system';
+  content: string;
+  timestamp: Date;
+}
+
+interface TerminalTheme {
+  id: string;
+  name: string;
+  background: string;
+  foreground: string;
+  cursor: string;
+  selection: string;
+  prompt: string;
+  input: string;
+  output: string;
+  error: string;
+  system: string;
+}
+
+const TERMINAL_THEMES: TerminalTheme[] = [
+  {
+    id: "termius-dark",
+    name: "Termius Dark",
+    background: "#1e1e1e",
+    foreground: "#d4d4d4",
+    cursor: "#ffffff",
+    selection: "#264f78",
+    prompt: "#569cd6",
+    input: "#9cdcfe",
+    output: "#d4d4d4",
+    error: "#f14c4c",
+    system: "#6a9955"
+  },
+  {
+    id: "dracula",
+    name: "Dracula",
+    background: "#282a36",
+    foreground: "#f8f8f2",
+    cursor: "#f8f8f2",
+    selection: "#44475a",
+    prompt: "#bd93f9",
+    input: "#ff79c6",
+    output: "#f8f8f2",
+    error: "#ff5555",
+    system: "#50fa7b"
+  },
+  {
+    id: "nord",
+    name: "Nord",
+    background: "#2e3440",
+    foreground: "#d8dee9",
+    cursor: "#d8dee9",
+    selection: "#434c5e",
+    prompt: "#88c0d0",
+    input: "#81a1c1",
+    output: "#d8dee9",
+    error: "#bf616a",
+    system: "#a3be8c"
+  },
+  {
+    id: "tokyo-night",
+    name: "Tokyo Night",
+    background: "#1a1b26",
+    foreground: "#a9b1d6",
+    cursor: "#c0caf5",
+    selection: "#33467c",
+    prompt: "#7aa2f7",
+    input: "#bb9af7",
+    output: "#a9b1d6",
+    error: "#f7768e",
+    system: "#9ece6a"
+  },
+  {
+    id: "monokai",
+    name: "Monokai",
+    background: "#272822",
+    foreground: "#f8f8f2",
+    cursor: "#f8f8f2",
+    selection: "#49483e",
+    prompt: "#a6e22e",
+    input: "#f92672",
+    output: "#f8f8f2",
+    error: "#f92672",
+    system: "#e6db74"
+  },
+  {
+    id: "matrix",
+    name: "Matrix",
+    background: "#000000",
+    foreground: "#00ff41",
+    cursor: "#00ff41",
+    selection: "#003b00",
+    prompt: "#00cc33",
+    input: "#00ff41",
+    output: "#00ff41",
+    error: "#ff0000",
+    system: "#39ff14"
+  },
+  {
+    id: "retro-green",
+    name: "Retro Green",
+    background: "#0a0a0a",
+    foreground: "#00ff00",
+    cursor: "#00ff00",
+    selection: "#003300",
+    prompt: "#00cc00",
+    input: "#00ff00",
+    output: "#00ff00",
+    error: "#ff0000",
+    system: "#00ff00"
+  },
+  {
+    id: "retro-amber",
+    name: "Retro Amber",
+    background: "#0a0a0a",
+    foreground: "#ffb000",
+    cursor: "#ffb000",
+    selection: "#332200",
+    prompt: "#ff8c00",
+    input: "#ffb000",
+    output: "#ffb000",
+    error: "#ff4444",
+    system: "#ffcc00"
+  }
+];
 
 export default function FirmwarePage() {
   const { toast } = useToast();
@@ -100,6 +234,123 @@ export default function FirmwarePage() {
   const [selectedEquipment, setSelectedEquipment] = useState<string>("");
   const [selectedScript, setSelectedScript] = useState<VendorScript | null>(null);
   const [recoveryDialogOpen, setRecoveryDialogOpen] = useState(false);
+  
+  const [terminalOpen, setTerminalOpen] = useState(false);
+  const [isConnected, setIsConnected] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [currentTheme, setCurrentTheme] = useState<TerminalTheme>(TERMINAL_THEMES[0]);
+  const [themeDialogOpen, setThemeDialogOpen] = useState(false);
+  const [commandInput, setCommandInput] = useState("");
+  const [lines, setLines] = useState<TerminalLine[]>([]);
+  
+  const terminalRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const wsRef = useRef<WebSocket | null>(null);
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("firmware-terminal-theme");
+    if (savedTheme) {
+      const theme = TERMINAL_THEMES.find(t => t.id === savedTheme);
+      if (theme) setCurrentTheme(theme);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (terminalRef.current) {
+      terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
+    }
+  }, [lines]);
+
+  const addLine = useCallback((type: TerminalLine['type'], content: string) => {
+    setLines(prev => [...prev, { type, content, timestamp: new Date() }]);
+  }, []);
+
+  const handleConnect = async (equipmentId: string) => {
+    const eq = equipment.find(e => e.id.toString() === equipmentId);
+    if (!eq) return;
+
+    if (wsRef.current) {
+      wsRef.current.close();
+      wsRef.current = null;
+    }
+
+    setTerminalOpen(true);
+    setIsConnecting(true);
+    setLines([]);
+    addLine('system', `Conectando a ${eq.name} (${eq.ip})...`);
+
+    try {
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const wsUrl = `${protocol}//${window.location.host}/api/terminal/ws/${eq.id}`;
+      
+      const ws = new WebSocket(wsUrl);
+      wsRef.current = ws;
+
+      ws.onopen = () => {
+        setIsConnected(true);
+        setIsConnecting(false);
+        addLine('system', `Conectado a ${eq.name} (${eq.ip})`);
+        inputRef.current?.focus();
+      };
+
+      ws.onmessage = (event) => {
+        const data = event.data;
+        if (data.startsWith('ERROR:')) {
+          addLine('error', data.substring(6));
+        } else {
+          addLine('output', data);
+        }
+      };
+
+      ws.onerror = () => {
+        addLine('error', 'Erro na conexao WebSocket');
+        setIsConnected(false);
+        setIsConnecting(false);
+      };
+
+      ws.onclose = () => {
+        addLine('system', 'Conexao encerrada');
+        setIsConnected(false);
+        setIsConnecting(false);
+        wsRef.current = null;
+      };
+    } catch (err) {
+      addLine('error', 'Falha ao estabelecer conexao');
+      setIsConnected(false);
+      setIsConnecting(false);
+    }
+  };
+
+  const handleDisconnect = () => {
+    if (wsRef.current) {
+      wsRef.current.close();
+      wsRef.current = null;
+    }
+    setIsConnected(false);
+    setTerminalOpen(false);
+    setLines([]);
+  };
+
+  const handleSendCommand = () => {
+    if (!commandInput.trim() || !wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
+    
+    addLine('input', `$ ${commandInput}`);
+    wsRef.current.send(commandInput);
+    setCommandInput("");
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleSendCommand();
+    }
+  };
+
+  const handleThemeChange = (theme: TerminalTheme) => {
+    setCurrentTheme(theme);
+    localStorage.setItem("firmware-terminal-theme", theme.id);
+    setThemeDialogOpen(false);
+  };
 
   const { data: firmware = [], isLoading, error } = useQuery<Firmware[]>({
     queryKey: ["/api/firmware"],
@@ -247,17 +498,22 @@ export default function FirmwarePage() {
     return matchesSearch && matchesManufacturer;
   });
 
-  const updateScripts = scripts.filter(s => 
-    s.name.toLowerCase().includes("atualiza") || 
-    s.name.toLowerCase().includes("update") ||
-    s.name.toLowerCase().includes("upgrade") ||
-    s.name.toLowerCase().includes("recovery") ||
-    s.name.toLowerCase().includes("recupera")
-  );
+  const updateScripts = scripts.filter(s => {
+    const nameLC = s.name.toLowerCase();
+    const descLC = (s.description || '').toLowerCase();
+    const isUpdateName = nameLC.includes('atualiza') || nameLC.includes('update') || 
+                         nameLC.includes('recupera') || nameLC.includes('recovery') ||
+                         nameLC.includes('firmware') || nameLC.includes('upgrade');
+    const isUpdateDesc = descLC.includes('atualiza') || descLC.includes('update') || 
+                         descLC.includes('recupera') || descLC.includes('recovery') ||
+                         descLC.includes('firmware') || descLC.includes('upgrade');
+    const isBackup = nameLC.includes('backup') || descLC.includes('backup');
+    return (isUpdateName || isUpdateDesc) && !isBackup;
+  });
 
   const filteredRecoveryScripts = recoveryManufacturer === "all" 
-    ? scripts 
-    : scripts.filter(s => s.manufacturer === recoveryManufacturer);
+    ? updateScripts 
+    : updateScripts.filter(s => s.manufacturer === recoveryManufacturer);
 
   const filteredEquipment = selectedScript 
     ? equipment.filter(e => e.manufacturer === selectedScript.manufacturer)
@@ -591,17 +847,18 @@ export default function FirmwarePage() {
                         </p>
                       )}
                     </div>
-                    <Dialog open={recoveryDialogOpen} onOpenChange={setRecoveryDialogOpen}>
-                      <DialogTrigger asChild>
-                        <Button 
-                          disabled={!selectedEquipment}
-                          data-testid="button-execute-recovery"
-                        >
-                          <Play className="h-4 w-4 mr-2" />
-                          Executar Recuperação
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent>
+                    <div className="flex gap-2 flex-wrap">
+                      <Dialog open={recoveryDialogOpen} onOpenChange={setRecoveryDialogOpen}>
+                        <DialogTrigger asChild>
+                          <Button 
+                            disabled={!selectedEquipment}
+                            data-testid="button-execute-recovery"
+                          >
+                            <Play className="h-4 w-4 mr-2" />
+                            Executar Recuperação
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
                         <DialogHeader>
                           <DialogTitle>Confirmar Execução</DialogTitle>
                           <DialogDescription>
@@ -647,9 +904,165 @@ export default function FirmwarePage() {
                           </Button>
                         </DialogFooter>
                       </DialogContent>
-                    </Dialog>
+                      </Dialog>
+                      <Button 
+                        variant="outline"
+                        disabled={!selectedEquipment}
+                        onClick={() => handleConnect(selectedEquipment)}
+                        data-testid="button-open-terminal"
+                      >
+                        <Terminal className="h-4 w-4 mr-2" />
+                        Terminal CLI
+                      </Button>
+                    </div>
                   </div>
                 </div>
+              )}
+
+              {terminalOpen && (
+                <Card className="mt-6" style={{ backgroundColor: currentTheme.background }}>
+                  <CardHeader className="pb-2 flex flex-row items-center justify-between gap-2 space-y-0" style={{ borderBottom: `1px solid ${currentTheme.selection}` }}>
+                    <div className="flex items-center gap-3">
+                      <Terminal className="h-5 w-5" style={{ color: currentTheme.prompt }} />
+                      <CardTitle className="text-base" style={{ color: currentTheme.foreground }}>
+                        Terminal CLI - {equipment.find(e => e.id.toString() === selectedEquipment)?.name || 'Equipamento'}
+                      </CardTitle>
+                      <Badge variant={isConnected ? "default" : "secondary"} className="text-xs">
+                        {isConnected ? (
+                          <><Wifi className="h-3 w-3 mr-1" /> Conectado</>
+                        ) : isConnecting ? (
+                          <><Loader2 className="h-3 w-3 mr-1 animate-spin" /> Conectando...</>
+                        ) : (
+                          <><WifiOff className="h-3 w-3 mr-1" /> Desconectado</>
+                        )}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Dialog open={themeDialogOpen} onOpenChange={setThemeDialogOpen}>
+                        <DialogTrigger asChild>
+                          <Button size="icon" variant="ghost" data-testid="button-terminal-theme">
+                            <Palette className="h-4 w-4" style={{ color: currentTheme.foreground }} />
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-md">
+                          <DialogHeader>
+                            <DialogTitle>Tema do Terminal</DialogTitle>
+                            <DialogDescription>
+                              Escolha um tema para personalizar o terminal
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="grid grid-cols-2 gap-2 py-4 max-h-80 overflow-auto">
+                            {TERMINAL_THEMES.map((theme) => (
+                              <div
+                                key={theme.id}
+                                className={`p-3 rounded-lg cursor-pointer border-2 transition-all ${
+                                  currentTheme.id === theme.id ? 'border-primary' : 'border-transparent'
+                                }`}
+                                style={{ backgroundColor: theme.background }}
+                                onClick={() => handleThemeChange(theme)}
+                                data-testid={`theme-${theme.id}`}
+                              >
+                                <div className="flex items-center justify-between mb-2">
+                                  <span className="text-xs font-medium" style={{ color: theme.foreground }}>
+                                    {theme.name}
+                                  </span>
+                                  {currentTheme.id === theme.id && (
+                                    <CheckCircle2 className="h-4 w-4" style={{ color: theme.system }} />
+                                  )}
+                                </div>
+                                <div className="font-mono text-xs space-y-1">
+                                  <div style={{ color: theme.prompt }}>$ command</div>
+                                  <div style={{ color: theme.output }}>output text</div>
+                                  <div style={{ color: theme.error }}>error msg</div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                      {isConnected && (
+                        <Button 
+                          size="icon" 
+                          variant="ghost"
+                          onClick={handleDisconnect}
+                          data-testid="button-disconnect"
+                        >
+                          <Square className="h-4 w-4" style={{ color: currentTheme.error }} />
+                        </Button>
+                      )}
+                      <Button 
+                        size="icon" 
+                        variant="ghost"
+                        onClick={() => {
+                          handleDisconnect();
+                          setTerminalOpen(false);
+                          setLines([]);
+                        }}
+                        data-testid="button-close-terminal"
+                      >
+                        <X className="h-4 w-4" style={{ color: currentTheme.foreground }} />
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-0">
+                    <div 
+                      ref={terminalRef}
+                      className="h-80 overflow-auto p-4 font-mono text-sm"
+                      style={{ backgroundColor: currentTheme.background }}
+                      onClick={() => inputRef.current?.focus()}
+                      data-testid="terminal-output"
+                    >
+                      {lines.map((line, index) => (
+                        <div 
+                          key={index} 
+                          className="whitespace-pre-wrap break-all"
+                          style={{ 
+                            color: line.type === 'input' ? currentTheme.input :
+                                   line.type === 'error' ? currentTheme.error :
+                                   line.type === 'system' ? currentTheme.system :
+                                   currentTheme.output
+                          }}
+                        >
+                          {line.content}
+                        </div>
+                      ))}
+                      {lines.length === 0 && !isConnecting && !isConnected && (
+                        <div style={{ color: currentTheme.system }}>
+                          Clique em "Terminal CLI" para conectar ao equipamento...
+                        </div>
+                      )}
+                    </div>
+                    <div 
+                      className="flex items-center gap-2 p-3 border-t"
+                      style={{ 
+                        backgroundColor: currentTheme.selection,
+                        borderColor: currentTheme.selection
+                      }}
+                    >
+                      <span style={{ color: currentTheme.prompt }} className="font-mono">$</span>
+                      <Input
+                        ref={inputRef}
+                        value={commandInput}
+                        onChange={(e) => setCommandInput(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        placeholder={isConnected ? "Digite um comando..." : "Conecte-se primeiro..."}
+                        disabled={!isConnected}
+                        className="flex-1 font-mono border-0 bg-transparent focus-visible:ring-0"
+                        style={{ color: currentTheme.input }}
+                        data-testid="input-terminal-command"
+                      />
+                      <Button 
+                        size="icon" 
+                        variant="ghost"
+                        onClick={handleSendCommand}
+                        disabled={!isConnected || !commandInput.trim()}
+                        data-testid="button-send-command"
+                      >
+                        <Send className="h-4 w-4" style={{ color: currentTheme.prompt }} />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
               )}
             </CardContent>
           </Card>
