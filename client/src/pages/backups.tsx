@@ -1,6 +1,7 @@
 import { useFiles, useDeleteFile } from "@/hooks/use-files";
 import { useEquipment } from "@/hooks/use-equipment";
 import { useQuery } from "@tanstack/react-query";
+import { useI18n } from "@/contexts/i18n-context";
 import { Button } from "@/components/ui/button";
 import { Download, Trash2, FileText, Calendar, HardDrive, Search, Eye, Loader2, Server, Filter } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -54,6 +55,7 @@ export default function BackupsPage() {
   const { data: manufacturers = [] } = useQuery<Manufacturer[]>({
     queryKey: ["/api/manufacturers"],
   });
+  const { t } = useI18n();
   
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedManufacturer, setSelectedManufacturer] = useState<string>("all");
@@ -222,8 +224,8 @@ export default function BackupsPage() {
     <div className="p-6 md:p-8 space-y-6 animate-enter">
       <div className="flex flex-col md:flex-row justify-between gap-4 md:items-center">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Backups</h1>
-          <p className="text-muted-foreground">Gerencie os arquivos de backup armazenados</p>
+          <h1 className="text-3xl font-bold tracking-tight">{t.backups.title}</h1>
+          <p className="text-muted-foreground">{t.backups.subtitle}</p>
         </div>
       </div>
 

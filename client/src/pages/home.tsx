@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useBackupHistory, useFiles } from "@/hooks/use-files";
 import { useEquipment } from "@/hooks/use-equipment";
+import { useI18n } from "@/contexts/i18n-context";
 import { StatsCard } from "@/components/StatsCard";
 import { Server, HardDrive, AlertCircle, CheckCircle2, Activity } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,6 +31,7 @@ export default function Home() {
   const { data: equipment, isLoading: loadingEquipment } = useEquipment();
   const { data: history, isLoading: loadingHistory } = useBackupHistory();
   const { data: files, isLoading: loadingFiles } = useFiles();
+  const { t } = useI18n();
 
   if (loadingEquipment || loadingHistory || loadingFiles) {
     return (
@@ -68,36 +70,36 @@ export default function Home() {
   return (
     <div className="p-6 md:p-8 space-y-8 animate-enter">
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">Dashboard</h1>
-        <p className="text-muted-foreground">Visão geral do sistema de backups</p>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">{t.dashboard.title}</h1>
+        <p className="text-muted-foreground">{t.dashboard.subtitle}</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatsCard
-          title="Equipamentos"
+          title={t.dashboard.totalEquipment}
           value={totalEquipment}
-          description="Total de ativos monitorados"
+          description={t.common.all}
           icon={Server}
           color="text-blue-500"
         />
         <StatsCard
-          title="Backups Totais"
+          title={t.dashboard.totalBackups}
           value={totalBackups}
-          description="Arquivos armazenados"
+          description={t.common.all}
           icon={HardDrive}
           color="text-purple-500"
         />
         <StatsCard
-          title="Taxa de Sucesso"
+          title={t.backups.statusSuccess}
           value={`${successRate}%`}
-          description="Últimos 30 dias"
+          description={t.common.status}
           icon={CheckCircle2}
           color="text-green-500"
         />
         <StatsCard
-          title="Armazenamento"
+          title={t.dashboard.totalScripts}
           value={storageFormatted}
-          description="Espaço utilizado"
+          description={t.common.size}
           icon={Activity}
           color="text-orange-500"
         />
@@ -106,7 +108,7 @@ export default function Home() {
       <div className="grid gap-4 md:grid-cols-7">
         <Card className="col-span-4 border-none shadow-sm">
           <CardHeader>
-            <CardTitle>Atividade Recente</CardTitle>
+            <CardTitle>{t.dashboard.recentBackups}</CardTitle>
           </CardHeader>
           <CardContent className="pl-2">
             <ResponsiveContainer width="100%" height={300}>
@@ -131,7 +133,7 @@ export default function Home() {
 
         <Card className="col-span-3 border-none shadow-sm">
           <CardHeader>
-            <CardTitle>Status de Execução</CardTitle>
+            <CardTitle>{t.dashboard.systemStatus}</CardTitle>
           </CardHeader>
           <CardContent>
              <ResponsiveContainer width="100%" height={300}>
@@ -151,23 +153,23 @@ export default function Home() {
 
       <Card className="border-none shadow-sm">
         <CardHeader>
-          <CardTitle>Últimos Backups</CardTitle>
+          <CardTitle>{t.dashboard.recentBackups}</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Equipamento</TableHead>
-                <TableHead>IP</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Duração</TableHead>
-                <TableHead className="text-right">Data</TableHead>
+                <TableHead>{t.equipment.equipmentName}</TableHead>
+                <TableHead>{t.equipment.ipAddress}</TableHead>
+                <TableHead>{t.common.status}</TableHead>
+                <TableHead>{t.common.type}</TableHead>
+                <TableHead className="text-right">{t.common.date}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {history?.slice(0, 5).map((log) => (
                 <TableRow key={log.id}>
-                  <TableCell className="font-medium">{log.equipmentName || 'Desconhecido'}</TableCell>
+                  <TableCell className="font-medium">{log.equipmentName || t.common.none}</TableCell>
                   <TableCell>{log.ip}</TableCell>
                   <TableCell>
                     <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -175,7 +177,7 @@ export default function Home() {
                       log.status === 'failed' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300' :
                       'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'
                     }`}>
-                      {log.status === 'success' ? 'Sucesso' : log.status === 'failed' ? 'Falha' : 'Pendente'}
+                      {log.status === 'success' ? t.backups.statusSuccess : log.status === 'failed' ? t.backups.statusFailed : t.backups.statusPending}
                     </div>
                   </TableCell>
                   <TableCell>{log.duration ? `${log.duration.toFixed(1)}s` : '-'}</TableCell>
@@ -187,7 +189,7 @@ export default function Home() {
               {!history?.length && (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                    Nenhum backup registrado
+                    {t.dashboard.noRecentBackups}
                   </TableCell>
                 </TableRow>
               )}

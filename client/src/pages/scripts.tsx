@@ -1,7 +1,8 @@
 import { useScripts, useCreateScript, useDeleteScript } from "@/hooks/use-scripts";
 import { useManufacturers } from "@/hooks/use-settings";
+import { useI18n } from "@/contexts/i18n-context";
 import { Button } from "@/components/ui/button";
-import { Plus, Terminal, Trash2 } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -25,11 +26,12 @@ export default function ScriptsPage() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const { mutate: deleteScript } = useDeleteScript();
   const { toast } = useToast();
+  const { t } = useI18n();
 
   const handleDelete = (id: number) => {
-    if (confirm("Excluir este script?")) {
+    if (confirm(t.common.confirm + "?")) {
       deleteScript(id, {
-        onSuccess: () => toast({ title: "Script removido" })
+        onSuccess: () => toast({ title: t.common.success })
       });
     }
   };
@@ -38,11 +40,11 @@ export default function ScriptsPage() {
     <div className="p-6 md:p-8 space-y-6 animate-enter">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Scripts</h1>
-          <p className="text-muted-foreground">Comandos de backup por fabricante</p>
+          <h1 className="text-3xl font-bold tracking-tight">{t.scripts.title}</h1>
+          <p className="text-muted-foreground">{t.scripts.subtitle}</p>
         </div>
         <Button onClick={() => setIsCreateOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" /> Novo Script
+          <Plus className="h-4 w-4 mr-2" /> {t.scripts.addScript}
         </Button>
       </div>
 

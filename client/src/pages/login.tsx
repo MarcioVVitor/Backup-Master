@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useI18n } from "@/contexts/i18n-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Server, LogIn, UserPlus } from "lucide-react";
@@ -43,6 +44,7 @@ async function registerUser(data: { username: string; password: string; name?: s
 export default function Login() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { t } = useI18n();
   
   const [loginData, setLoginData] = useState({ username: "", password: "" });
   const [registerData, setRegisterData] = useState({ username: "", password: "", confirmPassword: "", name: "", email: "" });
@@ -106,8 +108,8 @@ export default function Login() {
           <div className="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center mb-4">
             <Server className="h-8 w-8 text-primary-foreground" />
           </div>
-          <h1 className="text-2xl font-bold">NBM - Network Backup Manager</h1>
-          <p className="text-muted-foreground text-sm mt-1">Sistema de backup automatizado para equipamentos de rede</p>
+          <h1 className="text-2xl font-bold">{t.login.title}</h1>
+          <p className="text-muted-foreground text-sm mt-1">{t.login.subtitle}</p>
         </div>
         
         <Card>
@@ -116,11 +118,11 @@ export default function Login() {
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="login" data-testid="tab-login">
                   <LogIn className="h-4 w-4 mr-2" />
-                  Entrar
+                  {t.common.connect}
                 </TabsTrigger>
                 <TabsTrigger value="register" data-testid="tab-register">
                   <UserPlus className="h-4 w-4 mr-2" />
-                  Registrar
+                  {t.common.add}
                 </TabsTrigger>
               </TabsList>
             </CardHeader>
@@ -129,22 +131,22 @@ export default function Login() {
               <TabsContent value="login" className="mt-0">
                 <form onSubmit={handleLogin} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="login-username">Usuario</Label>
+                    <Label htmlFor="login-username">{t.admin.username}</Label>
                     <Input
                       id="login-username"
                       data-testid="input-login-username"
-                      placeholder="Digite seu usuario"
+                      placeholder={t.admin.username}
                       value={loginData.username}
                       onChange={(e) => setLoginData({ ...loginData, username: e.target.value })}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="login-password">Senha</Label>
+                    <Label htmlFor="login-password">{t.admin.password}</Label>
                     <Input
                       id="login-password"
                       data-testid="input-login-password"
                       type="password"
-                      placeholder="Digite sua senha"
+                      placeholder={t.admin.password}
                       value={loginData.password}
                       onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
                     />
@@ -155,7 +157,7 @@ export default function Login() {
                     data-testid="button-login"
                     disabled={loginMutation.isPending}
                   >
-                    {loginMutation.isPending ? "Entrando..." : "Entrar"}
+                    {loginMutation.isPending ? t.common.loading : t.common.connect}
                   </Button>
                 </form>
               </TabsContent>

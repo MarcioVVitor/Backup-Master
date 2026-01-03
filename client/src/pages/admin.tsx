@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useI18n } from "@/contexts/i18n-context";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -68,7 +69,6 @@ import {
   Globe
 } from "lucide-react";
 import { useTheme } from "@/contexts/theme-context";
-import { useI18n } from "@/contexts/i18n-context";
 import { THEMES } from "@/lib/themes";
 import { BACKGROUND_OPTIONS } from "@/lib/os-themes";
 import { LANGUAGES } from "@/lib/i18n";
@@ -740,34 +740,36 @@ export default function AdminPage() {
 
   const isAccessDenied = usersError && (usersError as any)?.message?.includes("403");
 
+  const { t } = useI18n();
+
   return (
     <div className="p-6 md:p-8 space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Administração</h1>
-        <p className="text-muted-foreground">Gestão de usuários e configurações do sistema</p>
+        <h1 className="text-3xl font-bold tracking-tight">{t.admin.title}</h1>
+        <p className="text-muted-foreground">{t.admin.subtitle}</p>
       </div>
 
       <Tabs defaultValue="users" className="space-y-4">
         <TabsList>
           <TabsTrigger value="users" data-testid="tab-users">
             <Users className="h-4 w-4 mr-2" />
-            Usuários
+            {t.admin.users}
           </TabsTrigger>
           <TabsTrigger value="config" data-testid="tab-config">
             <Settings className="h-4 w-4 mr-2" />
-            Configurações
+            {t.admin.config}
           </TabsTrigger>
           <TabsTrigger value="backup" data-testid="tab-backup">
             <Database className="h-4 w-4 mr-2" />
-            Backup
+            {t.admin.backup}
           </TabsTrigger>
           <TabsTrigger value="system" data-testid="tab-system">
             <Server className="h-4 w-4 mr-2" />
-            Sistema
+            {t.admin.system}
           </TabsTrigger>
           <TabsTrigger value="updates" data-testid="tab-updates">
             <ArrowUpCircle className="h-4 w-4 mr-2" />
-            Atualizações
+            {t.admin.updates}
           </TabsTrigger>
         </TabsList>
 

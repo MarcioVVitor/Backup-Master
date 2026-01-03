@@ -1,6 +1,7 @@
 import { useManufacturers, useCreateManufacturer, useDeleteManufacturer } from "@/hooks/use-settings";
+import { useI18n } from "@/contexts/i18n-context";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2, Factory } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,11 +20,12 @@ export default function ManufacturersPage() {
   const { mutate: deleteManufacturer } = useDeleteManufacturer();
   const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
+  const { t } = useI18n();
 
   const handleDelete = (id: number) => {
-    if (confirm("Remover este fabricante?")) {
+    if (confirm(t.common.confirm + "?")) {
       deleteManufacturer(id, {
-        onSuccess: () => toast({ title: "Fabricante removido" })
+        onSuccess: () => toast({ title: t.common.success })
       });
     }
   };
@@ -32,11 +34,11 @@ export default function ManufacturersPage() {
     <div className="p-6 md:p-8 space-y-6 animate-enter">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Fabricantes</h1>
-          <p className="text-muted-foreground">Gerencie as marcas suportadas</p>
+          <h1 className="text-3xl font-bold tracking-tight">{t.manufacturers.title}</h1>
+          <p className="text-muted-foreground">{t.manufacturers.subtitle}</p>
         </div>
         <Button onClick={() => setIsOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" /> Adicionar
+          <Plus className="h-4 w-4 mr-2" /> {t.manufacturers.addManufacturer}
         </Button>
       </div>
 

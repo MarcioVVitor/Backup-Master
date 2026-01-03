@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useEquipment, useCreateEquipment, useUpdateEquipment, useDeleteEquipment } from "@/hooks/use-equipment";
 import { useManufacturers } from "@/hooks/use-settings";
+import { useI18n } from "@/contexts/i18n-context";
 import { Button } from "@/components/ui/button";
-import { Plus, Search, Pencil, Trash2, Power } from "lucide-react";
+import { Plus, Search, Pencil, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Table,
@@ -38,6 +39,7 @@ export default function EquipmentPage() {
   const { data: manufacturers } = useManufacturers();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const { t } = useI18n();
 
   const filteredEquipment = equipment?.filter(e => 
     e.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -48,14 +50,14 @@ export default function EquipmentPage() {
     <div className="p-6 md:p-8 space-y-6 animate-enter">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Equipamentos</h1>
-          <p className="text-muted-foreground">Gerencie seus dispositivos de rede</p>
+          <h1 className="text-3xl font-bold tracking-tight">{t.equipment.title}</h1>
+          <p className="text-muted-foreground">{t.equipment.subtitle}</p>
         </div>
         <div className="flex items-center gap-2">
           <div className="relative">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Buscar por nome ou IP..."
+              placeholder={t.common.search + "..."}
               className="pl-9 w-[250px] bg-background"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -63,7 +65,7 @@ export default function EquipmentPage() {
           </div>
           <Button onClick={() => setIsCreateOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
-            Novo Equipamento
+            {t.equipment.addEquipment}
           </Button>
         </div>
       </div>
@@ -72,12 +74,12 @@ export default function EquipmentPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Nome</TableHead>
-              <TableHead>Endereço IP</TableHead>
-              <TableHead>Fabricante</TableHead>
-              <TableHead>Protocolo</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Ações</TableHead>
+              <TableHead>{t.common.name}</TableHead>
+              <TableHead>{t.equipment.ipAddress}</TableHead>
+              <TableHead>{t.equipment.manufacturer}</TableHead>
+              <TableHead>{t.equipment.protocol}</TableHead>
+              <TableHead>{t.common.status}</TableHead>
+              <TableHead className="text-right">{t.common.actions}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -98,7 +100,7 @@ export default function EquipmentPage() {
                       : "bg-gray-100 text-gray-600 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700"
                   }`}>
                     <span className={`h-1.5 w-1.5 rounded-full ${item.enabled ? "bg-green-500" : "bg-gray-400"}`} />
-                    {item.enabled ? "Ativo" : "Inativo"}
+                    {item.enabled ? t.common.enabled : t.common.disabled}
                   </div>
                 </TableCell>
                 <TableCell className="text-right">
@@ -114,7 +116,7 @@ export default function EquipmentPage() {
             {!filteredEquipment?.length && !isLoading && (
               <TableRow>
                 <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
-                  Nenhum equipamento encontrado
+                  {t.equipment.noEquipment}
                 </TableCell>
               </TableRow>
             )}
