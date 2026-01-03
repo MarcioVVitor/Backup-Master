@@ -1133,6 +1133,165 @@ export async function registerRoutes(
             telnetSocket.destroy();
             telnetSocket = null;
           }
+          
+        } else if (data.type === 'execute_recovery') {
+          if (stream) {
+            stream.end();
+            stream = null;
+          }
+          if (sshClient) {
+            sshClient.end();
+            sshClient = null;
+          }
+          if (telnetSocket) {
+            telnetSocket.destroy();
+            telnetSocket = null;
+          }
+          
+          const { equipmentId, scriptId } = data;
+          const equip = await storage.getEquipmentById(equipmentId);
+          const script = await storage.getVendorScriptById(scriptId);
+          
+          if (!equip) {
+            ws.send(JSON.stringify({ type: 'error', message: 'Equipamento nao encontrado' }));
+            return;
+          }
+          if (!script) {
+            ws.send(JSON.stringify({ type: 'error', message: 'Script nao encontrado' }));
+            return;
+          }
+          if (!equip.username || !equip.password) {
+            ws.send(JSON.stringify({ type: 'error', message: 'Credenciais nao configuradas no equipamento' }));
+            return;
+          }
+          
+          ws.send(JSON.stringify({ 
+            type: 'recovery_start', 
+            message: `Iniciando recuperacao/atualizacao em ${equip.name}...`,
+            script: script.name,
+            equipment: equip.name
+          }));
+          
+          ws.send(JSON.stringify({ type: 'output', data: `\n=== INICIANDO RECUPERACAO/ATUALIZACAO ===\n` }));
+          ws.send(JSON.stringify({ type: 'output', data: `Equipamento: ${equip.name} (${equip.ip})\n` }));
+          ws.send(JSON.stringify({ type: 'output', data: `Script: ${script.name}\n` }));
+          ws.send(JSON.stringify({ type: 'output', data: `Comando: ${script.command}\n` }));
+          ws.send(JSON.stringify({ type: 'output', data: `========================================\n\n` }));
+          
+          if (equip.protocol === 'telnet') {
+            telnetSocket = new net.Socket();
+            
+            telnetSocket.connect(equip.port || 23, equip.ip, () => {
+              ws.send(JSON.stringify({ type: 'output', data: `[TELNET] Conectado a ${equip.ip}:${equip.port || 23}\n` }));
+            });
+            
+            telnetSocket.on('data', (socketData) => {
+              ws.send(JSON.stringify({ type: 'output', data: socketData.toString() }));
+            });
+            
+            telnetSocket.on('error', (err) => {
+              ws.send(JSON.stringify({ type: 'output', data: `\n[ERRO] ${err.message}\n` }));
+              ws.send(JSON.stringify({ type: 'recovery_error', message: err.message }));
+            });
+            
+            telnetSocket.on('close', () => {
+              ws.send(JSON.stringify({ type: 'output', data: `\n[TELNET] Conexao encerrada\n` }));
+            });
+            
+            setTimeout(() => {
+              if (telnetSocket && equip.username) {
+                telnetSocket.write(equip.username + '\n');
+                setTimeout(() => {
+                  if (telnetSocket && equip.password) {
+                    telnetSocket.write(equip.password + '\n');
+                    setTimeout(() => {
+                      if (telnetSocket && script.command) {
+                        ws.send(JSON.stringify({ type: 'output', data: `\n[EXECUTANDO] ${script.command}\n\n` }));
+                        const commands = script.command.split('\n');
+                        let cmdIndex = 0;
+                        const sendNextCommand = () => {
+                          if (cmdIndex < commands.length && telnetSocket) {
+                            telnetSocket.write(commands[cmdIndex] + '\n');
+                            cmdIndex++;
+                            setTimeout(sendNextCommand, 2000);
+                          } else {
+                            setTimeout(() => {
+                              ws.send(JSON.stringify({ type: 'output', data: `\n=== EXECUCAO CONCLUIDA ===\n` }));
+                              ws.send(JSON.stringify({ type: 'recovery_complete', success: true }));
+                            }, 3000);
+                          }
+                        };
+                        sendNextCommand();
+                      }
+                    }, 2000);
+                  }
+                }, 1000);
+              }
+            }, 500);
+            
+          } else {
+            sshClient = new SSHClient();
+            
+            sshClient.on('ready', () => {
+              ws.send(JSON.stringify({ type: 'output', data: `[SSH] Conectado a ${equip.ip}:${equip.port || 22}\n` }));
+              
+              sshClient!.shell((err, shellStream) => {
+                if (err) {
+                  ws.send(JSON.stringify({ type: 'output', data: `\n[ERRO] ${err.message}\n` }));
+                  ws.send(JSON.stringify({ type: 'recovery_error', message: err.message }));
+                  return;
+                }
+                
+                stream = shellStream;
+                
+                shellStream.on('data', (shellData: Buffer) => {
+                  ws.send(JSON.stringify({ type: 'output', data: shellData.toString() }));
+                });
+                
+                shellStream.on('close', () => {
+                  ws.send(JSON.stringify({ type: 'output', data: `\n[SSH] Sessao encerrada\n` }));
+                  sshClient?.end();
+                });
+                
+                setTimeout(() => {
+                  ws.send(JSON.stringify({ type: 'output', data: `\n[EXECUTANDO] ${script.command}\n\n` }));
+                  const commands = script.command.split('\n');
+                  let cmdIndex = 0;
+                  const sendNextCommand = () => {
+                    if (cmdIndex < commands.length && stream) {
+                      stream.write(commands[cmdIndex] + '\n');
+                      cmdIndex++;
+                      setTimeout(sendNextCommand, 2000);
+                    } else {
+                      setTimeout(() => {
+                        ws.send(JSON.stringify({ type: 'output', data: `\n=== EXECUCAO CONCLUIDA ===\n` }));
+                        ws.send(JSON.stringify({ type: 'recovery_complete', success: true }));
+                      }, 3000);
+                    }
+                  };
+                  sendNextCommand();
+                }, 1000);
+              });
+            });
+            
+            sshClient.on('error', (err) => {
+              ws.send(JSON.stringify({ type: 'output', data: `\n[ERRO SSH] ${err.message}\n` }));
+              ws.send(JSON.stringify({ type: 'recovery_error', message: err.message }));
+            });
+            
+            sshClient.connect({
+              host: equip.ip,
+              port: equip.port || 22,
+              username: equip.username,
+              password: equip.password,
+              readyTimeout: 10000,
+              algorithms: {
+                kex: ['diffie-hellman-group14-sha1', 'diffie-hellman-group-exchange-sha256', 'ecdh-sha2-nistp256', 'ecdh-sha2-nistp384', 'ecdh-sha2-nistp521'],
+                cipher: ['aes128-ctr', 'aes192-ctr', 'aes256-ctr', 'aes128-cbc', 'aes256-cbc', '3des-cbc'],
+                hmac: ['hmac-sha2-256', 'hmac-sha2-512', 'hmac-sha1'],
+              },
+            });
+          }
         }
       } catch (e) {
         console.error('WebSocket message error:', e);

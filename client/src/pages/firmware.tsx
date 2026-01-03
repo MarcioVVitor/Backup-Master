@@ -281,24 +281,40 @@ export default function FirmwarePage() {
 
     try {
       const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const wsUrl = `${protocol}//${window.location.host}/api/terminal/ws/${eq.id}`;
+      const wsUrl = `${protocol}//${window.location.host}/ws/terminal`;
       
       const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
 
       ws.onopen = () => {
-        setIsConnected(true);
-        setIsConnecting(false);
-        addLine('system', `Conectado a ${eq.name} (${eq.ip})`);
-        inputRef.current?.focus();
+        ws.send(JSON.stringify({ type: 'connect', equipmentId: eq.id }));
       };
 
       ws.onmessage = (event) => {
-        const data = event.data;
-        if (data.startsWith('ERROR:')) {
-          addLine('error', data.substring(6));
-        } else {
-          addLine('output', data);
+        try {
+          const data = JSON.parse(event.data);
+          
+          if (data.type === 'connected') {
+            setIsConnected(true);
+            setIsConnecting(false);
+            addLine('system', `Conectado via ${data.protocol?.toUpperCase() || 'SSH'}`);
+            inputRef.current?.focus();
+          } else if (data.type === 'status') {
+            addLine('system', data.message);
+          } else if (data.type === 'output') {
+            const outputLines = data.data.split('\n').filter((l: string) => l.length > 0);
+            outputLines.forEach((line: string) => {
+              addLine('output', line);
+            });
+          } else if (data.type === 'error') {
+            addLine('error', data.message);
+            setIsConnecting(false);
+          } else if (data.type === 'disconnected') {
+            addLine('system', 'Desconectado');
+            setIsConnected(false);
+          }
+        } catch {
+          addLine('output', event.data);
         }
       };
 
@@ -323,10 +339,14 @@ export default function FirmwarePage() {
 
   const handleDisconnect = () => {
     if (wsRef.current) {
+      if (wsRef.current.readyState === WebSocket.OPEN) {
+        wsRef.current.send(JSON.stringify({ type: 'disconnect' }));
+      }
       wsRef.current.close();
       wsRef.current = null;
     }
     setIsConnected(false);
+    setIsRecoveryRunning(false);
     setTerminalOpen(false);
     setLines([]);
   };
@@ -335,7 +355,7 @@ export default function FirmwarePage() {
     if (!commandInput.trim() || !wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
     
     addLine('input', `$ ${commandInput}`);
-    wsRef.current.send(commandInput);
+    wsRef.current.send(JSON.stringify({ type: 'input', command: commandInput + '\n' }));
     setCommandInput("");
   };
 
@@ -413,30 +433,103 @@ export default function FirmwarePage() {
     }
   });
 
-  const executeRecovery = useMutation({
-    mutationFn: async (data: { equipmentId: number; scriptId: number }) => {
-      const response = await fetch("/api/execute/recovery", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(data)
-      });
-      if (!response.ok) {
-        const err = await response.json();
-        throw new Error(err.message || "Recovery failed");
-      }
-      return response.json();
-    },
-    onSuccess: () => {
-      setRecoveryDialogOpen(false);
-      setSelectedEquipment("");
-      setSelectedScript(null);
-      toast({ title: "Recuperação iniciada com sucesso" });
-    },
-    onError: (err: Error) => {
-      toast({ title: err.message || "Erro ao executar recuperação", variant: "destructive" });
+  const [isRecoveryRunning, setIsRecoveryRunning] = useState(false);
+
+  const startRecoveryExecution = useCallback((equipmentId: number, scriptId: number) => {
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
+      wsRef.current.close();
     }
-  });
+    
+    setLines([]);
+    setTerminalOpen(true);
+    setIsRecoveryRunning(true);
+    setIsConnecting(true);
+    
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const ws = new WebSocket(`${protocol}//${window.location.host}/ws/terminal`);
+    wsRef.current = ws;
+    
+    ws.onopen = () => {
+      setLines(prev => [...prev, { 
+        type: 'system', 
+        content: 'Conectado ao servidor, iniciando recuperação...', 
+        timestamp: new Date() 
+      }]);
+      ws.send(JSON.stringify({ 
+        type: 'execute_recovery', 
+        equipmentId, 
+        scriptId 
+      }));
+    };
+    
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        
+        if (data.type === 'output') {
+          const outputLines = data.data.split('\n').filter((l: string) => l.length > 0);
+          outputLines.forEach((line: string) => {
+            setLines(prev => [...prev, { type: 'output', content: line, timestamp: new Date() }]);
+          });
+          if (terminalRef.current) {
+            terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
+          }
+        } else if (data.type === 'recovery_start') {
+          setIsConnecting(false);
+          setIsConnected(true);
+          setLines(prev => [...prev, { 
+            type: 'system', 
+            content: data.message, 
+            timestamp: new Date() 
+          }]);
+        } else if (data.type === 'connected') {
+          setIsConnecting(false);
+          setIsConnected(true);
+        } else if (data.type === 'recovery_complete') {
+          setIsRecoveryRunning(false);
+          toast({ title: "Recuperação concluída com sucesso" });
+          setLines(prev => [...prev, { 
+            type: 'system', 
+            content: '=== RECUPERACAO FINALIZADA ===', 
+            timestamp: new Date() 
+          }]);
+        } else if (data.type === 'recovery_error' || data.type === 'error') {
+          setIsRecoveryRunning(false);
+          setLines(prev => [...prev, { 
+            type: 'error', 
+            content: data.message, 
+            timestamp: new Date() 
+          }]);
+          toast({ title: data.message, variant: "destructive" });
+        }
+      } catch (e) {
+        console.error('Error parsing WS message:', e);
+      }
+    };
+    
+    ws.onerror = () => {
+      setIsConnected(false);
+      setIsConnecting(false);
+      setIsRecoveryRunning(false);
+      setLines(prev => [...prev, { 
+        type: 'error', 
+        content: 'Erro de conexão WebSocket', 
+        timestamp: new Date() 
+      }]);
+      toast({ title: "Erro de conexão WebSocket", variant: "destructive" });
+    };
+    
+    ws.onclose = () => {
+      setIsConnected(false);
+      setIsConnecting(false);
+      setIsRecoveryRunning(false);
+      setLines(prev => [...prev, { 
+        type: 'system', 
+        content: 'Conexão encerrada', 
+        timestamp: new Date() 
+      }]);
+    };
+  }, [toast]);
 
   const resetForm = () => {
     setSelectedFile(null);
@@ -484,10 +577,8 @@ export default function FirmwarePage() {
 
   const handleExecuteRecovery = () => {
     if (selectedEquipment && selectedScript) {
-      executeRecovery.mutate({
-        equipmentId: parseInt(selectedEquipment),
-        scriptId: selectedScript.id
-      });
+      setRecoveryDialogOpen(false);
+      startRecoveryExecution(parseInt(selectedEquipment), selectedScript.id);
     }
   };
 
@@ -892,10 +983,10 @@ export default function FirmwarePage() {
                           </Button>
                           <Button 
                             onClick={handleExecuteRecovery}
-                            disabled={executeRecovery.isPending}
+                            disabled={isRecoveryRunning}
                             data-testid="button-confirm-recovery"
                           >
-                            {executeRecovery.isPending ? (
+                            {isRecoveryRunning ? (
                               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                             ) : (
                               <Play className="h-4 w-4 mr-2" />
@@ -925,10 +1016,12 @@ export default function FirmwarePage() {
                     <div className="flex items-center gap-3">
                       <Terminal className="h-5 w-5" style={{ color: currentTheme.prompt }} />
                       <CardTitle className="text-base" style={{ color: currentTheme.foreground }}>
-                        Terminal CLI - {equipment.find(e => e.id.toString() === selectedEquipment)?.name || 'Equipamento'}
+                        {isRecoveryRunning ? 'Execução de Recuperação' : 'Terminal CLI'} - {equipment.find(e => e.id.toString() === selectedEquipment)?.name || selectedScript?.name || 'Equipamento'}
                       </CardTitle>
                       <Badge variant={isConnected ? "default" : "secondary"} className="text-xs">
-                        {isConnected ? (
+                        {isRecoveryRunning ? (
+                          <><Loader2 className="h-3 w-3 mr-1 animate-spin" /> Executando...</>
+                        ) : isConnected ? (
                           <><Wifi className="h-3 w-3 mr-1" /> Conectado</>
                         ) : isConnecting ? (
                           <><Loader2 className="h-3 w-3 mr-1 animate-spin" /> Conectando...</>
@@ -980,7 +1073,7 @@ export default function FirmwarePage() {
                           </div>
                         </DialogContent>
                       </Dialog>
-                      {isConnected && (
+                      {isConnected && !isRecoveryRunning && (
                         <Button 
                           size="icon" 
                           variant="ghost"
@@ -993,14 +1086,16 @@ export default function FirmwarePage() {
                       <Button 
                         size="icon" 
                         variant="ghost"
+                        disabled={isRecoveryRunning}
                         onClick={() => {
                           handleDisconnect();
                           setTerminalOpen(false);
                           setLines([]);
                         }}
                         data-testid="button-close-terminal"
+                        title={isRecoveryRunning ? "Aguarde a execução terminar" : "Fechar terminal"}
                       >
-                        <X className="h-4 w-4" style={{ color: currentTheme.foreground }} />
+                        <X className="h-4 w-4" style={{ color: isRecoveryRunning ? currentTheme.selection : currentTheme.foreground }} />
                       </Button>
                     </div>
                   </CardHeader>
@@ -1026,9 +1121,9 @@ export default function FirmwarePage() {
                           {line.content}
                         </div>
                       ))}
-                      {lines.length === 0 && !isConnecting && !isConnected && (
+                      {lines.length === 0 && !isConnecting && !isConnected && !isRecoveryRunning && (
                         <div style={{ color: currentTheme.system }}>
-                          Clique em "Terminal CLI" para conectar ao equipamento...
+                          Selecione um script e equipamento, então clique em "Executar" para iniciar a recuperação...
                         </div>
                       )}
                     </div>
