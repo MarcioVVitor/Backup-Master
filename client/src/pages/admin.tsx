@@ -64,11 +64,14 @@ import {
   GitBranch,
   Monitor,
   Image,
-  Check
+  Check,
+  Globe
 } from "lucide-react";
 import { useTheme } from "@/contexts/theme-context";
+import { useI18n } from "@/contexts/i18n-context";
 import { THEMES } from "@/lib/themes";
 import { BACKGROUND_OPTIONS } from "@/lib/os-themes";
+import { LANGUAGES } from "@/lib/i18n";
 
 interface User {
   id: number;
@@ -152,6 +155,7 @@ function ThemeConfigSection({
     setLogoUrl: setGlobalLogoUrl,
     setSystemName: setGlobalSystemName 
   } = useTheme();
+  const { language, setLanguage, t } = useI18n();
 
   const handleSystemNameChange = (value: string) => {
     setSystemNameLocal(value);
@@ -169,14 +173,14 @@ function ThemeConfigSection({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Settings className="h-5 w-5" />
-            Configuracoes Gerais
+            {t.admin.config}
           </CardTitle>
-          <CardDescription>Configure nome, IP e logotipo do sistema</CardDescription>
+          <CardDescription>{t.admin.subtitle}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="systemName">Nome do Sistema</Label>
+              <Label htmlFor="systemName">{t.admin.systemName}</Label>
               <Input 
                 id="systemName"
                 value={systemName}
@@ -186,7 +190,7 @@ function ThemeConfigSection({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="serverIp">IP do Servidor</Label>
+              <Label htmlFor="serverIp">{t.admin.serverIp}</Label>
               <Input 
                 id="serverIp"
                 value={serverIp}
@@ -196,7 +200,7 @@ function ThemeConfigSection({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="primaryColor">Cor Principal</Label>
+              <Label htmlFor="primaryColor">{t.admin.primaryColor}</Label>
               <div className="flex gap-2">
                 <Input 
                   id="primaryColor"
@@ -215,7 +219,7 @@ function ThemeConfigSection({
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="logoUrl">URL do Logo</Label>
+              <Label htmlFor="logoUrl">{t.admin.logoUrl}</Label>
               <Input 
                 id="logoUrl"
                 value={logoUrl}
@@ -236,7 +240,7 @@ function ThemeConfigSection({
               ) : (
                 <Save className="h-4 w-4 mr-2" />
               )}
-              Salvar Configuracoes
+              {t.admin.saveConfig}
             </Button>
           </div>
         </CardContent>
@@ -245,10 +249,44 @@ function ThemeConfigSection({
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Monitor className="h-5 w-5" />
-            Temas do Sistema
+            <Globe className="h-5 w-5" />
+            {t.admin.language}
           </CardTitle>
-          <CardDescription>Escolha um tema visual para o sistema</CardDescription>
+          <CardDescription>{t.admin.selectLanguage}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-3 grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+            {LANGUAGES.map((lang) => (
+              <div
+                key={lang.code}
+                className={`relative p-4 rounded-lg border-2 cursor-pointer transition-all text-center ${
+                  language === lang.code 
+                    ? 'border-primary bg-primary/5' 
+                    : 'border-transparent bg-muted/30 hover:bg-muted/50'
+                }`}
+                onClick={() => setLanguage(lang.code)}
+                data-testid={`language-option-${lang.code}`}
+              >
+                {language === lang.code && (
+                  <div className="absolute top-2 right-2">
+                    <Check className="h-4 w-4 text-primary" />
+                  </div>
+                )}
+                <span className="text-2xl mb-2 block">{lang.flag}</span>
+                <p className="font-medium text-sm">{lang.name}</p>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Monitor className="h-5 w-5" />
+            {t.admin.themes}
+          </CardTitle>
+          <CardDescription>{t.admin.selectLanguage}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-3 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
@@ -301,9 +339,9 @@ function ThemeConfigSection({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Image className="h-5 w-5" />
-            Plano de Fundo
+            {t.admin.backgrounds}
           </CardTitle>
-          <CardDescription>Escolha um plano de fundo estatico ou animado</CardDescription>
+          <CardDescription>{t.admin.selectLanguage}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-3 grid-cols-2 md:grid-cols-3 lg:grid-cols-5">

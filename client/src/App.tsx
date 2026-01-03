@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/use-auth";
 import { ThemeProvider, useTheme } from "@/contexts/theme-context";
+import { I18nProvider, useI18n } from "@/contexts/i18n-context";
 import { DynamicBackground } from "@/components/dynamic-backgrounds";
 
 import Home from "@/pages/home";
@@ -65,11 +66,12 @@ function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
   const [location] = useLocation();
   const { background, logoUrl, systemName } = useTheme();
+  const { t } = useI18n();
 
   if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center bg-background text-foreground">
-        <div className="animate-pulse">Carregando...</div>
+        <div className="animate-pulse">{t.common.loading}</div>
       </div>
     );
   }
@@ -79,16 +81,16 @@ function AppLayout({ children }: { children: React.ReactNode }) {
   }
 
   const menuItems = [
-    { title: "Dashboard", url: "/", icon: HomeIcon },
-    { title: "Fabricantes", url: "/manufacturers", icon: Factory },
-    { title: "Equipamentos", url: "/equipment", icon: Server },
-    { title: "Scripts", url: "/scripts", icon: Terminal },
-    { title: "Executar Backup", url: "/backup-execute", icon: Play },
-    { title: "Backups", url: "/backups", icon: HardDrive },
-    { title: "Scheduler", url: "/scheduler", icon: Calendar },
-    { title: "Firmware", url: "/firmware", icon: FileCode },
-    { title: "Terminal", url: "/terminal", icon: TerminalSquare },
-    { title: "Administração", url: "/admin", icon: Settings },
+    { title: t.menu.dashboard, url: "/", icon: HomeIcon },
+    { title: t.menu.manufacturers, url: "/manufacturers", icon: Factory },
+    { title: t.menu.equipment, url: "/equipment", icon: Server },
+    { title: t.menu.scripts, url: "/scripts", icon: Terminal },
+    { title: t.menu.executeBackup, url: "/backup-execute", icon: Play },
+    { title: t.menu.backups, url: "/backups", icon: HardDrive },
+    { title: t.menu.scheduler, url: "/scheduler", icon: Calendar },
+    { title: t.menu.firmware, url: "/firmware", icon: FileCode },
+    { title: t.menu.terminal, url: "/terminal", icon: TerminalSquare },
+    { title: t.menu.administration, url: "/admin", icon: Settings },
   ];
 
   const backgroundStyle = background?.type === "gradient" 
@@ -214,12 +216,14 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <TooltipProvider>
-          <AppLayout>
-            <Router />
-          </AppLayout>
-          <Toaster />
-        </TooltipProvider>
+        <I18nProvider>
+          <TooltipProvider>
+            <AppLayout>
+              <Router />
+            </AppLayout>
+            <Toaster />
+          </TooltipProvider>
+        </I18nProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );
