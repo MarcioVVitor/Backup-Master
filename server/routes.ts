@@ -246,8 +246,10 @@ export async function registerRoutes(
       if (!exists) return res.status(404).json({ error: "Arquivo não encontrado no storage" });
 
       const [buffer] = await file.download();
-      const content = buffer.toString('utf-8').slice(0, 50000);
-      const truncated = buffer.length > 50000;
+      const fullContent = req.query.full === 'true';
+      const maxLength = fullContent ? buffer.length : 50000;
+      const content = buffer.toString('utf-8').slice(0, maxLength);
+      const truncated = !fullContent && buffer.length > 50000;
 
       res.json({
         success: true,
@@ -255,6 +257,7 @@ export async function registerRoutes(
         size: backup.size,
         content,
         truncated,
+        totalSize: buffer.length,
       });
     } catch (e) {
       console.error("Error viewing backup:", e);

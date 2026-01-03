@@ -1,12 +1,15 @@
 import { useFiles, useDeleteFile } from "@/hooks/use-files";
 import { useEquipment } from "@/hooks/use-equipment";
 import { Button } from "@/components/ui/button";
-import { Download, Trash2, FileText, Calendar, HardDrive, Search } from "lucide-react";
+import { Download, Trash2, FileText, Calendar, HardDrive, Search, Eye, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { format } from "date-fns";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { queryClient } from "@/lib/queryClient";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,6 +21,22 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+
+interface BackupContent {
+  success: boolean;
+  filename: string;
+  size: number;
+  content: string;
+  truncated: boolean;
+  totalSize: number;
+}
 
 export default function BackupsPage() {
   const { data: files, isLoading } = useFiles();
@@ -25,6 +44,13 @@ export default function BackupsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const { mutate: deleteFile } = useDeleteFile();
   const { toast } = useToast();
+  const [selectedBackups, setSelectedBackups] = useState<Set<number>>(new Set());
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [viewingBackup, setViewingBackup] = useState<{ id: number; filename: string } | null>(null);
+  const [backupContent, setBackupContent] = useState<BackupContent | null>(null);
+  const [isLoadingContent, setIsLoadingContent] = useState(false);
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  const [isDeletingBulk, setIsDeletingBulk] = useState(false);
 
   const getEquipmentName = (id: number | null) => {
     if (!id) return "Desconhecido";
@@ -38,15 +64,106 @@ export default function BackupsPage() {
 
   const handleDelete = (id: number) => {
     deleteFile(id, {
-      onSuccess: () => toast({ title: "Arquivo excluído", description: "Backup removido com sucesso." }),
+      onSuccess: () => {
+        toast({ title: "Arquivo excluído", description: "Backup removido com sucesso." });
+        setSelectedBackups(prev => {
+          const next = new Set(prev);
+          next.delete(id);
+          return next;
+        });
+      },
       onError: () => toast({ title: "Erro", description: "Não foi possível excluir o arquivo.", variant: "destructive" })
     });
   };
 
+  const handleBulkDelete = async () => {
+    setIsDeletingBulk(true);
+    const ids = Array.from(selectedBackups);
+    let successCount = 0;
+    let errorCount = 0;
+    
+    for (const id of ids) {
+      try {
+        const response = await fetch(`/api/backups/${id}`, {
+          method: 'DELETE',
+          credentials: 'include'
+        });
+        if (response.ok) {
+          successCount++;
+        } else {
+          errorCount++;
+        }
+      } catch {
+        errorCount++;
+      }
+    }
+    
+    setIsDeletingBulk(false);
+    setBulkDeleteOpen(false);
+    setSelectedBackups(new Set());
+    
+    queryClient.invalidateQueries({ queryKey: ["/api/files"] });
+    
+    if (successCount > 0) {
+      toast({ 
+        title: `${successCount} backup(s) excluído(s)`, 
+        description: errorCount > 0 ? `${errorCount} falha(s)` : "Backups removidos com sucesso." 
+      });
+    } else if (errorCount > 0) {
+      toast({ 
+        title: "Erro ao excluir backups", 
+        description: `${errorCount} falha(s) durante a exclusão`,
+        variant: "destructive"
+      });
+    }
+  };
+
   const handleDownload = (id: number, filename: string) => {
-    // In a real app, this would get a signed URL or trigger a download
-    // For MVP, we'll assume a direct route
-    window.open(`/api/files/${id}/download`, '_blank');
+    window.open(`/api/backups/${id}/download`, '_blank');
+  };
+
+  const handleView = async (id: number, filename: string, full: boolean = true) => {
+    setViewingBackup({ id, filename });
+    setViewDialogOpen(true);
+    setIsLoadingContent(true);
+    setBackupContent(null);
+    
+    try {
+      const response = await fetch(`/api/backups/${id}/view?full=${full}`, {
+        credentials: 'include'
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setBackupContent(data);
+      } else {
+        toast({ title: "Erro ao carregar conteúdo", variant: "destructive" });
+      }
+    } catch {
+      toast({ title: "Erro ao carregar conteúdo", variant: "destructive" });
+    } finally {
+      setIsLoadingContent(false);
+    }
+  };
+
+  const toggleSelection = (id: number) => {
+    setSelectedBackups(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (!filteredFiles) return;
+    if (selectedBackups.size === filteredFiles.length) {
+      setSelectedBackups(new Set());
+    } else {
+      setSelectedBackups(new Set(filteredFiles.map(f => f.id)));
+    }
   };
 
   return (
@@ -63,19 +180,89 @@ export default function BackupsPage() {
             className="pl-9 md:w-[300px]"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
+            data-testid="input-search-backups"
           />
         </div>
       </div>
 
+      {filteredFiles && filteredFiles.length > 0 && (
+        <div className="flex items-center justify-between gap-4 p-3 bg-muted/50 rounded-lg">
+          <div className="flex items-center gap-3">
+            <Checkbox 
+              checked={selectedBackups.size === filteredFiles.length && filteredFiles.length > 0}
+              onCheckedChange={toggleSelectAll}
+              data-testid="checkbox-select-all"
+            />
+            <span className="text-sm text-muted-foreground">
+              {selectedBackups.size > 0 
+                ? `${selectedBackups.size} de ${filteredFiles.length} selecionado(s)`
+                : `${filteredFiles.length} backup(s) disponível(is)`
+              }
+            </span>
+          </div>
+          {selectedBackups.size > 0 && (
+            <AlertDialog open={bulkDeleteOpen} onOpenChange={setBulkDeleteOpen}>
+              <AlertDialogTrigger asChild>
+                <Button 
+                  variant="destructive" 
+                  size="sm"
+                  data-testid="button-bulk-delete"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Excluir Selecionados ({selectedBackups.size})
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Excluir {selectedBackups.size} Backup(s)?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Esta ação excluirá permanentemente os backups selecionados. Esta ação não pode ser desfeita.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel disabled={isDeletingBulk}>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction 
+                    className="bg-red-600 hover:bg-red-700" 
+                    onClick={handleBulkDelete}
+                    disabled={isDeletingBulk}
+                  >
+                    {isDeletingBulk ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Excluindo...
+                      </>
+                    ) : (
+                      'Excluir'
+                    )}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredFiles?.map((file) => (
-          <Card key={file.id} className="group hover:border-primary/50 transition-colors">
-            <CardHeader className="pb-3 flex flex-row items-start justify-between space-y-0">
-              <div className="flex items-center gap-2">
+          <Card 
+            key={file.id} 
+            className={`group transition-colors ${
+              selectedBackups.has(file.id) 
+                ? 'border-primary bg-primary/5' 
+                : 'hover:border-primary/50'
+            }`}
+          >
+            <CardHeader className="pb-3 flex flex-row items-start justify-between gap-2 space-y-0">
+              <div className="flex items-center gap-3">
+                <Checkbox 
+                  checked={selectedBackups.has(file.id)}
+                  onCheckedChange={() => toggleSelection(file.id)}
+                  data-testid={`checkbox-backup-${file.id}`}
+                />
                 <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-blue-600 dark:text-blue-400">
                   <FileText className="h-5 w-5" />
                 </div>
-                <div className="space-y-1">
+                <div className="space-y-1 min-w-0">
                   <CardTitle className="text-base font-medium line-clamp-1" title={file.filename}>
                     {file.filename}
                   </CardTitle>
@@ -106,14 +293,28 @@ export default function BackupsPage() {
                     className="flex-1" 
                     variant="outline" 
                     size="sm"
-                    onClick={() => handleDownload(file.id, file.filename)}
+                    onClick={() => handleView(file.id, file.filename)}
+                    data-testid={`button-view-${file.id}`}
                   >
-                    <Download className="h-4 w-4 mr-2" /> Download
+                    <Eye className="h-4 w-4 mr-2" /> Visualizar
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="icon"
+                    onClick={() => handleDownload(file.id, file.filename)}
+                    data-testid={`button-download-${file.id}`}
+                  >
+                    <Download className="h-4 w-4" />
                   </Button>
                   
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-600 hover:bg-red-50">
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                        data-testid={`button-delete-${file.id}`}
+                      >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </AlertDialogTrigger>
@@ -148,6 +349,53 @@ export default function BackupsPage() {
           </div>
         )}
       </div>
+
+      <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              {viewingBackup?.filename}
+            </DialogTitle>
+            <DialogDescription>
+              Conteúdo completo do arquivo de backup
+              {backupContent && (
+                <span className="ml-2 text-muted-foreground">
+                  ({(backupContent.totalSize / 1024).toFixed(1)} KB)
+                </span>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <ScrollArea className="h-[60vh] mt-4">
+            {isLoadingContent ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                <span className="ml-2 text-muted-foreground">Carregando conteúdo...</span>
+              </div>
+            ) : backupContent ? (
+              <pre className="text-sm font-mono bg-muted/50 p-4 rounded-lg whitespace-pre-wrap break-words">
+                {backupContent.content}
+              </pre>
+            ) : (
+              <div className="text-center py-12 text-muted-foreground">
+                Não foi possível carregar o conteúdo
+              </div>
+            )}
+          </ScrollArea>
+          <div className="flex justify-end gap-2 mt-4">
+            <Button 
+              variant="outline"
+              onClick={() => viewingBackup && handleDownload(viewingBackup.id, viewingBackup.filename)}
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Download
+            </Button>
+            <Button onClick={() => setViewDialogOpen(false)}>
+              Fechar
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
