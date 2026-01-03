@@ -9,6 +9,7 @@ import { ThemeProvider, useTheme } from "@/contexts/theme-context";
 import Home from "@/pages/home";
 import Equipment from "@/pages/equipment";
 import Backups from "@/pages/backups";
+import BackupExecute from "@/pages/backup-execute";
 import Execute from "@/pages/execute";
 import Scripts from "@/pages/scripts";
 import Manufacturers from "@/pages/manufacturers";
@@ -76,12 +77,13 @@ function AppLayout({ children }: { children: React.ReactNode }) {
   const menuItems = [
     { title: "Dashboard", url: "/", icon: HomeIcon },
     { title: "Equipamentos", url: "/equipment", icon: Server },
+    { title: "Executar Backup", url: "/backup-execute", icon: Play },
     { title: "Backups", url: "/backups", icon: HardDrive },
     { title: "Scripts", url: "/scripts", icon: Terminal },
     { title: "Fabricantes", url: "/manufacturers", icon: Factory },
     { title: "Firmware", url: "/firmware", icon: FileCode },
     { title: "Terminal", url: "/terminal", icon: TerminalSquare },
-    { title: "Executar", url: "/execute", icon: Play },
+    { title: "Executar Cmd", url: "/execute", icon: Play },
     { title: "Administração", url: "/admin", icon: Settings },
   ];
 
@@ -172,6 +174,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/equipment" component={Equipment} />
+      <Route path="/backup-execute" component={BackupExecute} />
       <Route path="/backups" component={Backups} />
       <Route path="/scripts" component={Scripts} />
       <Route path="/manufacturers" component={Manufacturers} />
