@@ -61,8 +61,14 @@ import {
   Clock,
   ArrowUpCircle,
   FileText,
-  GitBranch
+  GitBranch,
+  Monitor,
+  Image,
+  Check
 } from "lucide-react";
+import { useTheme } from "@/contexts/theme-context";
+import { THEMES } from "@/lib/themes";
+import { BACKGROUND_OPTIONS } from "@/lib/os-themes";
 
 interface User {
   id: number;
@@ -112,6 +118,241 @@ const PERMISSION_LEVELS = [
   { value: "operator", label: "Operador", description: "Pode executar backups e gerenciar equipamentos", icon: Edit, color: "text-blue-500" },
   { value: "viewer", label: "Visualizador", description: "Apenas visualização", icon: Eye, color: "text-green-500" },
 ];
+
+interface ThemeConfigSectionProps {
+  serverIp: string;
+  setServerIp: (value: string) => void;
+  systemName: string;
+  setSystemName: (value: string) => void;
+  primaryColor: string;
+  setPrimaryColor: (value: string) => void;
+  logoUrl: string;
+  setLogoUrl: (value: string) => void;
+  handleSaveConfig: () => void;
+  isSaving: boolean;
+}
+
+function ThemeConfigSection({
+  serverIp,
+  setServerIp,
+  systemName,
+  setSystemName: setSystemNameLocal,
+  primaryColor,
+  setPrimaryColor,
+  logoUrl,
+  setLogoUrl: setLogoUrlLocal,
+  handleSaveConfig,
+  isSaving
+}: ThemeConfigSectionProps) {
+  const { 
+    themeId, 
+    setTheme, 
+    backgroundId, 
+    setBackground, 
+    setLogoUrl: setGlobalLogoUrl,
+    setSystemName: setGlobalSystemName 
+  } = useTheme();
+
+  const handleSystemNameChange = (value: string) => {
+    setSystemNameLocal(value);
+    setGlobalSystemName(value);
+  };
+
+  const handleLogoUrlChange = (value: string) => {
+    setLogoUrlLocal(value);
+    setGlobalLogoUrl(value);
+  };
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Settings className="h-5 w-5" />
+            Configuracoes Gerais
+          </CardTitle>
+          <CardDescription>Configure nome, IP e logotipo do sistema</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="systemName">Nome do Sistema</Label>
+              <Input 
+                id="systemName"
+                value={systemName}
+                onChange={(e) => handleSystemNameChange(e.target.value)}
+                placeholder="NBM - Network Backup Manager"
+                data-testid="input-system-name"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="serverIp">IP do Servidor</Label>
+              <Input 
+                id="serverIp"
+                value={serverIp}
+                onChange={(e) => setServerIp(e.target.value)}
+                placeholder="172.17.255.250"
+                data-testid="input-server-ip"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="primaryColor">Cor Principal</Label>
+              <div className="flex gap-2">
+                <Input 
+                  id="primaryColor"
+                  type="color"
+                  value={primaryColor}
+                  onChange={(e) => setPrimaryColor(e.target.value)}
+                  className="w-16 h-9 p-1 cursor-pointer"
+                  data-testid="input-primary-color"
+                />
+                <Input 
+                  value={primaryColor}
+                  onChange={(e) => setPrimaryColor(e.target.value)}
+                  placeholder="#3b82f6"
+                  className="flex-1"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="logoUrl">URL do Logo</Label>
+              <Input 
+                id="logoUrl"
+                value={logoUrl}
+                onChange={(e) => handleLogoUrlChange(e.target.value)}
+                placeholder="https://exemplo.com/logo.png"
+                data-testid="input-logo-url"
+              />
+            </div>
+          </div>
+          <div className="flex justify-end pt-4">
+            <Button 
+              onClick={handleSaveConfig} 
+              disabled={isSaving}
+              data-testid="button-save-config"
+            >
+              {isSaving ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Save className="h-4 w-4 mr-2" />
+              )}
+              Salvar Configuracoes
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Monitor className="h-5 w-5" />
+            Temas do Sistema
+          </CardTitle>
+          <CardDescription>Escolha um tema visual para o sistema</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-3 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+            {THEMES.map((theme) => (
+              <div
+                key={theme.id}
+                className={`relative p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                  themeId === theme.id 
+                    ? 'border-primary bg-primary/5' 
+                    : 'border-transparent bg-muted/30 hover:bg-muted/50'
+                }`}
+                onClick={() => setTheme(theme.id)}
+                data-testid={`theme-option-${theme.id}`}
+              >
+                {themeId === theme.id && (
+                  <div className="absolute top-2 right-2">
+                    <Check className="h-4 w-4 text-primary" />
+                  </div>
+                )}
+                <div 
+                  className="h-12 rounded-md mb-2 border"
+                  style={{ background: theme.preview.background }}
+                >
+                  <div className="flex h-full">
+                    <div 
+                      className="w-1/4 rounded-l-md"
+                      style={{ background: theme.preview.sidebar }}
+                    />
+                    <div className="flex-1 flex items-center justify-center gap-1 p-1">
+                      <div 
+                        className="w-6 h-2 rounded-full"
+                        style={{ background: theme.preview.primary }}
+                      />
+                      <div 
+                        className="w-4 h-2 rounded-full"
+                        style={{ background: theme.preview.accent }}
+                      />
+                    </div>
+                  </div>
+                </div>
+                <p className="font-medium text-sm">{theme.name}</p>
+                <p className="text-xs text-muted-foreground line-clamp-1">{theme.description}</p>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Image className="h-5 w-5" />
+            Plano de Fundo
+          </CardTitle>
+          <CardDescription>Escolha um plano de fundo estatico ou animado</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-3 grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+            {BACKGROUND_OPTIONS.map((bg) => (
+              <div
+                key={bg.id}
+                className={`relative p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                  backgroundId === bg.id 
+                    ? 'border-primary bg-primary/5' 
+                    : 'border-transparent bg-muted/30 hover:bg-muted/50'
+                }`}
+                onClick={() => setBackground(bg.id)}
+                data-testid={`background-option-${bg.id}`}
+              >
+                {backgroundId === bg.id && (
+                  <div className="absolute top-2 right-2 z-10">
+                    <Check className="h-4 w-4 text-primary" />
+                  </div>
+                )}
+                <div 
+                  className="h-16 rounded-md mb-2 border flex items-center justify-center overflow-hidden"
+                  style={bg.type === "gradient" ? { background: bg.value } : { background: '#1a1a2e' }}
+                >
+                  {bg.type === "static" && bg.id === "none" && (
+                    <span className="text-xs text-muted-foreground">Nenhum</span>
+                  )}
+                  {bg.type === "dynamic" && (
+                    <div className="text-xs text-white/80 font-medium">
+                      {bg.value === "earth-rotation" && "Terra"}
+                      {bg.value === "animated-stars" && "Estrelas"}
+                      {bg.value === "matrix-rain" && "Matrix"}
+                    </div>
+                  )}
+                </div>
+                <p className="font-medium text-xs text-center">{bg.name}</p>
+                <Badge 
+                  variant="outline" 
+                  className="mt-1 text-[10px] w-full justify-center"
+                >
+                  {bg.type === "static" ? "Estatico" : bg.type === "gradient" ? "Gradiente" : "Animado"}
+                </Badge>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
 
 export default function AdminPage() {
   const { toast } = useToast();
@@ -719,82 +960,18 @@ export default function AdminPage() {
         </TabsContent>
 
         <TabsContent value="config" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Palette className="h-5 w-5" />
-                Personalização
-              </CardTitle>
-              <CardDescription>Configure a aparência e identidade do sistema</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="systemName">Nome do Sistema</Label>
-                  <Input 
-                    id="systemName"
-                    value={systemName}
-                    onChange={(e) => setSystemName(e.target.value)}
-                    placeholder="NBM - Network Backup Manager"
-                    data-testid="input-system-name"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="serverIp">IP do Servidor</Label>
-                  <Input 
-                    id="serverIp"
-                    value={serverIp}
-                    onChange={(e) => setServerIp(e.target.value)}
-                    placeholder="172.17.255.250"
-                    data-testid="input-server-ip"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="primaryColor">Cor Principal</Label>
-                  <div className="flex gap-2">
-                    <Input 
-                      id="primaryColor"
-                      type="color"
-                      value={primaryColor}
-                      onChange={(e) => setPrimaryColor(e.target.value)}
-                      className="w-16 h-9 p-1 cursor-pointer"
-                      data-testid="input-primary-color"
-                    />
-                    <Input 
-                      value={primaryColor}
-                      onChange={(e) => setPrimaryColor(e.target.value)}
-                      placeholder="#3b82f6"
-                      className="flex-1"
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="logoUrl">URL do Logo</Label>
-                  <Input 
-                    id="logoUrl"
-                    value={logoUrl}
-                    onChange={(e) => setLogoUrl(e.target.value)}
-                    placeholder="https://exemplo.com/logo.png"
-                    data-testid="input-logo-url"
-                  />
-                </div>
-              </div>
-              <div className="flex justify-end pt-4">
-                <Button 
-                  onClick={handleSaveConfig} 
-                  disabled={saveCustomization.isPending}
-                  data-testid="button-save-config"
-                >
-                  {saveCustomization.isPending ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <Save className="h-4 w-4 mr-2" />
-                  )}
-                  Salvar Configurações
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <ThemeConfigSection 
+            serverIp={serverIp}
+            setServerIp={setServerIp}
+            systemName={systemName}
+            setSystemName={setSystemName}
+            primaryColor={primaryColor}
+            setPrimaryColor={setPrimaryColor}
+            logoUrl={logoUrl}
+            setLogoUrl={setLogoUrl}
+            handleSaveConfig={handleSaveConfig}
+            isSaving={saveCustomization.isPending}
+          />
         </TabsContent>
 
         <TabsContent value="backup" className="space-y-4">

@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/use-auth";
 import { ThemeProvider, useTheme } from "@/contexts/theme-context";
+import { DynamicBackground } from "@/components/dynamic-backgrounds";
 
 import Home from "@/pages/home";
 import Equipment from "@/pages/equipment";
@@ -63,6 +64,7 @@ function ThemeToggle() {
 function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
   const [location] = useLocation();
+  const { background, logoUrl, systemName } = useTheme();
 
   if (isLoading) {
     return (
@@ -89,17 +91,35 @@ function AppLayout({ children }: { children: React.ReactNode }) {
     { title: "Administração", url: "/admin", icon: Settings },
   ];
 
+  const backgroundStyle = background?.type === "gradient" 
+    ? { background: background.value }
+    : {};
+
   return (
     <SidebarProvider>
-      <div className="flex h-screen w-full bg-background">
-        <Sidebar className="border-r border-border bg-card">
+      {background?.type === "dynamic" && (
+        <DynamicBackground type={background.value} />
+      )}
+      <div 
+        className="flex h-screen w-full bg-background"
+        style={backgroundStyle}
+      >
+        <Sidebar className="border-r border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
           <SidebarHeader className="p-4 border-b">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-                <Server className="h-5 w-5 text-primary-foreground" />
-              </div>
+              {logoUrl ? (
+                <img 
+                  src={logoUrl} 
+                  alt="Logo" 
+                  className="w-8 h-8 rounded-lg object-contain"
+                />
+              ) : (
+                <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+                  <Server className="h-5 w-5 text-primary-foreground" />
+                </div>
+              )}
               <div className="flex flex-col">
-                <span className="font-bold text-sm leading-none">NBM</span>
+                <span className="font-bold text-sm leading-none">{systemName || "NBM"}</span>
                 <span className="text-[10px] text-muted-foreground">Backup Manager</span>
               </div>
             </div>
