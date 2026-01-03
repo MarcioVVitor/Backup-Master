@@ -593,13 +593,12 @@ export default function FirmwarePage() {
     const nameLC = s.name.toLowerCase();
     const descLC = (s.description || '').toLowerCase();
     const isUpdateName = nameLC.includes('atualiza') || nameLC.includes('update') || 
-                         nameLC.includes('recupera') || nameLC.includes('recovery') ||
                          nameLC.includes('firmware') || nameLC.includes('upgrade');
     const isUpdateDesc = descLC.includes('atualiza') || descLC.includes('update') || 
-                         descLC.includes('recupera') || descLC.includes('recovery') ||
                          descLC.includes('firmware') || descLC.includes('upgrade');
     const isBackup = nameLC.includes('backup') || descLC.includes('backup');
-    return (isUpdateName || isUpdateDesc) && !isBackup;
+    const isRecovery = nameLC.includes('recupera') || nameLC.includes('recovery');
+    return (isUpdateName || isUpdateDesc) && !isBackup && !isRecovery;
   });
 
   const filteredRecoveryScripts = recoveryManufacturer === "all" 
