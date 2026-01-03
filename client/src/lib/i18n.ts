@@ -110,6 +110,11 @@ type TranslationKeys = {
     fileExtension: string;
     isDefault: string;
     noScripts: string;
+    default: string;
+    extension: string;
+    noDescription: string;
+    saveScript: string;
+    saving: string;
   };
   backups: {
     title: string;
@@ -175,6 +180,12 @@ type TranslationKeys = {
     sendCommand: string;
     clearTerminal: string;
     theme: string;
+    themes: string;
+    selectTheme: string;
+    currentTheme: string;
+    welcomeMessage: string;
+    historyHelp: string;
+    selectToStart: string;
   };
   admin: {
     title: string;
@@ -215,6 +226,21 @@ type TranslationKeys = {
     administrator: string;
     operator: string;
     viewer: string;
+    usersDescription: string;
+    restrictedAccess: string;
+    onlyAdminsCanManage: string;
+    permissionDescription: string;
+    adminDescription: string;
+    operatorDescription: string;
+    viewerDescription: string;
+    createUser: string;
+    createUserDescription: string;
+    newUsername: string;
+    newPassword: string;
+    newEmail: string;
+    selectRole: string;
+    unknownRole: string;
+    default: string;
   };
   login: {
     title: string;
@@ -323,6 +349,11 @@ export const translations: Translations = {
       fileExtension: "Extensão do Arquivo",
       isDefault: "Script Padrão",
       noScripts: "Nenhum script cadastrado",
+      default: "Padrão",
+      extension: "Ext",
+      noDescription: "Sem descrição",
+      saveScript: "Salvar Script",
+      saving: "Salvando...",
     },
     backups: {
       title: "Backups",
@@ -380,14 +411,20 @@ export const translations: Translations = {
     },
     terminal: {
       title: "Terminal",
-      subtitle: "Terminal SSH interativo",
-      selectEquipment: "Selecione um equipamento",
+      subtitle: "Interface CLI interativa para equipamentos",
+      selectEquipment: "Selecione um equipamento...",
       connected: "Conectado",
       disconnected: "Desconectado",
       connecting: "Conectando...",
       sendCommand: "Enviar comando",
       clearTerminal: "Limpar Terminal",
       theme: "Tema",
+      themes: "Temas",
+      selectTheme: "Selecione um tema",
+      currentTheme: "Tema atual",
+      welcomeMessage: "Selecione um equipamento e clique em 'Conectar' para iniciar.",
+      historyHelp: "Use as setas para cima/baixo para navegar no histórico de comandos.",
+      selectToStart: "Selecione um equipamento para iniciar",
     },
     admin: {
       title: "Administração",
@@ -428,6 +465,21 @@ export const translations: Translations = {
       administrator: "Administrador",
       operator: "Operador",
       viewer: "Visualizador",
+      usersDescription: "Gerencie quem tem acesso ao sistema",
+      restrictedAccess: "Acesso Restrito",
+      onlyAdminsCanManage: "Apenas administradores podem gerenciar usuários",
+      permissionDescription: "Entenda o que cada nível de acesso permite",
+      adminDescription: "Acesso total ao sistema",
+      operatorDescription: "Pode executar backups e gerenciar equipamentos",
+      viewerDescription: "Apenas visualização",
+      createUser: "Criar Novo Usuário",
+      createUserDescription: "Adicione um novo usuário ao sistema com as permissões desejadas",
+      newUsername: "Nome de Usuário",
+      newPassword: "Senha",
+      newEmail: "Email (opcional)",
+      selectRole: "Nível de Permissão",
+      unknownRole: "Desconhecido",
+      default: "Padrão",
     },
     login: {
       title: "NBM - Network Backup Manager",
@@ -532,6 +584,11 @@ export const translations: Translations = {
       fileExtension: "File Extension",
       isDefault: "Default Script",
       noScripts: "No scripts registered",
+      default: "Default",
+      extension: "Ext",
+      noDescription: "No description",
+      saveScript: "Save Script",
+      saving: "Saving...",
     },
     backups: {
       title: "Backups",
@@ -589,14 +646,20 @@ export const translations: Translations = {
     },
     terminal: {
       title: "Terminal",
-      subtitle: "Interactive SSH terminal",
-      selectEquipment: "Select equipment",
+      subtitle: "Interactive CLI interface for equipment",
+      selectEquipment: "Select equipment...",
       connected: "Connected",
       disconnected: "Disconnected",
       connecting: "Connecting...",
       sendCommand: "Send command",
       clearTerminal: "Clear Terminal",
       theme: "Theme",
+      themes: "Themes",
+      selectTheme: "Select a theme",
+      currentTheme: "Current theme",
+      welcomeMessage: "Select equipment and click 'Connect' to start.",
+      historyHelp: "Use arrow keys up/down to navigate command history.",
+      selectToStart: "Select equipment to start",
     },
     admin: {
       title: "Administration",
@@ -637,6 +700,21 @@ export const translations: Translations = {
       administrator: "Administrator",
       operator: "Operator",
       viewer: "Viewer",
+      usersDescription: "Manage who has access to the system",
+      restrictedAccess: "Restricted Access",
+      onlyAdminsCanManage: "Only administrators can manage users",
+      permissionDescription: "Understand what each access level allows",
+      adminDescription: "Full system access",
+      operatorDescription: "Can execute backups and manage equipment",
+      viewerDescription: "View only",
+      createUser: "Create New User",
+      createUserDescription: "Add a new user to the system with desired permissions",
+      newUsername: "Username",
+      newPassword: "Password",
+      newEmail: "Email (optional)",
+      selectRole: "Permission Level",
+      unknownRole: "Unknown",
+      default: "Default",
     },
     login: {
       title: "NBM - Network Backup Manager",
@@ -741,6 +819,11 @@ export const translations: Translations = {
       fileExtension: "Extensión del Archivo",
       isDefault: "Script Predeterminado",
       noScripts: "Ningún script registrado",
+      default: "Predeterminado",
+      extension: "Ext",
+      noDescription: "Sin descripción",
+      saveScript: "Guardar Script",
+      saving: "Guardando...",
     },
     backups: {
       title: "Backups",
@@ -798,14 +881,20 @@ export const translations: Translations = {
     },
     terminal: {
       title: "Terminal",
-      subtitle: "Terminal SSH interactivo",
-      selectEquipment: "Seleccione un equipo",
+      subtitle: "Interfaz CLI interactiva para equipos",
+      selectEquipment: "Seleccione un equipo...",
       connected: "Conectado",
       disconnected: "Desconectado",
       connecting: "Conectando...",
       sendCommand: "Enviar comando",
       clearTerminal: "Limpiar Terminal",
       theme: "Tema",
+      themes: "Temas",
+      selectTheme: "Seleccione un tema",
+      currentTheme: "Tema actual",
+      welcomeMessage: "Seleccione un equipo y haga clic en 'Conectar' para iniciar.",
+      historyHelp: "Use las flechas arriba/abajo para navegar en el historial de comandos.",
+      selectToStart: "Seleccione un equipo para iniciar",
     },
     admin: {
       title: "Administración",
@@ -846,6 +935,21 @@ export const translations: Translations = {
       administrator: "Administrador",
       operator: "Operador",
       viewer: "Visualizador",
+      usersDescription: "Gestione quién tiene acceso al sistema",
+      restrictedAccess: "Acceso Restringido",
+      onlyAdminsCanManage: "Solo los administradores pueden gestionar usuarios",
+      permissionDescription: "Entienda lo que cada nivel de acceso permite",
+      adminDescription: "Acceso total al sistema",
+      operatorDescription: "Puede ejecutar backups y gestionar equipos",
+      viewerDescription: "Solo visualización",
+      createUser: "Crear Nuevo Usuario",
+      createUserDescription: "Agregue un nuevo usuario al sistema con los permisos deseados",
+      newUsername: "Nombre de Usuario",
+      newPassword: "Contraseña",
+      newEmail: "Email (opcional)",
+      selectRole: "Nivel de Permiso",
+      unknownRole: "Desconocido",
+      default: "Predeterminado",
     },
     login: {
       title: "NBM - Network Backup Manager",
@@ -950,6 +1054,11 @@ export const translations: Translations = {
       fileExtension: "Extension de Fichier",
       isDefault: "Script par Défaut",
       noScripts: "Aucun script enregistré",
+      default: "Par Défaut",
+      extension: "Ext",
+      noDescription: "Aucune description",
+      saveScript: "Enregistrer Script",
+      saving: "Enregistrement...",
     },
     backups: {
       title: "Sauvegardes",
@@ -1007,14 +1116,20 @@ export const translations: Translations = {
     },
     terminal: {
       title: "Terminal",
-      subtitle: "Terminal SSH interactif",
-      selectEquipment: "Sélectionnez un équipement",
+      subtitle: "Interface CLI interactive pour équipements",
+      selectEquipment: "Sélectionnez un équipement...",
       connected: "Connecté",
       disconnected: "Déconnecté",
       connecting: "Connexion...",
       sendCommand: "Envoyer commande",
       clearTerminal: "Effacer Terminal",
       theme: "Thème",
+      themes: "Thèmes",
+      selectTheme: "Sélectionnez un thème",
+      currentTheme: "Thème actuel",
+      welcomeMessage: "Sélectionnez un équipement et cliquez sur 'Connecter' pour démarrer.",
+      historyHelp: "Utilisez les flèches haut/bas pour naviguer dans l'historique des commandes.",
+      selectToStart: "Sélectionnez un équipement pour démarrer",
     },
     admin: {
       title: "Administration",
@@ -1055,6 +1170,21 @@ export const translations: Translations = {
       administrator: "Administrateur",
       operator: "Opérateur",
       viewer: "Visualiseur",
+      usersDescription: "Gérez qui a accès au système",
+      restrictedAccess: "Accès Restreint",
+      onlyAdminsCanManage: "Seuls les administrateurs peuvent gérer les utilisateurs",
+      permissionDescription: "Comprenez ce que chaque niveau d'accès permet",
+      adminDescription: "Accès complet au système",
+      operatorDescription: "Peut exécuter des sauvegardes et gérer les équipements",
+      viewerDescription: "Visualisation uniquement",
+      createUser: "Créer Nouvel Utilisateur",
+      createUserDescription: "Ajoutez un nouvel utilisateur au système avec les permissions souhaitées",
+      newUsername: "Nom d'Utilisateur",
+      newPassword: "Mot de passe",
+      newEmail: "Email (optionnel)",
+      selectRole: "Niveau de Permission",
+      unknownRole: "Inconnu",
+      default: "Par Défaut",
     },
     login: {
       title: "NBM - Network Backup Manager",
@@ -1159,6 +1289,11 @@ export const translations: Translations = {
       fileExtension: "Dateierweiterung",
       isDefault: "Standard-Skript",
       noScripts: "Keine Skripte registriert",
+      default: "Standard",
+      extension: "Erw",
+      noDescription: "Keine Beschreibung",
+      saveScript: "Skript Speichern",
+      saving: "Speichern...",
     },
     backups: {
       title: "Backups",
@@ -1216,14 +1351,20 @@ export const translations: Translations = {
     },
     terminal: {
       title: "Terminal",
-      subtitle: "Interaktives SSH-Terminal",
-      selectEquipment: "Gerät auswählen",
+      subtitle: "Interaktive CLI-Schnittstelle für Geräte",
+      selectEquipment: "Gerät auswählen...",
       connected: "Verbunden",
       disconnected: "Getrennt",
       connecting: "Verbinden...",
       sendCommand: "Befehl senden",
       clearTerminal: "Terminal Löschen",
       theme: "Design",
+      themes: "Designs",
+      selectTheme: "Design auswählen",
+      currentTheme: "Aktuelles Design",
+      welcomeMessage: "Wählen Sie ein Gerät und klicken Sie auf 'Verbinden' um zu starten.",
+      historyHelp: "Verwenden Sie Pfeil hoch/runter um im Befehlsverlauf zu navigieren.",
+      selectToStart: "Gerät auswählen um zu starten",
     },
     admin: {
       title: "Verwaltung",
@@ -1264,6 +1405,21 @@ export const translations: Translations = {
       administrator: "Administrator",
       operator: "Operator",
       viewer: "Betrachter",
+      usersDescription: "Verwalten Sie wer Zugriff auf das System hat",
+      restrictedAccess: "Eingeschränkter Zugriff",
+      onlyAdminsCanManage: "Nur Administratoren können Benutzer verwalten",
+      permissionDescription: "Verstehen Sie was jede Zugriffsebene erlaubt",
+      adminDescription: "Vollständiger Systemzugriff",
+      operatorDescription: "Kann Backups ausführen und Geräte verwalten",
+      viewerDescription: "Nur Ansicht",
+      createUser: "Neuen Benutzer Erstellen",
+      createUserDescription: "Fügen Sie einen neuen Benutzer mit gewünschten Berechtigungen hinzu",
+      newUsername: "Benutzername",
+      newPassword: "Passwort",
+      newEmail: "E-Mail (optional)",
+      selectRole: "Berechtigungsebene",
+      unknownRole: "Unbekannt",
+      default: "Standard",
     },
     login: {
       title: "NBM - Network Backup Manager",

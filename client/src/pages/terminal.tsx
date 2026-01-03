@@ -256,6 +256,7 @@ const TERMINAL_THEMES: TerminalTheme[] = [
 
 export default function TerminalPage() {
   const { toast } = useToast();
+  const { t } = useI18n();
   const [selectedEquipment, setSelectedEquipment] = useState<string>("");
   const [isConnected, setIsConnected] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
@@ -424,22 +425,22 @@ export default function TerminalPage() {
     <div className="p-6 md:p-8 space-y-6">
       <div className="flex flex-col gap-4 md:flex-row md:justify-between md:items-center">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Terminal</h1>
-          <p className="text-muted-foreground">Interface CLI interativa para equipamentos</p>
+          <h1 className="text-3xl font-bold tracking-tight">{t.terminal.title}</h1>
+          <p className="text-muted-foreground">{t.terminal.subtitle}</p>
         </div>
         <div className="flex items-center gap-2">
           <Dialog open={themeDialogOpen} onOpenChange={setThemeDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" data-testid="button-theme-settings">
                 <Palette className="h-4 w-4 mr-2" />
-                Temas
+                {t.terminal.themes}
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>Personalizar Terminal</DialogTitle>
+                <DialogTitle>{t.terminal.selectTheme}</DialogTitle>
                 <DialogDescription>
-                  Escolha um tema para o terminal inspirado no Termius
+                  {t.terminal.currentTheme}: {currentTheme.name}
                 </DialogDescription>
               </DialogHeader>
               <div className="grid gap-3 py-4 md:grid-cols-2">
@@ -482,7 +483,7 @@ export default function TerminalPage() {
               <div className="flex-1 max-w-sm">
                 <Select value={selectedEquipment} onValueChange={setSelectedEquipment} disabled={isConnected}>
                   <SelectTrigger data-testid="select-terminal-equipment">
-                    <SelectValue placeholder="Selecione um equipamento..." />
+                    <SelectValue placeholder={t.terminal.selectEquipment} />
                   </SelectTrigger>
                   <SelectContent>
                     {equipment.map((eq) => (
@@ -511,7 +512,7 @@ export default function TerminalPage() {
                   ) : (
                     <Wifi className="h-4 w-4 mr-2" />
                   )}
-                  Conectar
+                  {isConnecting ? t.terminal.connecting : t.common.connect}
                 </Button>
               ) : (
                 <Button 
@@ -520,7 +521,7 @@ export default function TerminalPage() {
                   data-testid="button-disconnect"
                 >
                   <WifiOff className="h-4 w-4 mr-2" />
-                  Desconectar
+                  {t.common.disconnect}
                 </Button>
               )}
             </div>
@@ -529,7 +530,7 @@ export default function TerminalPage() {
               {isConnected && (
                 <Badge variant="outline" className="bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400">
                   <span className="w-2 h-2 rounded-full bg-green-500 mr-2 animate-pulse" />
-                  Conectado: {selectedEq?.name}
+                  {t.terminal.connected}: {selectedEq?.name}
                 </Badge>
               )}
               <Button 
@@ -561,10 +562,10 @@ export default function TerminalPage() {
             {lines.length === 0 ? (
               <div style={{ color: currentTheme.system }} className="opacity-70">
                 <p>NBM Terminal v17.0</p>
-                <p>Selecione um equipamento e clique em "Conectar" para iniciar.</p>
-                <p>Use as setas para cima/baixo para navegar no histórico de comandos.</p>
+                <p>{t.terminal.welcomeMessage}</p>
+                <p>{t.terminal.historyHelp}</p>
                 <br />
-                <p style={{ color: currentTheme.prompt }}>Tema atual: {currentTheme.name}</p>
+                <p style={{ color: currentTheme.prompt }}>{t.terminal.currentTheme}: {currentTheme.name}</p>
               </div>
             ) : (
               lines.map((line, index) => (

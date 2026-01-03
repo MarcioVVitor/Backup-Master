@@ -61,18 +61,18 @@ export default function ScriptsPage() {
                 <Badge variant="outline" className="uppercase font-bold text-[10px]">
                   {script.manufacturer}
                 </Badge>
-                {script.isDefault && <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100 text-[10px]">Padrão</Badge>}
+                {script.isDefault && <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100 text-[10px]">{t.scripts.default}</Badge>}
               </div>
               <CardTitle className="text-lg">{script.name}</CardTitle>
-              <CardDescription className="line-clamp-2">{script.description || "Sem descrição"}</CardDescription>
+              <CardDescription className="line-clamp-2">{script.description || t.scripts.noDescription}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="bg-muted rounded-md p-3 font-mono text-xs overflow-x-auto whitespace-pre-wrap">
                 {script.command}
               </div>
               <div className="flex gap-4 mt-4 text-xs text-muted-foreground">
-                <div>Ext: <span className="font-medium text-foreground">{script.fileExtension}</span></div>
-                <div>Timeout: <span className="font-medium text-foreground">{script.timeout}ms</span></div>
+                <div>{t.scripts.extension}: <span className="font-medium text-foreground">{script.fileExtension}</span></div>
+                <div>{t.scripts.timeout}: <span className="font-medium text-foreground">{script.timeout}ms</span></div>
               </div>
             </CardContent>
           </Card>
@@ -92,12 +92,13 @@ function CreateScriptDialog({ open, onOpenChange, manufacturers }: any) {
   const { register, handleSubmit, reset } = useForm<InsertVendorScript>();
   const { mutate, isPending } = useCreateScript();
   const { toast } = useToast();
+  const { t } = useI18n();
   const [manufacturer, setManufacturer] = useState("");
 
   const onSubmit = (data: InsertVendorScript) => {
     mutate({ ...data, manufacturer, timeout: Number(data.timeout) || 30000 }, {
       onSuccess: () => {
-        toast({ title: "Script criado" });
+        toast({ title: t.common.success });
         onOpenChange(false);
         reset();
       }
@@ -108,19 +109,19 @@ function CreateScriptDialog({ open, onOpenChange, manufacturers }: any) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>Novo Script</DialogTitle>
+          <DialogTitle>{t.scripts.addScript}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Nome</Label>
-              <Input {...register("name")} placeholder="Backup Diário" required />
+              <Label>{t.scripts.scriptName}</Label>
+              <Input {...register("name")} required />
             </div>
             <div className="space-y-2">
-              <Label>Fabricante</Label>
+              <Label>{t.equipment.manufacturer}</Label>
               <Select onValueChange={setManufacturer} required>
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecione..." />
+                  <SelectValue placeholder={t.common.filter + "..."} />
                 </SelectTrigger>
                 <SelectContent>
                   {manufacturers.map((m: any) => (
@@ -132,35 +133,34 @@ function CreateScriptDialog({ open, onOpenChange, manufacturers }: any) {
           </div>
           
           <div className="space-y-2">
-            <Label>Comando</Label>
+            <Label>{t.scripts.command}</Label>
             <Textarea 
               {...register("command")} 
               placeholder="/export file=backup" 
               className="font-mono text-sm h-32" 
               required 
             />
-            <p className="text-[10px] text-muted-foreground">O comando a ser enviado via SSH/Telnet.</p>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
              <div className="space-y-2">
-              <Label>Extensão do Arquivo</Label>
+              <Label>{t.scripts.fileExtension}</Label>
               <Input {...register("fileExtension")} placeholder=".rsc" defaultValue=".cfg" />
             </div>
             <div className="space-y-2">
-              <Label>Timeout (ms)</Label>
+              <Label>{t.scripts.timeout}</Label>
               <Input type="number" {...register("timeout")} defaultValue="30000" />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label>Descrição</Label>
-            <Input {...register("description")} placeholder="Descrição opcional" />
+            <Label>{t.common.description}</Label>
+            <Input {...register("description")} />
           </div>
 
           <div className="flex justify-end pt-2">
             <Button type="submit" disabled={isPending}>
-              {isPending ? "Salvando..." : "Salvar Script"}
+              {isPending ? t.scripts.saving : t.scripts.saveScript}
             </Button>
           </div>
         </form>

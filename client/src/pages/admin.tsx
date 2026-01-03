@@ -116,10 +116,10 @@ interface UpdateHistory {
   changelog: string | null;
 }
 
-const PERMISSION_LEVELS = [
-  { value: "admin", label: "Administrador", description: "Acesso total ao sistema", icon: Shield, color: "text-red-500" },
-  { value: "operator", label: "Operador", description: "Pode executar backups e gerenciar equipamentos", icon: Edit, color: "text-blue-500" },
-  { value: "viewer", label: "Visualizador", description: "Apenas visualização", icon: Eye, color: "text-green-500" },
+const getPermissionLevels = (t: any) => [
+  { value: "admin", label: t.admin.administrator, description: t.admin.adminDescription, icon: Shield, color: "text-red-500" },
+  { value: "operator", label: t.admin.operator, description: t.admin.operatorDescription, icon: Edit, color: "text-blue-500" },
+  { value: "viewer", label: t.admin.viewer, description: t.admin.viewerDescription, icon: Eye, color: "text-green-500" },
 ];
 
 interface ThemeConfigSectionProps {
@@ -726,9 +726,12 @@ export default function AdminPage() {
     }
   };
 
+  const { t } = useI18n();
+  const PERMISSION_LEVELS = getPermissionLevels(t);
+
   const getRoleBadge = (role: string | null) => {
     const level = PERMISSION_LEVELS.find(l => l.value === role);
-    if (!level) return <Badge variant="outline">Desconhecido</Badge>;
+    if (!level) return <Badge variant="outline">{t.admin.unknownRole}</Badge>;
     const Icon = level.icon;
     return (
       <Badge variant="outline" className={`${level.color} border-current`}>
@@ -739,8 +742,6 @@ export default function AdminPage() {
   };
 
   const isAccessDenied = usersError && (usersError as any)?.message?.includes("403");
-
-  const { t } = useI18n();
 
   return (
     <div className="p-6 md:p-8 space-y-6">
@@ -777,58 +778,55 @@ export default function AdminPage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between gap-4 space-y-0">
               <div>
-                <CardTitle>Usuários</CardTitle>
-                <CardDescription>Gerencie quem tem acesso ao sistema</CardDescription>
+                <CardTitle>{t.admin.users}</CardTitle>
+                <CardDescription>{t.admin.usersDescription}</CardDescription>
               </div>
               <Dialog open={createUserOpen} onOpenChange={setCreateUserOpen}>
                 <DialogTrigger asChild>
                   <Button data-testid="button-create-user">
                     <Plus className="h-4 w-4 mr-2" />
-                    Novo Usuário
+                    {t.admin.addUser}
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-md">
                   <DialogHeader>
-                    <DialogTitle>Criar Novo Usuário</DialogTitle>
+                    <DialogTitle>{t.admin.createUser}</DialogTitle>
                     <DialogDescription>
-                      Adicione um novo usuário ao sistema com as permissões desejadas
+                      {t.admin.createUserDescription}
                     </DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4 py-4">
                     <div className="space-y-2">
-                      <Label htmlFor="newUsername">Nome de Usuário</Label>
+                      <Label htmlFor="newUsername">{t.admin.newUsername}</Label>
                       <Input 
                         id="newUsername"
                         value={newUsername}
                         onChange={(e) => setNewUsername(e.target.value)}
-                        placeholder="usuario123"
                         data-testid="input-new-username"
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="newPassword">Senha</Label>
+                      <Label htmlFor="newPassword">{t.admin.newPassword}</Label>
                       <Input 
                         id="newPassword"
                         type="password"
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
-                        placeholder="Senha segura"
                         data-testid="input-new-password"
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="newEmail">Email (opcional)</Label>
+                      <Label htmlFor="newEmail">{t.admin.newEmail}</Label>
                       <Input 
                         id="newEmail"
                         type="email"
                         value={newEmail}
                         onChange={(e) => setNewEmail(e.target.value)}
-                        placeholder="email@exemplo.com"
                         data-testid="input-new-email"
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label>Nível de Permissão</Label>
+                      <Label>{t.admin.selectRole}</Label>
                       <div className="space-y-2">
                         {PERMISSION_LEVELS.map((level) => {
                           const Icon = level.icon;
@@ -856,8 +854,8 @@ export default function AdminPage() {
                     </div>
                     <div className="flex items-center justify-between p-3 rounded-lg border">
                       <div>
-                        <p className="font-medium text-sm">Acesso Administrativo</p>
-                        <p className="text-xs text-muted-foreground">Permite gerenciar outros usuários</p>
+                        <p className="font-medium text-sm">{t.admin.isAdmin}</p>
+                        <p className="text-xs text-muted-foreground">{t.admin.onlyAdminsCanManage}</p>
                       </div>
                       <Switch 
                         checked={newIsAdmin} 
@@ -868,7 +866,7 @@ export default function AdminPage() {
                   </div>
                   <DialogFooter>
                     <Button variant="outline" onClick={() => { setCreateUserOpen(false); resetCreateForm(); }}>
-                      Cancelar
+                      {t.common.cancel}
                     </Button>
                     <Button 
                       onClick={handleCreateUser} 
