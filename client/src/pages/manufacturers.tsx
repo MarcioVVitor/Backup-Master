@@ -23,7 +23,7 @@ export default function ManufacturersPage() {
   const { t } = useI18n();
 
   const handleDelete = (id: number) => {
-    if (confirm(t.common.confirm + "?")) {
+    if (confirm(`${t.common.confirm}?`)) {
       deleteManufacturer(id, {
         onSuccess: () => toast({ title: t.common.success })
       });
@@ -73,11 +73,12 @@ function CreateManufacturerDialog({ open, onOpenChange }: any) {
   const { register, handleSubmit, reset } = useForm();
   const { mutate, isPending } = useCreateManufacturer();
   const { toast } = useToast();
+  const { t } = useI18n();
 
   const onSubmit = (data: any) => {
     mutate(data, {
       onSuccess: () => {
-        toast({ title: "Fabricante adicionado" });
+        toast({ title: t.common.success });
         onOpenChange(false);
         reset();
       }
@@ -88,27 +89,26 @@ function CreateManufacturerDialog({ open, onOpenChange }: any) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Novo Fabricante</DialogTitle>
+          <DialogTitle>{t.manufacturers.addManufacturer}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <Label>Nome (Label)</Label>
+            <Label>{t.manufacturers.manufacturerName}</Label>
             <Input {...register("label")} placeholder="Cisco Systems" required />
           </div>
           <div className="space-y-2">
-            <Label>Código (Value)</Label>
+            <Label>{t.common.type}</Label>
             <Input {...register("value")} placeholder="cisco" required className="lowercase" />
-            <p className="text-xs text-muted-foreground">Identificador único usado nos scripts.</p>
           </div>
           <div className="space-y-2">
-            <Label>Cor (Hex)</Label>
+            <Label>{t.admin.primaryColor}</Label>
             <div className="flex gap-2">
               <Input {...register("color")} type="color" className="w-12 h-10 p-1" defaultValue="#3b82f6" />
               <Input {...register("color")} placeholder="#3b82f6" defaultValue="#3b82f6" className="flex-1" />
             </div>
           </div>
           <Button type="submit" className="w-full" disabled={isPending}>
-            {isPending ? "Salvando..." : "Salvar"}
+            {isPending ? t.common.saving : t.common.save}
           </Button>
         </form>
       </DialogContent>

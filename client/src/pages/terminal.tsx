@@ -295,7 +295,7 @@ export default function TerminalPage() {
 
   const handleConnect = async () => {
     if (!selectedEquipment) {
-      toast({ title: "Selecione um equipamento", variant: "destructive" });
+      toast({ title: t.terminal.selectEquipmentToConnect, variant: "destructive" });
       return;
     }
 
@@ -303,7 +303,7 @@ export default function TerminalPage() {
     if (!eq) return;
 
     setIsConnecting(true);
-    addLine('system', `Conectando a ${eq.name} (${eq.ip}:${eq.port})...`);
+    addLine('system', `${t.terminal.connectingTo} ${eq.name} (${eq.ip}:${eq.port})...`);
 
     try {
       const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -315,7 +315,7 @@ export default function TerminalPage() {
       ws.onopen = () => {
         setIsConnected(true);
         setIsConnecting(false);
-        addLine('system', `Conectado a ${eq.name} (${eq.ip})`);
+        addLine('system', `${t.terminal.connectedTo} ${eq.name} (${eq.ip})`);
         inputRef.current?.focus();
       };
 
@@ -329,19 +329,19 @@ export default function TerminalPage() {
       };
 
       ws.onerror = () => {
-        addLine('error', 'Erro na conexão WebSocket');
+        addLine('error', t.terminal.connectionError);
         setIsConnected(false);
         setIsConnecting(false);
       };
 
       ws.onclose = () => {
-        addLine('system', 'Conexão encerrada');
+        addLine('system', t.terminal.connectionClosed);
         setIsConnected(false);
         setIsConnecting(false);
         wsRef.current = null;
       };
     } catch (err) {
-      addLine('error', 'Falha ao estabelecer conexão');
+      addLine('error', t.terminal.failedToConnect);
       setIsConnected(false);
       setIsConnecting(false);
     }
@@ -353,14 +353,14 @@ export default function TerminalPage() {
       wsRef.current = null;
     }
     setIsConnected(false);
-    addLine('system', 'Desconectado');
+    addLine('system', t.terminal.disconnected);
   };
 
   const handleSendCommand = () => {
     if (!commandInput.trim()) return;
     
     if (!isConnected || !wsRef.current) {
-      addLine('error', 'Não conectado. Conecte-se a um equipamento primeiro.');
+      addLine('error', t.terminal.notConnected);
       return;
     }
 
@@ -399,14 +399,14 @@ export default function TerminalPage() {
 
   const handleClearTerminal = () => {
     setLines([]);
-    addLine('system', 'Terminal limpo');
+    addLine('system', t.terminal.terminalCleared);
   };
 
   const handleThemeChange = (theme: TerminalTheme) => {
     setCurrentTheme(theme);
     localStorage.setItem("terminal-theme", theme.id);
     setThemeDialogOpen(false);
-    toast({ title: `Tema alterado para ${theme.name}` });
+    toast({ title: `${t.terminal.themeChanged} ${theme.name}` });
   };
 
   const getLineStyle = (type: TerminalLine['type']) => {

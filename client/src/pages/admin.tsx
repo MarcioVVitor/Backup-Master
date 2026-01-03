@@ -224,7 +224,7 @@ function ThemeConfigSection({
                 id="logoUrl"
                 value={logoUrl}
                 onChange={(e) => handleLogoUrlChange(e.target.value)}
-                placeholder="https://exemplo.com/logo.png"
+                placeholder="https://example.com/logo.png"
                 data-testid="input-logo-url"
               />
             </div>
@@ -366,12 +366,12 @@ function ThemeConfigSection({
                   style={bg.type === "gradient" ? { background: bg.value } : { background: '#1a1a2e' }}
                 >
                   {bg.type === "static" && bg.id === "none" && (
-                    <span className="text-xs text-muted-foreground">Nenhum</span>
+                    <span className="text-xs text-muted-foreground">{t.common.none}</span>
                   )}
                   {bg.type === "dynamic" && (
                     <div className="text-xs text-white/80 font-medium">
-                      {bg.value === "earth-rotation" && "Terra"}
-                      {bg.value === "animated-stars" && "Estrelas"}
+                      {bg.value === "earth-rotation" && t.admin.earth}
+                      {bg.value === "animated-stars" && t.admin.stars}
                       {bg.value === "matrix-rain" && "Matrix"}
                     </div>
                   )}
@@ -381,7 +381,7 @@ function ThemeConfigSection({
                   variant="outline" 
                   className="mt-1 text-[10px] w-full justify-center"
                 >
-                  {bg.type === "static" ? "Estatico" : bg.type === "gradient" ? "Gradiente" : "Animado"}
+                  {bg.type === "static" ? t.admin.static : bg.type === "gradient" ? t.admin.gradient : t.admin.animated}
                 </Badge>
               </div>
             ))}
@@ -394,6 +394,7 @@ function ThemeConfigSection({
 
 export default function AdminPage() {
   const { toast } = useToast();
+  const { t } = useI18n();
   
   const [serverIp, setServerIp] = useState("");
   const [systemName, setSystemName] = useState("NBM");
@@ -444,7 +445,7 @@ export default function AdminPage() {
       });
       if (!response.ok) {
         const err = await response.json();
-        throw new Error(err.message || "Falha ao aplicar atualização");
+        throw new Error(err.message || t.admin.updateApplyError);
       }
       return response.json();
     },
@@ -454,13 +455,13 @@ export default function AdminPage() {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/updates/history"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/system-info"] });
       toast({ 
-        title: "Atualização aplicada com sucesso", 
-        description: data.message || `Sistema atualizado para versão ${data.version}` 
+        title: t.admin.updateApplied, 
+        description: data.message || `${t.admin.systemUpdated} ${data.version}` 
       });
     },
     onError: (err: Error) => {
       setIsApplyingUpdate(false);
-      toast({ title: err.message || "Erro ao aplicar atualização", variant: "destructive" });
+      toast({ title: err.message || t.admin.updateApplyError, variant: "destructive" });
     }
   });
 
@@ -469,20 +470,20 @@ export default function AdminPage() {
     if (!file) return;
     
     if (!file.name.endsWith('.zip') && !file.name.endsWith('.tar.gz')) {
-      toast({ title: "Formato inválido. Use arquivos .zip ou .tar.gz", variant: "destructive" });
+      toast({ title: t.admin.invalidFormat, variant: "destructive" });
       return;
     }
     
     setUploadedUpdateFile(file);
     setUploadedManifest({
       version: file.name.replace(/\.(zip|tar\.gz)$/, '').replace('nbm-update-', ''),
-      changelog: ['Atualização via arquivo local']
+      changelog: [t.admin.localFileUpdate]
     });
   };
 
   const applyFileUpdate = useMutation({
     mutationFn: async () => {
-      if (!uploadedUpdateFile) throw new Error("Nenhum arquivo selecionado");
+      if (!uploadedUpdateFile) throw new Error(t.admin.noFileSelected);
       
       setIsUploadingUpdate(true);
       const formData = new FormData();
@@ -495,7 +496,7 @@ export default function AdminPage() {
       });
       if (!response.ok) {
         const err = await response.json();
-        throw new Error(err.message || "Falha ao aplicar atualização");
+        throw new Error(err.message || t.admin.updateApplyError);
       }
       return response.json();
     },
@@ -507,13 +508,13 @@ export default function AdminPage() {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/updates/history"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/system-info"] });
       toast({ 
-        title: "Atualização aplicada com sucesso", 
-        description: data.message || `Sistema atualizado para versão ${data.version}` 
+        title: t.admin.updateApplied, 
+        description: data.message || `${t.admin.systemUpdated} ${data.version}` 
       });
     },
     onError: (err: Error) => {
       setIsUploadingUpdate(false);
-      toast({ title: err.message || "Erro ao aplicar atualização", variant: "destructive" });
+      toast({ title: err.message || t.admin.updateApplyError, variant: "destructive" });
     }
   });
 
@@ -544,10 +545,10 @@ export default function AdminPage() {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
       setCreateUserOpen(false);
       resetCreateForm();
-      toast({ title: "Usuário criado com sucesso" });
+      toast({ title: t.admin.userCreated });
     },
     onError: (err: Error) => {
-      toast({ title: err.message || "Erro ao criar usuário", variant: "destructive" });
+      toast({ title: err.message || t.admin.userCreateError, variant: "destructive" });
     }
   });
 
@@ -562,10 +563,10 @@ export default function AdminPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
-      toast({ title: "Usuário removido" });
+      toast({ title: t.admin.userRemoved });
     },
     onError: () => {
-      toast({ title: "Erro ao remover usuário", variant: "destructive" });
+      toast({ title: t.admin.userRemoveError, variant: "destructive" });
     }
   });
 
@@ -582,10 +583,10 @@ export default function AdminPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
-      toast({ title: "Usuário atualizado" });
+      toast({ title: t.admin.userUpdated });
     },
     onError: () => {
-      toast({ title: "Erro ao atualizar usuário", variant: "destructive" });
+      toast({ title: t.admin.userUpdateError, variant: "destructive" });
     }
   });
 
@@ -595,10 +596,10 @@ export default function AdminPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/customization"] });
-      toast({ title: "Configurações salvas com sucesso" });
+      toast({ title: t.admin.configSaved });
     },
     onError: () => {
-      toast({ title: "Erro ao salvar configurações", variant: "destructive" });
+      toast({ title: t.admin.configSaveError, variant: "destructive" });
     }
   });
 
@@ -618,10 +619,10 @@ export default function AdminPage() {
       window.URL.revokeObjectURL(url);
     },
     onSuccess: () => {
-      toast({ title: "Backup exportado com sucesso" });
+      toast({ title: t.admin.backupExported });
     },
     onError: () => {
-      toast({ title: "Erro ao exportar backup", variant: "destructive" });
+      toast({ title: t.admin.backupExportError, variant: "destructive" });
     }
   });
 
@@ -641,10 +642,10 @@ export default function AdminPage() {
       window.URL.revokeObjectURL(url);
     },
     onSuccess: () => {
-      toast({ title: "Backup completo exportado" });
+      toast({ title: t.admin.fullBackupExported });
     },
     onError: () => {
-      toast({ title: "Erro ao exportar backup completo", variant: "destructive" });
+      toast({ title: t.admin.fullBackupExportError, variant: "destructive" });
     }
   });
 
@@ -664,10 +665,10 @@ export default function AdminPage() {
       setImportDialogOpen(false);
       setBackupFile(null);
       queryClient.invalidateQueries();
-      toast({ title: "Backup importado com sucesso" });
+      toast({ title: t.admin.backupImported });
     },
     onError: () => {
-      toast({ title: "Erro ao importar backup", variant: "destructive" });
+      toast({ title: t.admin.backupImportError, variant: "destructive" });
     }
   });
 
@@ -692,7 +693,7 @@ export default function AdminPage() {
   };
 
   const handleDeleteUser = (id: number, username: string) => {
-    if (confirm(`Tem certeza que deseja remover o usuário "${username}"?`)) {
+    if (confirm(`${t.admin.confirmRemoveUser} "${username}"?`)) {
       deleteUser.mutate(id);
     }
   };
@@ -726,7 +727,6 @@ export default function AdminPage() {
     }
   };
 
-  const { t } = useI18n();
   const PERMISSION_LEVELS = getPermissionLevels(t);
 
   const getRoleBadge = (role: string | null) => {
@@ -878,7 +878,7 @@ export default function AdminPage() {
                       ) : (
                         <Plus className="h-4 w-4 mr-2" />
                       )}
-                      Criar Usuário
+                      {t.admin.createUser}
                     </Button>
                   </DialogFooter>
                 </DialogContent>
@@ -892,17 +892,17 @@ export default function AdminPage() {
               ) : isAccessDenied ? (
                 <div className="flex flex-col items-center justify-center py-8 text-center">
                   <AlertCircle className="h-12 w-12 text-yellow-500 mb-4" />
-                  <p className="text-lg font-medium">Acesso Restrito</p>
-                  <p className="text-muted-foreground">Apenas administradores podem gerenciar usuários</p>
+                  <p className="text-lg font-medium">{t.admin.restrictedAccess}</p>
+                  <p className="text-muted-foreground">{t.admin.onlyAdminsCanManage}</p>
                 </div>
               ) : users.length > 0 ? (
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Usuário</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Permissão</TableHead>
-                      <TableHead>Admin</TableHead>
+                      <TableHead>{t.admin.username}</TableHead>
+                      <TableHead>{t.admin.email}</TableHead>
+                      <TableHead>{t.admin.role}</TableHead>
+                      <TableHead>{t.admin.isAdmin}</TableHead>
                       <TableHead className="w-[50px]"></TableHead>
                     </TableRow>
                   </TableHeader>
@@ -963,8 +963,8 @@ export default function AdminPage() {
               ) : (
                 <div className="text-center py-8 text-muted-foreground">
                   <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>Nenhum usuário encontrado</p>
-                  <p className="text-sm">Clique em "Novo Usuário" para adicionar</p>
+                  <p>{t.admin.noUsers}</p>
+                  <p className="text-sm">{t.admin.clickToAddUser}</p>
                 </div>
               )}
             </CardContent>
@@ -974,9 +974,9 @@ export default function AdminPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Shield className="h-5 w-5" />
-                Níveis de Permissão
+                {t.admin.permissionLevels}
               </CardTitle>
-              <CardDescription>Entenda o que cada nível de acesso permite</CardDescription>
+              <CardDescription>{t.admin.permissionDescription}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid gap-4 md:grid-cols-3">
@@ -1018,13 +1018,13 @@ export default function AdminPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Download className="h-5 w-5" />
-                  Exportar Backup
+                  {t.admin.exportBackup}
                 </CardTitle>
-                <CardDescription>Faça backup dos dados do sistema</CardDescription>
+                <CardDescription>{t.admin.exportBackupDescription}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-sm text-muted-foreground">
-                  Exporte os dados do banco de dados para um arquivo JSON que pode ser restaurado posteriormente.
+                  {t.admin.exportBackupInfo}
                 </p>
                 <div className="flex flex-col gap-2">
                   <Button 
@@ -1038,7 +1038,7 @@ export default function AdminPage() {
                     ) : (
                       <Database className="h-4 w-4 mr-2" />
                     )}
-                    Exportar Banco de Dados
+                    {t.admin.exportDatabase}
                   </Button>
                   <Button 
                     variant="outline"
@@ -1052,7 +1052,7 @@ export default function AdminPage() {
                     ) : (
                       <HardDrive className="h-4 w-4 mr-2" />
                     )}
-                    Exportar Backup Completo
+                    {t.admin.exportFullBackup}
                   </Button>
                 </div>
               </CardContent>
@@ -1062,31 +1062,31 @@ export default function AdminPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Upload className="h-5 w-5" />
-                  Importar Backup
+                  {t.admin.importBackup}
                 </CardTitle>
-                <CardDescription>Restaure dados de um backup anterior</CardDescription>
+                <CardDescription>{t.admin.importBackupDescription}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-sm text-muted-foreground">
-                  Importe um arquivo de backup para restaurar os dados do sistema. Esta ação substituirá os dados atuais.
+                  {t.admin.importBackupInfo}
                 </p>
                 <Dialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
                   <DialogTrigger asChild>
                     <Button variant="outline" className="w-full" data-testid="button-import-dialog">
                       <Upload className="h-4 w-4 mr-2" />
-                      Importar Backup
+                      {t.admin.importBackup}
                     </Button>
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>Importar Backup</DialogTitle>
+                      <DialogTitle>{t.admin.importBackup}</DialogTitle>
                       <DialogDescription>
-                        Selecione um arquivo de backup para restaurar. Esta ação irá sobrescrever os dados existentes.
+                        {t.admin.importBackupWarning}
                       </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4 py-4">
                       <div className="space-y-2">
-                        <Label htmlFor="backupFile">Arquivo de Backup</Label>
+                        <Label htmlFor="backupFile">{t.admin.backupFile}</Label>
                         <Input 
                           id="backupFile"
                           type="file"
@@ -1097,13 +1097,13 @@ export default function AdminPage() {
                       </div>
                       {backupFile && (
                         <p className="text-sm text-muted-foreground">
-                          Arquivo selecionado: {backupFile.name}
+                          {t.admin.fileSelected} {backupFile.name}
                         </p>
                       )}
                     </div>
                     <DialogFooter>
                       <Button variant="outline" onClick={() => setImportDialogOpen(false)}>
-                        Cancelar
+                        {t.common.cancel}
                       </Button>
                       <Button 
                         onClick={handleImport} 
@@ -1115,7 +1115,7 @@ export default function AdminPage() {
                         ) : (
                           <Upload className="h-4 w-4 mr-2" />
                         )}
-                        Importar
+                        {t.admin.import}
                       </Button>
                     </DialogFooter>
                   </DialogContent>
@@ -1130,14 +1130,14 @@ export default function AdminPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Server className="h-5 w-5" />
-                Informações do Sistema
+                {t.admin.systemInfo}
               </CardTitle>
-              <CardDescription>Detalhes sobre o servidor e ambiente</CardDescription>
+              <CardDescription>{t.admin.systemInfoDescription}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 <div className="p-4 bg-muted/50 rounded-lg">
-                  <p className="text-sm text-muted-foreground">Versão do Sistema</p>
+                  <p className="text-sm text-muted-foreground">{t.admin.systemVersion}</p>
                   <p className="text-lg font-semibold" data-testid="text-version">
                     {systemInfo?.version || "17.0.0"}
                   </p>
@@ -1149,25 +1149,25 @@ export default function AdminPage() {
                   </p>
                 </div>
                 <div className="p-4 bg-muted/50 rounded-lg">
-                  <p className="text-sm text-muted-foreground">Ambiente</p>
+                  <p className="text-sm text-muted-foreground">{t.admin.environment}</p>
                   <p className="text-lg font-semibold" data-testid="text-environment">
                     {systemInfo?.environment || "production"}
                   </p>
                 </div>
                 <div className="p-4 bg-muted/50 rounded-lg">
-                  <p className="text-sm text-muted-foreground">Banco de Dados</p>
+                  <p className="text-sm text-muted-foreground">{t.admin.database}</p>
                   <p className="text-lg font-semibold" data-testid="text-database">
                     PostgreSQL
                   </p>
                 </div>
                 <div className="p-4 bg-muted/50 rounded-lg">
-                  <p className="text-sm text-muted-foreground">Total de Equipamentos</p>
+                  <p className="text-sm text-muted-foreground">{t.dashboard.totalEquipment}</p>
                   <p className="text-lg font-semibold" data-testid="text-equipment-count">
                     {systemInfo?.equipmentCount || "0"}
                   </p>
                 </div>
                 <div className="p-4 bg-muted/50 rounded-lg">
-                  <p className="text-sm text-muted-foreground">Total de Backups</p>
+                  <p className="text-sm text-muted-foreground">{t.dashboard.totalBackups}</p>
                   <p className="text-lg font-semibold" data-testid="text-backup-count">
                     {systemInfo?.backupCount || "0"}
                   </p>
@@ -1183,14 +1183,14 @@ export default function AdminPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <ArrowUpCircle className="h-5 w-5" />
-                  Verificar Atualizações
+                  {t.admin.checkUpdates}
                 </CardTitle>
-                <CardDescription>Verifique se há novas versões disponíveis</CardDescription>
+                <CardDescription>{t.admin.checkUpdatesDescription}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
                   <div>
-                    <p className="text-sm text-muted-foreground">Versão Atual</p>
+                    <p className="text-sm text-muted-foreground">{t.admin.currentVersion}</p>
                     <p className="text-2xl font-bold" data-testid="text-current-version">
                       v{updateInfo?.currentVersion || systemInfo?.version || "17.0.0"}
                     </p>
@@ -1201,26 +1201,26 @@ export default function AdminPage() {
                 {updateLoading ? (
                   <div className="flex items-center justify-center p-8">
                     <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                    <span className="ml-2 text-muted-foreground">Verificando atualizações...</span>
+                    <span className="ml-2 text-muted-foreground">{t.admin.checkingUpdates}</span>
                   </div>
                 ) : updateInfo?.hasUpdate ? (
                   <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg space-y-3">
                     <div className="flex items-center gap-2 text-primary">
                       <ArrowUpCircle className="h-5 w-5" />
-                      <span className="font-semibold">Nova versão disponível!</span>
+                      <span className="font-semibold">{t.admin.updateAvailable}</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm text-muted-foreground">Versão Disponível</p>
+                        <p className="text-sm text-muted-foreground">{t.admin.latestVersion}</p>
                         <p className="text-xl font-bold" data-testid="text-latest-version">
                           v{updateInfo.latestVersion}
                         </p>
                       </div>
                       {updateInfo.releaseDate && (
                         <div className="text-right">
-                          <p className="text-sm text-muted-foreground">Data de Lançamento</p>
+                          <p className="text-sm text-muted-foreground">{t.admin.releaseDate}</p>
                           <p className="text-sm font-medium">
-                            {new Date(updateInfo.releaseDate).toLocaleDateString('pt-BR')}
+                            {new Date(updateInfo.releaseDate).toLocaleDateString()}
                           </p>
                         </div>
                       )}
@@ -1234,12 +1234,12 @@ export default function AdminPage() {
                       {isApplyingUpdate ? (
                         <>
                           <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          Aplicando atualização...
+                          {t.admin.applyingUpdate}
                         </>
                       ) : (
                         <>
                           <Download className="h-4 w-4 mr-2" />
-                          Aplicar Atualização
+                          {t.admin.applyUpdate}
                         </>
                       )}
                     </Button>
@@ -1247,7 +1247,7 @@ export default function AdminPage() {
                 ) : (
                   <div className="flex items-center gap-2 p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
                     <CheckCircle className="h-5 w-5 text-green-500" />
-                    <span className="text-green-600 dark:text-green-400">Sistema está atualizado!</span>
+                    <span className="text-green-600 dark:text-green-400">{t.admin.upToDate}</span>
                   </div>
                 )}
 
@@ -1259,7 +1259,7 @@ export default function AdminPage() {
                   data-testid="button-check-updates"
                 >
                   <RefreshCw className={`h-4 w-4 mr-2 ${updateLoading ? 'animate-spin' : ''}`} />
-                  Verificar Atualizações
+                  {t.admin.checkUpdates}
                 </Button>
               </CardContent>
             </Card>
@@ -1268,9 +1268,9 @@ export default function AdminPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <FileText className="h-5 w-5" />
-                  Changelog
+                  {t.admin.changelog}
                 </CardTitle>
-                <CardDescription>Novidades e correções na versão disponível</CardDescription>
+                <CardDescription>{t.admin.changelogDescription}</CardDescription>
               </CardHeader>
               <CardContent>
                 {updateInfo?.changelog && updateInfo.changelog.length > 0 ? (
@@ -1284,7 +1284,7 @@ export default function AdminPage() {
                   </ul>
                 ) : (
                   <p className="text-muted-foreground text-sm">
-                    Nenhuma atualização disponível no momento.
+                    {t.admin.noUpdatesAvailable}
                   </p>
                 )}
               </CardContent>
@@ -1295,9 +1295,9 @@ export default function AdminPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Upload className="h-5 w-5" />
-                Atualização via Arquivo
+                {t.admin.fileUpdate}
               </CardTitle>
-              <CardDescription>Faça upload de um pacote de atualização quando o modo online não estiver disponível</CardDescription>
+              <CardDescription>{t.admin.fileUpdateDescription}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div 
@@ -1318,7 +1318,7 @@ export default function AdminPage() {
                     </div>
                     {uploadedManifest && (
                       <div className="p-3 bg-muted/50 rounded-lg">
-                        <p className="text-sm font-medium">Versão detectada: v{uploadedManifest.version}</p>
+                        <p className="text-sm font-medium">{t.admin.detectedVersion} v{uploadedManifest.version}</p>
                       </div>
                     )}
                     <div className="flex gap-2 justify-center">
@@ -1331,7 +1331,7 @@ export default function AdminPage() {
                         disabled={isUploadingUpdate}
                         data-testid="button-cancel-file-update"
                       >
-                        Cancelar
+                        {t.common.cancel}
                       </Button>
                       <Button
                         onClick={() => applyFileUpdate.mutate()}
@@ -1341,12 +1341,12 @@ export default function AdminPage() {
                         {isUploadingUpdate ? (
                           <>
                             <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                            Aplicando...
+                            {t.admin.applying}
                           </>
                         ) : (
                           <>
                             <ArrowUpCircle className="h-4 w-4 mr-2" />
-                            Aplicar Atualização
+                            {t.admin.applyUpdate}
                           </>
                         )}
                       </Button>
@@ -1356,10 +1356,10 @@ export default function AdminPage() {
                   <div className="space-y-2">
                     <Upload className="h-10 w-10 mx-auto text-muted-foreground" />
                     <p className="text-sm text-muted-foreground">
-                      Arraste um arquivo ou clique para selecionar
+                      {t.admin.dragOrClick}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      Formatos aceitos: .zip, .tar.gz
+                      {t.admin.acceptedFormats}
                     </p>
                     <Input
                       type="file"
@@ -1374,7 +1374,7 @@ export default function AdminPage() {
                       asChild
                     >
                       <label htmlFor="update-file-input" className="cursor-pointer">
-                        Selecionar Arquivo
+                        {t.admin.selectFile}
                       </label>
                     </Button>
                   </div>
@@ -1387,19 +1387,19 @@ export default function AdminPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Clock className="h-5 w-5" />
-                Histórico de Atualizações
+                {t.admin.updateHistory}
               </CardTitle>
-              <CardDescription>Registro de todas as atualizações aplicadas</CardDescription>
+              <CardDescription>{t.admin.updateHistoryDescription}</CardDescription>
             </CardHeader>
             <CardContent>
               {updateHistory.length > 0 ? (
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Versão</TableHead>
-                      <TableHead>Data de Aplicação</TableHead>
-                      <TableHead>Aplicado por</TableHead>
-                      <TableHead>Status</TableHead>
+                      <TableHead>{t.common.version}</TableHead>
+                      <TableHead>{t.admin.applicationDate}</TableHead>
+                      <TableHead>{t.admin.appliedBy}</TableHead>
+                      <TableHead>{t.common.status}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -1407,7 +1407,7 @@ export default function AdminPage() {
                       <TableRow key={update.id} data-testid={`row-update-${update.id}`}>
                         <TableCell className="font-medium">v{update.version}</TableCell>
                         <TableCell>
-                          {new Date(update.appliedAt).toLocaleDateString('pt-BR', {
+                          {new Date(update.appliedAt).toLocaleString(undefined, {
                             day: '2-digit',
                             month: '2-digit',
                             year: 'numeric',
@@ -1420,7 +1420,7 @@ export default function AdminPage() {
                           <Badge 
                             variant={update.status === 'success' ? 'default' : update.status === 'failed' ? 'destructive' : 'outline'}
                           >
-                            {update.status === 'success' ? 'Sucesso' : update.status === 'failed' ? 'Falhou' : 'Pendente'}
+                            {update.status === 'success' ? t.backups.statusSuccess : update.status === 'failed' ? t.backups.statusFailed : t.backups.statusPending}
                           </Badge>
                         </TableCell>
                       </TableRow>
@@ -1429,7 +1429,7 @@ export default function AdminPage() {
                 </Table>
               ) : (
                 <p className="text-muted-foreground text-sm text-center py-8">
-                  Nenhuma atualização foi aplicada ainda.
+                  {t.admin.noUpdatesApplied}
                 </p>
               )}
             </CardContent>

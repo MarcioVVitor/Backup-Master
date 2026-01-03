@@ -76,6 +76,7 @@ export default function BackupExecutePage() {
     completed: false,
   });
   const logRef = useRef<HTMLDivElement>(null);
+  const { t } = useI18n();
 
   const { data: equipment = [], isLoading: loadingEquipment } = useQuery<Equipment[]>({
     queryKey: ["/api/equipment"],
@@ -155,7 +156,7 @@ export default function BackupExecutePage() {
       completed: false,
     });
 
-    addLog(`Iniciando backup de ${equipmentIds.length} equipamentos...`);
+    addLog(`${t.executeBackup.startingBackup} ${equipmentIds.length} ${t.executeBackup.equipmentCount}...`);
 
     for (let i = 0; i < equipmentIds.length; i++) {
       const eq = equipment.find((e) => e.id === equipmentIds[i]);
@@ -168,7 +169,7 @@ export default function BackupExecutePage() {
         currentEquipment: eq.name,
       }));
 
-      addLog(`[${i + 1}/${equipmentIds.length}] Iniciando: ${eq.name} (${eq.ip})`);
+      addLog(`[${i + 1}/${equipmentIds.length}] ${t.executeBackup.startingBackup}: ${eq.name} (${eq.ip})`);
 
       try {
         const response = await fetch(`/api/backup/execute/${eq.id}`, {
@@ -179,13 +180,13 @@ export default function BackupExecutePage() {
 
         if (response.ok) {
           const result = await response.json();
-          addLog(`\u2713 ${eq.name}: Backup de ${eq.name} concluido`);
+          addLog(`\u2713 ${eq.name}: ${t.executeBackup.backupOf} ${eq.name} ${t.executeBackup.backupCompleted}`);
         } else {
-          const error = await response.json().catch(() => ({ message: "Erro desconhecido" }));
-          addLog(`\u2717 ${eq.name}: Falha - ${error.message || "Erro desconhecido"}`);
+          const error = await response.json().catch(() => ({ message: t.common.unknown }));
+          addLog(`\u2717 ${eq.name}: ${t.executeBackup.backupError} - ${error.message || t.common.unknown}`);
         }
       } catch (error) {
-        addLog(`\u2717 ${eq.name}: Erro de conexão`);
+        addLog(`\u2717 ${eq.name}: ${t.executeBackup.connectionError}`);
       }
     }
 
@@ -196,7 +197,7 @@ export default function BackupExecutePage() {
       currentEquipment: null,
     }));
 
-    addLog(`Backup finalizado. Total: ${equipmentIds.length} equipamento(s).`);
+    addLog(`${t.executeBackup.backupFinished}. Total: ${equipmentIds.length} ${t.executeBackup.equipmentCount}.`);
   };
 
   const getEquipmentIcon = (manufacturer: string) => {
@@ -214,14 +215,14 @@ export default function BackupExecutePage() {
         <div className="flex items-center gap-3">
           <Play className="h-8 w-8 text-primary" />
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Executar Backup</h1>
-            <p className="text-sm text-muted-foreground">Execute backups manuais dos equipamentos</p>
+            <h1 className="text-2xl font-bold tracking-tight">{t.executeBackup.title}</h1>
+            <p className="text-sm text-muted-foreground">{t.executeBackup.subtitle}</p>
           </div>
         </div>
         <Link href="/backups">
           <Button variant="outline" data-testid="button-view-backups">
             <List className="h-4 w-4 mr-2" />
-            Ver Backups
+            {t.executeBackup.viewBackups}
           </Button>
         </Link>
       </div>
@@ -229,7 +230,7 @@ export default function BackupExecutePage() {
       <div className="space-y-4">
         <div className="flex items-center gap-2 text-muted-foreground">
           <Server className="h-4 w-4" />
-          <span className="text-sm font-medium">Filtrar por Fabricante</span>
+          <span className="text-sm font-medium">{t.executeBackup.filterByManufacturer}</span>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3">
@@ -247,7 +248,7 @@ export default function BackupExecutePage() {
                 <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
                   <Globe className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                 </div>
-                <span className="font-medium text-sm">Todos</span>
+                <span className="font-medium text-sm">{t.common.all}</span>
                 <div className="w-full bg-blue-500 rounded-full h-1.5">
                   <div className="bg-blue-600 h-1.5 rounded-full" style={{ width: "100%" }} />
                 </div>
@@ -306,7 +307,7 @@ export default function BackupExecutePage() {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Buscar por nome, IP ou modelo..."
+            placeholder={t.executeBackup.searchPlaceholder}
             className="pl-10"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -315,10 +316,10 @@ export default function BackupExecutePage() {
         </div>
         <Select value={selectedModel} onValueChange={setSelectedModel}>
           <SelectTrigger className="w-full md:w-[200px]" data-testid="select-model">
-            <SelectValue placeholder="Todos os modelos" />
+            <SelectValue placeholder={t.executeBackup.allModels} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Todos os modelos</SelectItem>
+            <SelectItem value="all">{t.executeBackup.allModels}</SelectItem>
             {uniqueModels.map((model) => (
               <SelectItem key={model} value={model!}>
                 {model}
@@ -333,27 +334,27 @@ export default function BackupExecutePage() {
         >
           <CheckSquare className="h-4 w-4 mr-2" />
           {selectedEquipment.size === filteredEquipment.length && filteredEquipment.length > 0
-            ? "Desmarcar Todos"
-            : "Selecionar Todos Visíveis"}
+            ? t.executeBackup.deselectAll
+            : t.executeBackup.selectAllVisible}
         </Button>
       </div>
 
       <div className="flex items-center gap-3">
         <Server className="h-4 w-4 text-muted-foreground" />
-        <span className="font-medium">Equipamentos</span>
+        <span className="font-medium">{t.menu.equipment}</span>
         <Badge variant="secondary" className="text-xs">
-          {selectedEquipment.size} selecionados
+          {selectedEquipment.size} {t.executeBackup.selected}
         </Badge>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {loadingEquipment ? (
           <div className="col-span-full text-center py-12 text-muted-foreground">
-            Carregando equipamentos...
+            {t.executeBackup.loadingEquipment}
           </div>
         ) : filteredEquipment.length === 0 ? (
           <div className="col-span-full text-center py-12 text-muted-foreground">
-            Nenhum equipamento encontrado
+            {t.executeBackup.noEquipmentFound}
           </div>
         ) : (
           filteredEquipment.map((eq) => {
@@ -398,7 +399,7 @@ export default function BackupExecutePage() {
                       </div>
                       <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
                         <Server className="h-3 w-3" />
-                        <span>{eq.model || "Modelo não especificado"}</span>
+                        <span>{eq.model || t.executeBackup.noModel}</span>
                       </div>
                     </div>
                   </div>
@@ -413,7 +414,7 @@ export default function BackupExecutePage() {
         <div className="space-y-4 border rounded-lg p-4 bg-muted/30">
           <div className="flex items-center gap-2">
             <List className="h-4 w-4" />
-            <span className="font-medium">Progresso do Backup</span>
+            <span className="font-medium">{t.executeBackup.backupProgress}</span>
           </div>
 
           <div className="space-y-2">
@@ -451,7 +452,7 @@ export default function BackupExecutePage() {
             data-testid="button-execute-backup"
           >
             <Play className="h-5 w-5 mr-2" />
-            Executar Backup ({selectedEquipment.size})
+            {t.executeBackup.executeNow} ({selectedEquipment.size})
           </Button>
         </div>
       )}

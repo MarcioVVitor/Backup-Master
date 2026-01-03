@@ -154,6 +154,7 @@ function EquipmentForm({
   isPending: boolean,
   manufacturers: { value: string, label: string }[] 
 }) {
+  const { t } = useI18n();
   const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm<InsertEquipment>({
     resolver: zodResolver(insertEquipmentSchema),
     defaultValues: defaultValues || {
@@ -167,12 +168,12 @@ function EquipmentForm({
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label>Nome</Label>
+          <Label>{t.common.name}</Label>
           <Input {...register("name")} placeholder="Router Core 01" />
           {errors.name && <span className="text-xs text-red-500">{errors.name.message}</span>}
         </div>
         <div className="space-y-2">
-          <Label>Endereço IP</Label>
+          <Label>{t.equipment.ipAddress}</Label>
           <Input {...register("ip")} placeholder="192.168.1.1" />
           {errors.ip && <span className="text-xs text-red-500">{errors.ip.message}</span>}
         </div>
@@ -180,10 +181,10 @@ function EquipmentForm({
       
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label>Fabricante</Label>
+          <Label>{t.equipment.manufacturer}</Label>
           <Select onValueChange={(val) => setValue("manufacturer", val)} defaultValue={defaultValues?.manufacturer}>
             <SelectTrigger>
-              <SelectValue placeholder="Selecione..." />
+              <SelectValue placeholder={t.common.select + "..."} />
             </SelectTrigger>
             <SelectContent>
               {manufacturers.map(m => (
@@ -194,25 +195,25 @@ function EquipmentForm({
           {errors.manufacturer && <span className="text-xs text-red-500">{errors.manufacturer.message}</span>}
         </div>
         <div className="space-y-2">
-          <Label>Modelo</Label>
+          <Label>{t.equipment.model}</Label>
           <Input {...register("model")} placeholder="CCR1036" />
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label>Usuário</Label>
+          <Label>{t.equipment.username}</Label>
           <Input {...register("username")} placeholder="admin" />
         </div>
         <div className="space-y-2">
-          <Label>Senha</Label>
+          <Label>{t.equipment.password}</Label>
           <Input {...register("password")} type="password" placeholder="••••••" />
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label>Porta</Label>
+          <Label>{t.equipment.port}</Label>
           <Input 
             type="number" 
             {...register("port", { valueAsNumber: true })} 
@@ -220,7 +221,7 @@ function EquipmentForm({
           />
         </div>
         <div className="space-y-2">
-          <Label>Protocolo</Label>
+          <Label>{t.equipment.protocol}</Label>
           <Select onValueChange={(val) => setValue("protocol", val)} defaultValue={defaultValues?.protocol || 'ssh'}>
             <SelectTrigger>
               <SelectValue />
@@ -236,7 +237,7 @@ function EquipmentForm({
 
       <div className="flex justify-end pt-4">
         <Button type="submit" disabled={isPending}>
-          {isPending ? "Salvando..." : "Salvar Equipamento"}
+          {isPending ? t.common.saving : t.equipment.saveEquipment}
         </Button>
       </div>
     </form>
@@ -244,17 +245,18 @@ function EquipmentForm({
 }
 
 function CreateEquipmentDialog({ open, onOpenChange, manufacturers }: any) {
+  const { t } = useI18n();
   const { mutate, isPending } = useCreateEquipment();
   const { toast } = useToast();
 
   const handleSubmit = (data: InsertEquipment) => {
     mutate(data, {
       onSuccess: () => {
-        toast({ title: "Sucesso", description: "Equipamento criado com sucesso" });
+        toast({ title: t.common.success, description: t.equipment.createSuccess });
         onOpenChange(false);
       },
       onError: () => {
-        toast({ title: "Erro", description: "Falha ao criar equipamento", variant: "destructive" });
+        toast({ title: t.common.error, description: t.equipment.createError, variant: "destructive" });
       }
     });
   };
@@ -263,7 +265,7 @@ function CreateEquipmentDialog({ open, onOpenChange, manufacturers }: any) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Novo Equipamento</DialogTitle>
+          <DialogTitle>{t.equipment.addEquipment}</DialogTitle>
         </DialogHeader>
         <EquipmentForm onSubmit={handleSubmit} isPending={isPending} manufacturers={manufacturers} />
       </DialogContent>
@@ -272,17 +274,18 @@ function CreateEquipmentDialog({ open, onOpenChange, manufacturers }: any) {
 }
 
 function EditEquipmentDialog({ open, onOpenChange, id, equipment, manufacturers }: any) {
+  const { t } = useI18n();
   const { mutate, isPending } = useUpdateEquipment();
   const { toast } = useToast();
 
   const handleSubmit = (data: InsertEquipment) => {
     mutate({ id, ...data }, {
       onSuccess: () => {
-        toast({ title: "Sucesso", description: "Equipamento atualizado" });
+        toast({ title: t.common.success, description: t.equipment.updateSuccess });
         onOpenChange(false);
       },
       onError: () => {
-        toast({ title: "Erro", description: "Falha ao atualizar", variant: "destructive" });
+        toast({ title: t.common.error, description: t.equipment.updateError, variant: "destructive" });
       }
     });
   };
@@ -291,7 +294,7 @@ function EditEquipmentDialog({ open, onOpenChange, id, equipment, manufacturers 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Editar Equipamento</DialogTitle>
+          <DialogTitle>{t.equipment.editEquipment}</DialogTitle>
         </DialogHeader>
         <EquipmentForm 
           onSubmit={handleSubmit} 
@@ -305,6 +308,7 @@ function EditEquipmentDialog({ open, onOpenChange, id, equipment, manufacturers 
 }
 
 function DeleteButton({ id, name }: { id: number, name: string }) {
+  const { t } = useI18n();
   const { mutate, isPending } = useDeleteEquipment();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
@@ -312,7 +316,7 @@ function DeleteButton({ id, name }: { id: number, name: string }) {
   const handleDelete = () => {
     mutate(id, {
       onSuccess: () => {
-        toast({ title: "Deletado", description: `${name} foi removido.` });
+        toast({ title: t.common.delete, description: `${name} ${t.equipment.removed}` });
         setOpen(false);
       }
     });
@@ -327,15 +331,15 @@ function DeleteButton({ id, name }: { id: number, name: string }) {
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Excluir Equipamento?</DialogTitle>
+          <DialogTitle>{t.equipment.deleteEquipment}?</DialogTitle>
         </DialogHeader>
         <p className="text-muted-foreground">
-          Tem certeza que deseja excluir <strong>{name}</strong>? Esta ação não pode ser desfeita.
+          {t.equipment.confirmDelete} <strong>{name}</strong>? {t.equipment.confirmDeleteMessage}
         </p>
         <div className="flex justify-end gap-2 mt-4">
-          <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
+          <Button variant="outline" onClick={() => setOpen(false)}>{t.common.cancel}</Button>
           <Button variant="destructive" onClick={handleDelete} disabled={isPending}>
-            {isPending ? "Excluindo..." : "Excluir"}
+            {isPending ? t.common.deleting : t.common.delete}
           </Button>
         </div>
       </DialogContent>

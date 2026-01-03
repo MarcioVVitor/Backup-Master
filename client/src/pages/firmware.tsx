@@ -279,7 +279,7 @@ export default function FirmwarePage() {
     setTerminalOpen(true);
     setIsConnecting(true);
     setLines([]);
-    addLine('system', `Conectando a ${eq.name} (${eq.ip})...`);
+    addLine('system', `${t.firmware.connectingTo} ${eq.name} (${eq.ip})...`);
 
     try {
       const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -299,7 +299,7 @@ export default function FirmwarePage() {
           if (data.type === 'connected') {
             setIsConnected(true);
             setIsConnecting(false);
-            addLine('system', `Conectado via ${data.protocol?.toUpperCase() || 'SSH'}`);
+            addLine('system', `${t.firmware.connectedVia} ${data.protocol?.toUpperCase() || 'SSH'}`);
             inputRef.current?.focus();
           } else if (data.type === 'status') {
             addLine('system', data.message);
@@ -312,7 +312,7 @@ export default function FirmwarePage() {
             addLine('error', data.message);
             setIsConnecting(false);
           } else if (data.type === 'disconnected') {
-            addLine('system', 'Desconectado');
+            addLine('system', t.terminal.disconnected);
             setIsConnected(false);
           }
         } catch {
@@ -321,19 +321,19 @@ export default function FirmwarePage() {
       };
 
       ws.onerror = () => {
-        addLine('error', 'Erro na conexao WebSocket');
+        addLine('error', t.firmware.wsConnectionError);
         setIsConnected(false);
         setIsConnecting(false);
       };
 
       ws.onclose = () => {
-        addLine('system', 'Conexao encerrada');
+        addLine('system', t.firmware.connectionClosed);
         setIsConnected(false);
         setIsConnecting(false);
         wsRef.current = null;
       };
     } catch (err) {
-      addLine('error', 'Falha ao estabelecer conexao');
+      addLine('error', t.firmware.connectionFailed);
       setIsConnected(false);
       setIsConnecting(false);
     }
@@ -410,10 +410,10 @@ export default function FirmwarePage() {
       queryClient.invalidateQueries({ queryKey: ["/api/firmware"] });
       setUploadDialogOpen(false);
       resetForm();
-      toast({ title: "Firmware enviado com sucesso" });
+      toast({ title: t.firmware.firmwareUploaded });
     },
     onError: (err: Error) => {
-      toast({ title: err.message || "Erro ao enviar firmware", variant: "destructive" });
+      toast({ title: err.message || t.firmware.uploadError, variant: "destructive" });
     }
   });
 
@@ -428,10 +428,10 @@ export default function FirmwarePage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/firmware"] });
-      toast({ title: "Firmware excluído" });
+      toast({ title: t.firmware.firmwareDeleted });
     },
     onError: () => {
-      toast({ title: "Erro ao excluir firmware", variant: "destructive" });
+      toast({ title: t.firmware.deleteError, variant: "destructive" });
     }
   });
 
@@ -454,7 +454,7 @@ export default function FirmwarePage() {
     ws.onopen = () => {
       setLines(prev => [...prev, { 
         type: 'system', 
-        content: 'Conectado ao servidor, iniciando recuperação...', 
+        content: t.firmware.serverConnected, 
         timestamp: new Date() 
       }]);
       ws.send(JSON.stringify({ 
@@ -489,10 +489,10 @@ export default function FirmwarePage() {
           setIsConnected(true);
         } else if (data.type === 'recovery_complete') {
           setIsRecoveryRunning(false);
-          toast({ title: "Recuperação concluída com sucesso" });
+          toast({ title: t.firmware.recoveryComplete });
           setLines(prev => [...prev, { 
             type: 'system', 
-            content: '=== RECUPERACAO FINALIZADA ===', 
+            content: t.firmware.recoveryFinished, 
             timestamp: new Date() 
           }]);
         } else if (data.type === 'recovery_error' || data.type === 'error') {
@@ -515,10 +515,10 @@ export default function FirmwarePage() {
       setIsRecoveryRunning(false);
       setLines(prev => [...prev, { 
         type: 'error', 
-        content: 'Erro de conexão WebSocket', 
+        content: t.firmware.wsConnectionError, 
         timestamp: new Date() 
       }]);
-      toast({ title: "Erro de conexão WebSocket", variant: "destructive" });
+      toast({ title: t.firmware.wsConnectionError, variant: "destructive" });
     };
     
     ws.onclose = () => {
@@ -527,11 +527,11 @@ export default function FirmwarePage() {
       setIsRecoveryRunning(false);
       setLines(prev => [...prev, { 
         type: 'system', 
-        content: 'Conexão encerrada', 
+        content: t.firmware.connectionClosed, 
         timestamp: new Date() 
       }]);
     };
-  }, [toast]);
+  }, [toast, t]);
 
   const resetForm = () => {
     setSelectedFile(null);
@@ -541,7 +541,7 @@ export default function FirmwarePage() {
   };
 
   const handleDelete = (id: number) => {
-    if (confirm("Excluir este firmware?")) {
+    if (confirm(t.firmware.deleteConfirm)) {
       deleteFirmware.mutate(id);
     }
   };
@@ -571,9 +571,9 @@ export default function FirmwarePage() {
       a.download = fw.filename || `${fw.name}-${fw.version}.bin`;
       a.click();
       window.URL.revokeObjectURL(url);
-      toast({ title: "Download iniciado" });
+      toast({ title: t.firmware.downloadStarted });
     } catch (err) {
-      toast({ title: "Erro ao baixar firmware", variant: "destructive" });
+      toast({ title: t.firmware.downloadError, variant: "destructive" });
     }
   };
 
@@ -615,9 +615,9 @@ export default function FirmwarePage() {
     return (
       <div className="p-6 md:p-8">
         <div className="text-center py-12">
-          <p className="text-red-500">Erro ao carregar firmwares</p>
+          <p className="text-red-500">{t.firmware.errorLoading}</p>
           <Button variant="outline" className="mt-4" onClick={() => window.location.reload()}>
-            Tentar novamente
+            {t.firmware.tryAgain}
           </Button>
         </div>
       </div>
@@ -693,14 +693,14 @@ export default function FirmwarePage() {
               </DialogTrigger>
               <DialogContent className="sm:max-w-md">
                 <DialogHeader>
-                  <DialogTitle>Upload de Firmware</DialogTitle>
+                  <DialogTitle>{t.firmware.uploadFirmware}</DialogTitle>
                   <DialogDescription>
-                    Envie um novo arquivo de firmware para o repositório
+                    {t.firmware.uploadDescription}
                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4 py-4">
                   <div className="space-y-2">
-                    <Label htmlFor="firmwareName">Nome do Firmware</Label>
+                    <Label htmlFor="firmwareName">{t.firmware.firmwareName}</Label>
                     <Input 
                       id="firmwareName"
                       value={firmwareName}
@@ -710,7 +710,7 @@ export default function FirmwarePage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="firmwareVersion">Versão</Label>
+                    <Label htmlFor="firmwareVersion">{t.common.version}</Label>
                     <Input 
                       id="firmwareVersion"
                       value={firmwareVersion}
@@ -720,10 +720,10 @@ export default function FirmwarePage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="manufacturer">Fabricante</Label>
+                    <Label htmlFor="manufacturer">{t.equipment.manufacturer}</Label>
                     <Select value={manufacturer} onValueChange={setManufacturer}>
                       <SelectTrigger data-testid="select-manufacturer">
-                        <SelectValue placeholder="Selecione o fabricante" />
+                        <SelectValue placeholder={t.firmware.selectManufacturer} />
                       </SelectTrigger>
                       <SelectContent>
                         {MANUFACTURERS.map((mfr) => (
@@ -735,7 +735,7 @@ export default function FirmwarePage() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="firmwareFile">Arquivo</Label>
+                    <Label htmlFor="firmwareFile">{t.firmware.file}</Label>
                     <Input 
                       id="firmwareFile"
                       type="file"
@@ -751,7 +751,7 @@ export default function FirmwarePage() {
                 </div>
                 <DialogFooter>
                   <Button variant="outline" onClick={() => { setUploadDialogOpen(false); resetForm(); }}>
-                    Cancelar
+                    {t.common.cancel}
                   </Button>
                   <Button 
                     onClick={handleUpload} 
@@ -763,7 +763,7 @@ export default function FirmwarePage() {
                     ) : (
                       <Upload className="h-4 w-4 mr-2" />
                     )}
-                    Enviar
+                    {t.common.upload}
                   </Button>
                 </DialogFooter>
               </DialogContent>
@@ -792,15 +792,15 @@ export default function FirmwarePage() {
                   <CardContent>
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Fabricante:</span>
+                        <span className="text-muted-foreground">{t.equipment.manufacturer}:</span>
                         <span className="font-medium uppercase">{fw.manufacturer}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Tamanho:</span>
+                        <span className="text-muted-foreground">{t.common.size}:</span>
                         <span>{((fw.size || 0) / (1024 * 1024)).toFixed(2)} MB</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Data:</span>
+                        <span className="text-muted-foreground">{t.common.date}:</span>
                         <span>{fw.createdAt ? format(new Date(fw.createdAt), "dd/MM/yyyy") : "-"}</span>
                       </div>
                       <div className="pt-3 flex justify-end gap-2">
@@ -810,7 +810,7 @@ export default function FirmwarePage() {
                           onClick={() => handleDownload(fw)}
                           data-testid={`button-download-${fw.id}`}
                         >
-                          <Download className="h-4 w-4 mr-2" /> Download
+                          <Download className="h-4 w-4 mr-2" /> {t.common.download}
                         </Button>
                         <Button 
                           variant="ghost" 
@@ -829,8 +829,8 @@ export default function FirmwarePage() {
             ) : (
               <div className="col-span-full py-12 text-center text-muted-foreground bg-muted/20 rounded-xl border border-dashed">
                 <FileCode className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>Nenhum firmware disponível</p>
-                <p className="text-sm mt-1">Clique em "Upload Firmware" para adicionar</p>
+                <p>{t.firmware.noFirmwareAvailable}</p>
+                <p className="text-sm mt-1">{t.firmware.clickToAdd}</p>
               </div>
             )}
           </div>
@@ -841,10 +841,10 @@ export default function FirmwarePage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <RotateCcw className="h-5 w-5" />
-                Scripts de Atualização / Recuperação
+                {t.firmware.updateRecoveryScripts}
               </CardTitle>
               <CardDescription>
-                Selecione um script para executar a recuperação ou atualização de firmware em um equipamento
+                {t.firmware.selectScriptDescription}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -853,10 +853,10 @@ export default function FirmwarePage() {
                   <Filter className="h-4 w-4 text-muted-foreground" />
                   <Select value={recoveryManufacturer} onValueChange={setRecoveryManufacturer}>
                     <SelectTrigger className="w-[180px]" data-testid="select-recovery-manufacturer">
-                      <SelectValue placeholder="Filtrar por fabricante" />
+                      <SelectValue placeholder={t.common.allManufacturers} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">Todos os fabricantes</SelectItem>
+                      <SelectItem value="all">{t.common.allManufacturers}</SelectItem>
                       {MANUFACTURERS.map((mfr) => (
                         <SelectItem key={mfr.value} value={mfr.value}>
                           {mfr.label}
@@ -889,7 +889,7 @@ export default function FirmwarePage() {
                         </div>
                         <CardTitle className="text-base mt-2">{script.name}</CardTitle>
                         <CardDescription className="line-clamp-2">
-                          {script.description || "Sem descrição"}
+                          {script.description || t.scripts.noDescription}
                         </CardDescription>
                       </CardHeader>
                       <CardContent>
@@ -907,8 +907,8 @@ export default function FirmwarePage() {
               ) : (
                 <div className="py-12 text-center text-muted-foreground bg-muted/20 rounded-xl border border-dashed">
                   <AlertCircle className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>Nenhum script de atualização encontrado</p>
-                  <p className="text-sm mt-1">Adicione scripts na página de Scripts</p>
+                  <p>{t.firmware.noUpdateScriptsFound}</p>
+                  <p className="text-sm mt-1">{t.firmware.addScriptsHint}</p>
                 </div>
               )}
 
@@ -916,14 +916,14 @@ export default function FirmwarePage() {
                 <div className="mt-6 p-4 border rounded-lg bg-muted/20">
                   <h3 className="font-semibold mb-4 flex items-center gap-2">
                     <Server className="h-4 w-4" />
-                    Executar em Equipamento
+                    {t.firmware.executeOnEquipment}
                   </h3>
                   <div className="flex flex-col gap-4 md:flex-row md:items-end">
                     <div className="flex-1 space-y-2">
-                      <Label>Selecione o Equipamento</Label>
+                      <Label>{t.firmware.selectEquipment}</Label>
                       <Select value={selectedEquipment} onValueChange={setSelectedEquipment}>
                         <SelectTrigger data-testid="select-equipment">
-                          <SelectValue placeholder="Escolha um equipamento..." />
+                          <SelectValue placeholder={t.firmware.chooseEquipment} />
                         </SelectTrigger>
                         <SelectContent>
                           {filteredEquipment.map((eq) => (
@@ -935,7 +935,7 @@ export default function FirmwarePage() {
                       </Select>
                       {filteredEquipment.length === 0 && (
                         <p className="text-xs text-muted-foreground">
-                          Nenhum equipamento {selectedScript.manufacturer.toUpperCase()} encontrado
+                          {t.firmware.noEquipmentFound} ({selectedScript.manufacturer.toUpperCase()})
                         </p>
                       )}
                     </div>
@@ -947,23 +947,23 @@ export default function FirmwarePage() {
                             data-testid="button-execute-recovery"
                           >
                             <Play className="h-4 w-4 mr-2" />
-                            Executar Recuperação
+                            {t.firmware.executeRecovery}
                           </Button>
                         </DialogTrigger>
                         <DialogContent>
                         <DialogHeader>
-                          <DialogTitle>Confirmar Execução</DialogTitle>
+                          <DialogTitle>{t.firmware.confirmExecution}</DialogTitle>
                           <DialogDescription>
-                            Você está prestes a executar o script de recuperação no equipamento selecionado.
+                            {t.firmware.executionWarning}
                           </DialogDescription>
                         </DialogHeader>
                         <div className="py-4 space-y-3">
                           <div className="p-3 bg-muted rounded-lg">
-                            <p className="text-sm text-muted-foreground">Script:</p>
+                            <p className="text-sm text-muted-foreground">{t.firmware.script}:</p>
                             <p className="font-medium">{selectedScript.name}</p>
                           </div>
                           <div className="p-3 bg-muted rounded-lg">
-                            <p className="text-sm text-muted-foreground">Equipamento:</p>
+                            <p className="text-sm text-muted-foreground">{t.firmware.selectEquipment}:</p>
                             <p className="font-medium">
                               {filteredEquipment.find(e => e.id.toString() === selectedEquipment)?.name}
                             </p>
@@ -974,13 +974,13 @@ export default function FirmwarePage() {
                           <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
                             <p className="text-sm text-yellow-800 dark:text-yellow-200">
                               <AlertCircle className="h-4 w-4 inline mr-2" />
-                              Esta ação pode reiniciar o equipamento. Certifique-se de que isso não afetará serviços críticos.
+                              {t.firmware.rebootWarning}
                             </p>
                           </div>
                         </div>
                         <DialogFooter>
                           <Button variant="outline" onClick={() => setRecoveryDialogOpen(false)}>
-                            Cancelar
+                            {t.common.cancel}
                           </Button>
                           <Button 
                             onClick={handleExecuteRecovery}
@@ -992,7 +992,7 @@ export default function FirmwarePage() {
                             ) : (
                               <Play className="h-4 w-4 mr-2" />
                             )}
-                            Confirmar Execução
+                            {t.firmware.confirmExecution}
                           </Button>
                         </DialogFooter>
                       </DialogContent>
@@ -1004,7 +1004,7 @@ export default function FirmwarePage() {
                         data-testid="button-open-terminal"
                       >
                         <Terminal className="h-4 w-4 mr-2" />
-                        Terminal CLI
+                        {t.firmware.terminalCli}
                       </Button>
                     </div>
                   </div>
@@ -1017,17 +1017,17 @@ export default function FirmwarePage() {
                     <div className="flex items-center gap-3">
                       <Terminal className="h-5 w-5" style={{ color: currentTheme.prompt }} />
                       <CardTitle className="text-base" style={{ color: currentTheme.foreground }}>
-                        {isRecoveryRunning ? 'Execução de Recuperação' : 'Terminal CLI'} - {equipment.find(e => e.id.toString() === selectedEquipment)?.name || selectedScript?.name || 'Equipamento'}
+                        {isRecoveryRunning ? t.firmware.recoveryExecution : t.firmware.terminalCli} - {equipment.find(e => e.id.toString() === selectedEquipment)?.name || selectedScript?.name || t.firmware.selectEquipment}
                       </CardTitle>
                       <Badge variant={isConnected ? "default" : "secondary"} className="text-xs">
                         {isRecoveryRunning ? (
-                          <><Loader2 className="h-3 w-3 mr-1 animate-spin" /> Executando...</>
+                          <><Loader2 className="h-3 w-3 mr-1 animate-spin" /> {t.firmware.executing}</>
                         ) : isConnected ? (
-                          <><Wifi className="h-3 w-3 mr-1" /> Conectado</>
+                          <><Wifi className="h-3 w-3 mr-1" /> {t.terminal.connected}</>
                         ) : isConnecting ? (
-                          <><Loader2 className="h-3 w-3 mr-1 animate-spin" /> Conectando...</>
+                          <><Loader2 className="h-3 w-3 mr-1 animate-spin" /> {t.terminal.connecting}</>
                         ) : (
-                          <><WifiOff className="h-3 w-3 mr-1" /> Desconectado</>
+                          <><WifiOff className="h-3 w-3 mr-1" /> {t.terminal.disconnected}</>
                         )}
                       </Badge>
                     </div>
@@ -1040,9 +1040,9 @@ export default function FirmwarePage() {
                         </DialogTrigger>
                         <DialogContent className="sm:max-w-md">
                           <DialogHeader>
-                            <DialogTitle>Tema do Terminal</DialogTitle>
+                            <DialogTitle>{t.firmware.terminalTheme}</DialogTitle>
                             <DialogDescription>
-                              Escolha um tema para personalizar o terminal
+                              {t.firmware.themeDescription}
                             </DialogDescription>
                           </DialogHeader>
                           <div className="grid grid-cols-2 gap-2 py-4 max-h-80 overflow-auto">
@@ -1094,7 +1094,7 @@ export default function FirmwarePage() {
                           setLines([]);
                         }}
                         data-testid="button-close-terminal"
-                        title={isRecoveryRunning ? "Aguarde a execução terminar" : "Fechar terminal"}
+                        title={isRecoveryRunning ? t.firmware.waitExecution : t.firmware.closeTerminal}
                       >
                         <X className="h-4 w-4" style={{ color: isRecoveryRunning ? currentTheme.selection : currentTheme.foreground }} />
                       </Button>
@@ -1124,7 +1124,7 @@ export default function FirmwarePage() {
                       ))}
                       {lines.length === 0 && !isConnecting && !isConnected && !isRecoveryRunning && (
                         <div style={{ color: currentTheme.system }}>
-                          Selecione um script e equipamento, então clique em "Executar" para iniciar a recuperação...
+                          {t.firmware.selectToStart}
                         </div>
                       )}
                     </div>
@@ -1141,7 +1141,7 @@ export default function FirmwarePage() {
                         value={commandInput}
                         onChange={(e) => setCommandInput(e.target.value)}
                         onKeyDown={handleKeyDown}
-                        placeholder={isConnected ? "Digite um comando..." : "Conecte-se primeiro..."}
+                        placeholder={isConnected ? t.firmware.typeCommand : t.firmware.connectFirst}
                         disabled={!isConnected}
                         className="flex-1 font-mono border-0 bg-transparent focus-visible:ring-0"
                         style={{ color: currentTheme.input }}

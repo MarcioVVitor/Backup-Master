@@ -77,7 +77,7 @@ export default function BackupsPage() {
 
   const getEquipmentName = (id: number | null) => {
     const eq = getEquipment(id);
-    return eq?.name || "Desconhecido";
+    return eq?.name || t.common.unknown;
   };
 
   const getEquipmentManufacturer = (id: number | null) => {
@@ -115,14 +115,14 @@ export default function BackupsPage() {
   const handleDelete = (id: number) => {
     deleteFile(id, {
       onSuccess: () => {
-        toast({ title: "Arquivo excluído", description: "Backup removido com sucesso." });
+        toast({ title: t.backups.fileDeleted, description: t.backups.removedSuccess });
         setSelectedBackups(prev => {
           const next = new Set(prev);
           next.delete(id);
           return next;
         });
       },
-      onError: () => toast({ title: "Erro", description: "Não foi possível excluir o arquivo.", variant: "destructive" })
+      onError: () => toast({ title: t.common.error, description: t.backups.deleteError, variant: "destructive" })
     });
   };
 
@@ -156,13 +156,13 @@ export default function BackupsPage() {
     
     if (successCount > 0) {
       toast({ 
-        title: `${successCount} backup(s) excluído(s)`, 
-        description: errorCount > 0 ? `${errorCount} falha(s)` : "Backups removidos com sucesso." 
+        title: `${successCount} ${t.backups.backupsDeleted}`, 
+        description: errorCount > 0 ? `${errorCount} ${t.backups.deleteError}` : t.backups.removedSuccess 
       });
     } else if (errorCount > 0) {
       toast({ 
-        title: "Erro ao excluir backups", 
-        description: `${errorCount} falha(s) durante a exclusão`,
+        title: t.common.error, 
+        description: t.backups.deleteError,
         variant: "destructive"
       });
     }
@@ -186,10 +186,10 @@ export default function BackupsPage() {
         const data = await response.json();
         setBackupContent(data);
       } else {
-        toast({ title: "Erro ao carregar conteúdo", variant: "destructive" });
+        toast({ title: t.backups.contentError, variant: "destructive" });
       }
     } catch {
-      toast({ title: "Erro ao carregar conteúdo", variant: "destructive" });
+      toast({ title: t.backups.contentError, variant: "destructive" });
     } finally {
       setIsLoadingContent(false);
     }
@@ -233,7 +233,7 @@ export default function BackupsPage() {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input 
-            placeholder="Buscar por nome ou equipamento..." 
+            placeholder={t.backups.searchPlaceholder}
             className="pl-10"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -244,10 +244,10 @@ export default function BackupsPage() {
         <Select value={selectedManufacturer} onValueChange={setSelectedManufacturer}>
           <SelectTrigger className="w-full md:w-[180px]" data-testid="select-manufacturer">
             <Filter className="h-4 w-4 mr-2" />
-            <SelectValue placeholder="Fabricante" />
+            <SelectValue placeholder={t.equipment.manufacturer} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Todos Fabricantes</SelectItem>
+            <SelectItem value="all">{t.common.allManufacturers}</SelectItem>
             {manufacturers.map((mfr) => (
               <SelectItem key={mfr.value} value={mfr.value}>
                 {mfr.label}
@@ -259,10 +259,10 @@ export default function BackupsPage() {
         <Select value={selectedModel} onValueChange={setSelectedModel}>
           <SelectTrigger className="w-full md:w-[180px]" data-testid="select-model">
             <Server className="h-4 w-4 mr-2" />
-            <SelectValue placeholder="Modelo" />
+            <SelectValue placeholder={t.equipment.model} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Todos Modelos</SelectItem>
+            <SelectItem value="all">{t.common.allModels}</SelectItem>
             {uniqueModels.map((model) => (
               <SelectItem key={model} value={model}>
                 {model}
@@ -282,8 +282,8 @@ export default function BackupsPage() {
             />
             <span className="text-sm text-muted-foreground">
               {selectedBackups.size > 0 
-                ? `${selectedBackups.size} de ${filteredFiles.length} selecionado(s)`
-                : `${filteredFiles.length} backup(s) disponível(is)`
+                ? `${selectedBackups.size} ${t.backups.selectedOf} ${filteredFiles.length}`
+                : `${filteredFiles.length} ${t.backups.availableBackups}`
               }
             </span>
           </div>
@@ -296,18 +296,18 @@ export default function BackupsPage() {
                   data-testid="button-bulk-delete"
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
-                  Excluir Selecionados ({selectedBackups.size})
+                  {t.backups.deleteSelected} ({selectedBackups.size})
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Excluir {selectedBackups.size} Backup(s)?</AlertDialogTitle>
+                  <AlertDialogTitle>{t.backups.confirmDeleteMultiple} ({selectedBackups.size})?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Esta ação excluirá permanentemente os backups selecionados. Esta ação não pode ser desfeita.
+                    {t.backups.deleteWarning}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel disabled={isDeletingBulk}>Cancelar</AlertDialogCancel>
+                  <AlertDialogCancel disabled={isDeletingBulk}>{t.common.cancel}</AlertDialogCancel>
                   <AlertDialogAction 
                     className="bg-red-600 hover:bg-red-700" 
                     onClick={handleBulkDelete}
@@ -316,10 +316,10 @@ export default function BackupsPage() {
                     {isDeletingBulk ? (
                       <>
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Excluindo...
+                        {t.common.deleting}
                       </>
                     ) : (
-                      'Excluir'
+                      t.common.delete
                     )}
                   </AlertDialogAction>
                 </AlertDialogFooter>
@@ -367,12 +367,12 @@ export default function BackupsPage() {
               <CardContent>
                 <div className="space-y-3">
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Equipamento:</span>
+                    <span className="text-muted-foreground">{t.backups.equipmentLabel}:</span>
                     <span className="font-medium">{getEquipmentName(file.equipmentId)}</span>
                   </div>
                   {eq && (
                     <div className="flex justify-between text-sm items-center">
-                      <span className="text-muted-foreground">Fabricante:</span>
+                      <span className="text-muted-foreground">{t.backups.manufacturerLabel}:</span>
                       <Badge 
                         variant="secondary" 
                         className="text-xs"
@@ -387,13 +387,13 @@ export default function BackupsPage() {
                   )}
                   {eq?.model && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Modelo:</span>
+                      <span className="text-muted-foreground">{t.backups.modelLabel}:</span>
                       <span className="text-xs">{eq.model}</span>
                     </div>
                   )}
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground flex items-center gap-1">
-                      <Calendar className="h-3 w-3" /> Data:
+                      <Calendar className="h-3 w-3" /> {t.common.date}:
                     </span>
                     <span>
                       {file.createdAt ? format(new Date(file.createdAt), "dd/MM/yyyy HH:mm") : "-"}
@@ -408,7 +408,7 @@ export default function BackupsPage() {
                       onClick={() => handleView(file.id, file.filename)}
                       data-testid={`button-view-${file.id}`}
                     >
-                      <Eye className="h-4 w-4 mr-2" /> Visualizar
+                      <Eye className="h-4 w-4 mr-2" /> {t.common.view}
                     </Button>
                     <Button 
                       variant="outline" 
@@ -432,18 +432,18 @@ export default function BackupsPage() {
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>
-                          <AlertDialogTitle>Excluir Backup?</AlertDialogTitle>
+                          <AlertDialogTitle>{t.backups.deleteBackup}?</AlertDialogTitle>
                           <AlertDialogDescription>
-                            Esta ação excluirá permanentemente o arquivo <strong>{file.filename}</strong>.
+                            {t.backups.confirmDeleteSingle} <strong>{file.filename}</strong>
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogCancel>{t.common.cancel}</AlertDialogCancel>
                           <AlertDialogAction 
                             className="bg-red-600 hover:bg-red-700" 
                             onClick={() => handleDelete(file.id)}
                           >
-                            Excluir
+                            {t.common.delete}
                           </AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
@@ -458,7 +458,7 @@ export default function BackupsPage() {
         {!filteredFiles?.length && !isLoading && (
           <div className="col-span-full flex flex-col items-center justify-center py-12 text-muted-foreground bg-muted/20 rounded-xl border border-dashed">
             <HardDrive className="h-12 w-12 mb-4 opacity-20" />
-            <p>Nenhum backup encontrado</p>
+            <p>{t.backups.noBackups}</p>
           </div>
         )}
       </div>
@@ -471,7 +471,7 @@ export default function BackupsPage() {
               {viewingBackup?.filename}
             </DialogTitle>
             <DialogDescription>
-              Conteúdo completo do arquivo de backup
+              {t.backups.fullContent}
               {backupContent && (
                 <span className="ml-2 text-muted-foreground">
                   ({(backupContent.totalSize / 1024).toFixed(1)} KB)
@@ -483,7 +483,7 @@ export default function BackupsPage() {
             {isLoadingContent ? (
               <div className="flex items-center justify-center py-12">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                <span className="ml-2 text-muted-foreground">Carregando conteúdo...</span>
+                <span className="ml-2 text-muted-foreground">{t.backups.loadingContent}</span>
               </div>
             ) : backupContent ? (
               <pre className="text-sm font-mono bg-muted/50 p-4 rounded-lg whitespace-pre-wrap break-words">
@@ -491,7 +491,7 @@ export default function BackupsPage() {
               </pre>
             ) : (
               <div className="text-center py-12 text-muted-foreground">
-                Não foi possível carregar o conteúdo
+                {t.backups.contentError}
               </div>
             )}
           </ScrollArea>
@@ -501,10 +501,10 @@ export default function BackupsPage() {
               onClick={() => viewingBackup && handleDownload(viewingBackup.id, viewingBackup.filename)}
             >
               <Download className="h-4 w-4 mr-2" />
-              Download
+              {t.common.download}
             </Button>
             <Button onClick={() => setViewDialogOpen(false)}>
-              Fechar
+              {t.common.close}
             </Button>
           </div>
         </DialogContent>
@@ -515,7 +515,7 @@ export default function BackupsPage() {
           <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <Badge variant="secondary" className="text-sm px-3 py-1">
-                {selectedBackups.size} selecionado(s)
+                {selectedBackups.size} {t.backups.selectedOf}
               </Badge>
             </div>
             <div className="flex items-center gap-2">
@@ -530,7 +530,7 @@ export default function BackupsPage() {
                   data-testid="button-fixed-view"
                 >
                   <Eye className="h-4 w-4 mr-2" />
-                  Visualizar
+                  {t.common.view}
                 </Button>
               )}
               {selectedBackups.size === 1 && (
@@ -544,7 +544,7 @@ export default function BackupsPage() {
                   data-testid="button-fixed-download"
                 >
                   <Download className="h-4 w-4 mr-2" />
-                  Download
+                  {t.common.download}
                 </Button>
               )}
               <AlertDialog open={bulkDeleteOpen} onOpenChange={setBulkDeleteOpen}>
@@ -554,18 +554,18 @@ export default function BackupsPage() {
                     data-testid="button-fixed-delete"
                   >
                     <Trash2 className="h-4 w-4 mr-2" />
-                    Excluir ({selectedBackups.size})
+                    {t.common.delete} ({selectedBackups.size})
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Excluir {selectedBackups.size} Backup(s)?</AlertDialogTitle>
+                    <AlertDialogTitle>{t.backups.confirmDeleteMultiple} ({selectedBackups.size})?</AlertDialogTitle>
                     <AlertDialogDescription>
-                      Esta ação excluirá permanentemente os backups selecionados. Esta ação não pode ser desfeita.
+                      {t.backups.deleteWarning}
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel disabled={isDeletingBulk}>Cancelar</AlertDialogCancel>
+                    <AlertDialogCancel disabled={isDeletingBulk}>{t.common.cancel}</AlertDialogCancel>
                     <AlertDialogAction 
                       className="bg-red-600 hover:bg-red-700" 
                       onClick={handleBulkDelete}
@@ -574,10 +574,10 @@ export default function BackupsPage() {
                       {isDeletingBulk ? (
                         <>
                           <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          Excluindo...
+                          {t.common.deleting}
                         </>
                       ) : (
-                        'Excluir'
+                        t.common.delete
                       )}
                     </AlertDialogAction>
                   </AlertDialogFooter>
@@ -587,7 +587,7 @@ export default function BackupsPage() {
                 variant="ghost"
                 onClick={() => setSelectedBackups(new Set())}
               >
-                Cancelar
+                {t.common.cancel}
               </Button>
             </div>
           </div>

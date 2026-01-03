@@ -7,11 +7,11 @@ export interface LanguageOption {
 }
 
 export const LANGUAGES: LanguageOption[] = [
-  { code: "pt", name: "Português", flag: "🇧🇷" },
-  { code: "en", name: "English", flag: "🇺🇸" },
-  { code: "es", name: "Español", flag: "🇪🇸" },
-  { code: "fr", name: "Français", flag: "🇫🇷" },
-  { code: "de", name: "Deutsch", flag: "🇩🇪" },
+  { code: "pt", name: "Português", flag: "PT" },
+  { code: "en", name: "English", flag: "EN" },
+  { code: "es", name: "Español", flag: "ES" },
+  { code: "fr", name: "Français", flag: "FR" },
+  { code: "de", name: "Deutsch", flag: "DE" },
 ];
 
 type TranslationKeys = {
@@ -51,6 +51,12 @@ type TranslationKeys = {
     size: string;
     type: string;
     version: string;
+    select: string;
+    deleting: string;
+    saving: string;
+    unknown: string;
+    allManufacturers: string;
+    allModels: string;
   };
   menu: {
     dashboard: string;
@@ -91,6 +97,14 @@ type TranslationKeys = {
     enabled: string;
     noEquipment: string;
     confirmDelete: string;
+    saveEquipment: string;
+    createSuccess: string;
+    updateSuccess: string;
+    createError: string;
+    updateError: string;
+    removed: string;
+    deletingEquipment: string;
+    confirmDeleteMessage: string;
   };
   manufacturers: {
     title: string;
@@ -129,6 +143,24 @@ type TranslationKeys = {
     statusSuccess: string;
     statusFailed: string;
     statusPending: string;
+    searchPlaceholder: string;
+    selectedOf: string;
+    availableBackups: string;
+    deleteSelected: string;
+    confirmDeleteMultiple: string;
+    deleteWarning: string;
+    deletingBackups: string;
+    backupsDeleted: string;
+    deleteError: string;
+    equipmentLabel: string;
+    manufacturerLabel: string;
+    modelLabel: string;
+    fullContent: string;
+    loadingContent: string;
+    contentError: string;
+    fileDeleted: string;
+    removedSuccess: string;
+    confirmDeleteSingle: string;
   };
   executeBackup: {
     title: string;
@@ -139,6 +171,24 @@ type TranslationKeys = {
     executing: string;
     executionComplete: string;
     executionFailed: string;
+    viewBackups: string;
+    filterByManufacturer: string;
+    searchPlaceholder: string;
+    allModels: string;
+    selectAllVisible: string;
+    deselectAll: string;
+    selected: string;
+    loadingEquipment: string;
+    noEquipmentFound: string;
+    backupProgress: string;
+    startingBackup: string;
+    backupOf: string;
+    backupCompleted: string;
+    backupError: string;
+    connectionError: string;
+    noModel: string;
+    equipmentCount: string;
+    backupFinished: string;
   };
   scheduler: {
     title: string;
@@ -155,6 +205,31 @@ type TranslationKeys = {
     daily: string;
     weekly: string;
     monthly: string;
+    hourly: string;
+    newPolicy: string;
+    deletePolicy: string;
+    searchPolicies: string;
+    createFirstPolicy: string;
+    targets: string;
+    allEquipment: string;
+    descriptionOptional: string;
+    schedulingDescription: string;
+    daysOfWeek: string;
+    dayOfMonth: string;
+    equipmentFilters: string;
+    manufacturers: string;
+    models: string;
+    leaveBlankForAll: string;
+    policyActive: string;
+    createPolicy: string;
+    saveChanges: string;
+    policyCreated: string;
+    policyUpdated: string;
+    policyDeleted: string;
+    actionCannotBeUndone: string;
+    policyWillBeRemoved: string;
+    at: string;
+    day: string;
   };
   firmware: {
     title: string;
@@ -162,6 +237,7 @@ type TranslationKeys = {
     repository: string;
     recovery: string;
     uploadFirmware: string;
+    uploadDescription: string;
     firmwareName: string;
     firmwareVersion: string;
     selectManufacturer: string;
@@ -173,6 +249,45 @@ type TranslationKeys = {
     allManufacturers: string;
     noFirmwareAvailable: string;
     clickToAdd: string;
+    file: string;
+    updateRecoveryScripts: string;
+    selectScriptDescription: string;
+    noUpdateScriptsFound: string;
+    addScriptsHint: string;
+    executeOnEquipment: string;
+    chooseEquipment: string;
+    noEquipmentFound: string;
+    confirmExecution: string;
+    executionWarning: string;
+    rebootWarning: string;
+    script: string;
+    recoveryExecution: string;
+    terminalCli: string;
+    terminalTheme: string;
+    themeDescription: string;
+    executing: string;
+    tryAgain: string;
+    errorLoading: string;
+    deleteConfirm: string;
+    firmwareUploaded: string;
+    firmwareDeleted: string;
+    uploadError: string;
+    deleteError: string;
+    downloadStarted: string;
+    downloadError: string;
+    recoveryComplete: string;
+    wsConnectionError: string;
+    selectToStart: string;
+    typeCommand: string;
+    connectFirst: string;
+    waitExecution: string;
+    closeTerminal: string;
+    connectingTo: string;
+    connectedVia: string;
+    connectionClosed: string;
+    connectionFailed: string;
+    serverConnected: string;
+    recoveryFinished: string;
   };
   terminal: {
     title: string;
@@ -197,6 +312,15 @@ type TranslationKeys = {
     arrowDown: string;
     typeCommand: string;
     send: string;
+    selectEquipmentToConnect: string;
+    connectingTo: string;
+    connectedTo: string;
+    connectionError: string;
+    connectionClosed: string;
+    failedToConnect: string;
+    notConnected: string;
+    terminalCleared: string;
+    themeChanged: string;
   };
   admin: {
     title: string;
@@ -303,6 +427,12 @@ export const translations: Translations = {
       size: "Tamanho",
       type: "Tipo",
       version: "Versão",
+      select: "Selecionar",
+      deleting: "Excluindo...",
+      saving: "Salvando...",
+      unknown: "Desconhecido",
+      allManufacturers: "Todos os fabricantes",
+      allModels: "Todos os modelos",
     },
     menu: {
       dashboard: "Dashboard",
@@ -343,6 +473,14 @@ export const translations: Translations = {
       enabled: "Ativo",
       noEquipment: "Nenhum equipamento cadastrado",
       confirmDelete: "Confirma a exclusão deste equipamento?",
+      saveEquipment: "Salvar Equipamento",
+      createSuccess: "Equipamento criado com sucesso",
+      updateSuccess: "Equipamento atualizado com sucesso",
+      createError: "Falha ao criar equipamento",
+      updateError: "Falha ao atualizar equipamento",
+      removed: "foi removido",
+      deletingEquipment: "Excluindo equipamento...",
+      confirmDeleteMessage: "Esta ação não pode ser desfeita.",
     },
     manufacturers: {
       title: "Fabricantes",
@@ -381,6 +519,24 @@ export const translations: Translations = {
       statusSuccess: "Sucesso",
       statusFailed: "Falhou",
       statusPending: "Pendente",
+      searchPlaceholder: "Buscar por nome, IP ou equipamento...",
+      selectedOf: "de",
+      availableBackups: "backups disponíveis",
+      deleteSelected: "Excluir Selecionados",
+      confirmDeleteMultiple: "Excluir backups selecionados?",
+      deleteWarning: "Esta ação não pode ser desfeita. Os backups serão removidos permanentemente.",
+      deletingBackups: "Excluindo backups...",
+      backupsDeleted: "backups excluídos com sucesso",
+      deleteError: "Falha ao excluir alguns backups",
+      equipmentLabel: "Equipamento",
+      manufacturerLabel: "Fabricante",
+      modelLabel: "Modelo",
+      fullContent: "Conteúdo Completo",
+      loadingContent: "Carregando conteúdo...",
+      contentError: "Não foi possível carregar o conteúdo",
+      fileDeleted: "Arquivo excluído",
+      removedSuccess: "Backup removido com sucesso",
+      confirmDeleteSingle: "Tem certeza que deseja excluir este backup?",
     },
     executeBackup: {
       title: "Executar Backup",
@@ -391,6 +547,24 @@ export const translations: Translations = {
       executing: "Executando...",
       executionComplete: "Backup concluído com sucesso",
       executionFailed: "Falha na execução do backup",
+      viewBackups: "Ver Backups",
+      filterByManufacturer: "Filtrar por fabricante",
+      searchPlaceholder: "Buscar equipamento...",
+      allModels: "Todos os modelos",
+      selectAllVisible: "Selecionar todos visíveis",
+      deselectAll: "Desmarcar todos",
+      selected: "selecionados",
+      loadingEquipment: "Carregando equipamentos...",
+      noEquipmentFound: "Nenhum equipamento encontrado",
+      backupProgress: "Progresso do Backup",
+      startingBackup: "Iniciando backup",
+      backupOf: "Backup de",
+      backupCompleted: "concluído com sucesso",
+      backupError: "Erro no backup",
+      connectionError: "Erro de conexão",
+      noModel: "Sem modelo",
+      equipmentCount: "equipamentos",
+      backupFinished: "Backup finalizado",
     },
     scheduler: {
       title: "Scheduler",
@@ -407,6 +581,31 @@ export const translations: Translations = {
       daily: "Diário",
       weekly: "Semanal",
       monthly: "Mensal",
+      hourly: "A cada hora",
+      newPolicy: "Nova Política",
+      deletePolicy: "Excluir Política",
+      searchPolicies: "Buscar políticas...",
+      createFirstPolicy: "Clique em 'Nova Política' para criar um agendamento",
+      targets: "Alvos",
+      allEquipment: "Todos os equipamentos",
+      descriptionOptional: "Descrição (opcional)",
+      schedulingDescription: "Configure quando o backup será executado",
+      daysOfWeek: "Dias da Semana",
+      dayOfMonth: "Dia do Mês",
+      equipmentFilters: "Filtros de Equipamento",
+      manufacturers: "Fabricantes",
+      models: "Modelos",
+      leaveBlankForAll: "Deixe em branco para incluir todos",
+      policyActive: "Política Ativa",
+      createPolicy: "Criar Política",
+      saveChanges: "Salvar Alterações",
+      policyCreated: "Política criada com sucesso",
+      policyUpdated: "Política atualizada com sucesso",
+      policyDeleted: "Política excluída com sucesso",
+      actionCannotBeUndone: "Esta ação não pode ser desfeita.",
+      policyWillBeRemoved: "A política será removida permanentemente.",
+      at: "às",
+      day: "dia",
     },
     firmware: {
       title: "Firmware",
@@ -414,6 +613,7 @@ export const translations: Translations = {
       repository: "Repositório",
       recovery: "Recuperação",
       uploadFirmware: "Upload Firmware",
+      uploadDescription: "Envie um novo arquivo de firmware para o repositório",
       firmwareName: "Nome do Firmware",
       firmwareVersion: "Versão",
       selectManufacturer: "Selecione o fabricante",
@@ -425,6 +625,45 @@ export const translations: Translations = {
       allManufacturers: "Todos os fabricantes",
       noFirmwareAvailable: "Nenhum firmware disponível",
       clickToAdd: "Clique em 'Upload Firmware' para adicionar",
+      file: "Arquivo",
+      updateRecoveryScripts: "Scripts de Atualização / Recuperação",
+      selectScriptDescription: "Selecione um script para executar a recuperação ou atualização de firmware em um equipamento",
+      noUpdateScriptsFound: "Nenhum script de atualização encontrado",
+      addScriptsHint: "Adicione scripts na página de Scripts",
+      executeOnEquipment: "Executar em Equipamento",
+      chooseEquipment: "Escolha um equipamento...",
+      noEquipmentFound: "Nenhum equipamento encontrado",
+      confirmExecution: "Confirmar Execução",
+      executionWarning: "Você está prestes a executar o script de recuperação no equipamento selecionado.",
+      rebootWarning: "Esta ação pode reiniciar o equipamento. Certifique-se de que isso não afetará serviços críticos.",
+      script: "Script",
+      recoveryExecution: "Execução de Recuperação",
+      terminalCli: "Terminal CLI",
+      terminalTheme: "Tema do Terminal",
+      themeDescription: "Escolha um tema para personalizar o terminal",
+      executing: "Executando...",
+      tryAgain: "Tentar novamente",
+      errorLoading: "Erro ao carregar firmwares",
+      deleteConfirm: "Excluir este firmware?",
+      firmwareUploaded: "Firmware enviado com sucesso",
+      firmwareDeleted: "Firmware excluído",
+      uploadError: "Erro ao enviar firmware",
+      deleteError: "Erro ao excluir firmware",
+      downloadStarted: "Download iniciado",
+      downloadError: "Erro ao baixar firmware",
+      recoveryComplete: "Recuperação concluída com sucesso",
+      wsConnectionError: "Erro de conexão WebSocket",
+      selectToStart: "Selecione um script e equipamento, então clique em 'Executar' para iniciar a recuperação...",
+      typeCommand: "Digite um comando...",
+      connectFirst: "Conecte-se primeiro...",
+      waitExecution: "Aguarde a execução terminar",
+      closeTerminal: "Fechar terminal",
+      connectingTo: "Conectando a",
+      connectedVia: "Conectado via",
+      connectionClosed: "Conexão encerrada",
+      connectionFailed: "Falha ao estabelecer conexão",
+      serverConnected: "Conectado ao servidor, iniciando recuperação...",
+      recoveryFinished: "=== RECUPERAÇÃO FINALIZADA ===",
     },
     terminal: {
       title: "Terminal",
@@ -449,6 +688,15 @@ export const translations: Translations = {
       arrowDown: "Seta para baixo",
       typeCommand: "Digite um comando...",
       send: "Enviar",
+      selectEquipmentToConnect: "Selecione um equipamento",
+      connectingTo: "Conectando a",
+      connectedTo: "Conectado a",
+      connectionError: "Erro na conexão WebSocket",
+      connectionClosed: "Conexão encerrada",
+      failedToConnect: "Falha ao estabelecer conexão",
+      notConnected: "Não conectado. Conecte-se a um equipamento primeiro.",
+      terminalCleared: "Terminal limpo",
+      themeChanged: "Tema alterado para",
     },
     admin: {
       title: "Administração",
@@ -551,6 +799,12 @@ export const translations: Translations = {
       size: "Size",
       type: "Type",
       version: "Version",
+      select: "Select",
+      deleting: "Deleting...",
+      saving: "Saving...",
+      unknown: "Unknown",
+      allManufacturers: "All manufacturers",
+      allModels: "All models",
     },
     menu: {
       dashboard: "Dashboard",
@@ -591,6 +845,14 @@ export const translations: Translations = {
       enabled: "Enabled",
       noEquipment: "No equipment registered",
       confirmDelete: "Confirm deletion of this equipment?",
+      saveEquipment: "Save Equipment",
+      createSuccess: "Equipment created successfully",
+      updateSuccess: "Equipment updated successfully",
+      createError: "Failed to create equipment",
+      updateError: "Failed to update equipment",
+      removed: "has been removed",
+      deletingEquipment: "Deleting equipment...",
+      confirmDeleteMessage: "This action cannot be undone.",
     },
     manufacturers: {
       title: "Manufacturers",
@@ -629,6 +891,24 @@ export const translations: Translations = {
       statusSuccess: "Success",
       statusFailed: "Failed",
       statusPending: "Pending",
+      searchPlaceholder: "Search by name, IP or equipment...",
+      selectedOf: "of",
+      availableBackups: "backups available",
+      deleteSelected: "Delete Selected",
+      confirmDeleteMultiple: "Delete selected backups?",
+      deleteWarning: "This action cannot be undone. Backups will be permanently removed.",
+      deletingBackups: "Deleting backups...",
+      backupsDeleted: "backups deleted successfully",
+      deleteError: "Failed to delete some backups",
+      equipmentLabel: "Equipment",
+      manufacturerLabel: "Manufacturer",
+      modelLabel: "Model",
+      fullContent: "Full Content",
+      loadingContent: "Loading content...",
+      contentError: "Could not load content",
+      fileDeleted: "File deleted",
+      removedSuccess: "Backup removed successfully",
+      confirmDeleteSingle: "Are you sure you want to delete this backup?",
     },
     executeBackup: {
       title: "Execute Backup",
@@ -639,6 +919,24 @@ export const translations: Translations = {
       executing: "Executing...",
       executionComplete: "Backup completed successfully",
       executionFailed: "Backup execution failed",
+      viewBackups: "View Backups",
+      filterByManufacturer: "Filter by manufacturer",
+      searchPlaceholder: "Search equipment...",
+      allModels: "All models",
+      selectAllVisible: "Select all visible",
+      deselectAll: "Deselect all",
+      selected: "selected",
+      loadingEquipment: "Loading equipment...",
+      noEquipmentFound: "No equipment found",
+      backupProgress: "Backup Progress",
+      startingBackup: "Starting backup",
+      backupOf: "Backup of",
+      backupCompleted: "completed successfully",
+      backupError: "Backup error",
+      connectionError: "Connection error",
+      noModel: "No model",
+      equipmentCount: "equipment",
+      backupFinished: "Backup finished",
     },
     scheduler: {
       title: "Scheduler",
@@ -655,6 +953,31 @@ export const translations: Translations = {
       daily: "Daily",
       weekly: "Weekly",
       monthly: "Monthly",
+      hourly: "Hourly",
+      newPolicy: "New Policy",
+      deletePolicy: "Delete Policy",
+      searchPolicies: "Search policies...",
+      createFirstPolicy: "Click 'New Policy' to create a schedule",
+      targets: "Targets",
+      allEquipment: "All equipment",
+      descriptionOptional: "Description (optional)",
+      schedulingDescription: "Configure when backup will run",
+      daysOfWeek: "Days of Week",
+      dayOfMonth: "Day of Month",
+      equipmentFilters: "Equipment Filters",
+      manufacturers: "Manufacturers",
+      models: "Models",
+      leaveBlankForAll: "Leave blank to include all",
+      policyActive: "Policy Active",
+      createPolicy: "Create Policy",
+      saveChanges: "Save Changes",
+      policyCreated: "Policy created successfully",
+      policyUpdated: "Policy updated successfully",
+      policyDeleted: "Policy deleted successfully",
+      actionCannotBeUndone: "This action cannot be undone.",
+      policyWillBeRemoved: "The policy will be permanently removed.",
+      at: "at",
+      day: "day",
     },
     firmware: {
       title: "Firmware",
@@ -662,6 +985,7 @@ export const translations: Translations = {
       repository: "Repository",
       recovery: "Recovery",
       uploadFirmware: "Upload Firmware",
+      uploadDescription: "Upload a new firmware file to the repository",
       firmwareName: "Firmware Name",
       firmwareVersion: "Version",
       selectManufacturer: "Select manufacturer",
@@ -673,6 +997,45 @@ export const translations: Translations = {
       allManufacturers: "All manufacturers",
       noFirmwareAvailable: "No firmware available",
       clickToAdd: "Click 'Upload Firmware' to add",
+      file: "File",
+      updateRecoveryScripts: "Update / Recovery Scripts",
+      selectScriptDescription: "Select a script to run recovery or firmware update on equipment",
+      noUpdateScriptsFound: "No update scripts found",
+      addScriptsHint: "Add scripts on the Scripts page",
+      executeOnEquipment: "Execute on Equipment",
+      chooseEquipment: "Choose equipment...",
+      noEquipmentFound: "No equipment found",
+      confirmExecution: "Confirm Execution",
+      executionWarning: "You are about to execute the recovery script on the selected equipment.",
+      rebootWarning: "This action may restart the equipment. Make sure it won't affect critical services.",
+      script: "Script",
+      recoveryExecution: "Recovery Execution",
+      terminalCli: "Terminal CLI",
+      terminalTheme: "Terminal Theme",
+      themeDescription: "Choose a theme to customize the terminal",
+      executing: "Executing...",
+      tryAgain: "Try again",
+      errorLoading: "Error loading firmware",
+      deleteConfirm: "Delete this firmware?",
+      firmwareUploaded: "Firmware uploaded successfully",
+      firmwareDeleted: "Firmware deleted",
+      uploadError: "Error uploading firmware",
+      deleteError: "Error deleting firmware",
+      downloadStarted: "Download started",
+      downloadError: "Error downloading firmware",
+      recoveryComplete: "Recovery completed successfully",
+      wsConnectionError: "WebSocket connection error",
+      selectToStart: "Select a script and equipment, then click 'Execute' to start recovery...",
+      typeCommand: "Type a command...",
+      connectFirst: "Connect first...",
+      waitExecution: "Wait for execution to finish",
+      closeTerminal: "Close terminal",
+      connectingTo: "Connecting to",
+      connectedVia: "Connected via",
+      connectionClosed: "Connection closed",
+      connectionFailed: "Failed to establish connection",
+      serverConnected: "Connected to server, starting recovery...",
+      recoveryFinished: "=== RECOVERY FINISHED ===",
     },
     terminal: {
       title: "Terminal",
@@ -697,6 +1060,15 @@ export const translations: Translations = {
       arrowDown: "Arrow down",
       typeCommand: "Type a command...",
       send: "Send",
+      selectEquipmentToConnect: "Select an equipment",
+      connectingTo: "Connecting to",
+      connectedTo: "Connected to",
+      connectionError: "WebSocket connection error",
+      connectionClosed: "Connection closed",
+      failedToConnect: "Failed to establish connection",
+      notConnected: "Not connected. Connect to an equipment first.",
+      terminalCleared: "Terminal cleared",
+      themeChanged: "Theme changed to",
     },
     admin: {
       title: "Administration",
@@ -799,6 +1171,12 @@ export const translations: Translations = {
       size: "Tamaño",
       type: "Tipo",
       version: "Versión",
+      select: "Seleccionar",
+      deleting: "Eliminando...",
+      saving: "Guardando...",
+      unknown: "Desconocido",
+      allManufacturers: "Todos los fabricantes",
+      allModels: "Todos los modelos",
     },
     menu: {
       dashboard: "Panel",
@@ -839,6 +1217,14 @@ export const translations: Translations = {
       enabled: "Activo",
       noEquipment: "Ningún equipo registrado",
       confirmDelete: "¿Confirma la eliminación de este equipo?",
+      saveEquipment: "Guardar Equipo",
+      createSuccess: "Equipo creado con éxito",
+      updateSuccess: "Equipo actualizado con éxito",
+      createError: "Error al crear equipo",
+      updateError: "Error al actualizar equipo",
+      removed: "ha sido eliminado",
+      deletingEquipment: "Eliminando equipo...",
+      confirmDeleteMessage: "Esta acción no se puede deshacer.",
     },
     manufacturers: {
       title: "Fabricantes",
@@ -877,6 +1263,24 @@ export const translations: Translations = {
       statusSuccess: "Éxito",
       statusFailed: "Fallido",
       statusPending: "Pendiente",
+      searchPlaceholder: "Buscar por nombre, IP o equipo...",
+      selectedOf: "de",
+      availableBackups: "backups disponibles",
+      deleteSelected: "Eliminar Seleccionados",
+      confirmDeleteMultiple: "¿Eliminar backups seleccionados?",
+      deleteWarning: "Esta acción no se puede deshacer. Los backups serán eliminados permanentemente.",
+      deletingBackups: "Eliminando backups...",
+      backupsDeleted: "backups eliminados con éxito",
+      deleteError: "Error al eliminar algunos backups",
+      equipmentLabel: "Equipo",
+      manufacturerLabel: "Fabricante",
+      modelLabel: "Modelo",
+      fullContent: "Contenido Completo",
+      loadingContent: "Cargando contenido...",
+      contentError: "No se pudo cargar el contenido",
+      fileDeleted: "Archivo eliminado",
+      removedSuccess: "Backup eliminado con éxito",
+      confirmDeleteSingle: "¿Está seguro de eliminar este backup?",
     },
     executeBackup: {
       title: "Ejecutar Backup",
@@ -887,6 +1291,24 @@ export const translations: Translations = {
       executing: "Ejecutando...",
       executionComplete: "Backup completado con éxito",
       executionFailed: "Fallo en la ejecución del backup",
+      viewBackups: "Ver Backups",
+      filterByManufacturer: "Filtrar por fabricante",
+      searchPlaceholder: "Buscar equipo...",
+      allModels: "Todos los modelos",
+      selectAllVisible: "Seleccionar todos visibles",
+      deselectAll: "Deseleccionar todos",
+      selected: "seleccionados",
+      loadingEquipment: "Cargando equipos...",
+      noEquipmentFound: "Ningún equipo encontrado",
+      backupProgress: "Progreso del Backup",
+      startingBackup: "Iniciando backup",
+      backupOf: "Backup de",
+      backupCompleted: "completado con éxito",
+      backupError: "Error en backup",
+      connectionError: "Error de conexión",
+      noModel: "Sin modelo",
+      equipmentCount: "equipos",
+      backupFinished: "Backup finalizado",
     },
     scheduler: {
       title: "Programador",
@@ -903,6 +1325,31 @@ export const translations: Translations = {
       daily: "Diario",
       weekly: "Semanal",
       monthly: "Mensual",
+      hourly: "Cada hora",
+      newPolicy: "Nueva Política",
+      deletePolicy: "Eliminar Política",
+      searchPolicies: "Buscar políticas...",
+      createFirstPolicy: "Haga clic en 'Nueva Política' para crear una programación",
+      targets: "Objetivos",
+      allEquipment: "Todos los equipos",
+      descriptionOptional: "Descripción (opcional)",
+      schedulingDescription: "Configure cuándo se ejecutará el backup",
+      daysOfWeek: "Días de la Semana",
+      dayOfMonth: "Día del Mes",
+      equipmentFilters: "Filtros de Equipo",
+      manufacturers: "Fabricantes",
+      models: "Modelos",
+      leaveBlankForAll: "Deje en blanco para incluir todos",
+      policyActive: "Política Activa",
+      createPolicy: "Crear Política",
+      saveChanges: "Guardar Cambios",
+      policyCreated: "Política creada con éxito",
+      policyUpdated: "Política actualizada con éxito",
+      policyDeleted: "Política eliminada con éxito",
+      actionCannotBeUndone: "Esta acción no se puede deshacer.",
+      policyWillBeRemoved: "La política será eliminada permanentemente.",
+      at: "a las",
+      day: "día",
     },
     firmware: {
       title: "Firmware",
@@ -910,6 +1357,7 @@ export const translations: Translations = {
       repository: "Repositorio",
       recovery: "Recuperación",
       uploadFirmware: "Subir Firmware",
+      uploadDescription: "Suba un nuevo archivo de firmware al repositorio",
       firmwareName: "Nombre del Firmware",
       firmwareVersion: "Versión",
       selectManufacturer: "Seleccione el fabricante",
@@ -921,6 +1369,45 @@ export const translations: Translations = {
       allManufacturers: "Todos los fabricantes",
       noFirmwareAvailable: "Ningún firmware disponible",
       clickToAdd: "Haga clic en 'Subir Firmware' para agregar",
+      file: "Archivo",
+      updateRecoveryScripts: "Scripts de Actualización / Recuperación",
+      selectScriptDescription: "Seleccione un script para ejecutar la recuperación o actualización de firmware en un equipo",
+      noUpdateScriptsFound: "Ningún script de actualización encontrado",
+      addScriptsHint: "Agregue scripts en la página de Scripts",
+      executeOnEquipment: "Ejecutar en Equipo",
+      chooseEquipment: "Elija un equipo...",
+      noEquipmentFound: "Ningún equipo encontrado",
+      confirmExecution: "Confirmar Ejecución",
+      executionWarning: "Está a punto de ejecutar el script de recuperación en el equipo seleccionado.",
+      rebootWarning: "Esta acción puede reiniciar el equipo. Asegúrese de que no afecte los servicios críticos.",
+      script: "Script",
+      recoveryExecution: "Ejecución de Recuperación",
+      terminalCli: "Terminal CLI",
+      terminalTheme: "Tema del Terminal",
+      themeDescription: "Elija un tema para personalizar el terminal",
+      executing: "Ejecutando...",
+      tryAgain: "Intentar de nuevo",
+      errorLoading: "Error al cargar firmware",
+      deleteConfirm: "¿Eliminar este firmware?",
+      firmwareUploaded: "Firmware subido con éxito",
+      firmwareDeleted: "Firmware eliminado",
+      uploadError: "Error al subir firmware",
+      deleteError: "Error al eliminar firmware",
+      downloadStarted: "Descarga iniciada",
+      downloadError: "Error al descargar firmware",
+      recoveryComplete: "Recuperación completada con éxito",
+      wsConnectionError: "Error de conexión WebSocket",
+      selectToStart: "Seleccione un script y equipo, luego haga clic en 'Ejecutar' para iniciar la recuperación...",
+      typeCommand: "Escriba un comando...",
+      connectFirst: "Conéctese primero...",
+      waitExecution: "Espere a que termine la ejecución",
+      closeTerminal: "Cerrar terminal",
+      connectingTo: "Conectando a",
+      connectedVia: "Conectado vía",
+      connectionClosed: "Conexión cerrada",
+      connectionFailed: "Error al establecer conexión",
+      serverConnected: "Conectado al servidor, iniciando recuperación...",
+      recoveryFinished: "=== RECUPERACIÓN FINALIZADA ===",
     },
     terminal: {
       title: "Terminal",
@@ -945,6 +1432,15 @@ export const translations: Translations = {
       arrowDown: "Flecha abajo",
       typeCommand: "Escriba un comando...",
       send: "Enviar",
+      selectEquipmentToConnect: "Seleccione un equipo",
+      connectingTo: "Conectando a",
+      connectedTo: "Conectado a",
+      connectionError: "Error en la conexión WebSocket",
+      connectionClosed: "Conexión cerrada",
+      failedToConnect: "Error al establecer la conexión",
+      notConnected: "No conectado. Conéctese primero a un equipo.",
+      terminalCleared: "Terminal limpio",
+      themeChanged: "Tema cambiado a",
     },
     admin: {
       title: "Administración",
@@ -1047,6 +1543,12 @@ export const translations: Translations = {
       size: "Taille",
       type: "Type",
       version: "Version",
+      select: "Sélectionner",
+      deleting: "Suppression...",
+      saving: "Enregistrement...",
+      unknown: "Inconnu",
+      allManufacturers: "Tous les fabricants",
+      allModels: "Tous les modèles",
     },
     menu: {
       dashboard: "Tableau de bord",
@@ -1087,6 +1589,14 @@ export const translations: Translations = {
       enabled: "Actif",
       noEquipment: "Aucun équipement enregistré",
       confirmDelete: "Confirmer la suppression de cet équipement?",
+      saveEquipment: "Enregistrer Équipement",
+      createSuccess: "Équipement créé avec succès",
+      updateSuccess: "Équipement mis à jour avec succès",
+      createError: "Échec de la création de l'équipement",
+      updateError: "Échec de la mise à jour de l'équipement",
+      removed: "a été supprimé",
+      deletingEquipment: "Suppression de l'équipement...",
+      confirmDeleteMessage: "Cette action ne peut pas être annulée.",
     },
     manufacturers: {
       title: "Fabricants",
@@ -1125,6 +1635,24 @@ export const translations: Translations = {
       statusSuccess: "Succès",
       statusFailed: "Échoué",
       statusPending: "En attente",
+      searchPlaceholder: "Rechercher par nom, IP ou équipement...",
+      selectedOf: "sur",
+      availableBackups: "sauvegardes disponibles",
+      deleteSelected: "Supprimer Sélection",
+      confirmDeleteMultiple: "Supprimer les sauvegardes sélectionnées?",
+      deleteWarning: "Cette action ne peut pas être annulée. Les sauvegardes seront définitivement supprimées.",
+      deletingBackups: "Suppression des sauvegardes...",
+      backupsDeleted: "sauvegardes supprimées avec succès",
+      deleteError: "Échec de la suppression de certaines sauvegardes",
+      equipmentLabel: "Équipement",
+      manufacturerLabel: "Fabricant",
+      modelLabel: "Modèle",
+      fullContent: "Contenu Complet",
+      loadingContent: "Chargement du contenu...",
+      contentError: "Impossible de charger le contenu",
+      fileDeleted: "Fichier supprimé",
+      removedSuccess: "Sauvegarde supprimée avec succès",
+      confirmDeleteSingle: "Êtes-vous sûr de vouloir supprimer cette sauvegarde?",
     },
     executeBackup: {
       title: "Exécuter Sauvegarde",
@@ -1135,6 +1663,24 @@ export const translations: Translations = {
       executing: "Exécution...",
       executionComplete: "Sauvegarde terminée avec succès",
       executionFailed: "Échec de l'exécution",
+      viewBackups: "Voir Sauvegardes",
+      filterByManufacturer: "Filtrer par fabricant",
+      searchPlaceholder: "Rechercher équipement...",
+      allModels: "Tous les modèles",
+      selectAllVisible: "Sélectionner tous visibles",
+      deselectAll: "Désélectionner tout",
+      selected: "sélectionnés",
+      loadingEquipment: "Chargement des équipements...",
+      noEquipmentFound: "Aucun équipement trouvé",
+      backupProgress: "Progression de la Sauvegarde",
+      startingBackup: "Démarrage de la sauvegarde",
+      backupOf: "Sauvegarde de",
+      backupCompleted: "terminée avec succès",
+      backupError: "Erreur de sauvegarde",
+      connectionError: "Erreur de connexion",
+      noModel: "Sans modèle",
+      equipmentCount: "équipements",
+      backupFinished: "Sauvegarde terminée",
     },
     scheduler: {
       title: "Planificateur",
@@ -1151,6 +1697,31 @@ export const translations: Translations = {
       daily: "Quotidien",
       weekly: "Hebdomadaire",
       monthly: "Mensuel",
+      hourly: "Toutes les heures",
+      newPolicy: "Nouvelle Politique",
+      deletePolicy: "Supprimer Politique",
+      searchPolicies: "Rechercher politiques...",
+      createFirstPolicy: "Cliquez sur 'Nouvelle Politique' pour créer une planification",
+      targets: "Cibles",
+      allEquipment: "Tous les équipements",
+      descriptionOptional: "Description (optionnelle)",
+      schedulingDescription: "Configurez quand la sauvegarde sera exécutée",
+      daysOfWeek: "Jours de la Semaine",
+      dayOfMonth: "Jour du Mois",
+      equipmentFilters: "Filtres d'Équipement",
+      manufacturers: "Fabricants",
+      models: "Modèles",
+      leaveBlankForAll: "Laissez vide pour inclure tous",
+      policyActive: "Politique Active",
+      createPolicy: "Créer Politique",
+      saveChanges: "Enregistrer Modifications",
+      policyCreated: "Politique créée avec succès",
+      policyUpdated: "Politique mise à jour avec succès",
+      policyDeleted: "Politique supprimée avec succès",
+      actionCannotBeUndone: "Cette action ne peut pas être annulée.",
+      policyWillBeRemoved: "La politique sera définitivement supprimée.",
+      at: "à",
+      day: "jour",
     },
     firmware: {
       title: "Firmware",
@@ -1158,6 +1729,7 @@ export const translations: Translations = {
       repository: "Dépôt",
       recovery: "Récupération",
       uploadFirmware: "Envoyer Firmware",
+      uploadDescription: "Envoyez un nouveau fichier firmware au dépôt",
       firmwareName: "Nom du Firmware",
       firmwareVersion: "Version",
       selectManufacturer: "Sélectionnez le fabricant",
@@ -1169,6 +1741,45 @@ export const translations: Translations = {
       allManufacturers: "Tous les fabricants",
       noFirmwareAvailable: "Aucun firmware disponible",
       clickToAdd: "Cliquez sur 'Envoyer Firmware' pour ajouter",
+      file: "Fichier",
+      updateRecoveryScripts: "Scripts de Mise à jour / Récupération",
+      selectScriptDescription: "Sélectionnez un script pour exécuter la récupération ou la mise à jour du firmware sur un équipement",
+      noUpdateScriptsFound: "Aucun script de mise à jour trouvé",
+      addScriptsHint: "Ajoutez des scripts sur la page Scripts",
+      executeOnEquipment: "Exécuter sur l'Équipement",
+      chooseEquipment: "Choisissez un équipement...",
+      noEquipmentFound: "Aucun équipement trouvé",
+      confirmExecution: "Confirmer l'Exécution",
+      executionWarning: "Vous êtes sur le point d'exécuter le script de récupération sur l'équipement sélectionné.",
+      rebootWarning: "Cette action peut redémarrer l'équipement. Assurez-vous que cela n'affectera pas les services critiques.",
+      script: "Script",
+      recoveryExecution: "Exécution de Récupération",
+      terminalCli: "Terminal CLI",
+      terminalTheme: "Thème du Terminal",
+      themeDescription: "Choisissez un thème pour personnaliser le terminal",
+      executing: "Exécution en cours...",
+      tryAgain: "Réessayer",
+      errorLoading: "Erreur lors du chargement du firmware",
+      deleteConfirm: "Supprimer ce firmware?",
+      firmwareUploaded: "Firmware envoyé avec succès",
+      firmwareDeleted: "Firmware supprimé",
+      uploadError: "Erreur lors de l'envoi du firmware",
+      deleteError: "Erreur lors de la suppression du firmware",
+      downloadStarted: "Téléchargement commencé",
+      downloadError: "Erreur lors du téléchargement du firmware",
+      recoveryComplete: "Récupération terminée avec succès",
+      wsConnectionError: "Erreur de connexion WebSocket",
+      selectToStart: "Sélectionnez un script et un équipement, puis cliquez sur 'Exécuter' pour démarrer la récupération...",
+      typeCommand: "Tapez une commande...",
+      connectFirst: "Connectez-vous d'abord...",
+      waitExecution: "Attendez la fin de l'exécution",
+      closeTerminal: "Fermer le terminal",
+      connectingTo: "Connexion à",
+      connectedVia: "Connecté via",
+      connectionClosed: "Connexion fermée",
+      connectionFailed: "Échec de l'établissement de la connexion",
+      serverConnected: "Connecté au serveur, démarrage de la récupération...",
+      recoveryFinished: "=== RÉCUPÉRATION TERMINÉE ===",
     },
     terminal: {
       title: "Terminal",
@@ -1193,6 +1804,15 @@ export const translations: Translations = {
       arrowDown: "Flèche bas",
       typeCommand: "Tapez une commande...",
       send: "Envoyer",
+      selectEquipmentToConnect: "Sélectionnez un équipement",
+      connectingTo: "Connexion à",
+      connectedTo: "Connecté à",
+      connectionError: "Erreur de connexion WebSocket",
+      connectionClosed: "Connexion fermée",
+      failedToConnect: "Échec de l'établissement de la connexion",
+      notConnected: "Non connecté. Connectez-vous d'abord à un équipement.",
+      terminalCleared: "Terminal effacé",
+      themeChanged: "Thème changé en",
     },
     admin: {
       title: "Administration",
@@ -1295,6 +1915,12 @@ export const translations: Translations = {
       size: "Größe",
       type: "Typ",
       version: "Version",
+      select: "Auswählen",
+      deleting: "Löschen...",
+      saving: "Speichern...",
+      unknown: "Unbekannt",
+      allManufacturers: "Alle Hersteller",
+      allModels: "Alle Modelle",
     },
     menu: {
       dashboard: "Dashboard",
@@ -1335,6 +1961,14 @@ export const translations: Translations = {
       enabled: "Aktiv",
       noEquipment: "Keine Geräte registriert",
       confirmDelete: "Gerät wirklich löschen?",
+      saveEquipment: "Gerät Speichern",
+      createSuccess: "Gerät erfolgreich erstellt",
+      updateSuccess: "Gerät erfolgreich aktualisiert",
+      createError: "Fehler beim Erstellen des Geräts",
+      updateError: "Fehler beim Aktualisieren des Geräts",
+      removed: "wurde entfernt",
+      deletingEquipment: "Gerät wird gelöscht...",
+      confirmDeleteMessage: "Diese Aktion kann nicht rückgängig gemacht werden.",
     },
     manufacturers: {
       title: "Hersteller",
@@ -1373,6 +2007,24 @@ export const translations: Translations = {
       statusSuccess: "Erfolg",
       statusFailed: "Fehlgeschlagen",
       statusPending: "Ausstehend",
+      searchPlaceholder: "Nach Name, IP oder Gerät suchen...",
+      selectedOf: "von",
+      availableBackups: "Backups verfügbar",
+      deleteSelected: "Ausgewählte Löschen",
+      confirmDeleteMultiple: "Ausgewählte Backups löschen?",
+      deleteWarning: "Diese Aktion kann nicht rückgängig gemacht werden. Backups werden dauerhaft gelöscht.",
+      deletingBackups: "Backups werden gelöscht...",
+      backupsDeleted: "Backups erfolgreich gelöscht",
+      deleteError: "Fehler beim Löschen einiger Backups",
+      equipmentLabel: "Gerät",
+      manufacturerLabel: "Hersteller",
+      modelLabel: "Modell",
+      fullContent: "Vollständiger Inhalt",
+      loadingContent: "Inhalt wird geladen...",
+      contentError: "Inhalt konnte nicht geladen werden",
+      fileDeleted: "Datei gelöscht",
+      removedSuccess: "Backup erfolgreich entfernt",
+      confirmDeleteSingle: "Sind Sie sicher, dass Sie dieses Backup löschen möchten?",
     },
     executeBackup: {
       title: "Backup Ausführen",
@@ -1383,6 +2035,24 @@ export const translations: Translations = {
       executing: "Wird ausgeführt...",
       executionComplete: "Backup erfolgreich abgeschlossen",
       executionFailed: "Backup-Ausführung fehlgeschlagen",
+      viewBackups: "Backups Anzeigen",
+      filterByManufacturer: "Nach Hersteller filtern",
+      searchPlaceholder: "Gerät suchen...",
+      allModels: "Alle Modelle",
+      selectAllVisible: "Alle sichtbaren auswählen",
+      deselectAll: "Alle abwählen",
+      selected: "ausgewählt",
+      loadingEquipment: "Geräte werden geladen...",
+      noEquipmentFound: "Keine Geräte gefunden",
+      backupProgress: "Backup-Fortschritt",
+      startingBackup: "Backup wird gestartet",
+      backupOf: "Backup von",
+      backupCompleted: "erfolgreich abgeschlossen",
+      backupError: "Backup-Fehler",
+      connectionError: "Verbindungsfehler",
+      noModel: "Kein Modell",
+      equipmentCount: "Geräte",
+      backupFinished: "Backup abgeschlossen",
     },
     scheduler: {
       title: "Planer",
@@ -1397,6 +2067,31 @@ export const translations: Translations = {
       nextRun: "Nächste Ausführung",
       noPolicies: "Keine Richtlinien konfiguriert",
       daily: "Täglich",
+      hourly: "Stündlich",
+      newPolicy: "Neue Richtlinie",
+      deletePolicy: "Richtlinie Löschen",
+      searchPolicies: "Richtlinien suchen...",
+      createFirstPolicy: "Klicken Sie auf 'Neue Richtlinie' um einen Zeitplan zu erstellen",
+      targets: "Ziele",
+      allEquipment: "Alle Geräte",
+      descriptionOptional: "Beschreibung (optional)",
+      schedulingDescription: "Konfigurieren Sie, wann das Backup ausgeführt wird",
+      daysOfWeek: "Wochentage",
+      dayOfMonth: "Tag des Monats",
+      equipmentFilters: "Gerätefilter",
+      manufacturers: "Hersteller",
+      models: "Modelle",
+      leaveBlankForAll: "Leer lassen um alle einzubeziehen",
+      policyActive: "Richtlinie Aktiv",
+      createPolicy: "Richtlinie Erstellen",
+      saveChanges: "Änderungen Speichern",
+      policyCreated: "Richtlinie erfolgreich erstellt",
+      policyUpdated: "Richtlinie erfolgreich aktualisiert",
+      policyDeleted: "Richtlinie erfolgreich gelöscht",
+      actionCannotBeUndone: "Diese Aktion kann nicht rückgängig gemacht werden.",
+      policyWillBeRemoved: "Die Richtlinie wird dauerhaft entfernt.",
+      at: "um",
+      day: "Tag",
       weekly: "Wöchentlich",
       monthly: "Monatlich",
     },
@@ -1406,6 +2101,7 @@ export const translations: Translations = {
       repository: "Repository",
       recovery: "Wiederherstellung",
       uploadFirmware: "Firmware Hochladen",
+      uploadDescription: "Laden Sie eine neue Firmware-Datei in das Repository hoch",
       firmwareName: "Firmware-Name",
       firmwareVersion: "Version",
       selectManufacturer: "Hersteller auswählen",
@@ -1417,6 +2113,45 @@ export const translations: Translations = {
       allManufacturers: "Alle Hersteller",
       noFirmwareAvailable: "Keine Firmware verfügbar",
       clickToAdd: "Klicken Sie auf 'Firmware Hochladen' um hinzuzufügen",
+      file: "Datei",
+      updateRecoveryScripts: "Update / Wiederherstellungs-Skripte",
+      selectScriptDescription: "Wählen Sie ein Skript aus, um die Wiederherstellung oder das Firmware-Update auf einem Gerät auszuführen",
+      noUpdateScriptsFound: "Keine Update-Skripte gefunden",
+      addScriptsHint: "Fügen Sie Skripte auf der Skripte-Seite hinzu",
+      executeOnEquipment: "Auf Gerät Ausführen",
+      chooseEquipment: "Gerät auswählen...",
+      noEquipmentFound: "Kein Gerät gefunden",
+      confirmExecution: "Ausführung Bestätigen",
+      executionWarning: "Sie sind dabei, das Wiederherstellungsskript auf dem ausgewählten Gerät auszuführen.",
+      rebootWarning: "Diese Aktion kann das Gerät neu starten. Stellen Sie sicher, dass dies keine kritischen Dienste beeinträchtigt.",
+      script: "Skript",
+      recoveryExecution: "Wiederherstellungsausführung",
+      terminalCli: "Terminal CLI",
+      terminalTheme: "Terminal-Design",
+      themeDescription: "Wählen Sie ein Design, um das Terminal anzupassen",
+      executing: "Wird ausgeführt...",
+      tryAgain: "Erneut versuchen",
+      errorLoading: "Fehler beim Laden der Firmware",
+      deleteConfirm: "Diese Firmware löschen?",
+      firmwareUploaded: "Firmware erfolgreich hochgeladen",
+      firmwareDeleted: "Firmware gelöscht",
+      uploadError: "Fehler beim Hochladen der Firmware",
+      deleteError: "Fehler beim Löschen der Firmware",
+      downloadStarted: "Download gestartet",
+      downloadError: "Fehler beim Herunterladen der Firmware",
+      recoveryComplete: "Wiederherstellung erfolgreich abgeschlossen",
+      wsConnectionError: "WebSocket-Verbindungsfehler",
+      selectToStart: "Wählen Sie ein Skript und ein Gerät aus und klicken Sie dann auf 'Ausführen', um die Wiederherstellung zu starten...",
+      typeCommand: "Befehl eingeben...",
+      connectFirst: "Zuerst verbinden...",
+      waitExecution: "Warten Sie auf den Abschluss der Ausführung",
+      closeTerminal: "Terminal schließen",
+      connectingTo: "Verbindung zu",
+      connectedVia: "Verbunden über",
+      connectionClosed: "Verbindung geschlossen",
+      connectionFailed: "Verbindung konnte nicht hergestellt werden",
+      serverConnected: "Mit Server verbunden, Wiederherstellung wird gestartet...",
+      recoveryFinished: "=== WIEDERHERSTELLUNG ABGESCHLOSSEN ===",
     },
     terminal: {
       title: "Terminal",
@@ -1441,6 +2176,15 @@ export const translations: Translations = {
       arrowDown: "Pfeil runter",
       typeCommand: "Befehl eingeben...",
       send: "Senden",
+      selectEquipmentToConnect: "Gerät auswählen",
+      connectingTo: "Verbinde mit",
+      connectedTo: "Verbunden mit",
+      connectionError: "WebSocket-Verbindungsfehler",
+      connectionClosed: "Verbindung geschlossen",
+      failedToConnect: "Verbindungsaufbau fehlgeschlagen",
+      notConnected: "Nicht verbunden. Zuerst mit einem Gerät verbinden.",
+      terminalCleared: "Terminal gelöscht",
+      themeChanged: "Design geändert zu",
     },
     admin: {
       title: "Verwaltung",
