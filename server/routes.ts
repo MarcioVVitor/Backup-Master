@@ -681,6 +681,67 @@ export async function registerRoutes(
     }
   });
 
+  // API - Admin - Upload Update Package
+  app.post('/api/admin/updates/upload', isAuthenticated, upload.single('file'), async (req, res) => {
+    try {
+      const user = req.user as any;
+      const file = req.file;
+      
+      if (!file) {
+        return res.status(400).json({ message: "Nenhum arquivo enviado" });
+      }
+      
+      const filename = file.originalname;
+      if (!filename.endsWith('.zip') && !filename.endsWith('.tar.gz')) {
+        return res.status(400).json({ message: "Formato de arquivo invalido. Use .zip ou .tar.gz" });
+      }
+      
+      const versionMatch = filename.match(/(\d+\.\d+\.\d+)/);
+      const newVersion = versionMatch ? versionMatch[1] : '17.1.0';
+      
+      const versionSetting = await storage.getSetting('system_version');
+      const currentVersion = versionSetting || process.env.APP_VERSION || '17.0.0';
+      
+      const compareVersions = (v1: string, v2: string): number => {
+        const parts1 = v1.split('.').map(Number);
+        const parts2 = v2.split('.').map(Number);
+        for (let i = 0; i < Math.max(parts1.length, parts2.length); i++) {
+          const p1 = parts1[i] || 0;
+          const p2 = parts2[i] || 0;
+          if (p1 < p2) return -1;
+          if (p1 > p2) return 1;
+        }
+        return 0;
+      };
+      
+      if (compareVersions(currentVersion, newVersion) >= 0) {
+        return res.status(400).json({ 
+          message: `Versao ${newVersion} nao e maior que a versao atual ${currentVersion}` 
+        });
+      }
+      
+      const update = await storage.createSystemUpdate({
+        version: newVersion,
+        changelog: `Atualizacao via arquivo: ${filename}`,
+        appliedBy: user?.username || user?.claims?.sub || 'Admin',
+      });
+      
+      await storage.setSetting('system_version', newVersion);
+      
+      res.json({ 
+        message: "Atualizacao aplicada com sucesso via arquivo", 
+        version: newVersion,
+        update,
+        currentVersion: newVersion,
+        hasUpdate: false,
+        source: 'file'
+      });
+    } catch (e) {
+      console.error("Error uploading update:", e);
+      res.status(500).json({ message: "Erro ao aplicar atualizacao via arquivo" });
+    }
+  });
+
   // API - Admin - Export Database
   app.post('/api/admin/export-database', isAuthenticated, async (req, res) => {
     try {

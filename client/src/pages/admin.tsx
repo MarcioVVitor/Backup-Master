@@ -152,6 +152,9 @@ export default function AdminPage() {
   });
 
   const [isApplyingUpdate, setIsApplyingUpdate] = useState(false);
+  const [uploadedUpdateFile, setUploadedUpdateFile] = useState<File | null>(null);
+  const [uploadedManifest, setUploadedManifest] = useState<{ version: string; changelog: string[] } | null>(null);
+  const [isUploadingUpdate, setIsUploadingUpdate] = useState(false);
 
   const applyUpdate = useMutation({
     mutationFn: async () => {
@@ -178,6 +181,59 @@ export default function AdminPage() {
     },
     onError: (err: Error) => {
       setIsApplyingUpdate(false);
+      toast({ title: err.message || "Erro ao aplicar atualização", variant: "destructive" });
+    }
+  });
+
+  const handleUpdateFileSelect = async (e: { target: { files: FileList | null } }) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    if (!file.name.endsWith('.zip') && !file.name.endsWith('.tar.gz')) {
+      toast({ title: "Formato inválido. Use arquivos .zip ou .tar.gz", variant: "destructive" });
+      return;
+    }
+    
+    setUploadedUpdateFile(file);
+    setUploadedManifest({
+      version: file.name.replace(/\.(zip|tar\.gz)$/, '').replace('nbm-update-', ''),
+      changelog: ['Atualização via arquivo local']
+    });
+  };
+
+  const applyFileUpdate = useMutation({
+    mutationFn: async () => {
+      if (!uploadedUpdateFile) throw new Error("Nenhum arquivo selecionado");
+      
+      setIsUploadingUpdate(true);
+      const formData = new FormData();
+      formData.append('file', uploadedUpdateFile);
+      
+      const response = await fetch("/api/admin/updates/upload", {
+        method: "POST",
+        credentials: "include",
+        body: formData
+      });
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.message || "Falha ao aplicar atualização");
+      }
+      return response.json();
+    },
+    onSuccess: (data) => {
+      setIsUploadingUpdate(false);
+      setUploadedUpdateFile(null);
+      setUploadedManifest(null);
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/updates/check"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/updates/history"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/system-info"] });
+      toast({ 
+        title: "Atualização aplicada com sucesso", 
+        description: data.message || `Sistema atualizado para versão ${data.version}` 
+      });
+    },
+    onError: (err: Error) => {
+      setIsUploadingUpdate(false);
       toast({ title: err.message || "Erro ao aplicar atualização", variant: "destructive" });
     }
   });
@@ -1019,6 +1075,98 @@ export default function AdminPage() {
               </CardContent>
             </Card>
           </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Upload className="h-5 w-5" />
+                Atualização via Arquivo
+              </CardTitle>
+              <CardDescription>Faça upload de um pacote de atualização quando o modo online não estiver disponível</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div 
+                className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+                  uploadedUpdateFile ? 'border-primary bg-primary/5' : 'border-muted-foreground/25 hover:border-muted-foreground/50'
+                }`}
+              >
+                {uploadedUpdateFile ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-center gap-2">
+                      <FileText className="h-8 w-8 text-primary" />
+                      <div className="text-left">
+                        <p className="font-medium">{uploadedUpdateFile.name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {(uploadedUpdateFile.size / 1024 / 1024).toFixed(2)} MB
+                        </p>
+                      </div>
+                    </div>
+                    {uploadedManifest && (
+                      <div className="p-3 bg-muted/50 rounded-lg">
+                        <p className="text-sm font-medium">Versão detectada: v{uploadedManifest.version}</p>
+                      </div>
+                    )}
+                    <div className="flex gap-2 justify-center">
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setUploadedUpdateFile(null);
+                          setUploadedManifest(null);
+                        }}
+                        disabled={isUploadingUpdate}
+                        data-testid="button-cancel-file-update"
+                      >
+                        Cancelar
+                      </Button>
+                      <Button
+                        onClick={() => applyFileUpdate.mutate()}
+                        disabled={isUploadingUpdate || applyFileUpdate.isPending}
+                        data-testid="button-apply-file-update"
+                      >
+                        {isUploadingUpdate ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Aplicando...
+                          </>
+                        ) : (
+                          <>
+                            <ArrowUpCircle className="h-4 w-4 mr-2" />
+                            Aplicar Atualização
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <Upload className="h-10 w-10 mx-auto text-muted-foreground" />
+                    <p className="text-sm text-muted-foreground">
+                      Arraste um arquivo ou clique para selecionar
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Formatos aceitos: .zip, .tar.gz
+                    </p>
+                    <Input
+                      type="file"
+                      accept=".zip,.tar.gz"
+                      className="hidden"
+                      id="update-file-input"
+                      onChange={handleUpdateFileSelect}
+                      data-testid="input-update-file"
+                    />
+                    <Button 
+                      variant="outline" 
+                      asChild
+                    >
+                      <label htmlFor="update-file-input" className="cursor-pointer">
+                        Selecionar Arquivo
+                      </label>
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
 
           <Card>
             <CardHeader>
