@@ -1,15 +1,24 @@
 import { useFiles, useDeleteFile } from "@/hooks/use-files";
 import { useEquipment } from "@/hooks/use-equipment";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Download, Trash2, FileText, Calendar, HardDrive, Search, Eye, Loader2 } from "lucide-react";
+import { Download, Trash2, FileText, Calendar, HardDrive, Search, Eye, Loader2, Server, Filter } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { queryClient } from "@/lib/queryClient";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,6 +37,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import type { Manufacturer, Equipment } from "@shared/schema";
 
 interface BackupContent {
   success: boolean;
@@ -41,7 +51,13 @@ interface BackupContent {
 export default function BackupsPage() {
   const { data: files, isLoading } = useFiles();
   const { data: equipment } = useEquipment();
+  const { data: manufacturers = [] } = useQuery<Manufacturer[]>({
+    queryKey: ["/api/manufacturers"],
+  });
+  
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedManufacturer, setSelectedManufacturer] = useState<string>("all");
+  const [selectedModel, setSelectedModel] = useState<string>("all");
   const { mutate: deleteFile } = useDeleteFile();
   const { toast } = useToast();
   const [selectedBackups, setSelectedBackups] = useState<Set<number>>(new Set());
@@ -52,15 +68,47 @@ export default function BackupsPage() {
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
   const [isDeletingBulk, setIsDeletingBulk] = useState(false);
 
-  const getEquipmentName = (id: number | null) => {
-    if (!id) return "Desconhecido";
-    return equipment?.find(e => e.id === id)?.name || "Desconhecido";
+  const getEquipment = (id: number | null): Equipment | undefined => {
+    if (!id) return undefined;
+    return equipment?.find(e => e.id === id);
   };
 
-  const filteredFiles = files?.filter(file => 
-    file.filename.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    getEquipmentName(file.equipmentId).toLowerCase().includes(searchTerm.toLowerCase())
+  const getEquipmentName = (id: number | null) => {
+    const eq = getEquipment(id);
+    return eq?.name || "Desconhecido";
+  };
+
+  const getEquipmentManufacturer = (id: number | null) => {
+    const eq = getEquipment(id);
+    return eq?.manufacturer || "";
+  };
+
+  const getEquipmentModel = (id: number | null) => {
+    const eq = getEquipment(id);
+    return eq?.model || "";
+  };
+
+  const uniqueModels = Array.from(
+    new Set(
+      equipment
+        ?.map((e) => e.model)
+        .filter((m): m is string => m !== null && m !== undefined)
+    )
   );
+
+  const filteredFiles = files?.filter(file => {
+    const matchesSearch = 
+      file.filename.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      getEquipmentName(file.equipmentId).toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const equipManufacturer = getEquipmentManufacturer(file.equipmentId);
+    const matchesManufacturer = selectedManufacturer === "all" || equipManufacturer === selectedManufacturer;
+    
+    const equipModel = getEquipmentModel(file.equipmentId);
+    const matchesModel = selectedModel === "all" || equipModel === selectedModel;
+    
+    return matchesSearch && matchesManufacturer && matchesModel;
+  });
 
   const handleDelete = (id: number) => {
     deleteFile(id, {
@@ -166,6 +214,10 @@ export default function BackupsPage() {
     }
   };
 
+  const getManufacturerLabel = (value: string) => {
+    return manufacturers.find(m => m.value === value)?.label || value;
+  };
+
   return (
     <div className="p-6 md:p-8 space-y-6 animate-enter">
       <div className="flex flex-col md:flex-row justify-between gap-4 md:items-center">
@@ -173,16 +225,49 @@ export default function BackupsPage() {
           <h1 className="text-3xl font-bold tracking-tight">Backups</h1>
           <p className="text-muted-foreground">Gerencie os arquivos de backup armazenados</p>
         </div>
-        <div className="relative w-full md:w-auto">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+      </div>
+
+      <div className="flex flex-col md:flex-row gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input 
-            placeholder="Buscar backups..." 
-            className="pl-9 md:w-[300px]"
+            placeholder="Buscar por nome ou equipamento..." 
+            className="pl-10"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             data-testid="input-search-backups"
           />
         </div>
+        
+        <Select value={selectedManufacturer} onValueChange={setSelectedManufacturer}>
+          <SelectTrigger className="w-full md:w-[180px]" data-testid="select-manufacturer">
+            <Filter className="h-4 w-4 mr-2" />
+            <SelectValue placeholder="Fabricante" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos Fabricantes</SelectItem>
+            {manufacturers.map((mfr) => (
+              <SelectItem key={mfr.value} value={mfr.value}>
+                {mfr.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select value={selectedModel} onValueChange={setSelectedModel}>
+          <SelectTrigger className="w-full md:w-[180px]" data-testid="select-model">
+            <Server className="h-4 w-4 mr-2" />
+            <SelectValue placeholder="Modelo" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos Modelos</SelectItem>
+            {uniqueModels.map((model) => (
+              <SelectItem key={model} value={model}>
+                {model}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {filteredFiles && filteredFiles.length > 0 && (
@@ -243,104 +328,130 @@ export default function BackupsPage() {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredFiles?.map((file) => (
-          <Card 
-            key={file.id} 
-            className={`group transition-colors ${
-              selectedBackups.has(file.id) 
-                ? 'border-primary bg-primary/5' 
-                : 'hover:border-primary/50'
-            }`}
-          >
-            <CardHeader className="pb-3 flex flex-row items-start justify-between gap-2 space-y-0">
-              <div className="flex items-center gap-3">
-                <Checkbox 
-                  checked={selectedBackups.has(file.id)}
-                  onCheckedChange={() => toggleSelection(file.id)}
-                  data-testid={`checkbox-backup-${file.id}`}
-                />
-                <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-blue-600 dark:text-blue-400">
-                  <FileText className="h-5 w-5" />
+        {filteredFiles?.map((file) => {
+          const eq = getEquipment(file.equipmentId);
+          const mfr = manufacturers.find(m => m.value === eq?.manufacturer);
+          
+          return (
+            <Card 
+              key={file.id} 
+              className={`group transition-colors ${
+                selectedBackups.has(file.id) 
+                  ? 'border-primary bg-primary/5' 
+                  : 'hover:border-primary/50'
+              }`}
+            >
+              <CardHeader className="pb-3 flex flex-row items-start justify-between gap-2 space-y-0">
+                <div className="flex items-center gap-3">
+                  <Checkbox 
+                    checked={selectedBackups.has(file.id)}
+                    onCheckedChange={() => toggleSelection(file.id)}
+                    data-testid={`checkbox-backup-${file.id}`}
+                  />
+                  <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-blue-600 dark:text-blue-400">
+                    <FileText className="h-5 w-5" />
+                  </div>
+                  <div className="space-y-1 min-w-0">
+                    <CardTitle className="text-base font-medium line-clamp-1" title={file.filename}>
+                      {file.filename}
+                    </CardTitle>
+                    <p className="text-xs text-muted-foreground flex items-center gap-1">
+                      <HardDrive className="h-3 w-3" />
+                      {(file.size / 1024).toFixed(1)} KB
+                    </p>
+                  </div>
                 </div>
-                <div className="space-y-1 min-w-0">
-                  <CardTitle className="text-base font-medium line-clamp-1" title={file.filename}>
-                    {file.filename}
-                  </CardTitle>
-                  <p className="text-xs text-muted-foreground flex items-center gap-1">
-                    <HardDrive className="h-3 w-3" />
-                    {(file.size / 1024).toFixed(1)} KB
-                  </p>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Equipamento:</span>
-                  <span className="font-medium">{getEquipmentName(file.equipmentId)}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground flex items-center gap-1">
-                    <Calendar className="h-3 w-3" /> Data:
-                  </span>
-                  <span>
-                    {file.createdAt ? format(new Date(file.createdAt), "dd/MM/yyyy HH:mm") : "-"}
-                  </span>
-                </div>
-                
-                <div className="pt-2 flex gap-2">
-                  <Button 
-                    className="flex-1" 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => handleView(file.id, file.filename)}
-                    data-testid={`button-view-${file.id}`}
-                  >
-                    <Eye className="h-4 w-4 mr-2" /> Visualizar
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="icon"
-                    onClick={() => handleDownload(file.id, file.filename)}
-                    data-testid={`button-download-${file.id}`}
-                  >
-                    <Download className="h-4 w-4" />
-                  </Button>
-                  
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
-                        data-testid={`button-delete-${file.id}`}
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Equipamento:</span>
+                    <span className="font-medium">{getEquipmentName(file.equipmentId)}</span>
+                  </div>
+                  {eq && (
+                    <div className="flex justify-between text-sm items-center">
+                      <span className="text-muted-foreground">Fabricante:</span>
+                      <Badge 
+                        variant="secondary" 
+                        className="text-xs"
+                        style={{ 
+                          backgroundColor: mfr?.color ? `${mfr.color}20` : undefined,
+                          color: mfr?.color || undefined
+                        }}
                       >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Excluir Backup?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Esta ação excluirá permanentemente o arquivo <strong>{file.filename}</strong>.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction 
-                          className="bg-red-600 hover:bg-red-700" 
-                          onClick={() => handleDelete(file.id)}
+                        {mfr?.label || eq.manufacturer}
+                      </Badge>
+                    </div>
+                  )}
+                  {eq?.model && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Modelo:</span>
+                      <span className="text-xs">{eq.model}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground flex items-center gap-1">
+                      <Calendar className="h-3 w-3" /> Data:
+                    </span>
+                    <span>
+                      {file.createdAt ? format(new Date(file.createdAt), "dd/MM/yyyy HH:mm") : "-"}
+                    </span>
+                  </div>
+                  
+                  <div className="pt-2 flex gap-2">
+                    <Button 
+                      className="flex-1" 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleView(file.id, file.filename)}
+                      data-testid={`button-view-${file.id}`}
+                    >
+                      <Eye className="h-4 w-4 mr-2" /> Visualizar
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="icon"
+                      onClick={() => handleDownload(file.id, file.filename)}
+                      data-testid={`button-download-${file.id}`}
+                    >
+                      <Download className="h-4 w-4" />
+                    </Button>
+                    
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                          data-testid={`button-delete-${file.id}`}
                         >
-                          Excluir
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Excluir Backup?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Esta ação excluirá permanentemente o arquivo <strong>{file.filename}</strong>.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction 
+                            className="bg-red-600 hover:bg-red-700" 
+                            onClick={() => handleDelete(file.id)}
+                          >
+                            Excluir
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+              </CardContent>
+            </Card>
+          );
+        })}
         
         {!filteredFiles?.length && !isLoading && (
           <div className="col-span-full flex flex-col items-center justify-center py-12 text-muted-foreground bg-muted/20 rounded-xl border border-dashed">
