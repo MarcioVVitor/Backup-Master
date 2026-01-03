@@ -132,6 +132,43 @@ export const firmware = pgTable("firmware", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Tabela de Políticas de Backup Automático (Scheduler)
+export const FREQUENCY_TYPES = ["hourly", "daily", "weekly", "monthly"] as const;
+export type FrequencyType = typeof FREQUENCY_TYPES[number];
+
+export const backupPolicies = pgTable("backup_policies", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  enabled: boolean("enabled").default(true),
+  frequencyType: text("frequency_type").notNull().default("daily"),
+  time: text("time").default("02:00"),
+  daysOfWeek: text("days_of_week").array(),
+  dayOfMonth: integer("day_of_month"),
+  manufacturerFilters: text("manufacturer_filters").array(),
+  modelFilters: text("model_filters").array(),
+  equipmentIds: integer("equipment_ids").array(),
+  lastRunAt: timestamp("last_run_at"),
+  nextRunAt: timestamp("next_run_at"),
+  lastStatus: text("last_status"),
+  createdBy: integer("created_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Tabela de Execuções de Políticas de Backup
+export const backupPolicyRuns = pgTable("backup_policy_runs", {
+  id: serial("id").primaryKey(),
+  policyId: integer("policy_id").references(() => backupPolicies.id).notNull(),
+  status: text("status").notNull().default("running"),
+  equipmentCount: integer("equipment_count").default(0),
+  successCount: integer("success_count").default(0),
+  failedCount: integer("failed_count").default(0),
+  startedAt: timestamp("started_at").defaultNow(),
+  finishedAt: timestamp("finished_at"),
+  errorMessage: text("error_message"),
+});
+
 // Fabricantes padrão (usados para seed inicial)
 export const DEFAULT_MANUFACTURERS = [
   { value: "mikrotik", label: "Mikrotik", color: "#ff6b6b" },
@@ -159,6 +196,9 @@ export const insertManufacturerSchema = createInsertSchema(manufacturers).omit({
 export const insertSystemUpdateSchema = createInsertSchema(systemUpdates).omit({ id: true, appliedAt: true, status: true });
 export const insertFirmwareSchema = createInsertSchema(firmware).omit({ id: true, createdAt: true });
 export const updateUserSchema = createInsertSchema(users).omit({ id: true, replitId: true, createdAt: true }).partial();
+export const insertBackupPolicySchema = createInsertSchema(backupPolicies).omit({ id: true, createdAt: true, updatedAt: true, lastRunAt: true, nextRunAt: true, lastStatus: true });
+export const updateBackupPolicySchema = insertBackupPolicySchema.partial();
+export const insertBackupPolicyRunSchema = createInsertSchema(backupPolicyRuns).omit({ id: true, startedAt: true });
 
 // Tipos
 export type User = typeof users.$inferSelect;
@@ -180,3 +220,7 @@ export type SystemUpdate = typeof systemUpdates.$inferSelect;
 export type InsertSystemUpdate = z.infer<typeof insertSystemUpdateSchema>;
 export type Firmware = typeof firmware.$inferSelect;
 export type InsertFirmware = z.infer<typeof insertFirmwareSchema>;
+export type BackupPolicy = typeof backupPolicies.$inferSelect;
+export type InsertBackupPolicy = z.infer<typeof insertBackupPolicySchema>;
+export type BackupPolicyRun = typeof backupPolicyRuns.$inferSelect;
+export type InsertBackupPolicyRun = z.infer<typeof insertBackupPolicyRunSchema>;

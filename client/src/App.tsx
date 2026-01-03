@@ -16,6 +16,7 @@ import Manufacturers from "@/pages/manufacturers";
 import Admin from "@/pages/admin";
 import Firmware from "@/pages/firmware";
 import TerminalPage from "@/pages/terminal";
+import Scheduler from "@/pages/scheduler";
 import Login from "@/pages/login";
 import NotFound from "@/pages/not-found";
 
@@ -43,7 +44,8 @@ import {
   Factory, 
   Settings,
   FileCode,
-  TerminalSquare
+  TerminalSquare,
+  Calendar
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -78,6 +80,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
     { title: "Dashboard", url: "/", icon: HomeIcon },
     { title: "Equipamentos", url: "/equipment", icon: Server },
     { title: "Executar Backup", url: "/backup-execute", icon: Play },
+    { title: "Scheduler", url: "/scheduler", icon: Calendar },
     { title: "Backups", url: "/backups", icon: HardDrive },
     { title: "Scripts", url: "/scripts", icon: Terminal },
     { title: "Fabricantes", url: "/manufacturers", icon: Factory },
@@ -175,6 +178,7 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/equipment" component={Equipment} />
       <Route path="/backup-execute" component={BackupExecute} />
+      <Route path="/scheduler" component={Scheduler} />
       <Route path="/backups" component={Backups} />
       <Route path="/scripts" component={Scripts} />
       <Route path="/manufacturers" component={Manufacturers} />

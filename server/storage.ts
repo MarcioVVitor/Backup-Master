@@ -9,6 +9,7 @@ import {
   manufacturers,
   systemUpdates,
   firmware,
+  backupPolicies,
   DEFAULT_MANUFACTURERS,
   type InsertFile, 
   type InsertEquipment, 
@@ -26,6 +27,8 @@ import {
   type InsertSystemUpdate,
   type Firmware,
   type InsertFirmware,
+  type BackupPolicy,
+  type InsertBackupPolicy,
   type User
 } from "@shared/schema";
 import { eq, desc, sql, and, gte } from "drizzle-orm";
@@ -78,6 +81,12 @@ export interface IStorage {
   getFirmwareById(id: number): Promise<Firmware | undefined>;
   createFirmware(data: InsertFirmware): Promise<Firmware>;
   deleteFirmware(id: number): Promise<void>;
+
+  getBackupPolicies(): Promise<BackupPolicy[]>;
+  getBackupPolicyById(id: number): Promise<BackupPolicy | undefined>;
+  createBackupPolicy(data: InsertBackupPolicy): Promise<BackupPolicy>;
+  updateBackupPolicy(id: number, data: Partial<InsertBackupPolicy>): Promise<BackupPolicy | undefined>;
+  deleteBackupPolicy(id: number): Promise<void>;
 
   importData(data: any): Promise<void>;
   seedDefaultScripts(): Promise<void>;
@@ -433,6 +442,32 @@ export class DatabaseStorage implements IStorage {
         await db.insert(systemUpdates).values(updateData).onConflictDoNothing();
       }
     }
+  }
+
+  async getBackupPolicies(): Promise<BackupPolicy[]> {
+    return await db.select().from(backupPolicies).orderBy(desc(backupPolicies.createdAt));
+  }
+
+  async getBackupPolicyById(id: number): Promise<BackupPolicy | undefined> {
+    const [policy] = await db.select().from(backupPolicies).where(eq(backupPolicies.id, id));
+    return policy;
+  }
+
+  async createBackupPolicy(data: InsertBackupPolicy): Promise<BackupPolicy> {
+    const [policy] = await db.insert(backupPolicies).values(data).returning();
+    return policy;
+  }
+
+  async updateBackupPolicy(id: number, data: Partial<InsertBackupPolicy>): Promise<BackupPolicy | undefined> {
+    const [updated] = await db.update(backupPolicies)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(backupPolicies.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteBackupPolicy(id: number): Promise<void> {
+    await db.delete(backupPolicies).where(eq(backupPolicies.id, id));
   }
 }
 

@@ -2,7 +2,7 @@ import type { Express } from "express";
 import type { Server } from "http";
 import { storage } from "./storage";
 import multer from "multer";
-import { insertEquipmentSchema, insertVendorScriptSchema, updateVendorScriptSchema, insertSystemUpdateSchema, insertFirmwareSchema, SUPPORTED_MANUFACTURERS, USER_ROLES } from "@shared/schema";
+import { insertEquipmentSchema, insertVendorScriptSchema, updateVendorScriptSchema, insertSystemUpdateSchema, insertFirmwareSchema, insertBackupPolicySchema, updateBackupPolicySchema, SUPPORTED_MANUFACTURERS, USER_ROLES } from "@shared/schema";
 import { z } from "zod";
 import { WebSocketServer, WebSocket } from "ws";
 import { Client as SSHClient } from "ssh2";
@@ -1054,6 +1054,93 @@ export async function registerRoutes(
     } catch (e) {
       console.error("Error downloading firmware:", e);
       res.status(500).json({ message: "Erro ao baixar firmware" });
+    }
+  });
+
+  // API - Scheduler (Políticas de Backup Automático)
+  app.get('/api/scheduler/policies', isAuthenticated, async (req, res) => {
+    try {
+      const policies = await storage.getBackupPolicies();
+      res.json(policies);
+    } catch (e) {
+      console.error("Error listing backup policies:", e);
+      res.status(500).json({ message: "Erro ao listar políticas de backup" });
+    }
+  });
+
+  app.get('/api/scheduler/policies/:id', isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const policy = await storage.getBackupPolicyById(id);
+      if (!policy) return res.status(404).json({ message: "Política não encontrada" });
+      res.json(policy);
+    } catch (e) {
+      console.error("Error getting backup policy:", e);
+      res.status(500).json({ message: "Erro ao obter política de backup" });
+    }
+  });
+
+  app.post('/api/scheduler/policies', isAuthenticated, async (req, res) => {
+    try {
+      const parsed = insertBackupPolicySchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ message: "Dados inválidos", errors: parsed.error.errors });
+      }
+
+      const user = req.user as any;
+      const userSub = user?.claims?.sub;
+      const userId = userSub ? await storage.getUserIdByReplitId(userSub) : null;
+      
+      const policy = await storage.createBackupPolicy({
+        ...parsed.data,
+        createdBy: userId,
+      });
+      res.status(201).json(policy);
+    } catch (e) {
+      console.error("Error creating backup policy:", e);
+      res.status(500).json({ message: "Erro ao criar política de backup" });
+    }
+  });
+
+  app.put('/api/scheduler/policies/:id', isAuthenticated, async (req, res) => {
+    try {
+      const parsed = updateBackupPolicySchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ message: "Dados inválidos", errors: parsed.error.errors });
+      }
+
+      const id = parseInt(req.params.id);
+      const policy = await storage.updateBackupPolicy(id, parsed.data);
+      if (!policy) return res.status(404).json({ message: "Política não encontrada" });
+      res.json(policy);
+    } catch (e) {
+      console.error("Error updating backup policy:", e);
+      res.status(500).json({ message: "Erro ao atualizar política de backup" });
+    }
+  });
+
+  app.delete('/api/scheduler/policies/:id', isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteBackupPolicy(id);
+      res.sendStatus(204);
+    } catch (e) {
+      console.error("Error deleting backup policy:", e);
+      res.status(500).json({ message: "Erro ao excluir política de backup" });
+    }
+  });
+
+  app.post('/api/scheduler/policies/:id/toggle', isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const policy = await storage.getBackupPolicyById(id);
+      if (!policy) return res.status(404).json({ message: "Política não encontrada" });
+      
+      const updated = await storage.updateBackupPolicy(id, { enabled: !policy.enabled });
+      res.json(updated);
+    } catch (e) {
+      console.error("Error toggling backup policy:", e);
+      res.status(500).json({ message: "Erro ao alternar política de backup" });
     }
   });
 

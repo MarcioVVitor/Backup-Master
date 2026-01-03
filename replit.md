@@ -47,6 +47,8 @@ Key tables:
 - `sessions` - Session storage for authentication
 - `equipment` - Network device records (name, IP, credentials, manufacturer)
 - `files` - Backup file metadata with object storage references
+- `backup_policies` - Automated backup scheduling policies with frequency rules
+- `backup_policy_runs` - Execution history for scheduled backup policies
 
 ### Object Storage
 - **Provider**: Google Cloud Storage via Replit's sidecar service
