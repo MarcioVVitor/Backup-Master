@@ -55,7 +55,13 @@ import {
   Trash2,
   Shield,
   Eye,
-  Edit
+  Edit,
+  RefreshCw,
+  CheckCircle,
+  Clock,
+  ArrowUpCircle,
+  FileText,
+  GitBranch
 } from "lucide-react";
 
 interface User {
@@ -81,6 +87,24 @@ interface Customization {
   systemName: string;
   primaryColor: string;
   logoUrl: string;
+}
+
+interface UpdateInfo {
+  currentVersion: string;
+  latestVersion: string;
+  hasUpdate: boolean;
+  releaseDate: string | null;
+  changelog: string[];
+  downloadUrl: string | null;
+}
+
+interface UpdateHistory {
+  id: number;
+  version: string;
+  appliedAt: string;
+  appliedBy: string;
+  status: 'success' | 'failed' | 'pending';
+  changelog: string | null;
 }
 
 const PERMISSION_LEVELS = [
@@ -116,6 +140,46 @@ export default function AdminPage() {
 
   const { data: systemInfo } = useQuery<SystemInfo>({
     queryKey: ["/api/admin/system-info"],
+  });
+
+  const { data: updateInfo, isLoading: updateLoading, refetch: refetchUpdate } = useQuery<UpdateInfo>({
+    queryKey: ["/api/admin/updates/check"],
+    refetchOnWindowFocus: false,
+  });
+
+  const { data: updateHistory = [] } = useQuery<UpdateHistory[]>({
+    queryKey: ["/api/admin/updates/history"],
+  });
+
+  const [isApplyingUpdate, setIsApplyingUpdate] = useState(false);
+
+  const applyUpdate = useMutation({
+    mutationFn: async () => {
+      setIsApplyingUpdate(true);
+      const response = await fetch("/api/admin/updates/apply", {
+        method: "POST",
+        credentials: "include"
+      });
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.message || "Falha ao aplicar atualização");
+      }
+      return response.json();
+    },
+    onSuccess: (data) => {
+      setIsApplyingUpdate(false);
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/updates/check"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/updates/history"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/system-info"] });
+      toast({ 
+        title: "Atualização aplicada com sucesso", 
+        description: data.message || `Sistema atualizado para versão ${data.version}` 
+      });
+    },
+    onError: (err: Error) => {
+      setIsApplyingUpdate(false);
+      toast({ title: err.message || "Erro ao aplicar atualização", variant: "destructive" });
+    }
   });
 
   useEffect(() => {
@@ -365,6 +429,10 @@ export default function AdminPage() {
           <TabsTrigger value="system" data-testid="tab-system">
             <Server className="h-4 w-4 mr-2" />
             Sistema
+          </TabsTrigger>
+          <TabsTrigger value="updates" data-testid="tab-updates">
+            <ArrowUpCircle className="h-4 w-4 mr-2" />
+            Atualizações
           </TabsTrigger>
         </TabsList>
 
@@ -834,6 +902,173 @@ export default function AdminPage() {
                   </p>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="updates" className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <ArrowUpCircle className="h-5 w-5" />
+                  Verificar Atualizações
+                </CardTitle>
+                <CardDescription>Verifique se há novas versões disponíveis</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Versão Atual</p>
+                    <p className="text-2xl font-bold" data-testid="text-current-version">
+                      v{updateInfo?.currentVersion || systemInfo?.version || "17.0.0"}
+                    </p>
+                  </div>
+                  <GitBranch className="h-8 w-8 text-muted-foreground" />
+                </div>
+
+                {updateLoading ? (
+                  <div className="flex items-center justify-center p-8">
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                    <span className="ml-2 text-muted-foreground">Verificando atualizações...</span>
+                  </div>
+                ) : updateInfo?.hasUpdate ? (
+                  <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg space-y-3">
+                    <div className="flex items-center gap-2 text-primary">
+                      <ArrowUpCircle className="h-5 w-5" />
+                      <span className="font-semibold">Nova versão disponível!</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Versão Disponível</p>
+                        <p className="text-xl font-bold" data-testid="text-latest-version">
+                          v{updateInfo.latestVersion}
+                        </p>
+                      </div>
+                      {updateInfo.releaseDate && (
+                        <div className="text-right">
+                          <p className="text-sm text-muted-foreground">Data de Lançamento</p>
+                          <p className="text-sm font-medium">
+                            {new Date(updateInfo.releaseDate).toLocaleDateString('pt-BR')}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <Button 
+                      className="w-full"
+                      onClick={() => applyUpdate.mutate()}
+                      disabled={isApplyingUpdate || applyUpdate.isPending}
+                      data-testid="button-apply-update"
+                    >
+                      {isApplyingUpdate ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Aplicando atualização...
+                        </>
+                      ) : (
+                        <>
+                          <Download className="h-4 w-4 mr-2" />
+                          Aplicar Atualização
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
+                    <CheckCircle className="h-5 w-5 text-green-500" />
+                    <span className="text-green-600 dark:text-green-400">Sistema está atualizado!</span>
+                  </div>
+                )}
+
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => refetchUpdate()}
+                  disabled={updateLoading}
+                  data-testid="button-check-updates"
+                >
+                  <RefreshCw className={`h-4 w-4 mr-2 ${updateLoading ? 'animate-spin' : ''}`} />
+                  Verificar Atualizações
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5" />
+                  Changelog
+                </CardTitle>
+                <CardDescription>Novidades e correções na versão disponível</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {updateInfo?.changelog && updateInfo.changelog.length > 0 ? (
+                  <ul className="space-y-2 max-h-64 overflow-y-auto">
+                    {updateInfo.changelog.map((item, index) => (
+                      <li key={index} className="flex items-start gap-2 text-sm">
+                        <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-muted-foreground text-sm">
+                    Nenhuma atualização disponível no momento.
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Clock className="h-5 w-5" />
+                Histórico de Atualizações
+              </CardTitle>
+              <CardDescription>Registro de todas as atualizações aplicadas</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {updateHistory.length > 0 ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Versão</TableHead>
+                      <TableHead>Data de Aplicação</TableHead>
+                      <TableHead>Aplicado por</TableHead>
+                      <TableHead>Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {updateHistory.map((update) => (
+                      <TableRow key={update.id} data-testid={`row-update-${update.id}`}>
+                        <TableCell className="font-medium">v{update.version}</TableCell>
+                        <TableCell>
+                          {new Date(update.appliedAt).toLocaleDateString('pt-BR', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </TableCell>
+                        <TableCell>{update.appliedBy}</TableCell>
+                        <TableCell>
+                          <Badge 
+                            variant={update.status === 'success' ? 'default' : update.status === 'failed' ? 'destructive' : 'outline'}
+                          >
+                            {update.status === 'success' ? 'Sucesso' : update.status === 'failed' ? 'Falhou' : 'Pendente'}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              ) : (
+                <p className="text-muted-foreground text-sm text-center py-8">
+                  Nenhuma atualização foi aplicada ainda.
+                </p>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

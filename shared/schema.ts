@@ -111,10 +111,8 @@ export const manufacturers = pgTable("manufacturers", {
 export const systemUpdates = pgTable("system_updates", {
   id: serial("id").primaryKey(),
   version: text("version").notNull(),
-  description: text("description").notNull(),
-  filename: text("filename"),
-  objectName: text("object_name"),
-  size: integer("size"),
+  changelog: text("changelog"),
+  status: text("status").default("success"),
   appliedAt: timestamp("applied_at").defaultNow(),
   appliedBy: text("applied_by").notNull(),
 });
@@ -158,7 +156,7 @@ export const insertSettingSchema = createInsertSchema(settings).omit({ updatedAt
 export const insertVendorScriptSchema = createInsertSchema(vendorScripts).omit({ id: true, updatedAt: true });
 export const updateVendorScriptSchema = createInsertSchema(vendorScripts).omit({ id: true, updatedAt: true, manufacturer: true }).partial();
 export const insertManufacturerSchema = createInsertSchema(manufacturers).omit({ id: true, createdAt: true });
-export const insertSystemUpdateSchema = createInsertSchema(systemUpdates).omit({ id: true, appliedAt: true });
+export const insertSystemUpdateSchema = createInsertSchema(systemUpdates).omit({ id: true, appliedAt: true, status: true });
 export const insertFirmwareSchema = createInsertSchema(firmware).omit({ id: true, createdAt: true });
 export const updateUserSchema = createInsertSchema(users).omit({ id: true, replitId: true, createdAt: true }).partial();
 
