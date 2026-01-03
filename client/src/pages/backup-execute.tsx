@@ -375,6 +375,7 @@ export default function BackupExecutePage() {
                     <Checkbox
                       checked={isSelected}
                       onCheckedChange={() => toggleEquipment(eq.id)}
+                      onClick={(e) => e.stopPropagation()}
                       className="mt-1"
                       data-testid={`checkbox-equipment-${eq.id}`}
                     />
