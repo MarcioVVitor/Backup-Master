@@ -213,8 +213,8 @@ export default function BackupExecutePage() {
         <div className="flex items-center gap-3">
           <Play className="h-8 w-8 text-primary" />
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Scheduler</h1>
-            <p className="text-sm text-muted-foreground">Agende e execute backups manuais</p>
+            <h1 className="text-2xl font-bold tracking-tight">Executar Backup</h1>
+            <p className="text-sm text-muted-foreground">Execute backups manuais dos equipamentos</p>
           </div>
         </div>
         <Link href="/backups">
