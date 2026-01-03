@@ -78,15 +78,14 @@ function AppLayout({ children }: { children: React.ReactNode }) {
 
   const menuItems = [
     { title: "Dashboard", url: "/", icon: HomeIcon },
-    { title: "Equipamentos", url: "/equipment", icon: Server },
-    { title: "Executar Backup", url: "/backup-execute", icon: Play },
-    { title: "Scheduler", url: "/scheduler", icon: Calendar },
-    { title: "Backups", url: "/backups", icon: HardDrive },
-    { title: "Scripts", url: "/scripts", icon: Terminal },
     { title: "Fabricantes", url: "/manufacturers", icon: Factory },
+    { title: "Equipamentos", url: "/equipment", icon: Server },
+    { title: "Scripts", url: "/scripts", icon: Terminal },
+    { title: "Executar Backup", url: "/backup-execute", icon: Play },
+    { title: "Backups", url: "/backups", icon: HardDrive },
+    { title: "Scheduler", url: "/scheduler", icon: Calendar },
     { title: "Firmware", url: "/firmware", icon: FileCode },
     { title: "Terminal", url: "/terminal", icon: TerminalSquare },
-    { title: "Executar Cmd", url: "/execute", icon: Play },
     { title: "Administração", url: "/admin", icon: Settings },
   ];
 
