@@ -55,7 +55,13 @@ const filesToPublish = [
   'vite.config.ts',
   'drizzle.config.ts',
   'tailwind.config.ts',
-  'postcss.config.cjs',
+  'postcss.config.js',
+  'components.json',
+  
+  // Docker e Deploy
+  'Dockerfile',
+  'docker-compose.yml',
+  '.env.example',
   
   // Instalação
   'install/install.sh',
@@ -67,6 +73,9 @@ const filesToPublish = [
   'install/build-release.sh',
   'install/docs/MANUAL_OPERACAO.md',
   'install/.github/workflows/release.yml',
+  
+  // Scripts
+  'scripts/init-db.sql',
 ];
 
 // Diretórios a serem publicados
@@ -74,6 +83,8 @@ const directoriesToPublish = [
   'client',
   'server',
   'shared',
+  'docs',
+  '.github',
 ];
 
 function getAllFiles(dir: string, baseDir: string = ''): string[] {
@@ -167,7 +178,7 @@ async function uploadFile(octokit: Octokit, owner: string, repo: string, filePat
 }
 
 async function main() {
-  const repoName = 'nbm';
+  const repoName = 'nbm-cloud';
   
   console.log('='.repeat(60));
   console.log('  NBM - Publicação no GitHub');
