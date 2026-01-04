@@ -230,6 +230,13 @@ type TranslationKeys = {
     policyWillBeRemoved: string;
     at: string;
     day: string;
+    sun: string;
+    mon: string;
+    tue: string;
+    wed: string;
+    thu: string;
+    fri: string;
+    sat: string;
   };
   firmware: {
     title: string;
@@ -615,7 +622,7 @@ export const translations: Translations = {
       backupFinished: "Backup finalizado",
     },
     scheduler: {
-      title: "Scheduler",
+      title: "Agendador",
       subtitle: "Políticas de backup automatizado",
       addPolicy: "Nova Política",
       editPolicy: "Editar Política",
@@ -654,6 +661,13 @@ export const translations: Translations = {
       policyWillBeRemoved: "A política será removida permanentemente.",
       at: "às",
       day: "dia",
+      sun: "Dom",
+      mon: "Seg",
+      tue: "Ter",
+      wed: "Qua",
+      thu: "Qui",
+      fri: "Sex",
+      sat: "Sáb",
     },
     firmware: {
       title: "Firmware",
@@ -1105,6 +1119,13 @@ export const translations: Translations = {
       policyWillBeRemoved: "The policy will be permanently removed.",
       at: "at",
       day: "day",
+      sun: "Sun",
+      mon: "Mon",
+      tue: "Tue",
+      wed: "Wed",
+      thu: "Thu",
+      fri: "Fri",
+      sat: "Sat",
     },
     firmware: {
       title: "Firmware",
@@ -1556,6 +1577,13 @@ export const translations: Translations = {
       policyWillBeRemoved: "La política será eliminada permanentemente.",
       at: "a las",
       day: "día",
+      sun: "Dom",
+      mon: "Lun",
+      tue: "Mar",
+      wed: "Mié",
+      thu: "Jue",
+      fri: "Vie",
+      sat: "Sáb",
     },
     firmware: {
       title: "Firmware",
@@ -2007,6 +2035,13 @@ export const translations: Translations = {
       policyWillBeRemoved: "La politique sera définitivement supprimée.",
       at: "à",
       day: "jour",
+      sun: "Dim",
+      mon: "Lun",
+      tue: "Mar",
+      wed: "Mer",
+      thu: "Jeu",
+      fri: "Ven",
+      sat: "Sam",
     },
     firmware: {
       title: "Firmware",
@@ -2458,6 +2493,13 @@ export const translations: Translations = {
       day: "Tag",
       weekly: "Wöchentlich",
       monthly: "Monatlich",
+      sun: "So",
+      mon: "Mo",
+      tue: "Di",
+      wed: "Mi",
+      thu: "Do",
+      fri: "Fr",
+      sat: "Sa",
     },
     firmware: {
       title: "Firmware",

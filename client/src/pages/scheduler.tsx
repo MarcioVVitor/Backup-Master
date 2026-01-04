@@ -94,13 +94,13 @@ export default function SchedulerPage() {
   ];
 
   const DAYS_OF_WEEK = [
-    { value: "0", label: t.common.all === "All" ? "Sun" : "Dom" },
-    { value: "1", label: t.common.all === "All" ? "Mon" : "Seg" },
-    { value: "2", label: t.common.all === "All" ? "Tue" : "Ter" },
-    { value: "3", label: t.common.all === "All" ? "Wed" : "Qua" },
-    { value: "4", label: t.common.all === "All" ? "Thu" : "Qui" },
-    { value: "5", label: t.common.all === "All" ? "Fri" : "Sex" },
-    { value: "6", label: t.common.all === "All" ? "Sat" : "Sab" },
+    { value: "0", label: t.scheduler.sun },
+    { value: "1", label: t.scheduler.mon },
+    { value: "2", label: t.scheduler.tue },
+    { value: "3", label: t.scheduler.wed },
+    { value: "4", label: t.scheduler.thu },
+    { value: "5", label: t.scheduler.fri },
+    { value: "6", label: t.scheduler.sat },
   ];
 
   const { data: policies = [], isLoading } = useQuery<BackupPolicy[]>({
