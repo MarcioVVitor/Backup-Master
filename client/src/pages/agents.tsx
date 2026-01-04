@@ -81,6 +81,7 @@ export default function AgentsPage() {
   const [formData, setFormData] = useState({
     name: "",
     siteName: "",
+    ipAddress: "",
     description: "",
   });
 
@@ -95,7 +96,7 @@ export default function AgentsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/agents"] });
       setIsCreateOpen(false);
-      setFormData({ name: "", siteName: "", description: "" });
+      setFormData({ name: "", siteName: "", ipAddress: "", description: "" });
       toast({ title: t.agents.createSuccess });
     },
     onError: () => {
@@ -150,7 +151,7 @@ export default function AgentsPage() {
   });
 
   const handleCreate = () => {
-    setFormData({ name: "", siteName: "", description: "" });
+    setFormData({ name: "", siteName: "", ipAddress: "", description: "" });
     setIsCreateOpen(true);
   };
 
@@ -159,6 +160,7 @@ export default function AgentsPage() {
     setFormData({
       name: agent.name,
       siteName: agent.siteName,
+      ipAddress: agent.ipAddress || "",
       description: agent.description || "",
     });
     setIsEditOpen(true);
@@ -401,8 +403,18 @@ export default function AgentsPage() {
                 id="siteName"
                 value={formData.siteName}
                 onChange={(e) => setFormData({ ...formData, siteName: e.target.value })}
-                placeholder={t.agents.siteName}
+                placeholder={t.agents.siteNamePlaceholder}
                 data-testid="input-site-name"
+              />
+            </div>
+            <div>
+              <Label htmlFor="ipAddress">{t.agents.proxyIp}</Label>
+              <Input
+                id="ipAddress"
+                value={formData.ipAddress}
+                onChange={(e) => setFormData({ ...formData, ipAddress: e.target.value })}
+                placeholder={t.agents.proxyIpPlaceholder}
+                data-testid="input-ip-address"
               />
             </div>
             <div>
@@ -452,7 +464,18 @@ export default function AgentsPage() {
                 id="edit-siteName"
                 value={formData.siteName}
                 onChange={(e) => setFormData({ ...formData, siteName: e.target.value })}
+                placeholder={t.agents.siteNamePlaceholder}
                 data-testid="input-edit-site-name"
+              />
+            </div>
+            <div>
+              <Label htmlFor="edit-ipAddress">{t.agents.proxyIp}</Label>
+              <Input
+                id="edit-ipAddress"
+                value={formData.ipAddress}
+                onChange={(e) => setFormData({ ...formData, ipAddress: e.target.value })}
+                placeholder={t.agents.proxyIpPlaceholder}
+                data-testid="input-edit-ip-address"
               />
             </div>
             <div>
