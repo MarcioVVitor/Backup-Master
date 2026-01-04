@@ -611,6 +611,25 @@ export default function FirmwarePage() {
     ? equipment.filter(e => e.manufacturer === selectedScript.manufacturer)
     : equipment;
 
+  // Get translated name for default scripts
+  const getScriptName = (script: VendorScript) => {
+    if (!script.isDefault) return script.name;
+    
+    const isUpdate = script.name === "Script de Atualizacao";
+    return isUpdate ? t.scripts.defaultNames.updateScript : t.scripts.defaultNames.backupScript;
+  };
+
+  // Get translated description for default scripts
+  const getScriptDescription = (script: VendorScript) => {
+    if (!script.isDefault || !script.description) return script.description;
+    
+    const manufacturer = script.manufacturer?.toLowerCase().replace("-", "");
+    const isUpdate = script.name === "Script de Atualizacao";
+    const key = `${manufacturer}${isUpdate ? "Update" : "Backup"}`;
+    
+    return t.scripts.defaultDescriptions[key] || script.description;
+  };
+
   if (error) {
     return (
       <div className="p-6 md:p-8">
@@ -887,9 +906,9 @@ export default function FirmwarePage() {
                             <CheckCircle2 className="h-5 w-5 text-primary" />
                           )}
                         </div>
-                        <CardTitle className="text-base mt-2">{script.name}</CardTitle>
+                        <CardTitle className="text-base mt-2">{getScriptName(script)}</CardTitle>
                         <CardDescription className="line-clamp-2">
-                          {script.description || t.scripts.noDescription}
+                          {getScriptDescription(script) || t.scripts.noDescription}
                         </CardDescription>
                       </CardHeader>
                       <CardContent>
