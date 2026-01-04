@@ -366,6 +366,147 @@ export async function registerRoutes(
     }
   });
 
+  // Alias: /api/backups/history -> /api/backup-history
+  app.get('/api/backups/history', isAuthenticated, async (req, res) => {
+    try {
+      const history = await storage.getBackupHistory();
+      res.json(history);
+    } catch (e) {
+      console.error("Error getting backup history:", e);
+      res.status(500).json({ error: "Erro ao obter histórico" });
+    }
+  });
+
+  // API - Files (alias para backups com formato simplificado)
+  app.get('/api/files', isAuthenticated, async (req, res) => {
+    try {
+      const backups = await storage.getBackups();
+      res.json(backups);
+    } catch (e) {
+      console.error("Error listing files:", e);
+      res.status(500).json({ error: "Erro ao listar arquivos" });
+    }
+  });
+
+  app.delete('/api/files/:id', isAuthenticated, async (req, res) => {
+    const id = parseInt(req.params.id);
+    const backup = await storage.getBackup(id);
+
+    if (!backup) return res.status(404).json({ message: "Arquivo não encontrado" });
+
+    const { objectStorageClient } = await import("./replit_integrations/object_storage/objectStorage");
+    const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID;
+    const bucket = objectStorageClient.bucket(bucketId!);
+    const file = bucket.file(backup.objectName);
+
+    try {
+      await file.delete();
+    } catch (e) {
+      console.warn("Falha ao deletar do storage:", e);
+    }
+
+    await storage.deleteBackup(id);
+    res.sendStatus(204);
+  });
+
+  // API - Executar backup em lote
+  app.post('/api/backups/execute', isAuthenticated, async (req, res) => {
+    try {
+      const { equipmentIds } = req.body;
+      
+      if (!equipmentIds || !Array.isArray(equipmentIds) || equipmentIds.length === 0) {
+        return res.status(400).json({ message: "equipmentIds é obrigatório" });
+      }
+
+      const user = req.user as any;
+      const userSub = user?.claims?.sub;
+      const userId = userSub ? await storage.getUserIdByReplitId(userSub) : null;
+      
+      const results = [];
+      
+      for (const equipmentId of equipmentIds) {
+        const equip = await storage.getEquipmentById(equipmentId);
+        
+        if (!equip) {
+          results.push({ equipmentId, success: false, error: "Equipamento não encontrado" });
+          continue;
+        }
+        
+        if (!equip.enabled) {
+          results.push({ equipmentId, success: false, error: "Equipamento desabilitado" });
+          continue;
+        }
+
+        const startTime = Date.now();
+        const historyRecord = await storage.createBackupHistory({
+          equipmentId: equip.id,
+          equipmentName: equip.name,
+          manufacturer: equip.manufacturer,
+          ip: equip.ip,
+          status: "running",
+          executedBy: userId,
+        });
+
+        try {
+          const config = await getBackupConfig(equip.manufacturer);
+          const result = await executeSSHBackup(equip, config);
+
+          const { objectStorageClient } = await import("./replit_integrations/object_storage/objectStorage");
+          const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID;
+          if (!bucketId) throw new Error("Bucket não configurado");
+
+          const filename = `${equip.name}_${Date.now()}${config.extension}`;
+          const objectName = `backups/${equip.manufacturer}/${equip.name}/${filename}`;
+          const bucket = objectStorageClient.bucket(bucketId);
+          const file = bucket.file(objectName);
+
+          await file.save(Buffer.from(result), { contentType: 'text/plain' });
+
+          const fileRecord = await storage.createBackup({
+            userId: userId || 1,
+            equipmentId: equip.id,
+            filename,
+            objectName,
+            size: result.length,
+            mimeType: 'text/plain',
+            status: "success",
+          });
+
+          const duration = (Date.now() - startTime) / 1000;
+          await storage.updateBackupHistory(historyRecord.id, {
+            status: "success",
+            duration,
+            fileId: fileRecord.id,
+          });
+
+          results.push({ equipmentId, success: true, backup: fileRecord, duration });
+        } catch (e: any) {
+          console.error(`Erro backup SSH para ${equip.name}:`, e);
+          const duration = (Date.now() - startTime) / 1000;
+          
+          await storage.updateBackupHistory(historyRecord.id, {
+            status: "failed",
+            duration,
+            errorMessage: e.message,
+          });
+
+          results.push({ equipmentId, success: false, error: e.message });
+        }
+      }
+
+      res.json({ 
+        success: results.every(r => r.success), 
+        results,
+        total: results.length,
+        successful: results.filter(r => r.success).length,
+        failed: results.filter(r => !r.success).length
+      });
+    } catch (e) {
+      console.error("Error executing batch backup:", e);
+      res.status(500).json({ success: false, error: "Erro ao executar backups em lote" });
+    }
+  });
+
   // API - Configurações
   app.get('/api/settings', isAuthenticated, async (req, res) => {
     try {
@@ -443,6 +584,25 @@ export async function registerRoutes(
   });
 
   app.patch('/api/scripts/:id', isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const parsed = updateVendorScriptSchema.parse(req.body);
+      const script = await storage.updateVendorScript(id, parsed);
+      if (!script) {
+        return res.status(404).json({ message: "Script nao encontrado" });
+      }
+      res.json(script);
+    } catch (e) {
+      if (e instanceof z.ZodError) {
+        return res.status(400).json({ message: "Dados invalidos", errors: e.errors });
+      }
+      console.error("Error updating script:", e);
+      res.status(500).json({ message: "Erro ao atualizar script" });
+    }
+  });
+
+  // Alias: PUT também funciona para atualização de scripts
+  app.put('/api/scripts/:id', isAuthenticated, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const parsed = updateVendorScriptSchema.parse(req.body);
