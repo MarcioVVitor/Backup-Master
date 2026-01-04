@@ -16,6 +16,9 @@ import {
   agentJobEvents,
   agentMetrics,
   equipmentAgents,
+  companies,
+  serverAdmins,
+  userCompanies,
   DEFAULT_MANUFACTURERS,
   type InsertFile, 
   type InsertEquipment, 
@@ -47,7 +50,13 @@ import {
   type AgentMetric,
   type InsertAgentMetric,
   type EquipmentAgent,
-  type InsertEquipmentAgent
+  type InsertEquipmentAgent,
+  type Company,
+  type InsertCompany,
+  type ServerAdmin,
+  type InsertServerAdmin,
+  type UserCompany,
+  type InsertUserCompany
 } from "@shared/schema";
 import { eq, desc, sql, and, gte, lt } from "drizzle-orm";
 
@@ -738,6 +747,193 @@ export class DatabaseStorage implements IStorage {
       return agent;
     }
     return undefined;
+  }
+
+  // ============================================
+  // MULTI-TENANCY - EMPRESAS
+  // ============================================
+
+  async getCompanies(): Promise<Company[]> {
+    return await db.select().from(companies).orderBy(companies.name);
+  }
+
+  async getCompanyById(id: number): Promise<Company | undefined> {
+    const [company] = await db.select().from(companies).where(eq(companies.id, id));
+    return company;
+  }
+
+  async getCompanyBySlug(slug: string): Promise<Company | undefined> {
+    const [company] = await db.select().from(companies).where(eq(companies.slug, slug));
+    return company;
+  }
+
+  async createCompany(data: InsertCompany): Promise<Company> {
+    const insertData: any = {
+      name: data.name,
+      slug: data.slug,
+      description: data.description ?? null,
+      logo: data.logo ?? null,
+      active: data.active ?? true,
+      maxUsers: data.maxUsers ?? 10,
+      maxEquipment: data.maxEquipment ?? 100,
+      maxAgents: data.maxAgents ?? 5,
+      settings: data.settings ?? null,
+    };
+    const [company] = await db.insert(companies).values(insertData).returning();
+    return company;
+  }
+
+  async updateCompany(id: number, data: Partial<InsertCompany>): Promise<Company | undefined> {
+    const updateData: any = { updatedAt: new Date() };
+    if (data.name !== undefined) updateData.name = data.name;
+    if (data.slug !== undefined) updateData.slug = data.slug;
+    if (data.description !== undefined) updateData.description = data.description;
+    if (data.logo !== undefined) updateData.logo = data.logo;
+    if (data.active !== undefined) updateData.active = data.active;
+    if (data.maxUsers !== undefined) updateData.maxUsers = data.maxUsers;
+    if (data.maxEquipment !== undefined) updateData.maxEquipment = data.maxEquipment;
+    if (data.maxAgents !== undefined) updateData.maxAgents = data.maxAgents;
+    if (data.settings !== undefined) updateData.settings = data.settings;
+    
+    const [company] = await db.update(companies)
+      .set(updateData)
+      .where(eq(companies.id, id))
+      .returning();
+    return company;
+  }
+
+  async deleteCompany(id: number): Promise<void> {
+    await db.delete(companies).where(eq(companies.id, id));
+  }
+
+  // ============================================
+  // MULTI-TENANCY - SERVER ADMINS
+  // ============================================
+
+  async getServerAdmins(): Promise<ServerAdmin[]> {
+    return await db.select().from(serverAdmins);
+  }
+
+  async getServerAdminByUserId(userId: number): Promise<ServerAdmin | undefined> {
+    const [admin] = await db.select().from(serverAdmins).where(eq(serverAdmins.userId, userId));
+    return admin;
+  }
+
+  async createServerAdmin(data: InsertServerAdmin): Promise<ServerAdmin> {
+    const insertData: any = {
+      userId: data.userId,
+      role: data.role ?? "support_engineer",
+      permissions: data.permissions ?? null,
+    };
+    const [admin] = await db.insert(serverAdmins).values(insertData).returning();
+    return admin;
+  }
+
+  async updateServerAdmin(id: number, data: Partial<InsertServerAdmin>): Promise<ServerAdmin | undefined> {
+    const updateData: any = {};
+    if (data.role !== undefined) updateData.role = data.role;
+    if (data.permissions !== undefined) updateData.permissions = data.permissions;
+    
+    const [admin] = await db.update(serverAdmins)
+      .set(updateData)
+      .where(eq(serverAdmins.id, id))
+      .returning();
+    return admin;
+  }
+
+  async deleteServerAdmin(id: number): Promise<void> {
+    await db.delete(serverAdmins).where(eq(serverAdmins.id, id));
+  }
+
+  // ============================================
+  // MULTI-TENANCY - USER COMPANIES
+  // ============================================
+
+  async getUserCompanies(userId: number): Promise<UserCompany[]> {
+    return await db.select().from(userCompanies).where(eq(userCompanies.userId, userId));
+  }
+
+  async getCompanyUsers(companyId: number): Promise<UserCompany[]> {
+    return await db.select().from(userCompanies).where(eq(userCompanies.companyId, companyId));
+  }
+
+  async addUserToCompany(data: InsertUserCompany): Promise<UserCompany> {
+    const [uc] = await db.insert(userCompanies).values(data).returning();
+    return uc;
+  }
+
+  async updateUserCompanyRole(userId: number, companyId: number, role: string): Promise<UserCompany | undefined> {
+    const [uc] = await db.update(userCompanies)
+      .set({ role })
+      .where(and(eq(userCompanies.userId, userId), eq(userCompanies.companyId, companyId)))
+      .returning();
+    return uc;
+  }
+
+  async removeUserFromCompany(userId: number, companyId: number): Promise<void> {
+    await db.delete(userCompanies)
+      .where(and(eq(userCompanies.userId, userId), eq(userCompanies.companyId, companyId)));
+  }
+
+  async setDefaultCompany(userId: number, companyId: number): Promise<void> {
+    await db.update(userCompanies)
+      .set({ isDefault: false })
+      .where(eq(userCompanies.userId, userId));
+    await db.update(userCompanies)
+      .set({ isDefault: true })
+      .where(and(eq(userCompanies.userId, userId), eq(userCompanies.companyId, companyId)));
+  }
+
+  // ============================================
+  // TENANT-SCOPED QUERIES
+  // ============================================
+
+  async getEquipmentByCompany(companyId: number): Promise<Equipment[]> {
+    return await db.select().from(equipment).where(eq(equipment.companyId, companyId));
+  }
+
+  async getAgentsByCompany(companyId: number): Promise<Agent[]> {
+    return await db.select().from(agents).where(eq(agents.companyId, companyId));
+  }
+
+  async getBackupsByCompany(companyId: number): Promise<FileRecord[]> {
+    return await db.select().from(files)
+      .where(eq(files.companyId, companyId))
+      .orderBy(desc(files.createdAt));
+  }
+
+  async getBackupPoliciesByCompany(companyId: number): Promise<BackupPolicy[]> {
+    return await db.select().from(backupPolicies).where(eq(backupPolicies.companyId, companyId));
+  }
+
+  async getAllAgentsWithCompany(): Promise<(Agent & { companyName: string | null })[]> {
+    const result = await db
+      .select({
+        id: agents.id,
+        companyId: agents.companyId,
+        name: agents.name,
+        siteName: agents.siteName,
+        description: agents.description,
+        publicIp: agents.publicIp,
+        status: agents.status,
+        version: agents.version,
+        ipAddress: agents.ipAddress,
+        lastHeartbeat: agents.lastHeartbeat,
+        capabilities: agents.capabilities,
+        config: agents.config,
+        createdBy: agents.createdBy,
+        createdAt: agents.createdAt,
+        updatedAt: agents.updatedAt,
+        companyName: companies.name,
+      })
+      .from(agents)
+      .leftJoin(companies, eq(agents.companyId, companies.id))
+      .orderBy(agents.status, agents.name);
+    
+    return result.map(r => ({
+      ...r,
+      companyName: r.companyName || null,
+    }));
   }
 }
 

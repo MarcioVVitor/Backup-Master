@@ -1,6 +1,6 @@
 import { Switch, Route, Link, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
-import { QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/use-auth";
@@ -20,6 +20,7 @@ import Firmware from "@/pages/firmware";
 import TerminalPage from "@/pages/terminal";
 import Scheduler from "@/pages/scheduler";
 import Agents from "@/pages/agents";
+import ServerPage from "@/pages/server";
 import Login from "@/pages/login";
 import NotFound from "@/pages/not-found";
 
@@ -49,7 +50,8 @@ import {
   FileCode,
   TerminalSquare,
   Calendar,
-  Network
+  Network,
+  Cloud
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -69,6 +71,11 @@ function AppLayout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const { background, logoUrl, systemName } = useTheme();
   const { t } = useI18n();
+  
+  const { data: serverAdminCheck } = useQuery<{ isServerAdmin: boolean; serverRole: string | null }>({
+    queryKey: ["/api/server/check-admin"],
+    enabled: !!user,
+  });
 
   if (isLoading) {
     return (
@@ -82,7 +89,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
     return <Login />;
   }
 
-  const menuItems = [
+  const baseMenuItems = [
     { title: t.menu.dashboard, url: "/", icon: HomeIcon },
     { title: t.menu.manufacturers, url: "/manufacturers", icon: Factory },
     { title: t.menu.equipment, url: "/equipment", icon: Server },
@@ -95,6 +102,10 @@ function AppLayout({ children }: { children: React.ReactNode }) {
     { title: t.menu.agents, url: "/agents", icon: Network },
     { title: t.menu.administration, url: "/admin", icon: Settings },
   ];
+  
+  const menuItems = serverAdminCheck?.isServerAdmin 
+    ? [...baseMenuItems, { title: "NBM CLOUD Server", url: "/server", icon: Cloud }]
+    : baseMenuItems;
 
   const backgroundStyle = background?.type === "gradient" 
     ? { background: background.value }
@@ -211,6 +222,7 @@ function Router() {
       <Route path="/execute" component={Execute} />
       <Route path="/agents" component={Agents} />
       <Route path="/admin" component={Admin} />
+      <Route path="/server" component={ServerPage} />
       <Route component={NotFound} />
     </Switch>
   );

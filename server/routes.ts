@@ -7,6 +7,8 @@ import { z } from "zod";
 import { WebSocketServer, WebSocket } from "ws";
 import { Client as SSHClient } from "ssh2";
 import net from "net";
+import { createServerRoutes } from "./routes/server-routes";
+import { withTenantContext } from "./middleware/tenant";
 
 const isStandalone = !process.env.REPL_ID;
 
@@ -76,6 +78,11 @@ export async function registerRoutes(
     isAuthenticated = replitAuth.isAuthenticated;
   }
 
+  app.use(withTenantContext);
+
+  const serverRoutes = createServerRoutes(isAuthenticated);
+  app.use("/api/server", serverRoutes);
+
   const sanitizeEquipment = (equip: any) => {
     const { password, ...rest } = equip;
     return rest;
@@ -86,10 +93,18 @@ export async function registerRoutes(
     res.json(SUPPORTED_MANUFACTURERS);
   });
 
-  // API - Equipamentos
+  // API - Equipamentos (tenant-scoped)
   app.get('/api/equipment', isAuthenticated, async (req, res) => {
     try {
-      const equipmentList = await storage.getEquipment();
+      const companyId = req.companyId;
+      let equipmentList;
+      if (companyId) {
+        equipmentList = await storage.getEquipmentByCompany(companyId);
+      } else if (req.tenantUser?.isServerAdmin) {
+        equipmentList = await storage.getEquipment();
+      } else {
+        return res.status(403).json({ message: "Company context required" });
+      }
       res.json(equipmentList.map(sanitizeEquipment));
     } catch (e) {
       console.error("Error listing equipment:", e);
@@ -99,8 +114,26 @@ export async function registerRoutes(
 
   app.post('/api/equipment', isAuthenticated, async (req, res) => {
     try {
+      const companyId = req.companyId;
+      const isServerAdmin = req.tenantUser?.isServerAdmin;
+      
+      if (!companyId && !isServerAdmin) {
+        return res.status(403).json({ message: "Company context required" });
+      }
+      
       const parsed = insertEquipmentSchema.parse(req.body);
-      const equipment = await storage.createEquipment(parsed);
+      
+      let finalCompanyId: number;
+      if (isServerAdmin && parsed.companyId) {
+        finalCompanyId = parsed.companyId;
+      } else if (companyId) {
+        finalCompanyId = companyId;
+      } else {
+        return res.status(400).json({ message: "Company ID required" });
+      }
+      
+      const equipmentData = { ...parsed, companyId: finalCompanyId };
+      const equipment = await storage.createEquipment(equipmentData);
       res.status(201).json(sanitizeEquipment(equipment));
     } catch (e) {
       if (e instanceof z.ZodError) {
@@ -114,10 +147,27 @@ export async function registerRoutes(
   app.put('/api/equipment/:id', isAuthenticated, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
+      const companyId = req.companyId;
+      const isServerAdmin = req.tenantUser?.isServerAdmin;
+      
+      const existing = await storage.getEquipmentById(id);
+      if (!existing) {
+        return res.status(404).json({ message: "Equipamento não encontrado" });
+      }
+      
+      if (!isServerAdmin && existing.companyId !== companyId) {
+        return res.status(403).json({ message: "Access denied to this equipment" });
+      }
+      
       const parsed = insertEquipmentSchema.partial().parse(req.body);
       if (parsed.password === '' || parsed.password === undefined) {
         delete parsed.password;
       }
+      
+      if (!isServerAdmin) {
+        delete (parsed as any).companyId;
+      }
+      
       const equipment = await storage.updateEquipment(id, parsed);
       if (!equipment) return res.status(404).json({ message: "Equipamento não encontrado" });
       res.json(sanitizeEquipment(equipment));
@@ -133,6 +183,18 @@ export async function registerRoutes(
   app.delete('/api/equipment/:id', isAuthenticated, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
+      const companyId = req.companyId;
+      const isServerAdmin = req.tenantUser?.isServerAdmin;
+      
+      const existing = await storage.getEquipmentById(id);
+      if (!existing) {
+        return res.status(404).json({ message: "Equipamento não encontrado" });
+      }
+      
+      if (!isServerAdmin && existing.companyId !== companyId) {
+        return res.status(403).json({ message: "Access denied to this equipment" });
+      }
+      
       await storage.deleteEquipment(id);
       res.sendStatus(204);
     } catch (e) {
@@ -141,11 +203,25 @@ export async function registerRoutes(
     }
   });
 
-  // API - Backups/Arquivos
+  // API - Backups/Arquivos (tenant-scoped)
   app.get('/api/backups', isAuthenticated, async (req, res) => {
     try {
-      const backups = await storage.getBackups();
-      const equipmentList = await storage.getEquipment();
+      const companyId = req.companyId;
+      const isServerAdmin = req.tenantUser?.isServerAdmin;
+      
+      let backups;
+      let equipmentList;
+      
+      if (companyId) {
+        backups = await storage.getBackupsByCompany(companyId);
+        equipmentList = await storage.getEquipmentByCompany(companyId);
+      } else if (isServerAdmin) {
+        backups = await storage.getBackups();
+        equipmentList = await storage.getEquipment();
+      } else {
+        return res.status(403).json({ success: false, error: "Company context required" });
+      }
+      
       const equipmentMap = new Map(equipmentList.map(e => [e.id, e]));
       
       const enrichedBackups = backups.map(b => {

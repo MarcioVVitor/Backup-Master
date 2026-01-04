@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, timestamp, boolean, varchar, jsonb, index, real } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, timestamp, boolean, varchar, jsonb, index, real, unique } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { sql } from "drizzle-orm";
@@ -14,9 +14,69 @@ export const sessions = pgTable(
   (table) => [index("IDX_session_expire").on(table.expire)]
 );
 
-// Roles de usuario
+// ============================================
+// MULTI-TENANCY - EMPRESAS E ISOLAMENTO
+// ============================================
+
+// Roles de servidor (NBM CLOUD Server admins)
+export const SERVER_ROLES = ["server_admin", "support_engineer"] as const;
+export type ServerRole = typeof SERVER_ROLES[number];
+
+// Roles de empresa (dentro de cada tenant)
+export const COMPANY_ROLES = ["company_admin", "operator", "viewer"] as const;
+export type CompanyRole = typeof COMPANY_ROLES[number];
+
+// Roles de usuario (compatibilidade legada)
 export const USER_ROLES = ["admin", "operator", "viewer"] as const;
 export type UserRole = typeof USER_ROLES[number];
+
+// Tabela de Empresas (Tenants)
+export const companies = pgTable("companies", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  slug: text("slug").notNull().unique(),
+  description: text("description"),
+  logo: text("logo"),
+  active: boolean("active").default(true),
+  maxUsers: integer("max_users").default(10),
+  maxEquipment: integer("max_equipment").default(100),
+  maxAgents: integer("max_agents").default(5),
+  settings: jsonb("settings").$type<{
+    timezone?: string;
+    language?: string;
+    retentionDays?: number;
+  }>(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Tabela de Administradores do Servidor (NBM CLOUD Server)
+export const serverAdmins = pgTable("server_admins", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull().unique(),
+  role: text("role").notNull().default("support_engineer"),
+  permissions: jsonb("permissions").$type<{
+    canCreateCompanies?: boolean;
+    canDeleteCompanies?: boolean;
+    canAccessAllCompanies?: boolean;
+    canManageProxies?: boolean;
+    canRestartProxies?: boolean;
+    canPerformMaintenance?: boolean;
+  }>(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Tabela de Vinculação Usuário-Empresa (multi-empresa)
+export const userCompanies = pgTable("user_companies", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  companyId: integer("company_id").references(() => companies.id).notNull(),
+  role: text("role").notNull().default("viewer"),
+  isDefault: boolean("is_default").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  unique("user_company_unique").on(table.userId, table.companyId)
+]);
 
 // User storage table (matches existing DB)
 export const users = pgTable("users", {
@@ -36,6 +96,7 @@ export const users = pgTable("users", {
 // Tabela de Equipamentos de Rede
 export const equipment = pgTable("equipment", {
   id: serial("id").primaryKey(),
+  companyId: integer("company_id").references(() => companies.id),
   name: text("name").notNull(),
   ip: text("ip").notNull(),
   manufacturer: text("manufacturer").notNull(),
@@ -51,6 +112,7 @@ export const equipment = pgTable("equipment", {
 // Tabela de Arquivos/Backups (integrada com Object Storage)
 export const files = pgTable("files", {
   id: serial("id").primaryKey(),
+  companyId: integer("company_id").references(() => companies.id),
   userId: integer("user_id").references(() => users.id).notNull(),
   equipmentId: integer("equipment_id").references(() => equipment.id),
   filename: text("filename").notNull(),
@@ -65,6 +127,7 @@ export const files = pgTable("files", {
 // Tabela de Histórico de Backups (logs de execução)
 export const backupHistory = pgTable("backup_history", {
   id: serial("id").primaryKey(),
+  companyId: integer("company_id").references(() => companies.id),
   equipmentId: integer("equipment_id").references(() => equipment.id),
   equipmentName: text("equipment_name"),
   manufacturer: text("manufacturer"),
@@ -120,6 +183,7 @@ export const systemUpdates = pgTable("system_updates", {
 // Tabela de Firmware
 export const firmware = pgTable("firmware", {
   id: serial("id").primaryKey(),
+  companyId: integer("company_id").references(() => companies.id),
   name: text("name").notNull(),
   manufacturer: text("manufacturer").notNull(),
   model: text("model"),
@@ -138,6 +202,7 @@ export type FrequencyType = typeof FREQUENCY_TYPES[number];
 
 export const backupPolicies = pgTable("backup_policies", {
   id: serial("id").primaryKey(),
+  companyId: integer("company_id").references(() => companies.id),
   name: text("name").notNull(),
   description: text("description"),
   enabled: boolean("enabled").default(true),
@@ -184,9 +249,11 @@ export type JobStatus = typeof JOB_STATUS[number];
 // Tabela de Agentes (proxies locais em redes remotas)
 export const agents = pgTable("agents", {
   id: serial("id").primaryKey(),
+  companyId: integer("company_id").references(() => companies.id),
   name: text("name").notNull(),
   siteName: text("site_name").notNull(),
   description: text("description"),
+  publicIp: text("public_ip"),
   status: text("status").notNull().default("offline"),
   version: text("version"),
   ipAddress: text("ip_address"),
@@ -291,6 +358,12 @@ export const DEFAULT_MANUFACTURERS = [
 // Compatibilidade com código existente
 export const SUPPORTED_MANUFACTURERS = DEFAULT_MANUFACTURERS;
 
+// Schemas de inserção - Multi-tenancy
+export const insertCompanySchema = createInsertSchema(companies).omit({ id: true, createdAt: true, updatedAt: true });
+export const updateCompanySchema = insertCompanySchema.partial();
+export const insertServerAdminSchema = createInsertSchema(serverAdmins).omit({ id: true, createdAt: true });
+export const insertUserCompanySchema = createInsertSchema(userCompanies).omit({ id: true, createdAt: true });
+
 // Schemas de inserção
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true, replitId: true, isAdmin: true });
 export const insertEquipmentSchema = createInsertSchema(equipment).omit({ id: true, createdAt: true });
@@ -354,3 +427,11 @@ export type AgentMetric = typeof agentMetrics.$inferSelect;
 export type InsertAgentMetric = z.infer<typeof insertAgentMetricsSchema>;
 export type EquipmentAgent = typeof equipmentAgents.$inferSelect;
 export type InsertEquipmentAgent = z.infer<typeof insertEquipmentAgentSchema>;
+
+// Tipos Multi-tenancy
+export type Company = typeof companies.$inferSelect;
+export type InsertCompany = z.infer<typeof insertCompanySchema>;
+export type ServerAdmin = typeof serverAdmins.$inferSelect;
+export type InsertServerAdmin = z.infer<typeof insertServerAdminSchema>;
+export type UserCompany = typeof userCompanies.$inferSelect;
+export type InsertUserCompany = z.infer<typeof insertUserCompanySchema>;
