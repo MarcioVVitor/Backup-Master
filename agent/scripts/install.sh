@@ -2,7 +2,21 @@
 set -e
 
 # NBM Agent Installation Script for Debian 13
-# Usage: sudo ./install.sh
+# Usage: sudo ./install.sh [--with-ufw]
+# Options:
+#   --with-ufw    Configure UFW firewall for public IP security
+
+CONFIGURE_UFW="false"
+
+# Parse arguments
+for arg in "$@"; do
+    case $arg in
+        --with-ufw)
+            CONFIGURE_UFW="true"
+            shift
+            ;;
+    esac
+done
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -198,6 +212,40 @@ $LOG_DIR/*.log {
 EOF
 }
 
+configure_ufw() {
+    echo -e "${GREEN}Configuring UFW firewall...${NC}"
+    
+    if ! command -v ufw &> /dev/null; then
+        echo -e "${YELLOW}UFW not installed. Installing...${NC}"
+        apt-get install -y -qq ufw
+    fi
+    
+    echo -e "${GREEN}Setting default policies...${NC}"
+    ufw default deny incoming
+    ufw default allow outgoing
+    
+    echo -e "${GREEN}Allowing outbound connections...${NC}"
+    # HTTPS for WebSocket connection to NBM cloud
+    ufw allow out 443/tcp comment 'NBM Agent - WebSocket to cloud'
+    # SSH for backup connections to network equipment
+    ufw allow out 22/tcp comment 'NBM Agent - SSH to equipment'
+    # Telnet for legacy equipment (optional)
+    ufw allow out 23/tcp comment 'NBM Agent - Telnet to equipment'
+    
+    echo -e "${GREEN}Configuring SSH admin access with rate limiting...${NC}"
+    # Rate-limited SSH access for administration
+    ufw limit 22/tcp comment 'SSH admin access - rate limited'
+    
+    echo -e "${GREEN}Enabling logging...${NC}"
+    ufw logging on
+    
+    echo -e "${GREEN}Enabling UFW...${NC}"
+    echo "y" | ufw enable
+    
+    echo -e "${GREEN}UFW Status:${NC}"
+    ufw status verbose
+}
+
 print_instructions() {
     echo ""
     echo -e "${GREEN}======================================"
@@ -226,6 +274,11 @@ print_instructions() {
     echo "6. View logs:"
     echo -e "   ${BLUE}sudo tail -f $LOG_DIR/agent.log${NC}"
     echo ""
+    if [[ "$CONFIGURE_UFW" == "true" ]]; then
+        echo "7. UFW firewall has been configured"
+        echo -e "   ${BLUE}sudo ufw status verbose${NC}"
+        echo ""
+    fi
     echo -e "${GREEN}Directories:${NC}"
     echo "  Installation: $INSTALL_DIR"
     echo "  Configuration: $CONFIG_DIR"
@@ -244,6 +297,11 @@ main() {
     create_config
     install_service
     setup_logrotate
+    
+    if [[ "$CONFIGURE_UFW" == "true" ]]; then
+        configure_ufw
+    fi
+    
     print_instructions
 }
 

@@ -16,8 +16,65 @@ O NBM Agent é um proxy local que se conecta ao servidor NBM na nuvem para execu
 tar -xzf nbm-agent.tar.gz
 cd nbm-agent
 
-# Executar instalação
+# Executar instalação (sem firewall)
 sudo ./scripts/install.sh
+
+# Ou com configuração automática do firewall UFW (recomendado para IP público)
+sudo ./scripts/install.sh --with-ufw
+```
+
+## Configuração do Firewall UFW
+
+Para agentes com IP público, é altamente recomendado configurar o firewall. A opção `--with-ufw` configura automaticamente:
+
+- **Política padrão**: Bloqueia todas conexões de entrada, permite saídas
+- **Saída 443/tcp**: WebSocket para o servidor NBM na nuvem
+- **Saída 22/tcp**: SSH para equipamentos de rede
+- **Saída 23/tcp**: Telnet para equipamentos legados
+- **Entrada 22/tcp**: Acesso SSH administrativo com rate limiting
+- **Logging**: Ativado para auditoria
+
+### Configuração Manual do UFW
+
+Se preferir configurar manualmente:
+
+```bash
+# Instalar UFW
+sudo apt-get install ufw
+
+# Políticas padrão
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+
+# Permitir saídas necessárias
+sudo ufw allow out 443/tcp comment 'NBM Agent - WebSocket'
+sudo ufw allow out 22/tcp comment 'NBM Agent - SSH to equipment'
+sudo ufw allow out 23/tcp comment 'NBM Agent - Telnet'
+
+# SSH admin com rate limiting (proteção contra brute force)
+sudo ufw limit 22/tcp comment 'SSH admin - rate limited'
+
+# Habilitar logging
+sudo ufw logging on
+
+# Ativar firewall
+sudo ufw enable
+
+# Verificar status
+sudo ufw status verbose
+```
+
+### Restringir Acesso SSH por IP
+
+Para maior segurança, restrinja SSH a IPs específicos:
+
+```bash
+# Remover regra genérica
+sudo ufw delete limit 22/tcp
+
+# Permitir apenas IPs específicos
+sudo ufw allow from 10.0.0.0/24 to any port 22 comment 'SSH from trusted network'
+sudo ufw allow from 203.0.113.50 to any port 22 comment 'SSH from admin IP'
 ```
 
 ## Configuração

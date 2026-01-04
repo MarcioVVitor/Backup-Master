@@ -640,17 +640,20 @@ export const translations: Translations = {
       downloadPackage: "Baixar Pacote (.tar.gz)",
       downloadScript: "Baixar Script de Instalação",
       quickInstall: "Instalação Rápida",
-      quickInstallCode: `# Baixar e instalar
+      quickInstallCode: `# Baixar e instalar (com firewall UFW)
 tar -xzf nbm-agent.tar.gz
 cd agent
-sudo ./scripts/install.sh
+sudo ./scripts/install.sh --with-ufw
 
 # Configurar
 sudo nano /etc/nbm-agent/config.json
 
 # Iniciar serviço
 sudo systemctl start nbm-agent
-sudo systemctl enable nbm-agent`,
+sudo systemctl enable nbm-agent
+
+# Verificar firewall
+sudo ufw status verbose`,
     },
     dashboard: {
       title: "Dashboard",
@@ -1211,17 +1214,20 @@ sudo systemctl enable nbm-agent`,
       downloadPackage: "Download Package (.tar.gz)",
       downloadScript: "Download Install Script",
       quickInstall: "Quick Install",
-      quickInstallCode: `# Download and install
+      quickInstallCode: `# Download and install (with UFW firewall)
 tar -xzf nbm-agent.tar.gz
 cd agent
-sudo ./scripts/install.sh
+sudo ./scripts/install.sh --with-ufw
 
 # Configure
 sudo nano /etc/nbm-agent/config.json
 
 # Start service
 sudo systemctl start nbm-agent
-sudo systemctl enable nbm-agent`,
+sudo systemctl enable nbm-agent
+
+# Check firewall status
+sudo ufw status verbose`,
     },
     dashboard: {
       title: "Dashboard",
@@ -1782,17 +1788,20 @@ sudo systemctl enable nbm-agent`,
       downloadPackage: "Descargar Paquete (.tar.gz)",
       downloadScript: "Descargar Script de Instalación",
       quickInstall: "Instalación Rápida",
-      quickInstallCode: `# Descargar e instalar
+      quickInstallCode: `# Descargar e instalar (con firewall UFW)
 tar -xzf nbm-agent.tar.gz
 cd agent
-sudo ./scripts/install.sh
+sudo ./scripts/install.sh --with-ufw
 
 # Configurar
 sudo nano /etc/nbm-agent/config.json
 
 # Iniciar servicio
 sudo systemctl start nbm-agent
-sudo systemctl enable nbm-agent`,
+sudo systemctl enable nbm-agent
+
+# Verificar estado del firewall
+sudo ufw status verbose`,
     },
     dashboard: {
       title: "Panel",
@@ -2353,17 +2362,20 @@ sudo systemctl enable nbm-agent`,
       downloadPackage: "Télécharger le Package (.tar.gz)",
       downloadScript: "Télécharger le Script d'Installation",
       quickInstall: "Installation Rapide",
-      quickInstallCode: `# Télécharger et installer
+      quickInstallCode: `# Télécharger et installer (avec pare-feu UFW)
 tar -xzf nbm-agent.tar.gz
 cd agent
-sudo ./scripts/install.sh
+sudo ./scripts/install.sh --with-ufw
 
 # Configurer
 sudo nano /etc/nbm-agent/config.json
 
 # Démarrer le service
 sudo systemctl start nbm-agent
-sudo systemctl enable nbm-agent`,
+sudo systemctl enable nbm-agent
+
+# Vérifier l'état du pare-feu
+sudo ufw status verbose`,
     },
     dashboard: {
       title: "Tableau de bord",
@@ -2924,17 +2936,20 @@ sudo systemctl enable nbm-agent`,
       downloadPackage: "Paket Herunterladen (.tar.gz)",
       downloadScript: "Installationsskript Herunterladen",
       quickInstall: "Schnellinstallation",
-      quickInstallCode: `# Herunterladen und installieren
+      quickInstallCode: `# Herunterladen und installieren (mit UFW-Firewall)
 tar -xzf nbm-agent.tar.gz
 cd agent
-sudo ./scripts/install.sh
+sudo ./scripts/install.sh --with-ufw
 
 # Konfigurieren
 sudo nano /etc/nbm-agent/config.json
 
 # Dienst starten
 sudo systemctl start nbm-agent
-sudo systemctl enable nbm-agent`,
+sudo systemctl enable nbm-agent
+
+# Firewall-Status prüfen
+sudo ufw status verbose`,
     },
     dashboard: {
       title: "Dashboard",
