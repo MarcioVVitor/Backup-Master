@@ -847,6 +847,38 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(serverAdmins);
   }
 
+  async getServerAdminsWithUserInfo(): Promise<(ServerAdmin & { username?: string; email?: string })[]> {
+    const admins = await db.select({
+      id: serverAdmins.id,
+      userId: serverAdmins.userId,
+      role: serverAdmins.role,
+      permissions: serverAdmins.permissions,
+      createdAt: serverAdmins.createdAt,
+      username: users.username,
+      email: users.email,
+    })
+    .from(serverAdmins)
+    .leftJoin(users, eq(serverAdmins.userId, users.id));
+    
+    return admins.map(a => ({
+      id: a.id,
+      userId: a.userId,
+      role: a.role,
+      permissions: a.permissions,
+      createdAt: a.createdAt,
+      username: a.username || undefined,
+      email: a.email || undefined,
+    }));
+  }
+
+  async getAllUsers(): Promise<{ id: number; username: string; email: string | null }[]> {
+    return await db.select({
+      id: users.id,
+      username: users.username,
+      email: users.email,
+    }).from(users);
+  }
+
   async getServerAdminByUserId(userId: number): Promise<ServerAdmin | undefined> {
     const [admin] = await db.select().from(serverAdmins).where(eq(serverAdmins.userId, userId));
     return admin;

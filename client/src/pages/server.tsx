@@ -28,13 +28,18 @@ import {
   ChevronRight,
   Search,
   ShieldX,
+  Shield,
   Trash2,
-  MapPin
+  MapPin,
+  UserPlus,
+  Crown
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import type { Company, Agent } from "@shared/schema";
+import type { Company, Agent, ServerAdmin } from "@shared/schema";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const proxySchema = z.object({
   name: z.string().min(2, "Nome do proxy deve ter pelo menos 2 caracteres"),
@@ -62,9 +67,12 @@ export default function ServerPage() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [createAdminDialogOpen, setCreateAdminDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [proxies, setProxies] = useState<ProxyFormData[]>([]);
   const [newProxy, setNewProxy] = useState<ProxyFormData>({ name: "", siteName: "", ipAddress: "", description: "" });
+  const [newAdminUserId, setNewAdminUserId] = useState<string>("");
+  const [newAdminRole, setNewAdminRole] = useState<string>("server_admin");
 
   const { data: adminCheck, isLoading: adminCheckLoading } = useQuery<{ isServerAdmin: boolean; serverRole: string | null }>({
     queryKey: ["/api/server/check-admin"],
@@ -86,6 +94,16 @@ export default function ServerPage() {
 
   const { data: agentsData, isLoading: agentsLoading } = useQuery<(Agent & { companyName: string | null })[]>({
     queryKey: ["/api/server/agents"],
+  });
+
+  const { data: adminsData, isLoading: adminsLoading } = useQuery<(ServerAdmin & { username?: string; email?: string })[]>({
+    queryKey: ["/api/server/admins"],
+    enabled: adminCheck?.serverRole === "server_admin",
+  });
+
+  const { data: allUsers } = useQuery<{ id: number; username: string; email: string | null }[]>({
+    queryKey: ["/api/server/users"],
+    enabled: adminCheck?.serverRole === "server_admin",
   });
 
   const createCompanyMutation = useMutation({
@@ -114,6 +132,35 @@ export default function ServerPage() {
     },
     onError: (error: any) => {
       toast({ title: "Erro ao reiniciar agente", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const createAdminMutation = useMutation({
+    mutationFn: async (data: { userId: number; role: string }) => {
+      return await apiRequest("POST", "/api/server/admins", data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/server/admins"] });
+      setCreateAdminDialogOpen(false);
+      setNewAdminUserId("");
+      setNewAdminRole("server_admin");
+      toast({ title: "Super Administrador criado com sucesso" });
+    },
+    onError: (error: any) => {
+      toast({ title: "Erro ao criar administrador", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const deleteAdminMutation = useMutation({
+    mutationFn: async (adminId: number) => {
+      return await apiRequest("DELETE", `/api/server/admins/${adminId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/server/admins"] });
+      toast({ title: "Administrador removido com sucesso" });
+    },
+    onError: (error: any) => {
+      toast({ title: "Erro ao remover administrador", description: error.message, variant: "destructive" });
     },
   });
 
@@ -275,6 +322,12 @@ export default function ServerPage() {
                 <Network className="h-4 w-4 mr-2" />
                 Proxies
               </TabsTrigger>
+              {adminCheck?.serverRole === "server_admin" && (
+                <TabsTrigger value="admins" data-testid="tab-admins">
+                  <Shield className="h-4 w-4 mr-2" />
+                  {t.menu.superAdmin}s
+                </TabsTrigger>
+              )}
             </TabsList>
 
             <div className="flex items-center gap-2">
@@ -634,6 +687,165 @@ export default function ServerPage() {
               </div>
             )}
           </TabsContent>
+
+          {adminCheck?.serverRole === "server_admin" && (
+            <TabsContent value="admins" className="space-y-4">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h2 className="text-lg font-semibold">{t.menu.superAdmin}s</h2>
+                  <p className="text-sm text-muted-foreground">
+                    Somente Super Administradores podem gerenciar outros Super Administradores
+                  </p>
+                </div>
+                <Dialog open={createAdminDialogOpen} onOpenChange={setCreateAdminDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button data-testid="button-create-admin">
+                      <UserPlus className="h-4 w-4 mr-2" />
+                      Novo {t.menu.superAdmin}
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Adicionar {t.menu.superAdmin}</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Usuario</label>
+                        <Select value={newAdminUserId} onValueChange={setNewAdminUserId}>
+                          <SelectTrigger data-testid="select-admin-user">
+                            <SelectValue placeholder="Selecione um usuario" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {allUsers?.filter(u => !adminsData?.some(a => a.userId === u.id)).map(user => (
+                              <SelectItem key={user.id} value={user.id.toString()}>
+                                {user.username} {user.email ? `(${user.email})` : ''}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Funcao</label>
+                        <Select value={newAdminRole} onValueChange={setNewAdminRole}>
+                          <SelectTrigger data-testid="select-admin-role">
+                            <SelectValue placeholder="Selecione a funcao" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="server_admin">
+                              <div className="flex items-center gap-2">
+                                <Crown className="h-4 w-4 text-amber-500" />
+                                Super Administrador
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="support_engineer">
+                              <div className="flex items-center gap-2">
+                                <Wrench className="h-4 w-4" />
+                                Engenheiro de Suporte
+                              </div>
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button 
+                        onClick={() => {
+                          if (newAdminUserId) {
+                            createAdminMutation.mutate({ 
+                              userId: parseInt(newAdminUserId), 
+                              role: newAdminRole 
+                            });
+                          }
+                        }}
+                        disabled={!newAdminUserId || createAdminMutation.isPending}
+                        data-testid="button-submit-admin"
+                      >
+                        {createAdminMutation.isPending ? "Criando..." : "Adicionar"}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </div>
+
+              {adminsLoading ? (
+                <Card>
+                  <CardContent className="py-8 text-center text-muted-foreground">
+                    Carregando administradores...
+                  </CardContent>
+                </Card>
+              ) : adminsData?.length === 0 ? (
+                <Card>
+                  <CardContent className="py-8 text-center text-muted-foreground">
+                    Nenhum administrador encontrado
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid gap-4">
+                  {adminsData?.map((admin) => (
+                    <Card key={admin.id} data-testid={`card-admin-${admin.id}`}>
+                      <CardContent className="py-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-4">
+                            <div className={`p-2 rounded-lg ${admin.role === 'server_admin' ? 'bg-amber-500/10' : 'bg-primary/10'}`}>
+                              {admin.role === 'server_admin' ? (
+                                <Crown className="h-5 w-5 text-amber-500" />
+                              ) : (
+                                <Wrench className="h-5 w-5 text-primary" />
+                              )}
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <h3 className="font-semibold">{admin.username || `User #${admin.userId}`}</h3>
+                                <Badge 
+                                  variant={admin.role === 'server_admin' ? "default" : "secondary"} 
+                                  className={admin.role === 'server_admin' ? "bg-amber-500 text-white" : ""}
+                                >
+                                  {admin.role === 'server_admin' ? t.menu.superAdmin : 'Engenheiro de Suporte'}
+                                </Badge>
+                              </div>
+                              <p className="text-sm text-muted-foreground">{admin.email || ''}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button 
+                                  variant="destructive" 
+                                  size="sm"
+                                  data-testid={`button-delete-admin-${admin.id}`}
+                                >
+                                  <Trash2 className="h-3 w-3 mr-1" />
+                                  Remover
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Remover administrador?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Esta acao ira remover os privilegios de administrador de {admin.username || `User #${admin.userId}`}.
+                                    Esta acao nao pode ser desfeita.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => deleteAdminMutation.mutate(admin.id)}
+                                    className="bg-destructive text-destructive-foreground"
+                                  >
+                                    Remover
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+          )}
         </Tabs>
       </div>
     </div>

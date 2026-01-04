@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { storage } from "../storage";
-import { isServerAdmin, requireServerPermission } from "../middleware/tenant";
+import { isServerAdmin, requireServerPermission, requireSuperAdmin } from "../middleware/tenant";
 import { insertCompanySchema, insertServerAdminSchema } from "@shared/schema";
 import { z } from "zod";
 
@@ -214,7 +214,7 @@ export function createServerRoutes(isAuthenticated: any): Router {
 
   router.get("/admins", isAuthenticated, isServerAdmin, async (req, res) => {
     try {
-      const admins = await storage.getServerAdmins();
+      const admins = await storage.getServerAdminsWithUserInfo();
       res.json(admins);
     } catch (e) {
       console.error("Error listing admins:", e);
@@ -222,9 +222,26 @@ export function createServerRoutes(isAuthenticated: any): Router {
     }
   });
 
-  router.post("/admins", isAuthenticated, requireServerPermission("canCreateCompanies"), async (req, res) => {
+  router.get("/users", isAuthenticated, requireSuperAdmin, async (req, res) => {
+    try {
+      const usersList = await storage.getAllUsers();
+      res.json(usersList);
+    } catch (e) {
+      console.error("Error listing users:", e);
+      res.status(500).json({ message: "Error listing users" });
+    }
+  });
+
+  router.post("/admins", isAuthenticated, requireSuperAdmin, async (req, res) => {
     try {
       const parsed = insertServerAdminSchema.parse(req.body);
+      
+      const existingAdmins = await storage.getServerAdmins();
+      const alreadyAdmin = existingAdmins.some(a => a.userId === parsed.userId);
+      if (alreadyAdmin) {
+        return res.status(400).json({ message: "User is already a Super Administrator" });
+      }
+      
       const admin = await storage.createServerAdmin(parsed);
       res.status(201).json(admin);
     } catch (e) {
@@ -233,6 +250,32 @@ export function createServerRoutes(isAuthenticated: any): Router {
       }
       console.error("Error creating admin:", e);
       res.status(500).json({ message: "Error creating admin" });
+    }
+  });
+
+  router.delete("/admins/:id", isAuthenticated, requireSuperAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      
+      const existingAdmins = await storage.getServerAdmins();
+      const superAdmins = existingAdmins.filter(a => a.role === "server_admin");
+      
+      const adminToDelete = existingAdmins.find(a => a.id === id);
+      if (!adminToDelete) {
+        return res.status(404).json({ message: "Administrator not found" });
+      }
+      
+      if (adminToDelete.role === "server_admin" && superAdmins.length <= 1) {
+        return res.status(400).json({ 
+          message: "Cannot remove the last Super Administrator" 
+        });
+      }
+      
+      await storage.deleteServerAdmin(id);
+      res.status(204).send();
+    } catch (e) {
+      console.error("Error deleting admin:", e);
+      res.status(500).json({ message: "Error deleting admin" });
     }
   });
 

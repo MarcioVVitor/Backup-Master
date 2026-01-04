@@ -212,6 +212,35 @@ export const requireCompanyAccess = (minRole?: string): RequestHandler => {
   };
 };
 
+export const requireSuperAdmin: RequestHandler = async (req, res, next) => {
+  try {
+    const userInfo = await getUserFromRequest(req);
+    if (!userInfo) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const [serverAdmin] = await db
+      .select()
+      .from(serverAdmins)
+      .where(eq(serverAdmins.userId, userInfo.userId));
+
+    if (!serverAdmin) {
+      return res.status(403).json({ message: "Super Administrator access required" });
+    }
+
+    if (serverAdmin.role !== "server_admin") {
+      return res.status(403).json({ 
+        message: "Only Super Administrators can perform this action" 
+      });
+    }
+
+    next();
+  } catch (e) {
+    console.error("Error checking super admin:", e);
+    res.status(500).json({ message: "Internal error" });
+  }
+};
+
 export const requireServerPermission = (permission: string): RequestHandler => {
   return async (req, res, next) => {
     try {
