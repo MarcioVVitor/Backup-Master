@@ -129,6 +129,13 @@ type TranslationKeys = {
     noDescription: string;
     saveScript: string;
     saving: string;
+    defaultNames: {
+      updateScript: string;
+      backupScript: string;
+    };
+    defaultDescriptions: {
+      [key: string]: string;
+    };
   };
   backups: {
     title: string;
@@ -560,6 +567,28 @@ export const translations: Translations = {
       noDescription: "Sem descrição",
       saveScript: "Salvar Script",
       saving: "Salvando...",
+      defaultNames: {
+        updateScript: "Script de Atualização",
+        backupScript: "Script de Backup",
+      },
+      defaultDescriptions: {
+        huaweiUpdate: "Script padrão de atualização via FTP para equipamentos Huawei",
+        huaweiBackup: "Script padrão de backup para equipamentos Huawei",
+        mikrotikUpdate: "Script padrão de atualização via HTTP para roteadores Mikrotik",
+        mikrotikBackup: "Script padrão de backup para roteadores Mikrotik",
+        ciscoUpdate: "Script padrão de atualização via HTTP para equipamentos Cisco",
+        ciscoBackup: "Script padrão de backup para equipamentos Cisco",
+        nokiaUpdate: "Script padrão de atualização via FTP para equipamentos Nokia",
+        nokiaBackup: "Script padrão de backup para equipamentos Nokia",
+        zteUpdate: "Script padrão de atualização via HTTP para equipamentos ZTE",
+        zteBackup: "Script padrão de backup para equipamentos ZTE",
+        datacomUpdate: "Script padrão de atualização via TFTP para switches Datacom",
+        datacomBackup: "Script padrão de backup para switches Datacom",
+        datacomDmosUpdate: "Script padrão de atualização via FTP para Datacom DMOS",
+        datacomDmosBackup: "Script padrão de backup para Datacom DMOS",
+        juniperUpdate: "Script padrão de atualização via HTTP para roteadores Juniper",
+        juniperBackup: "Script padrão de backup para roteadores Juniper",
+      },
     },
     backups: {
       title: "Backups",
@@ -1018,6 +1047,28 @@ export const translations: Translations = {
       noDescription: "No description",
       saveScript: "Save Script",
       saving: "Saving...",
+      defaultNames: {
+        updateScript: "Update Script",
+        backupScript: "Backup Script",
+      },
+      defaultDescriptions: {
+        huaweiUpdate: "Default update script via FTP for Huawei equipment",
+        huaweiBackup: "Default backup script for Huawei equipment",
+        mikrotikUpdate: "Default update script via HTTP for Mikrotik routers",
+        mikrotikBackup: "Default backup script for Mikrotik routers",
+        ciscoUpdate: "Default update script via HTTP for Cisco equipment",
+        ciscoBackup: "Default backup script for Cisco equipment",
+        nokiaUpdate: "Default update script via FTP for Nokia equipment",
+        nokiaBackup: "Default backup script for Nokia equipment",
+        zteUpdate: "Default update script via HTTP for ZTE equipment",
+        zteBackup: "Default backup script for ZTE equipment",
+        datacomUpdate: "Default update script via TFTP for Datacom switches",
+        datacomBackup: "Default backup script for Datacom switches",
+        datacomDmosUpdate: "Default update script via FTP for Datacom DMOS",
+        datacomDmosBackup: "Default backup script for Datacom DMOS",
+        juniperUpdate: "Default update script via HTTP for Juniper routers",
+        juniperBackup: "Default backup script for Juniper routers",
+      },
     },
     backups: {
       title: "Backups",
@@ -1476,6 +1527,28 @@ export const translations: Translations = {
       noDescription: "Sin descripción",
       saveScript: "Guardar Script",
       saving: "Guardando...",
+      defaultNames: {
+        updateScript: "Script de Actualización",
+        backupScript: "Script de Respaldo",
+      },
+      defaultDescriptions: {
+        huaweiUpdate: "Script predeterminado de actualización via FTP para equipos Huawei",
+        huaweiBackup: "Script predeterminado de respaldo para equipos Huawei",
+        mikrotikUpdate: "Script predeterminado de actualización via HTTP para routers Mikrotik",
+        mikrotikBackup: "Script predeterminado de respaldo para routers Mikrotik",
+        ciscoUpdate: "Script predeterminado de actualización via HTTP para equipos Cisco",
+        ciscoBackup: "Script predeterminado de respaldo para equipos Cisco",
+        nokiaUpdate: "Script predeterminado de actualización via FTP para equipos Nokia",
+        nokiaBackup: "Script predeterminado de respaldo para equipos Nokia",
+        zteUpdate: "Script predeterminado de actualización via HTTP para equipos ZTE",
+        zteBackup: "Script predeterminado de respaldo para equipos ZTE",
+        datacomUpdate: "Script predeterminado de actualización via TFTP para switches Datacom",
+        datacomBackup: "Script predeterminado de respaldo para switches Datacom",
+        datacomDmosUpdate: "Script predeterminado de actualización via FTP para Datacom DMOS",
+        datacomDmosBackup: "Script predeterminado de respaldo para Datacom DMOS",
+        juniperUpdate: "Script predeterminado de actualización via HTTP para routers Juniper",
+        juniperBackup: "Script predeterminado de respaldo para routers Juniper",
+      },
     },
     backups: {
       title: "Backups",
@@ -1934,6 +2007,28 @@ export const translations: Translations = {
       noDescription: "Aucune description",
       saveScript: "Enregistrer Script",
       saving: "Enregistrement...",
+      defaultNames: {
+        updateScript: "Script de Mise à Jour",
+        backupScript: "Script de Sauvegarde",
+      },
+      defaultDescriptions: {
+        huaweiUpdate: "Script par défaut de mise à jour via FTP pour équipements Huawei",
+        huaweiBackup: "Script par défaut de sauvegarde pour équipements Huawei",
+        mikrotikUpdate: "Script par défaut de mise à jour via HTTP pour routeurs Mikrotik",
+        mikrotikBackup: "Script par défaut de sauvegarde pour routeurs Mikrotik",
+        ciscoUpdate: "Script par défaut de mise à jour via HTTP pour équipements Cisco",
+        ciscoBackup: "Script par défaut de sauvegarde pour équipements Cisco",
+        nokiaUpdate: "Script par défaut de mise à jour via FTP pour équipements Nokia",
+        nokiaBackup: "Script par défaut de sauvegarde pour équipements Nokia",
+        zteUpdate: "Script par défaut de mise à jour via HTTP pour équipements ZTE",
+        zteBackup: "Script par défaut de sauvegarde pour équipements ZTE",
+        datacomUpdate: "Script par défaut de mise à jour via TFTP pour switches Datacom",
+        datacomBackup: "Script par défaut de sauvegarde pour switches Datacom",
+        datacomDmosUpdate: "Script par défaut de mise à jour via FTP pour Datacom DMOS",
+        datacomDmosBackup: "Script par défaut de sauvegarde pour Datacom DMOS",
+        juniperUpdate: "Script par défaut de mise à jour via HTTP pour routeurs Juniper",
+        juniperBackup: "Script par défaut de sauvegarde pour routeurs Juniper",
+      },
     },
     backups: {
       title: "Sauvegardes",
@@ -2392,6 +2487,28 @@ export const translations: Translations = {
       noDescription: "Keine Beschreibung",
       saveScript: "Skript Speichern",
       saving: "Speichern...",
+      defaultNames: {
+        updateScript: "Update-Skript",
+        backupScript: "Backup-Skript",
+      },
+      defaultDescriptions: {
+        huaweiUpdate: "Standard-Update-Skript via FTP für Huawei-Geräte",
+        huaweiBackup: "Standard-Backup-Skript für Huawei-Geräte",
+        mikrotikUpdate: "Standard-Update-Skript via HTTP für Mikrotik-Router",
+        mikrotikBackup: "Standard-Backup-Skript für Mikrotik-Router",
+        ciscoUpdate: "Standard-Update-Skript via HTTP für Cisco-Geräte",
+        ciscoBackup: "Standard-Backup-Skript für Cisco-Geräte",
+        nokiaUpdate: "Standard-Update-Skript via FTP für Nokia-Geräte",
+        nokiaBackup: "Standard-Backup-Skript für Nokia-Geräte",
+        zteUpdate: "Standard-Update-Skript via HTTP für ZTE-Geräte",
+        zteBackup: "Standard-Backup-Skript für ZTE-Geräte",
+        datacomUpdate: "Standard-Update-Skript via TFTP für Datacom-Switches",
+        datacomBackup: "Standard-Backup-Skript für Datacom-Switches",
+        datacomDmosUpdate: "Standard-Update-Skript via FTP für Datacom DMOS",
+        datacomDmosBackup: "Standard-Backup-Skript für Datacom DMOS",
+        juniperUpdate: "Standard-Update-Skript via HTTP für Juniper-Router",
+        juniperBackup: "Standard-Backup-Skript für Juniper-Router",
+      },
     },
     backups: {
       title: "Backups",

@@ -36,6 +36,25 @@ export default function ScriptsPage() {
     }
   };
 
+  // Get translated name for default scripts
+  const getScriptName = (script: any) => {
+    if (!script.isDefault) return script.name;
+    
+    const isUpdate = script.name === "Script de Atualizacao";
+    return isUpdate ? t.scripts.defaultNames.updateScript : t.scripts.defaultNames.backupScript;
+  };
+
+  // Get translated description for default scripts
+  const getScriptDescription = (script: any) => {
+    if (!script.isDefault || !script.description) return script.description;
+    
+    const manufacturer = script.manufacturer?.toLowerCase().replace("-", "");
+    const isUpdate = script.name === "Script de Atualizacao";
+    const key = `${manufacturer}${isUpdate ? "Update" : "Backup"}`;
+    
+    return t.scripts.defaultDescriptions[key] || script.description;
+  };
+
   return (
     <div className="p-6 md:p-8 space-y-6 animate-enter">
       <div className="flex justify-between items-center">
@@ -63,8 +82,8 @@ export default function ScriptsPage() {
                 </Badge>
                 {script.isDefault && <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100 text-[10px]">{t.scripts.default}</Badge>}
               </div>
-              <CardTitle className="text-lg">{script.name}</CardTitle>
-              <CardDescription className="line-clamp-2">{script.description || t.scripts.noDescription}</CardDescription>
+              <CardTitle className="text-lg">{getScriptName(script)}</CardTitle>
+              <CardDescription className="line-clamp-2">{getScriptDescription(script) || t.scripts.noDescription}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="bg-muted rounded-md p-3 font-mono text-xs overflow-x-auto whitespace-pre-wrap">
