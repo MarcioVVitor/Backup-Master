@@ -71,18 +71,25 @@ export interface IStorage {
 
   getEquipment(): Promise<Equipment[]>;
   getEquipmentById(id: number): Promise<Equipment | undefined>;
+  getEquipmentByCompany(companyId: number): Promise<Equipment[]>;
   createEquipment(data: InsertEquipment): Promise<Equipment>;
   updateEquipment(id: number, data: Partial<InsertEquipment>): Promise<Equipment | undefined>;
+  updateEquipmentScoped(id: number, companyId: number, data: Partial<InsertEquipment>): Promise<Equipment | undefined>;
   deleteEquipment(id: number): Promise<void>;
+  deleteEquipmentScoped(id: number, companyId: number): Promise<void>;
 
   getBackups(): Promise<FileRecord[]>;
   getBackup(id: number): Promise<FileRecord | undefined>;
+  getBackupsByCompany(companyId: number): Promise<FileRecord[]>;
   createBackup(data: InsertFile): Promise<FileRecord>;
   deleteBackup(id: number): Promise<void>;
+  deleteBackupScoped(id: number, companyId: number): Promise<void>;
 
   getBackupHistory(): Promise<BackupHistoryRecord[]>;
+  getBackupHistoryByCompany(companyId: number): Promise<BackupHistoryRecord[]>;
   createBackupHistory(data: InsertBackupHistory): Promise<BackupHistoryRecord>;
   updateBackupHistory(id: number, data: Partial<InsertBackupHistory>): Promise<BackupHistoryRecord | undefined>;
+  updateBackupHistoryScoped(id: number, companyId: number, data: Partial<InsertBackupHistory>): Promise<BackupHistoryRecord | undefined>;
 
   getSetting(key: string): Promise<string | null>;
   setSetting(key: string, value: string): Promise<void>;
@@ -225,9 +232,20 @@ export class DatabaseStorage implements IStorage {
     const [updated] = await db.update(equipment).set(data).where(eq(equipment.id, id)).returning();
     return updated;
   }
+  
+  async updateEquipmentScoped(id: number, companyId: number, data: Partial<InsertEquipment>): Promise<Equipment | undefined> {
+    const [updated] = await db.update(equipment).set(data)
+      .where(and(eq(equipment.id, id), eq(equipment.companyId, companyId)))
+      .returning();
+    return updated;
+  }
 
   async deleteEquipment(id: number): Promise<void> {
     await db.delete(equipment).where(eq(equipment.id, id));
+  }
+  
+  async deleteEquipmentScoped(id: number, companyId: number): Promise<void> {
+    await db.delete(equipment).where(and(eq(equipment.id, id), eq(equipment.companyId, companyId)));
   }
 
   async getBackups(): Promise<FileRecord[]> {
@@ -247,6 +265,10 @@ export class DatabaseStorage implements IStorage {
   async deleteBackup(id: number): Promise<void> {
     await db.delete(files).where(eq(files.id, id));
   }
+  
+  async deleteBackupScoped(id: number, companyId: number): Promise<void> {
+    await db.delete(files).where(and(eq(files.id, id), eq(files.companyId, companyId)));
+  }
 
   async getBackupHistory(): Promise<BackupHistoryRecord[]> {
     return await db.select().from(backupHistory).orderBy(desc(backupHistory.executedAt));
@@ -263,6 +285,13 @@ export class DatabaseStorage implements IStorage {
 
   async updateBackupHistory(id: number, data: Partial<InsertBackupHistory>): Promise<BackupHistoryRecord | undefined> {
     const [updated] = await db.update(backupHistory).set(data).where(eq(backupHistory.id, id)).returning();
+    return updated;
+  }
+  
+  async updateBackupHistoryScoped(id: number, companyId: number, data: Partial<InsertBackupHistory>): Promise<BackupHistoryRecord | undefined> {
+    const [updated] = await db.update(backupHistory).set(data)
+      .where(and(eq(backupHistory.id, id), eq(backupHistory.companyId, companyId)))
+      .returning();
     return updated;
   }
 

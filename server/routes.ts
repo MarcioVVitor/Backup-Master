@@ -168,7 +168,12 @@ export async function registerRoutes(
         delete (parsed as any).companyId;
       }
       
-      const equipment = await storage.updateEquipment(id, parsed);
+      let equipment;
+      if (isServerAdmin) {
+        equipment = await storage.updateEquipment(id, parsed);
+      } else {
+        equipment = await storage.updateEquipmentScoped(id, companyId!, parsed);
+      }
       if (!equipment) return res.status(404).json({ message: "Equipamento não encontrado" });
       res.json(sanitizeEquipment(equipment));
     } catch (e) {
@@ -195,7 +200,11 @@ export async function registerRoutes(
         return res.status(403).json({ message: "Access denied to this equipment" });
       }
       
-      await storage.deleteEquipment(id);
+      if (isServerAdmin) {
+        await storage.deleteEquipment(id);
+      } else {
+        await storage.deleteEquipmentScoped(id, companyId!);
+      }
       res.sendStatus(204);
     } catch (e) {
       console.error("Error deleting equipment:", e);
@@ -365,7 +374,9 @@ export async function registerRoutes(
 
   app.delete('/api/backups/:id', isAuthenticated, async (req, res) => {
     const id = parseInt(req.params.id);
-    const { allowed, backup, reason } = await checkBackupAccess(id, req.companyId, req.tenantUser?.isServerAdmin);
+    const companyId = req.companyId;
+    const isServerAdmin = req.tenantUser?.isServerAdmin;
+    const { allowed, backup, reason } = await checkBackupAccess(id, companyId, isServerAdmin);
 
     if (!allowed) {
       if (reason === "not_found") return res.status(404).json({ message: "Backup não encontrado" });
@@ -383,16 +394,28 @@ export async function registerRoutes(
       console.warn("Falha ao deletar do storage:", e);
     }
 
-    await storage.deleteBackup(id);
+    if (isServerAdmin) {
+      await storage.deleteBackup(id);
+    } else {
+      await storage.deleteBackupScoped(id, companyId!);
+    }
     res.sendStatus(204);
   });
 
-  // API - Executar Backup via SSH
+  // API - Executar Backup via SSH (tenant-scoped)
   app.post('/api/backup/execute/:equipmentId', isAuthenticated, async (req, res) => {
     const equipmentId = parseInt(req.params.equipmentId);
+    const companyId = req.companyId;
+    const isServerAdmin = req.tenantUser?.isServerAdmin;
+    
     const equip = await storage.getEquipmentById(equipmentId);
 
     if (!equip) return res.status(404).json({ message: "Equipamento não encontrado" });
+    
+    if (!isServerAdmin && equip.companyId !== companyId) {
+      return res.status(403).json({ message: "Access denied to this equipment" });
+    }
+    
     if (!equip.enabled) return res.status(400).json({ message: "Equipamento desabilitado" });
 
     const user = req.user as any;
@@ -407,6 +430,7 @@ export async function registerRoutes(
       ip: equip.ip,
       status: "running",
       executedBy: userId,
+      companyId: equip.companyId,
     });
 
     try {
@@ -432,6 +456,7 @@ export async function registerRoutes(
         size: result.length,
         mimeType: 'text/plain',
         status: "success",
+        companyId: equip.companyId,
       });
 
       const duration = (Date.now() - startTime) / 1000;
@@ -524,7 +549,9 @@ export async function registerRoutes(
 
   app.delete('/api/files/:id', isAuthenticated, async (req, res) => {
     const id = parseInt(req.params.id);
-    const { allowed, backup, reason } = await checkBackupAccess(id, req.companyId, req.tenantUser?.isServerAdmin);
+    const companyId = req.companyId;
+    const isServerAdmin = req.tenantUser?.isServerAdmin;
+    const { allowed, backup, reason } = await checkBackupAccess(id, companyId, isServerAdmin);
 
     if (!allowed) {
       if (reason === "not_found") return res.status(404).json({ message: "Arquivo não encontrado" });
@@ -542,7 +569,11 @@ export async function registerRoutes(
       console.warn("Falha ao deletar do storage:", e);
     }
 
-    await storage.deleteBackup(id);
+    if (isServerAdmin) {
+      await storage.deleteBackup(id);
+    } else {
+      await storage.deleteBackupScoped(id, companyId!);
+    }
     res.sendStatus(204);
   });
 
