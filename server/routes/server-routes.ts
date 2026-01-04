@@ -279,6 +279,39 @@ export function createServerRoutes(isAuthenticated: any): Router {
     }
   });
 
+  router.patch("/admins/:id", isAuthenticated, requireSuperAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { role } = req.body;
+      
+      if (!role || !["server_admin", "support_engineer"].includes(role)) {
+        return res.status(400).json({ message: "Invalid role" });
+      }
+
+      const existingAdmins = await storage.getServerAdmins();
+      const adminToUpdate = existingAdmins.find(a => a.id === id);
+      
+      if (!adminToUpdate) {
+        return res.status(404).json({ message: "Administrator not found" });
+      }
+
+      if (adminToUpdate.role === "server_admin" && role !== "server_admin") {
+        const superAdmins = existingAdmins.filter(a => a.role === "server_admin");
+        if (superAdmins.length <= 1) {
+          return res.status(400).json({ 
+            message: "Cannot change role of the last Super Administrator" 
+          });
+        }
+      }
+      
+      const admin = await storage.updateServerAdmin(id, { role });
+      res.json(admin);
+    } catch (e) {
+      console.error("Error updating admin:", e);
+      res.status(500).json({ message: "Error updating admin" });
+    }
+  });
+
   router.get("/stats", isAuthenticated, isServerAdmin, async (req, res) => {
     try {
       const companiesList = await storage.getCompanies();

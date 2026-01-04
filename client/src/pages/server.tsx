@@ -32,7 +32,8 @@ import {
   Trash2,
   MapPin,
   UserPlus,
-  Crown
+  Crown,
+  Pencil
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
@@ -68,11 +69,14 @@ export default function ServerPage() {
   const [, setLocation] = useLocation();
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [createAdminDialogOpen, setCreateAdminDialogOpen] = useState(false);
+  const [editAdminDialogOpen, setEditAdminDialogOpen] = useState(false);
+  const [editingAdmin, setEditingAdmin] = useState<{ id: number; userId: number; role: string; username?: string } | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [proxies, setProxies] = useState<ProxyFormData[]>([]);
   const [newProxy, setNewProxy] = useState<ProxyFormData>({ name: "", siteName: "", ipAddress: "", description: "" });
   const [newAdminUserId, setNewAdminUserId] = useState<string>("");
   const [newAdminRole, setNewAdminRole] = useState<string>("server_admin");
+  const [editAdminRole, setEditAdminRole] = useState<string>("");
 
   const { data: adminCheck, isLoading: adminCheckLoading } = useQuery<{ isServerAdmin: boolean; serverRole: string | null }>({
     queryKey: ["/api/server/check-admin"],
@@ -163,6 +167,27 @@ export default function ServerPage() {
       toast({ title: "Erro ao remover administrador", description: error.message, variant: "destructive" });
     },
   });
+
+  const updateAdminMutation = useMutation({
+    mutationFn: async (data: { adminId: number; role: string }) => {
+      return await apiRequest("PATCH", `/api/server/admins/${data.adminId}`, { role: data.role });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/server/admins"] });
+      setEditAdminDialogOpen(false);
+      setEditingAdmin(null);
+      toast({ title: "Administrador atualizado com sucesso" });
+    },
+    onError: (error: any) => {
+      toast({ title: "Erro ao atualizar administrador", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const openEditAdmin = (admin: { id: number; userId: number; role: string; username?: string }) => {
+    setEditingAdmin(admin);
+    setEditAdminRole(admin.role);
+    setEditAdminDialogOpen(true);
+  };
 
   const form = useForm<CompanyFormData>({
     resolver: zodResolver(companyFormSchema),
@@ -765,6 +790,68 @@ export default function ServerPage() {
                     </DialogFooter>
                   </DialogContent>
                 </Dialog>
+
+                <Dialog open={editAdminDialogOpen} onOpenChange={setEditAdminDialogOpen}>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Editar Administrador</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Usuario</label>
+                        <Input 
+                          value={editingAdmin?.username || `User #${editingAdmin?.userId}`} 
+                          disabled 
+                          className="bg-muted"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Funcao</label>
+                        <Select value={editAdminRole} onValueChange={setEditAdminRole}>
+                          <SelectTrigger data-testid="select-edit-admin-role">
+                            <SelectValue placeholder="Selecione a funcao" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="server_admin">
+                              <div className="flex items-center gap-2">
+                                <Crown className="h-4 w-4 text-amber-500" />
+                                Super Administrador
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="support_engineer">
+                              <div className="flex items-center gap-2">
+                                <Wrench className="h-4 w-4" />
+                                Engenheiro de Suporte
+                              </div>
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button 
+                        variant="outline"
+                        onClick={() => setEditAdminDialogOpen(false)}
+                      >
+                        Cancelar
+                      </Button>
+                      <Button 
+                        onClick={() => {
+                          if (editingAdmin) {
+                            updateAdminMutation.mutate({ 
+                              adminId: editingAdmin.id, 
+                              role: editAdminRole 
+                            });
+                          }
+                        }}
+                        disabled={!editAdminRole || updateAdminMutation.isPending}
+                        data-testid="button-update-admin"
+                      >
+                        {updateAdminMutation.isPending ? "Salvando..." : "Salvar"}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
               </div>
 
               {adminsLoading ? (
@@ -807,6 +894,15 @@ export default function ServerPage() {
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => openEditAdmin(admin)}
+                              data-testid={`button-edit-admin-${admin.id}`}
+                            >
+                              <Pencil className="h-3 w-3 mr-1" />
+                              Editar
+                            </Button>
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
                                 <Button 
