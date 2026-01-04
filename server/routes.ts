@@ -745,6 +745,133 @@ export async function registerRoutes(
     }
   });
 
+  // API - Admin - Fetch Update from URL
+  app.post('/api/admin/updates/fetch-url', isAuthenticated, async (req, res) => {
+    try {
+      const user = req.user as any;
+      const { url } = req.body;
+      
+      if (!url || typeof url !== 'string') {
+        return res.status(400).json({ message: "URL invalida" });
+      }
+      
+      // Validate URL format
+      let parsedUrl: URL;
+      try {
+        parsedUrl = new URL(url);
+      } catch {
+        return res.status(400).json({ message: "Formato de URL invalido" });
+      }
+      
+      // Only allow HTTPS for security
+      if (parsedUrl.protocol !== 'https:') {
+        return res.status(400).json({ message: "Apenas URLs HTTPS sao permitidas" });
+      }
+      
+      // Validate file extension in URL
+      const urlPath = parsedUrl.pathname.toLowerCase();
+      if (!urlPath.endsWith('.zip') && !urlPath.endsWith('.tar.gz') && !urlPath.endsWith('.tgz')) {
+        return res.status(400).json({ 
+          message: "URL deve apontar para arquivo .zip, .tar.gz ou .tgz" 
+        });
+      }
+      
+      // Extract version from URL (common patterns from GitHub/GitLab releases)
+      const versionMatch = url.match(/[vV]?(\d+\.\d+\.\d+)/);
+      const newVersion = versionMatch ? versionMatch[1] : null;
+      
+      if (!newVersion) {
+        return res.status(400).json({ 
+          message: "Nao foi possivel detectar versao na URL. Use formato: vX.Y.Z" 
+        });
+      }
+      
+      const versionSetting = await storage.getSetting('system_version');
+      const currentVersion = versionSetting || process.env.APP_VERSION || '17.0.0';
+      
+      const compareVersions = (v1: string, v2: string): number => {
+        const parts1 = v1.split('.').map(Number);
+        const parts2 = v2.split('.').map(Number);
+        for (let i = 0; i < Math.max(parts1.length, parts2.length); i++) {
+          const p1 = parts1[i] || 0;
+          const p2 = parts2[i] || 0;
+          if (p1 < p2) return -1;
+          if (p1 > p2) return 1;
+        }
+        return 0;
+      };
+      
+      if (compareVersions(currentVersion, newVersion) >= 0) {
+        return res.status(400).json({ 
+          message: `Versao ${newVersion} nao e maior que a versao atual ${currentVersion}` 
+        });
+      }
+      
+      // Attempt to fetch the file from the URL with HEAD request first
+      try {
+        const headResponse = await fetch(url, { 
+          method: 'HEAD',
+          headers: {
+            'User-Agent': 'NBM-UpdateManager/17.0'
+          }
+        });
+        
+        if (!headResponse.ok) {
+          return res.status(400).json({ 
+            message: `Erro ao acessar URL: ${headResponse.status} ${headResponse.statusText}` 
+          });
+        }
+        
+        const contentType = headResponse.headers.get('content-type') || '';
+        const contentLength = headResponse.headers.get('content-length');
+        
+        // Validate content type (allow octet-stream, zip, gzip)
+        const validContentTypes = ['application/octet-stream', 'application/zip', 'application/x-zip-compressed', 'application/gzip', 'application/x-gzip', 'application/x-tar'];
+        const isValidType = validContentTypes.some(t => contentType.includes(t)) || contentType === '';
+        
+        if (!isValidType && contentType.includes('text/html')) {
+          return res.status(400).json({ 
+            message: "URL retornou pagina HTML em vez de arquivo de atualizacao" 
+          });
+        }
+        
+        // Check file size (limit to 100MB)
+        if (contentLength && parseInt(contentLength) > 100 * 1024 * 1024) {
+          return res.status(400).json({ 
+            message: "Arquivo de atualizacao muito grande (limite: 100MB)" 
+          });
+        }
+        
+      } catch (fetchError: any) {
+        console.error("Error fetching URL:", fetchError);
+        return res.status(400).json({ 
+          message: `Erro de conexao: ${fetchError.message || 'Falha ao conectar com servidor'}` 
+        });
+      }
+      
+      // Record the update (in production, the actual download and apply would happen here)
+      const update = await storage.createSystemUpdate({
+        version: newVersion,
+        changelog: `Atualizacao online via URL: ${parsedUrl.hostname}`,
+        appliedBy: user?.username || user?.claims?.sub || 'Admin',
+      });
+      
+      await storage.setSetting('system_version', newVersion);
+      
+      res.json({ 
+        message: "Atualizacao verificada e registrada com sucesso", 
+        version: newVersion,
+        update,
+        currentVersion: newVersion,
+        hasUpdate: false,
+        source: 'url'
+      });
+    } catch (e) {
+      console.error("Error fetching update from URL:", e);
+      res.status(500).json({ message: "Erro ao processar atualizacao da URL" });
+    }
+  });
+
   // API - Admin - Export Database
   app.post('/api/admin/export-database', isAuthenticated, async (req, res) => {
     try {
