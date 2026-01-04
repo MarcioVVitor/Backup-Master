@@ -466,6 +466,8 @@ type TranslationKeys = {
     noUpdatesApplied: string;
     noUpdatesAvailable: string;
     applyingUpdate: string;
+    environment: string;
+    database: string;
   };
   login: {
     title: string;
@@ -976,6 +978,8 @@ export const translations: Translations = {
       noUpdatesApplied: "Nenhuma atualização aplicada ainda",
       noUpdatesAvailable: "Nenhuma atualização disponível no momento",
       applyingUpdate: "Aplicando atualização...",
+      environment: "Ambiente",
+      database: "Banco de Dados",
     },
     login: {
       title: "NBM - Network Backup Manager",
@@ -1482,6 +1486,8 @@ export const translations: Translations = {
       noUpdatesApplied: "No updates applied yet",
       noUpdatesAvailable: "No updates available at this time",
       applyingUpdate: "Applying update...",
+      environment: "Environment",
+      database: "Database",
     },
     login: {
       title: "NBM - Network Backup Manager",
@@ -1988,6 +1994,8 @@ export const translations: Translations = {
       noUpdatesApplied: "Ninguna actualización aplicada aún",
       noUpdatesAvailable: "No hay actualizaciones disponibles en este momento",
       applyingUpdate: "Aplicando actualización...",
+      environment: "Entorno",
+      database: "Base de Datos",
     },
     login: {
       title: "NBM - Network Backup Manager",
@@ -2494,6 +2502,8 @@ export const translations: Translations = {
       noUpdatesApplied: "Aucune mise à jour appliquée pour l'instant",
       noUpdatesAvailable: "Aucune mise à jour disponible pour le moment",
       applyingUpdate: "Application de la mise à jour...",
+      environment: "Environnement",
+      database: "Base de données",
     },
     login: {
       title: "NBM - Network Backup Manager",
@@ -3000,6 +3010,8 @@ export const translations: Translations = {
       noUpdatesApplied: "Noch keine Updates angewendet",
       noUpdatesAvailable: "Derzeit keine Updates verfügbar",
       applyingUpdate: "Update wird angewendet...",
+      environment: "Umgebung",
+      database: "Datenbank",
     },
     login: {
       title: "NBM - Network Backup Manager",
