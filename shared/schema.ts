@@ -169,6 +169,113 @@ export const backupPolicyRuns = pgTable("backup_policy_runs", {
   errorMessage: text("error_message"),
 });
 
+// ============================================
+// ARQUITETURA DISTRIBUÍDA - AGENTES REMOTOS
+// ============================================
+
+// Status possíveis dos agentes
+export const AGENT_STATUS = ["online", "offline", "connecting", "error"] as const;
+export type AgentStatus = typeof AGENT_STATUS[number];
+
+// Status possíveis dos jobs
+export const JOB_STATUS = ["queued", "running", "success", "failed", "cancelled", "timeout"] as const;
+export type JobStatus = typeof JOB_STATUS[number];
+
+// Tabela de Agentes (proxies locais em redes remotas)
+export const agents = pgTable("agents", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  siteName: text("site_name").notNull(),
+  description: text("description"),
+  status: text("status").notNull().default("offline"),
+  version: text("version"),
+  ipAddress: text("ip_address"),
+  lastHeartbeat: timestamp("last_heartbeat"),
+  capabilities: jsonb("capabilities").$type<{
+    ssh: boolean;
+    telnet: boolean;
+    maxConcurrentJobs: number;
+  }>(),
+  config: jsonb("config").$type<{
+    heartbeatInterval: number;
+    jobTimeout: number;
+    autoUpdate: boolean;
+  }>(),
+  createdBy: integer("created_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Tabela de Tokens de Autenticação dos Agentes
+export const agentTokens = pgTable("agent_tokens", {
+  id: serial("id").primaryKey(),
+  agentId: integer("agent_id").references(() => agents.id).notNull(),
+  tokenHash: text("token_hash").notNull(),
+  name: text("name").default("default"),
+  expiresAt: timestamp("expires_at"),
+  revokedAt: timestamp("revoked_at"),
+  lastUsedAt: timestamp("last_used_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Tabela de Jobs para Agentes (fila de tarefas)
+export const agentJobs = pgTable("agent_jobs", {
+  id: serial("id").primaryKey(),
+  agentId: integer("agent_id").references(() => agents.id).notNull(),
+  equipmentId: integer("equipment_id").references(() => equipment.id),
+  scriptId: integer("script_id").references(() => vendorScripts.id),
+  jobType: text("job_type").notNull().default("backup"),
+  status: text("status").notNull().default("queued"),
+  priority: integer("priority").default(5),
+  payload: jsonb("payload").$type<{
+    command?: string;
+    timeout?: number;
+    retries?: number;
+  }>(),
+  result: jsonb("result").$type<{
+    output?: string;
+    fileId?: number;
+    objectName?: string;
+    size?: number;
+    duration?: number;
+  }>(),
+  errorMessage: text("error_message"),
+  queuedAt: timestamp("queued_at").defaultNow(),
+  startedAt: timestamp("started_at"),
+  finishedAt: timestamp("finished_at"),
+  requestedBy: integer("requested_by").references(() => users.id),
+});
+
+// Tabela de Eventos/Logs dos Jobs
+export const agentJobEvents = pgTable("agent_job_events", {
+  id: serial("id").primaryKey(),
+  jobId: integer("job_id").references(() => agentJobs.id).notNull(),
+  eventType: text("event_type").notNull(),
+  message: text("message"),
+  payload: jsonb("payload"),
+  timestamp: timestamp("timestamp").defaultNow(),
+});
+
+// Tabela de Métricas dos Agentes
+export const agentMetrics = pgTable("agent_metrics", {
+  id: serial("id").primaryKey(),
+  agentId: integer("agent_id").references(() => agents.id).notNull(),
+  cpuUsage: real("cpu_usage"),
+  memoryUsage: real("memory_usage"),
+  activeSessions: integer("active_sessions").default(0),
+  queuedJobs: integer("queued_jobs").default(0),
+  collectedAt: timestamp("collected_at").defaultNow(),
+});
+
+// Vinculação de Equipamentos a Agentes Preferenciais
+export const equipmentAgents = pgTable("equipment_agents", {
+  id: serial("id").primaryKey(),
+  equipmentId: integer("equipment_id").references(() => equipment.id).notNull(),
+  agentId: integer("agent_id").references(() => agents.id).notNull(),
+  priority: integer("priority").default(1),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Fabricantes padrão (usados para seed inicial)
 export const DEFAULT_MANUFACTURERS = [
   { value: "mikrotik", label: "Mikrotik", color: "#ff6b6b" },
@@ -200,6 +307,15 @@ export const insertBackupPolicySchema = createInsertSchema(backupPolicies).omit(
 export const updateBackupPolicySchema = insertBackupPolicySchema.partial();
 export const insertBackupPolicyRunSchema = createInsertSchema(backupPolicyRuns).omit({ id: true, startedAt: true });
 
+// Schemas para Agentes
+export const insertAgentSchema = createInsertSchema(agents).omit({ id: true, createdAt: true, updatedAt: true, lastHeartbeat: true, status: true });
+export const updateAgentSchema = insertAgentSchema.partial();
+export const insertAgentTokenSchema = createInsertSchema(agentTokens).omit({ id: true, createdAt: true, lastUsedAt: true, revokedAt: true });
+export const insertAgentJobSchema = createInsertSchema(agentJobs).omit({ id: true, queuedAt: true, startedAt: true, finishedAt: true, status: true, result: true, errorMessage: true });
+export const insertAgentJobEventSchema = createInsertSchema(agentJobEvents).omit({ id: true, timestamp: true });
+export const insertAgentMetricsSchema = createInsertSchema(agentMetrics).omit({ id: true, collectedAt: true });
+export const insertEquipmentAgentSchema = createInsertSchema(equipmentAgents).omit({ id: true, createdAt: true });
+
 // Tipos
 export type User = typeof users.$inferSelect;
 export type UpsertUser = typeof users.$inferInsert;
@@ -224,3 +340,17 @@ export type BackupPolicy = typeof backupPolicies.$inferSelect;
 export type InsertBackupPolicy = z.infer<typeof insertBackupPolicySchema>;
 export type BackupPolicyRun = typeof backupPolicyRuns.$inferSelect;
 export type InsertBackupPolicyRun = z.infer<typeof insertBackupPolicyRunSchema>;
+
+// Tipos para Agentes
+export type Agent = typeof agents.$inferSelect;
+export type InsertAgent = z.infer<typeof insertAgentSchema>;
+export type AgentToken = typeof agentTokens.$inferSelect;
+export type InsertAgentToken = z.infer<typeof insertAgentTokenSchema>;
+export type AgentJob = typeof agentJobs.$inferSelect;
+export type InsertAgentJob = z.infer<typeof insertAgentJobSchema>;
+export type AgentJobEvent = typeof agentJobEvents.$inferSelect;
+export type InsertAgentJobEvent = z.infer<typeof insertAgentJobEventSchema>;
+export type AgentMetric = typeof agentMetrics.$inferSelect;
+export type InsertAgentMetric = z.infer<typeof insertAgentMetricsSchema>;
+export type EquipmentAgent = typeof equipmentAgents.$inferSelect;
+export type InsertEquipmentAgent = z.infer<typeof insertEquipmentAgentSchema>;

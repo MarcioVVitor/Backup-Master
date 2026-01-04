@@ -10,6 +10,12 @@ import {
   systemUpdates,
   firmware,
   backupPolicies,
+  agents,
+  agentTokens,
+  agentJobs,
+  agentJobEvents,
+  agentMetrics,
+  equipmentAgents,
   DEFAULT_MANUFACTURERS,
   type InsertFile, 
   type InsertEquipment, 
@@ -29,9 +35,21 @@ import {
   type InsertFirmware,
   type BackupPolicy,
   type InsertBackupPolicy,
-  type User
+  type User,
+  type Agent,
+  type InsertAgent,
+  type AgentToken,
+  type InsertAgentToken,
+  type AgentJob,
+  type InsertAgentJob,
+  type AgentJobEvent,
+  type InsertAgentJobEvent,
+  type AgentMetric,
+  type InsertAgentMetric,
+  type EquipmentAgent,
+  type InsertEquipmentAgent
 } from "@shared/schema";
-import { eq, desc, sql, and, gte } from "drizzle-orm";
+import { eq, desc, sql, and, gte, lt } from "drizzle-orm";
 
 export interface IStorage {
   getUserIdByReplitId(replitId: string): Promise<number | null>;
@@ -99,6 +117,42 @@ export interface IStorage {
     recentBackups: number;
     manufacturerStats: { manufacturer: string; count: number }[];
   }>;
+
+  // Agentes (proxies locais)
+  getAgents(): Promise<Agent[]>;
+  getAgentById(id: number): Promise<Agent | undefined>;
+  createAgent(data: InsertAgent): Promise<Agent>;
+  updateAgent(id: number, data: Partial<InsertAgent>): Promise<Agent | undefined>;
+  deleteAgent(id: number): Promise<void>;
+  updateAgentStatus(id: number, status: string, ipAddress?: string): Promise<void>;
+  updateAgentHeartbeat(id: number, ipAddress?: string): Promise<void>;
+
+  // Tokens de Agentes
+  getAgentTokens(agentId: number): Promise<AgentToken[]>;
+  createAgentToken(data: InsertAgentToken): Promise<AgentToken>;
+  getAgentByToken(tokenHash: string): Promise<Agent | undefined>;
+  revokeAgentToken(id: number): Promise<void>;
+
+  // Jobs de Agentes
+  getAgentJobs(agentId?: number): Promise<AgentJob[]>;
+  getAgentJobById(id: number): Promise<AgentJob | undefined>;
+  createAgentJob(data: InsertAgentJob): Promise<AgentJob>;
+  updateAgentJob(id: number, data: Partial<AgentJob>): Promise<AgentJob | undefined>;
+  getQueuedJobsForAgent(agentId: number): Promise<AgentJob[]>;
+
+  // Eventos de Jobs
+  createAgentJobEvent(data: InsertAgentJobEvent): Promise<AgentJobEvent>;
+  getAgentJobEvents(jobId: number): Promise<AgentJobEvent[]>;
+
+  // Métricas de Agentes
+  createAgentMetric(data: InsertAgentMetric): Promise<AgentMetric>;
+  getAgentMetrics(agentId: number, limit?: number): Promise<AgentMetric[]>;
+
+  // Vinculação Equipamento-Agente
+  getEquipmentAgents(equipmentId: number): Promise<EquipmentAgent[]>;
+  setEquipmentAgent(data: InsertEquipmentAgent): Promise<EquipmentAgent>;
+  removeEquipmentAgent(equipmentId: number, agentId: number): Promise<void>;
+  getAgentForEquipment(equipmentId: number): Promise<Agent | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -468,6 +522,222 @@ export class DatabaseStorage implements IStorage {
 
   async deleteBackupPolicy(id: number): Promise<void> {
     await db.delete(backupPolicies).where(eq(backupPolicies.id, id));
+  }
+
+  // ============================================
+  // AGENTES (PROXIES LOCAIS)
+  // ============================================
+
+  async getAgents(): Promise<Agent[]> {
+    return await db.select().from(agents).orderBy(desc(agents.createdAt));
+  }
+
+  async getAgentById(id: number): Promise<Agent | undefined> {
+    const [agent] = await db.select().from(agents).where(eq(agents.id, id));
+    return agent;
+  }
+
+  async createAgent(data: InsertAgent): Promise<Agent> {
+    const [agent] = await db.insert(agents).values(data).returning();
+    return agent;
+  }
+
+  async updateAgent(id: number, data: Partial<InsertAgent>): Promise<Agent | undefined> {
+    const [updated] = await db.update(agents)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(agents.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteAgent(id: number): Promise<void> {
+    await db.delete(agentTokens).where(eq(agentTokens.agentId, id));
+    await db.delete(agentJobs).where(eq(agentJobs.agentId, id));
+    await db.delete(agentMetrics).where(eq(agentMetrics.agentId, id));
+    await db.delete(equipmentAgents).where(eq(equipmentAgents.agentId, id));
+    await db.delete(agents).where(eq(agents.id, id));
+  }
+
+  async updateAgentStatus(id: number, status: string, ipAddress?: string): Promise<void> {
+    await db.update(agents)
+      .set({ 
+        status, 
+        ipAddress: ipAddress || undefined,
+        updatedAt: new Date() 
+      })
+      .where(eq(agents.id, id));
+  }
+
+  async updateAgentHeartbeat(id: number, ipAddress?: string): Promise<void> {
+    await db.update(agents)
+      .set({ 
+        status: 'online',
+        lastHeartbeat: new Date(),
+        ipAddress: ipAddress || undefined,
+        updatedAt: new Date()
+      })
+      .where(eq(agents.id, id));
+  }
+
+  // ============================================
+  // TOKENS DE AGENTES
+  // ============================================
+
+  async getAgentTokens(agentId: number): Promise<AgentToken[]> {
+    return await db.select().from(agentTokens)
+      .where(eq(agentTokens.agentId, agentId))
+      .orderBy(desc(agentTokens.createdAt));
+  }
+
+  async createAgentToken(data: InsertAgentToken): Promise<AgentToken> {
+    const [token] = await db.insert(agentTokens).values(data).returning();
+    return token;
+  }
+
+  async getAgentByToken(tokenHash: string): Promise<Agent | undefined> {
+    const [tokenRecord] = await db.select().from(agentTokens)
+      .where(and(
+        eq(agentTokens.tokenHash, tokenHash),
+        sql`${agentTokens.revokedAt} IS NULL`,
+        sql`(${agentTokens.expiresAt} IS NULL OR ${agentTokens.expiresAt} > NOW())`
+      ));
+    
+    if (!tokenRecord) return undefined;
+    
+    await db.update(agentTokens)
+      .set({ lastUsedAt: new Date() })
+      .where(eq(agentTokens.id, tokenRecord.id));
+    
+    return await this.getAgentById(tokenRecord.agentId);
+  }
+
+  async revokeAgentToken(id: number): Promise<void> {
+    await db.update(agentTokens)
+      .set({ revokedAt: new Date() })
+      .where(eq(agentTokens.id, id));
+  }
+
+  // ============================================
+  // JOBS DE AGENTES
+  // ============================================
+
+  async getAgentJobs(agentId?: number): Promise<AgentJob[]> {
+    if (agentId) {
+      return await db.select().from(agentJobs)
+        .where(eq(agentJobs.agentId, agentId))
+        .orderBy(desc(agentJobs.queuedAt));
+    }
+    return await db.select().from(agentJobs).orderBy(desc(agentJobs.queuedAt));
+  }
+
+  async getAgentJobById(id: number): Promise<AgentJob | undefined> {
+    const [job] = await db.select().from(agentJobs).where(eq(agentJobs.id, id));
+    return job;
+  }
+
+  async createAgentJob(data: InsertAgentJob): Promise<AgentJob> {
+    const [job] = await db.insert(agentJobs).values(data).returning();
+    return job;
+  }
+
+  async updateAgentJob(id: number, data: Partial<AgentJob>): Promise<AgentJob | undefined> {
+    const [updated] = await db.update(agentJobs)
+      .set(data)
+      .where(eq(agentJobs.id, id))
+      .returning();
+    return updated;
+  }
+
+  async getQueuedJobsForAgent(agentId: number): Promise<AgentJob[]> {
+    return await db.select().from(agentJobs)
+      .where(and(
+        eq(agentJobs.agentId, agentId),
+        eq(agentJobs.status, 'queued')
+      ))
+      .orderBy(agentJobs.priority, agentJobs.queuedAt);
+  }
+
+  // ============================================
+  // EVENTOS DE JOBS
+  // ============================================
+
+  async createAgentJobEvent(data: InsertAgentJobEvent): Promise<AgentJobEvent> {
+    const [event] = await db.insert(agentJobEvents).values(data).returning();
+    return event;
+  }
+
+  async getAgentJobEvents(jobId: number): Promise<AgentJobEvent[]> {
+    return await db.select().from(agentJobEvents)
+      .where(eq(agentJobEvents.jobId, jobId))
+      .orderBy(agentJobEvents.timestamp);
+  }
+
+  // ============================================
+  // MÉTRICAS DE AGENTES
+  // ============================================
+
+  async createAgentMetric(data: InsertAgentMetric): Promise<AgentMetric> {
+    const [metric] = await db.insert(agentMetrics).values(data).returning();
+    return metric;
+  }
+
+  async getAgentMetrics(agentId: number, limit: number = 100): Promise<AgentMetric[]> {
+    return await db.select().from(agentMetrics)
+      .where(eq(agentMetrics.agentId, agentId))
+      .orderBy(desc(agentMetrics.collectedAt))
+      .limit(limit);
+  }
+
+  // ============================================
+  // VINCULAÇÃO EQUIPAMENTO-AGENTE
+  // ============================================
+
+  async getEquipmentAgents(equipmentId: number): Promise<EquipmentAgent[]> {
+    return await db.select().from(equipmentAgents)
+      .where(eq(equipmentAgents.equipmentId, equipmentId))
+      .orderBy(equipmentAgents.priority);
+  }
+
+  async setEquipmentAgent(data: InsertEquipmentAgent): Promise<EquipmentAgent> {
+    const existing = await db.select().from(equipmentAgents)
+      .where(and(
+        eq(equipmentAgents.equipmentId, data.equipmentId),
+        eq(equipmentAgents.agentId, data.agentId)
+      ));
+    
+    if (existing.length > 0) {
+      const [updated] = await db.update(equipmentAgents)
+        .set({ priority: data.priority })
+        .where(eq(equipmentAgents.id, existing[0].id))
+        .returning();
+      return updated;
+    }
+    
+    const [created] = await db.insert(equipmentAgents).values(data).returning();
+    return created;
+  }
+
+  async removeEquipmentAgent(equipmentId: number, agentId: number): Promise<void> {
+    await db.delete(equipmentAgents)
+      .where(and(
+        eq(equipmentAgents.equipmentId, equipmentId),
+        eq(equipmentAgents.agentId, agentId)
+      ));
+  }
+
+  async getAgentForEquipment(equipmentId: number): Promise<Agent | undefined> {
+    const [mapping] = await db.select().from(equipmentAgents)
+      .where(eq(equipmentAgents.equipmentId, equipmentId))
+      .orderBy(equipmentAgents.priority)
+      .limit(1);
+    
+    if (!mapping) return undefined;
+    
+    const agent = await this.getAgentById(mapping.agentId);
+    if (agent && agent.status === 'online') {
+      return agent;
+    }
+    return undefined;
   }
 }
 
