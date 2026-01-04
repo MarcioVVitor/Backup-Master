@@ -2060,6 +2060,60 @@ export async function registerRoutes(
     }
   });
 
+  // Download do pacote do agente
+  app.get('/api/agents/download/package', isAuthenticated, async (req, res) => {
+    try {
+      const { execSync } = await import('child_process');
+      const path = await import('path');
+      const fs = await import('fs');
+      
+      const agentDir = path.join(process.cwd(), 'agent');
+      const tarballPath = path.join('/tmp', 'nbm-agent.tar.gz');
+      
+      if (!fs.existsSync(agentDir)) {
+        return res.status(404).json({ message: "Pacote do agente não encontrado" });
+      }
+      
+      execSync(`tar -czf ${tarballPath} -C ${process.cwd()} agent`, { stdio: 'pipe' });
+      
+      res.setHeader('Content-Type', 'application/gzip');
+      res.setHeader('Content-Disposition', 'attachment; filename=nbm-agent.tar.gz');
+      
+      const stream = fs.createReadStream(tarballPath);
+      stream.pipe(res);
+      
+      stream.on('end', () => {
+        fs.unlinkSync(tarballPath);
+      });
+    } catch (e) {
+      console.error("Error creating agent package:", e);
+      res.status(500).json({ message: "Erro ao criar pacote do agente" });
+    }
+  });
+
+  // Obter script de instalação (texto)
+  app.get('/api/agents/download/install-script', isAuthenticated, async (req, res) => {
+    try {
+      const fs = await import('fs');
+      const path = await import('path');
+      
+      const scriptPath = path.join(process.cwd(), 'agent', 'scripts', 'install.sh');
+      
+      if (!fs.existsSync(scriptPath)) {
+        return res.status(404).json({ message: "Script não encontrado" });
+      }
+      
+      res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+      res.setHeader('Content-Disposition', 'attachment; filename=install.sh');
+      
+      const stream = fs.createReadStream(scriptPath);
+      stream.pipe(res);
+    } catch (e) {
+      console.error("Error reading install script:", e);
+      res.status(500).json({ message: "Erro ao ler script" });
+    }
+  });
+
   // ============================================
   // WEBSOCKET GATEWAY PARA AGENTES
   // ============================================

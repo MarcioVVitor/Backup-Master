@@ -50,7 +50,10 @@ import {
   Copy,
   Check,
   Server,
-  Activity
+  Activity,
+  Download,
+  Terminal,
+  FileText
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR, enUS, es, fr, de } from "date-fns/locale";
@@ -319,6 +322,69 @@ export default function AgentsPage() {
               </TableBody>
             </Table>
           )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Download className="w-5 h-5" />
+            {t.agents.downloadAgent}
+          </CardTitle>
+          <CardDescription>{t.agents.downloadDescription}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="p-4 bg-muted rounded-md">
+              <h4 className="font-medium mb-2 flex items-center gap-2">
+                <Terminal className="w-4 h-4" />
+                {t.agents.installInstructions}
+              </h4>
+              <div className="space-y-2 text-sm text-muted-foreground">
+                <p>1. {t.agents.step1}</p>
+                <p>2. {t.agents.step2}</p>
+                <p>3. {t.agents.step3}</p>
+                <p>4. {t.agents.step4}</p>
+              </div>
+            </div>
+            
+            <div className="flex flex-wrap gap-4">
+              <Button
+                variant="default"
+                onClick={() => window.open('/api/agents/download/package', '_blank')}
+                data-testid="button-download-package"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                {t.agents.downloadPackage}
+              </Button>
+              
+              <Button
+                variant="outline"
+                onClick={() => window.open('/api/agents/download/install-script', '_blank')}
+                data-testid="button-download-script"
+              >
+                <FileText className="w-4 h-4 mr-2" />
+                {t.agents.downloadScript}
+              </Button>
+            </div>
+
+            <div className="p-4 bg-muted rounded-md">
+              <h4 className="font-medium mb-2">{t.agents.quickInstall}</h4>
+              <pre className="text-xs bg-background p-3 rounded overflow-x-auto">
+{`# Download e instalar
+tar -xzf nbm-agent.tar.gz
+cd agent
+sudo ./scripts/install.sh
+
+# Configurar
+sudo nano /etc/nbm-agent/config.json
+
+# Iniciar serviço
+sudo systemctl start nbm-agent
+sudo systemctl enable nbm-agent`}
+              </pre>
+            </div>
+          </div>
         </CardContent>
       </Card>
 

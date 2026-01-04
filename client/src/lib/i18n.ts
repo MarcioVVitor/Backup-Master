@@ -111,6 +111,16 @@ type TranslationKeys = {
     updateSuccess: string;
     deleteSuccess: string;
     confirmDelete: string;
+    downloadAgent: string;
+    downloadDescription: string;
+    installInstructions: string;
+    step1: string;
+    step2: string;
+    step3: string;
+    step4: string;
+    downloadPackage: string;
+    downloadScript: string;
+    quickInstall: string;
   };
   dashboard: {
     title: string;
@@ -619,6 +629,16 @@ export const translations: Translations = {
       updateSuccess: "Agente atualizado com sucesso",
       deleteSuccess: "Agente excluído com sucesso",
       confirmDelete: "Tem certeza que deseja excluir este agente?",
+      downloadAgent: "Download do Agente",
+      downloadDescription: "Baixe e instale o agente proxy em servidores Debian 13 para executar backups em redes remotas",
+      installInstructions: "Instruções de Instalação",
+      step1: "Baixe o pacote do agente",
+      step2: "Extraia e execute o script de instalação",
+      step3: "Configure o arquivo /etc/nbm-agent/config.json",
+      step4: "Inicie o serviço com systemctl start nbm-agent",
+      downloadPackage: "Baixar Pacote (.tar.gz)",
+      downloadScript: "Baixar Script de Instalação",
+      quickInstall: "Instalação Rápida",
     },
     dashboard: {
       title: "Dashboard",
@@ -1169,6 +1189,16 @@ export const translations: Translations = {
       updateSuccess: "Agent updated successfully",
       deleteSuccess: "Agent deleted successfully",
       confirmDelete: "Are you sure you want to delete this agent?",
+      downloadAgent: "Download Agent",
+      downloadDescription: "Download and install the proxy agent on Debian 13 servers to run backups on remote networks",
+      installInstructions: "Installation Instructions",
+      step1: "Download the agent package",
+      step2: "Extract and run the installation script",
+      step3: "Configure /etc/nbm-agent/config.json",
+      step4: "Start the service with systemctl start nbm-agent",
+      downloadPackage: "Download Package (.tar.gz)",
+      downloadScript: "Download Install Script",
+      quickInstall: "Quick Install",
     },
     dashboard: {
       title: "Dashboard",
@@ -1719,6 +1749,16 @@ export const translations: Translations = {
       updateSuccess: "Agente actualizado exitosamente",
       deleteSuccess: "Agente eliminado exitosamente",
       confirmDelete: "¿Está seguro que desea eliminar este agente?",
+      downloadAgent: "Descargar Agente",
+      downloadDescription: "Descargue e instale el agente proxy en servidores Debian 13 para ejecutar backups en redes remotas",
+      installInstructions: "Instrucciones de Instalación",
+      step1: "Descargue el paquete del agente",
+      step2: "Extraiga y ejecute el script de instalación",
+      step3: "Configure el archivo /etc/nbm-agent/config.json",
+      step4: "Inicie el servicio con systemctl start nbm-agent",
+      downloadPackage: "Descargar Paquete (.tar.gz)",
+      downloadScript: "Descargar Script de Instalación",
+      quickInstall: "Instalación Rápida",
     },
     dashboard: {
       title: "Panel",
@@ -2269,6 +2309,16 @@ export const translations: Translations = {
       updateSuccess: "Agent mis à jour avec succès",
       deleteSuccess: "Agent supprimé avec succès",
       confirmDelete: "Êtes-vous sûr de vouloir supprimer cet agent?",
+      downloadAgent: "Télécharger l'Agent",
+      downloadDescription: "Téléchargez et installez l'agent proxy sur les serveurs Debian 13 pour exécuter des sauvegardes sur les réseaux distants",
+      installInstructions: "Instructions d'Installation",
+      step1: "Téléchargez le package de l'agent",
+      step2: "Extrayez et exécutez le script d'installation",
+      step3: "Configurez le fichier /etc/nbm-agent/config.json",
+      step4: "Démarrez le service avec systemctl start nbm-agent",
+      downloadPackage: "Télécharger le Package (.tar.gz)",
+      downloadScript: "Télécharger le Script d'Installation",
+      quickInstall: "Installation Rapide",
     },
     dashboard: {
       title: "Tableau de bord",
@@ -2819,6 +2869,16 @@ export const translations: Translations = {
       updateSuccess: "Agent erfolgreich aktualisiert",
       deleteSuccess: "Agent erfolgreich gelöscht",
       confirmDelete: "Sind Sie sicher, dass Sie diesen Agenten löschen möchten?",
+      downloadAgent: "Agent Herunterladen",
+      downloadDescription: "Laden Sie den Proxy-Agenten herunter und installieren Sie ihn auf Debian 13 Servern, um Backups in entfernten Netzwerken auszuführen",
+      installInstructions: "Installationsanleitung",
+      step1: "Laden Sie das Agentenpaket herunter",
+      step2: "Entpacken und führen Sie das Installationsskript aus",
+      step3: "Konfigurieren Sie /etc/nbm-agent/config.json",
+      step4: "Starten Sie den Dienst mit systemctl start nbm-agent",
+      downloadPackage: "Paket Herunterladen (.tar.gz)",
+      downloadScript: "Installationsskript Herunterladen",
+      quickInstall: "Schnellinstallation",
     },
     dashboard: {
       title: "Dashboard",
