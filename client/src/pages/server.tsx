@@ -176,10 +176,10 @@ export default function ServerPage() {
         <div className="p-4 rounded-full bg-destructive/10">
           <ShieldX className="h-12 w-12 text-destructive" />
         </div>
-        <h1 className="text-xl font-bold">Acesso Negado</h1>
+        <h1 className="text-xl font-bold">{t.common.error}: Acesso Negado</h1>
         <p className="text-muted-foreground text-center max-w-md">
-          Esta area e restrita a administradores do NBM CLOUD Server. 
-          Entre em contato com o suporte se voce acredita que deveria ter acesso.
+          Esta area e restrita a Super Administradores do NBM CLOUD. 
+          Somente usuarios com privilegios de Super Administrador podem acessar o NBM CLOUD Server.
         </p>
         <Button onClick={() => setLocation("/")} data-testid="button-go-home">
           Voltar ao Inicio

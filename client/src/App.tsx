@@ -57,6 +57,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Shield } from "lucide-react";
 
 function ThemeToggle() {
   const { isDark, toggleDark } = useTheme();
@@ -106,8 +108,10 @@ function AppLayout({ children }: { children: React.ReactNode }) {
   ];
   
   const menuItems = serverAdminCheck?.isServerAdmin 
-    ? [...baseMenuItems, { title: "NBM CLOUD Server", url: "/server", icon: Cloud }]
+    ? [...baseMenuItems, { title: t.menu.nbmCloudServer, url: "/server", icon: Cloud }]
     : baseMenuItems;
+  
+  const isSuperAdmin = serverAdminCheck?.isServerAdmin;
 
   const backgroundStyle = background?.type === "gradient" 
     ? { background: background.value }
@@ -170,6 +174,14 @@ function AppLayout({ children }: { children: React.ReactNode }) {
             </SidebarMenu>
           </SidebarContent>
           <SidebarFooter className="p-4 border-t">
+            {isSuperAdmin && (
+              <div className="mb-2 flex items-center justify-center">
+                <Badge variant="default" className="gap-1 bg-amber-500 hover:bg-amber-600 text-white">
+                  <Shield className="h-3 w-3" />
+                  {t.menu.superAdmin}
+                </Badge>
+              </div>
+            )}
             <div className="flex items-center gap-3 p-2 rounded-lg bg-muted/50">
               <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xs">
                 {(user?.username || 'U')[0].toUpperCase()}

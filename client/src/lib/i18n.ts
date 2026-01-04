@@ -70,6 +70,8 @@ type TranslationKeys = {
     terminal: string;
     administration: string;
     agents: string;
+    nbmCloudServer: string;
+    superAdmin: string;
   };
   agents: {
     title: string;
@@ -592,6 +594,8 @@ export const translations: Translations = {
       terminal: "Terminal",
       administration: "Administração",
       agents: "Agentes",
+      nbmCloudServer: "NBM CLOUD Server",
+      superAdmin: "Super Administrador",
     },
     agents: {
       title: "Agentes Remotos",
@@ -1169,6 +1173,8 @@ sudo ufw status verbose`,
       terminal: "Terminal",
       administration: "Administration",
       agents: "Agents",
+      nbmCloudServer: "NBM CLOUD Server",
+      superAdmin: "Super Administrator",
     },
     agents: {
       title: "Remote Agents",
@@ -1746,6 +1752,8 @@ sudo ufw status verbose`,
       terminal: "Terminal",
       administration: "Administración",
       agents: "Agentes",
+      nbmCloudServer: "NBM CLOUD Server",
+      superAdmin: "Super Administrador",
     },
     agents: {
       title: "Agentes Remotos",
@@ -2323,6 +2331,8 @@ sudo ufw status verbose`,
       terminal: "Terminal",
       administration: "Administration",
       agents: "Agents",
+      nbmCloudServer: "NBM CLOUD Server",
+      superAdmin: "Super Administrateur",
     },
     agents: {
       title: "Agents Distants",
@@ -2900,6 +2910,8 @@ sudo ufw status verbose`,
       terminal: "Terminal",
       administration: "Verwaltung",
       agents: "Agenten",
+      nbmCloudServer: "NBM CLOUD Server",
+      superAdmin: "Super Administrator",
     },
     agents: {
       title: "Remote-Agenten",
