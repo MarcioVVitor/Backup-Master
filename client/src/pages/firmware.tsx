@@ -378,10 +378,10 @@ export default function FirmwarePage() {
 
   const { data: manufacturersData = [] } = useManufacturers();
   
-  // Transform manufacturers for select components
+  // Transform manufacturers for select components (using value for API, label for display)
   const MANUFACTURERS = manufacturersData.map(m => ({
-    value: m.name.toLowerCase(),
-    label: m.name
+    value: m.value,
+    label: m.label
   }));
 
   const uploadFirmware = useMutation({
