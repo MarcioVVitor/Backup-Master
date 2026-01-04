@@ -435,6 +435,8 @@ export default function AdminPage() {
   const [uploadedUpdateFile, setUploadedUpdateFile] = useState<File | null>(null);
   const [uploadedManifest, setUploadedManifest] = useState<{ version: string; changelog: string[] } | null>(null);
   const [isUploadingUpdate, setIsUploadingUpdate] = useState(false);
+  const [updateUrl, setUpdateUrl] = useState("");
+  const [isFetchingFromUrl, setIsFetchingFromUrl] = useState(false);
 
   const applyUpdate = useMutation({
     mutationFn: async () => {
@@ -515,6 +517,47 @@ export default function AdminPage() {
     onError: (err: Error) => {
       setIsUploadingUpdate(false);
       toast({ title: err.message || t.admin.updateApplyError, variant: "destructive" });
+    }
+  });
+
+  const fetchFromUrl = useMutation({
+    mutationFn: async (url: string) => {
+      if (!url.trim()) {
+        throw new Error(t.admin.urlRequired);
+      }
+      try {
+        new URL(url);
+      } catch {
+        throw new Error(t.admin.invalidUrl);
+      }
+      
+      setIsFetchingFromUrl(true);
+      const response = await fetch("/api/admin/updates/fetch-url", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ url })
+      });
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.message || t.admin.updateFetchError);
+      }
+      return response.json();
+    },
+    onSuccess: (data) => {
+      setIsFetchingFromUrl(false);
+      setUpdateUrl("");
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/updates/check"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/updates/history"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/system-info"] });
+      toast({ 
+        title: t.admin.updateFetched, 
+        description: data.message || `${t.admin.systemUpdated} ${data.version}` 
+      });
+    },
+    onError: (err: Error) => {
+      setIsFetchingFromUrl(false);
+      toast({ title: err.message || t.admin.updateFetchError, variant: "destructive" });
     }
   });
 
@@ -1291,20 +1334,63 @@ export default function AdminPage() {
             </Card>
           </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Upload className="h-5 w-5" />
-                {t.admin.fileUpdate}
-              </CardTitle>
-              <CardDescription>{t.admin.fileUpdateDescription}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div 
-                className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
-                  uploadedUpdateFile ? 'border-primary bg-primary/5' : 'border-muted-foreground/25 hover:border-muted-foreground/50'
-                }`}
-              >
+          <div className="grid gap-4 md:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Globe className="h-5 w-5" />
+                  {t.admin.onlineUpdate}
+                </CardTitle>
+                <CardDescription>{t.admin.onlineUpdateDescription}</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="update-url">{t.admin.updateUrl}</Label>
+                  <Input
+                    id="update-url"
+                    type="url"
+                    placeholder={t.admin.updateUrlPlaceholder}
+                    value={updateUrl}
+                    onChange={(e) => setUpdateUrl(e.target.value)}
+                    disabled={isFetchingFromUrl}
+                    data-testid="input-update-url"
+                  />
+                </div>
+                <Button
+                  className="w-full"
+                  onClick={() => fetchFromUrl.mutate(updateUrl)}
+                  disabled={isFetchingFromUrl || fetchFromUrl.isPending || !updateUrl.trim()}
+                  data-testid="button-fetch-update"
+                >
+                  {isFetchingFromUrl ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      {t.admin.fetchingUpdate}
+                    </>
+                  ) : (
+                    <>
+                      <Download className="h-4 w-4 mr-2" />
+                      {t.admin.fetchUpdate}
+                    </>
+                  )}
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Upload className="h-5 w-5" />
+                  {t.admin.fileUpdate}
+                </CardTitle>
+                <CardDescription>{t.admin.fileUpdateDescription}</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div 
+                  className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+                    uploadedUpdateFile ? 'border-primary bg-primary/5' : 'border-muted-foreground/25 hover:border-muted-foreground/50'
+                  }`}
+                >
                 {uploadedUpdateFile ? (
                   <div className="space-y-3">
                     <div className="flex items-center justify-center gap-2">
@@ -1382,6 +1468,7 @@ export default function AdminPage() {
               </div>
             </CardContent>
           </Card>
+          </div>
 
           <Card>
             <CardHeader>
