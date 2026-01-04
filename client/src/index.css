@@ -104,3 +104,139 @@
 .glass-panel {
   @apply bg-card/80 backdrop-blur-sm border shadow-sm;
 }
+
+/* ===================================
+   RESPONSIVE & CROSS-PLATFORM STYLES
+   Compatibilidade: Chrome, Firefox, Safari, Edge
+   Plataformas: Desktop, Tablet, Smartphone
+   =================================== */
+
+/* Touch-friendly improvements */
+@media (pointer: coarse) {
+  button, 
+  [role="button"],
+  a,
+  input,
+  select,
+  textarea {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  .sidebar-menu-button {
+    min-height: 48px;
+  }
+}
+
+/* Mobile-specific styles */
+@media (max-width: 640px) {
+  body {
+    font-size: 16px;
+    -webkit-text-size-adjust: 100%;
+  }
+  
+  h1 { @apply text-xl; }
+  h2 { @apply text-lg; }
+  h3 { @apply text-base; }
+  
+  .card-grid {
+    @apply grid-cols-1;
+  }
+  
+  table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Tablet styles */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .card-grid {
+    @apply grid-cols-2;
+  }
+}
+
+/* Desktop styles */
+@media (min-width: 1025px) {
+  .card-grid {
+    @apply grid-cols-3;
+  }
+}
+
+/* Safe area insets for notched devices (iPhone X+) */
+@supports (padding: max(0px)) {
+  .safe-area-padding {
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+}
+
+/* Improve tap highlighting */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Focus visible for keyboard navigation */
+:focus-visible {
+  @apply outline-2 outline-offset-2 outline-primary;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Prevent text selection on interactive elements */
+button, [role="button"] {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Firefox scrollbar styling */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--muted-foreground) / 0.2) transparent;
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --border: 214.3 31.8% 70%;
+  }
+  
+  .dark {
+    --border: 217.2 32.6% 40%;
+  }
+}
+
+/* Print styles */
+@media print {
+  .no-print,
+  button,
+  nav,
+  aside {
+    display: none !important;
+  }
+  
+  body {
+    background: white;
+    color: black;
+  }
+}
