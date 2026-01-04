@@ -370,18 +370,8 @@ export default function AgentsPage() {
 
             <div className="p-4 bg-muted rounded-md">
               <h4 className="font-medium mb-2">{t.agents.quickInstall}</h4>
-              <pre className="text-xs bg-background p-3 rounded overflow-x-auto">
-{`# Download e instalar
-tar -xzf nbm-agent.tar.gz
-cd agent
-sudo ./scripts/install.sh
-
-# Configurar
-sudo nano /etc/nbm-agent/config.json
-
-# Iniciar serviço
-sudo systemctl start nbm-agent
-sudo systemctl enable nbm-agent`}
+              <pre className="text-xs bg-background p-3 rounded overflow-x-auto whitespace-pre-wrap">
+                {t.agents.quickInstallCode}
               </pre>
             </div>
           </div>

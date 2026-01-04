@@ -121,6 +121,7 @@ type TranslationKeys = {
     downloadPackage: string;
     downloadScript: string;
     quickInstall: string;
+    quickInstallCode: string;
   };
   dashboard: {
     title: string;
@@ -639,6 +640,17 @@ export const translations: Translations = {
       downloadPackage: "Baixar Pacote (.tar.gz)",
       downloadScript: "Baixar Script de Instalação",
       quickInstall: "Instalação Rápida",
+      quickInstallCode: `# Baixar e instalar
+tar -xzf nbm-agent.tar.gz
+cd agent
+sudo ./scripts/install.sh
+
+# Configurar
+sudo nano /etc/nbm-agent/config.json
+
+# Iniciar serviço
+sudo systemctl start nbm-agent
+sudo systemctl enable nbm-agent`,
     },
     dashboard: {
       title: "Dashboard",
@@ -1199,6 +1211,17 @@ export const translations: Translations = {
       downloadPackage: "Download Package (.tar.gz)",
       downloadScript: "Download Install Script",
       quickInstall: "Quick Install",
+      quickInstallCode: `# Download and install
+tar -xzf nbm-agent.tar.gz
+cd agent
+sudo ./scripts/install.sh
+
+# Configure
+sudo nano /etc/nbm-agent/config.json
+
+# Start service
+sudo systemctl start nbm-agent
+sudo systemctl enable nbm-agent`,
     },
     dashboard: {
       title: "Dashboard",
@@ -1759,6 +1782,17 @@ export const translations: Translations = {
       downloadPackage: "Descargar Paquete (.tar.gz)",
       downloadScript: "Descargar Script de Instalación",
       quickInstall: "Instalación Rápida",
+      quickInstallCode: `# Descargar e instalar
+tar -xzf nbm-agent.tar.gz
+cd agent
+sudo ./scripts/install.sh
+
+# Configurar
+sudo nano /etc/nbm-agent/config.json
+
+# Iniciar servicio
+sudo systemctl start nbm-agent
+sudo systemctl enable nbm-agent`,
     },
     dashboard: {
       title: "Panel",
@@ -2319,6 +2353,17 @@ export const translations: Translations = {
       downloadPackage: "Télécharger le Package (.tar.gz)",
       downloadScript: "Télécharger le Script d'Installation",
       quickInstall: "Installation Rapide",
+      quickInstallCode: `# Télécharger et installer
+tar -xzf nbm-agent.tar.gz
+cd agent
+sudo ./scripts/install.sh
+
+# Configurer
+sudo nano /etc/nbm-agent/config.json
+
+# Démarrer le service
+sudo systemctl start nbm-agent
+sudo systemctl enable nbm-agent`,
     },
     dashboard: {
       title: "Tableau de bord",
@@ -2879,6 +2924,17 @@ export const translations: Translations = {
       downloadPackage: "Paket Herunterladen (.tar.gz)",
       downloadScript: "Installationsskript Herunterladen",
       quickInstall: "Schnellinstallation",
+      quickInstallCode: `# Herunterladen und installieren
+tar -xzf nbm-agent.tar.gz
+cd agent
+sudo ./scripts/install.sh
+
+# Konfigurieren
+sudo nano /etc/nbm-agent/config.json
+
+# Dienst starten
+sudo systemctl start nbm-agent
+sudo systemctl enable nbm-agent`,
     },
     dashboard: {
       title: "Dashboard",
