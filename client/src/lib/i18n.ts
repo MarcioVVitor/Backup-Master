@@ -69,6 +69,48 @@ type TranslationKeys = {
     firmware: string;
     terminal: string;
     administration: string;
+    agents: string;
+  };
+  agents: {
+    title: string;
+    subtitle: string;
+    addAgent: string;
+    editAgent: string;
+    deleteAgent: string;
+    agentName: string;
+    siteName: string;
+    description: string;
+    status: string;
+    version: string;
+    lastHeartbeat: string;
+    ipAddress: string;
+    noAgents: string;
+    online: string;
+    offline: string;
+    connecting: string;
+    error: string;
+    generateToken: string;
+    tokenName: string;
+    tokenGenerated: string;
+    copyToken: string;
+    tokenWarning: string;
+    revokeToken: string;
+    tokens: string;
+    jobs: string;
+    metrics: string;
+    linkedEquipment: string;
+    capabilities: string;
+    ssh: string;
+    telnet: string;
+    maxConcurrentJobs: string;
+    config: string;
+    heartbeatInterval: string;
+    jobTimeout: string;
+    autoUpdate: string;
+    createSuccess: string;
+    updateSuccess: string;
+    deleteSuccess: string;
+    confirmDelete: string;
   };
   dashboard: {
     title: string;
@@ -535,6 +577,48 @@ export const translations: Translations = {
       firmware: "Firmware",
       terminal: "Terminal",
       administration: "Administração",
+      agents: "Agentes",
+    },
+    agents: {
+      title: "Agentes Remotos",
+      subtitle: "Gerenciamento de proxies locais em redes remotas",
+      addAgent: "Novo Agente",
+      editAgent: "Editar Agente",
+      deleteAgent: "Excluir Agente",
+      agentName: "Nome do Agente",
+      siteName: "Nome do Site",
+      description: "Descrição",
+      status: "Status",
+      version: "Versão",
+      lastHeartbeat: "Último Heartbeat",
+      ipAddress: "Endereço IP",
+      noAgents: "Nenhum agente cadastrado",
+      online: "Online",
+      offline: "Offline",
+      connecting: "Conectando",
+      error: "Erro",
+      generateToken: "Gerar Token",
+      tokenName: "Nome do Token",
+      tokenGenerated: "Token Gerado",
+      copyToken: "Copiar Token",
+      tokenWarning: "Este token será exibido apenas uma vez. Copie e guarde em local seguro.",
+      revokeToken: "Revogar Token",
+      tokens: "Tokens",
+      jobs: "Jobs",
+      metrics: "Métricas",
+      linkedEquipment: "Equipamentos Vinculados",
+      capabilities: "Capacidades",
+      ssh: "SSH",
+      telnet: "Telnet",
+      maxConcurrentJobs: "Jobs Simultâneos",
+      config: "Configuração",
+      heartbeatInterval: "Intervalo de Heartbeat",
+      jobTimeout: "Timeout de Jobs",
+      autoUpdate: "Atualização Automática",
+      createSuccess: "Agente criado com sucesso",
+      updateSuccess: "Agente atualizado com sucesso",
+      deleteSuccess: "Agente excluído com sucesso",
+      confirmDelete: "Tem certeza que deseja excluir este agente?",
     },
     dashboard: {
       title: "Dashboard",
@@ -1043,6 +1127,48 @@ export const translations: Translations = {
       firmware: "Firmware",
       terminal: "Terminal",
       administration: "Administration",
+      agents: "Agents",
+    },
+    agents: {
+      title: "Remote Agents",
+      subtitle: "Management of local proxies in remote networks",
+      addAgent: "New Agent",
+      editAgent: "Edit Agent",
+      deleteAgent: "Delete Agent",
+      agentName: "Agent Name",
+      siteName: "Site Name",
+      description: "Description",
+      status: "Status",
+      version: "Version",
+      lastHeartbeat: "Last Heartbeat",
+      ipAddress: "IP Address",
+      noAgents: "No agents registered",
+      online: "Online",
+      offline: "Offline",
+      connecting: "Connecting",
+      error: "Error",
+      generateToken: "Generate Token",
+      tokenName: "Token Name",
+      tokenGenerated: "Token Generated",
+      copyToken: "Copy Token",
+      tokenWarning: "This token will only be displayed once. Copy and store it securely.",
+      revokeToken: "Revoke Token",
+      tokens: "Tokens",
+      jobs: "Jobs",
+      metrics: "Metrics",
+      linkedEquipment: "Linked Equipment",
+      capabilities: "Capabilities",
+      ssh: "SSH",
+      telnet: "Telnet",
+      maxConcurrentJobs: "Concurrent Jobs",
+      config: "Configuration",
+      heartbeatInterval: "Heartbeat Interval",
+      jobTimeout: "Job Timeout",
+      autoUpdate: "Auto Update",
+      createSuccess: "Agent created successfully",
+      updateSuccess: "Agent updated successfully",
+      deleteSuccess: "Agent deleted successfully",
+      confirmDelete: "Are you sure you want to delete this agent?",
     },
     dashboard: {
       title: "Dashboard",
@@ -1551,6 +1677,48 @@ export const translations: Translations = {
       firmware: "Firmware",
       terminal: "Terminal",
       administration: "Administración",
+      agents: "Agentes",
+    },
+    agents: {
+      title: "Agentes Remotos",
+      subtitle: "Gestión de proxies locales en redes remotas",
+      addAgent: "Nuevo Agente",
+      editAgent: "Editar Agente",
+      deleteAgent: "Eliminar Agente",
+      agentName: "Nombre del Agente",
+      siteName: "Nombre del Sitio",
+      description: "Descripción",
+      status: "Estado",
+      version: "Versión",
+      lastHeartbeat: "Último Heartbeat",
+      ipAddress: "Dirección IP",
+      noAgents: "Ningún agente registrado",
+      online: "En línea",
+      offline: "Fuera de línea",
+      connecting: "Conectando",
+      error: "Error",
+      generateToken: "Generar Token",
+      tokenName: "Nombre del Token",
+      tokenGenerated: "Token Generado",
+      copyToken: "Copiar Token",
+      tokenWarning: "Este token solo se mostrará una vez. Cópielo y guárdelo de forma segura.",
+      revokeToken: "Revocar Token",
+      tokens: "Tokens",
+      jobs: "Trabajos",
+      metrics: "Métricas",
+      linkedEquipment: "Equipos Vinculados",
+      capabilities: "Capacidades",
+      ssh: "SSH",
+      telnet: "Telnet",
+      maxConcurrentJobs: "Trabajos Simultáneos",
+      config: "Configuración",
+      heartbeatInterval: "Intervalo de Heartbeat",
+      jobTimeout: "Tiempo de espera de Trabajos",
+      autoUpdate: "Actualización Automática",
+      createSuccess: "Agente creado exitosamente",
+      updateSuccess: "Agente actualizado exitosamente",
+      deleteSuccess: "Agente eliminado exitosamente",
+      confirmDelete: "¿Está seguro que desea eliminar este agente?",
     },
     dashboard: {
       title: "Panel",
@@ -2059,6 +2227,48 @@ export const translations: Translations = {
       firmware: "Firmware",
       terminal: "Terminal",
       administration: "Administration",
+      agents: "Agents",
+    },
+    agents: {
+      title: "Agents Distants",
+      subtitle: "Gestion des proxies locaux dans les réseaux distants",
+      addAgent: "Nouvel Agent",
+      editAgent: "Modifier Agent",
+      deleteAgent: "Supprimer Agent",
+      agentName: "Nom de l'Agent",
+      siteName: "Nom du Site",
+      description: "Description",
+      status: "Statut",
+      version: "Version",
+      lastHeartbeat: "Dernier Heartbeat",
+      ipAddress: "Adresse IP",
+      noAgents: "Aucun agent enregistré",
+      online: "En ligne",
+      offline: "Hors ligne",
+      connecting: "Connexion",
+      error: "Erreur",
+      generateToken: "Générer Token",
+      tokenName: "Nom du Token",
+      tokenGenerated: "Token Généré",
+      copyToken: "Copier Token",
+      tokenWarning: "Ce token ne sera affiché qu'une seule fois. Copiez et stockez-le en sécurité.",
+      revokeToken: "Révoquer Token",
+      tokens: "Tokens",
+      jobs: "Tâches",
+      metrics: "Métriques",
+      linkedEquipment: "Équipements Liés",
+      capabilities: "Capacités",
+      ssh: "SSH",
+      telnet: "Telnet",
+      maxConcurrentJobs: "Tâches Simultanées",
+      config: "Configuration",
+      heartbeatInterval: "Intervalle de Heartbeat",
+      jobTimeout: "Délai des Tâches",
+      autoUpdate: "Mise à jour Automatique",
+      createSuccess: "Agent créé avec succès",
+      updateSuccess: "Agent mis à jour avec succès",
+      deleteSuccess: "Agent supprimé avec succès",
+      confirmDelete: "Êtes-vous sûr de vouloir supprimer cet agent?",
     },
     dashboard: {
       title: "Tableau de bord",
@@ -2567,6 +2777,48 @@ export const translations: Translations = {
       firmware: "Firmware",
       terminal: "Terminal",
       administration: "Verwaltung",
+      agents: "Agenten",
+    },
+    agents: {
+      title: "Remote-Agenten",
+      subtitle: "Verwaltung lokaler Proxys in entfernten Netzwerken",
+      addAgent: "Neuer Agent",
+      editAgent: "Agent Bearbeiten",
+      deleteAgent: "Agent Löschen",
+      agentName: "Agentenname",
+      siteName: "Standortname",
+      description: "Beschreibung",
+      status: "Status",
+      version: "Version",
+      lastHeartbeat: "Letzter Heartbeat",
+      ipAddress: "IP-Adresse",
+      noAgents: "Keine Agenten registriert",
+      online: "Online",
+      offline: "Offline",
+      connecting: "Verbindung wird hergestellt",
+      error: "Fehler",
+      generateToken: "Token Generieren",
+      tokenName: "Token-Name",
+      tokenGenerated: "Token Generiert",
+      copyToken: "Token Kopieren",
+      tokenWarning: "Dieses Token wird nur einmal angezeigt. Kopieren und sicher aufbewahren.",
+      revokeToken: "Token Widerrufen",
+      tokens: "Tokens",
+      jobs: "Aufgaben",
+      metrics: "Metriken",
+      linkedEquipment: "Verknüpfte Geräte",
+      capabilities: "Fähigkeiten",
+      ssh: "SSH",
+      telnet: "Telnet",
+      maxConcurrentJobs: "Gleichzeitige Aufgaben",
+      config: "Konfiguration",
+      heartbeatInterval: "Heartbeat-Intervall",
+      jobTimeout: "Aufgaben-Timeout",
+      autoUpdate: "Automatische Aktualisierung",
+      createSuccess: "Agent erfolgreich erstellt",
+      updateSuccess: "Agent erfolgreich aktualisiert",
+      deleteSuccess: "Agent erfolgreich gelöscht",
+      confirmDelete: "Sind Sie sicher, dass Sie diesen Agenten löschen möchten?",
     },
     dashboard: {
       title: "Dashboard",

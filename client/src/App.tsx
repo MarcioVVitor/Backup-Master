@@ -19,6 +19,7 @@ import Admin from "@/pages/admin";
 import Firmware from "@/pages/firmware";
 import TerminalPage from "@/pages/terminal";
 import Scheduler from "@/pages/scheduler";
+import Agents from "@/pages/agents";
 import Login from "@/pages/login";
 import NotFound from "@/pages/not-found";
 
@@ -47,7 +48,8 @@ import {
   Settings,
   FileCode,
   TerminalSquare,
-  Calendar
+  Calendar,
+  Network
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -90,6 +92,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
     { title: t.menu.scheduler, url: "/scheduler", icon: Calendar },
     { title: t.menu.firmware, url: "/firmware", icon: FileCode },
     { title: t.menu.terminal, url: "/terminal", icon: TerminalSquare },
+    { title: t.menu.agents, url: "/agents", icon: Network },
     { title: t.menu.administration, url: "/admin", icon: Settings },
   ];
 
@@ -206,6 +209,7 @@ function Router() {
       <Route path="/firmware" component={Firmware} />
       <Route path="/terminal" component={TerminalPage} />
       <Route path="/execute" component={Execute} />
+      <Route path="/agents" component={Agents} />
       <Route path="/admin" component={Admin} />
       <Route component={NotFound} />
     </Switch>
