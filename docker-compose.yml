@@ -1,0 +1,164 @@
+# NBM CLOUD v17.0 - Docker Compose
+# Configuração para desenvolvimento e produção local
+
+version: '3.8'
+
+services:
+  # ============================================
+  # Aplicação NBM CLOUD
+  # ============================================
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nbm-cloud-app
+    ports:
+      - "${PORT:-5000}:5000"
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+      - PORT=5000
+      - DATABASE_URL=postgresql://${DB_USER:-nbmcloud}:${DB_PASSWORD:-nbmcloud}@db:5432/${DB_NAME:-nbmcloud}
+      - SESSION_SECRET=${SESSION_SECRET:-change-this-in-production}
+      - DEFAULT_OBJECT_STORAGE_BUCKET_ID=${BUCKET_ID:-}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - nbm-network
+    volumes:
+      - app-logs:/app/logs
+      - app-cache:/app/cache
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  # ============================================
+  # Banco de Dados PostgreSQL
+  # ============================================
+  db:
+    image: postgres:15-alpine
+    container_name: nbm-cloud-db
+    environment:
+      - POSTGRES_USER=${DB_USER:-nbmcloud}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-nbmcloud}
+      - POSTGRES_DB=${DB_NAME:-nbmcloud}
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-nbmcloud} -d ${DB_NAME:-nbmcloud}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - nbm-network
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+
+  # ============================================
+  # Nginx Reverse Proxy (Opcional)
+  # ============================================
+  nginx:
+    image: nginx:alpine
+    container_name: nbm-cloud-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - app
+    restart: unless-stopped
+    networks:
+      - nbm-network
+    profiles:
+      - with-nginx
+
+  # ============================================
+  # Redis (Cache e Sessões - Opcional)
+  # ============================================
+  redis:
+    image: redis:7-alpine
+    container_name: nbm-cloud-redis
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - nbm-network
+    profiles:
+      - with-redis
+
+  # ============================================
+  # MinIO (Object Storage Local - Desenvolvimento)
+  # ============================================
+  minio:
+    image: minio/minio:latest
+    container_name: nbm-cloud-minio
+    command: server /data --console-address ":9001"
+    environment:
+      - MINIO_ROOT_USER=${MINIO_USER:-minioadmin}
+      - MINIO_ROOT_PASSWORD=${MINIO_PASSWORD:-minioadmin}
+    volumes:
+      - minio-data:/data
+    ports:
+      - "${MINIO_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - nbm-network
+    profiles:
+      - with-minio
+
+# ============================================
+# Networks
+# ============================================
+networks:
+  nbm-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+
+# ============================================
+# Volumes
+# ============================================
+volumes:
+  postgres-data:
+    driver: local
+  app-logs:
+    driver: local
+  app-cache:
+    driver: local
+  redis-data:
+    driver: local
+  minio-data:
+    driver: local
