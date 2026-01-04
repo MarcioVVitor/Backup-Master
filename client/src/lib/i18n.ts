@@ -440,6 +440,32 @@ type TranslationKeys = {
     downloadUpdate: string;
     themeDescriptions: Record<string, string>;
     backgroundNames: Record<string, string>;
+    onlineUpdate: string;
+    onlineUpdateDescription: string;
+    updateUrl: string;
+    updateUrlPlaceholder: string;
+    fetchUpdate: string;
+    fetchingUpdate: string;
+    invalidUrl: string;
+    urlRequired: string;
+    updateFetched: string;
+    updateFetchError: string;
+    fileUpdate: string;
+    fileUpdateDescription: string;
+    dragOrClick: string;
+    acceptedFormats: string;
+    selectFile: string;
+    detectedVersion: string;
+    applying: string;
+    checkUpdatesDescription: string;
+    changelogDescription: string;
+    checkingUpdates: string;
+    updateHistory: string;
+    updateHistoryDescription: string;
+    applicationDate: string;
+    noUpdatesApplied: string;
+    noUpdatesAvailable: string;
+    applyingUpdate: string;
   };
   login: {
     title: string;
@@ -924,6 +950,32 @@ export const translations: Translations = {
         "dynamic-stars": "Estrelas Animadas",
         "dynamic-matrix": "Matrix",
       },
+      onlineUpdate: "Atualização Online",
+      onlineUpdateDescription: "Baixe e aplique atualizações diretamente de um repositório remoto (GitHub, GitLab, etc.)",
+      updateUrl: "URL da Atualização",
+      updateUrlPlaceholder: "https://github.com/usuario/repo/releases/download/v1.0.0/update.zip",
+      fetchUpdate: "Baixar Atualização",
+      fetchingUpdate: "Baixando...",
+      invalidUrl: "URL inválida. Use uma URL válida de download.",
+      urlRequired: "Por favor, insira uma URL",
+      updateFetched: "Atualização baixada com sucesso",
+      updateFetchError: "Erro ao baixar atualização",
+      fileUpdate: "Atualização por Arquivo",
+      fileUpdateDescription: "Faça upload de um pacote de atualização local",
+      dragOrClick: "Arraste um arquivo ou clique para selecionar",
+      acceptedFormats: "Formatos aceitos: .zip, .tar.gz",
+      selectFile: "Selecionar Arquivo",
+      detectedVersion: "Versão detectada:",
+      applying: "Aplicando...",
+      checkUpdatesDescription: "Verifique se há novas versões disponíveis",
+      changelogDescription: "Veja as últimas alterações e melhorias",
+      checkingUpdates: "Verificando atualizações...",
+      updateHistory: "Histórico de Atualizações",
+      updateHistoryDescription: "Registro de todas as atualizações aplicadas",
+      applicationDate: "Data de Aplicação",
+      noUpdatesApplied: "Nenhuma atualização aplicada ainda",
+      noUpdatesAvailable: "Nenhuma atualização disponível no momento",
+      applyingUpdate: "Aplicando atualização...",
     },
     login: {
       title: "NBM - Network Backup Manager",
@@ -1404,6 +1456,32 @@ export const translations: Translations = {
         "dynamic-stars": "Animated Stars",
         "dynamic-matrix": "Matrix",
       },
+      onlineUpdate: "Online Update",
+      onlineUpdateDescription: "Download and apply updates directly from a remote repository (GitHub, GitLab, etc.)",
+      updateUrl: "Update URL",
+      updateUrlPlaceholder: "https://github.com/user/repo/releases/download/v1.0.0/update.zip",
+      fetchUpdate: "Download Update",
+      fetchingUpdate: "Downloading...",
+      invalidUrl: "Invalid URL. Please use a valid download URL.",
+      urlRequired: "Please enter a URL",
+      updateFetched: "Update downloaded successfully",
+      updateFetchError: "Failed to download update",
+      fileUpdate: "File Update",
+      fileUpdateDescription: "Upload a local update package",
+      dragOrClick: "Drag a file or click to select",
+      acceptedFormats: "Accepted formats: .zip, .tar.gz",
+      selectFile: "Select File",
+      detectedVersion: "Detected version:",
+      applying: "Applying...",
+      checkUpdatesDescription: "Check if new versions are available",
+      changelogDescription: "View the latest changes and improvements",
+      checkingUpdates: "Checking for updates...",
+      updateHistory: "Update History",
+      updateHistoryDescription: "Record of all applied updates",
+      applicationDate: "Application Date",
+      noUpdatesApplied: "No updates applied yet",
+      noUpdatesAvailable: "No updates available at this time",
+      applyingUpdate: "Applying update...",
     },
     login: {
       title: "NBM - Network Backup Manager",
@@ -1884,6 +1962,32 @@ export const translations: Translations = {
         "dynamic-stars": "Estrellas Animadas",
         "dynamic-matrix": "Matrix",
       },
+      onlineUpdate: "Actualización en Línea",
+      onlineUpdateDescription: "Descargue y aplique actualizaciones directamente desde un repositorio remoto (GitHub, GitLab, etc.)",
+      updateUrl: "URL de Actualización",
+      updateUrlPlaceholder: "https://github.com/usuario/repo/releases/download/v1.0.0/update.zip",
+      fetchUpdate: "Descargar Actualización",
+      fetchingUpdate: "Descargando...",
+      invalidUrl: "URL inválida. Use una URL de descarga válida.",
+      urlRequired: "Por favor, ingrese una URL",
+      updateFetched: "Actualización descargada con éxito",
+      updateFetchError: "Error al descargar la actualización",
+      fileUpdate: "Actualización por Archivo",
+      fileUpdateDescription: "Suba un paquete de actualización local",
+      dragOrClick: "Arrastre un archivo o haga clic para seleccionar",
+      acceptedFormats: "Formatos aceptados: .zip, .tar.gz",
+      selectFile: "Seleccionar Archivo",
+      detectedVersion: "Versión detectada:",
+      applying: "Aplicando...",
+      checkUpdatesDescription: "Verifique si hay nuevas versiones disponibles",
+      changelogDescription: "Vea los últimos cambios y mejoras",
+      checkingUpdates: "Verificando actualizaciones...",
+      updateHistory: "Historial de Actualizaciones",
+      updateHistoryDescription: "Registro de todas las actualizaciones aplicadas",
+      applicationDate: "Fecha de Aplicación",
+      noUpdatesApplied: "Ninguna actualización aplicada aún",
+      noUpdatesAvailable: "No hay actualizaciones disponibles en este momento",
+      applyingUpdate: "Aplicando actualización...",
     },
     login: {
       title: "NBM - Network Backup Manager",
@@ -2364,6 +2468,32 @@ export const translations: Translations = {
         "dynamic-stars": "Étoiles Animées",
         "dynamic-matrix": "Matrix",
       },
+      onlineUpdate: "Mise à jour en ligne",
+      onlineUpdateDescription: "Téléchargez et appliquez les mises à jour directement depuis un dépôt distant (GitHub, GitLab, etc.)",
+      updateUrl: "URL de mise à jour",
+      updateUrlPlaceholder: "https://github.com/utilisateur/repo/releases/download/v1.0.0/update.zip",
+      fetchUpdate: "Télécharger la mise à jour",
+      fetchingUpdate: "Téléchargement...",
+      invalidUrl: "URL invalide. Utilisez une URL de téléchargement valide.",
+      urlRequired: "Veuillez entrer une URL",
+      updateFetched: "Mise à jour téléchargée avec succès",
+      updateFetchError: "Échec du téléchargement de la mise à jour",
+      fileUpdate: "Mise à jour par fichier",
+      fileUpdateDescription: "Téléchargez un package de mise à jour local",
+      dragOrClick: "Glissez un fichier ou cliquez pour sélectionner",
+      acceptedFormats: "Formats acceptés : .zip, .tar.gz",
+      selectFile: "Sélectionner un fichier",
+      detectedVersion: "Version détectée :",
+      applying: "Application...",
+      checkUpdatesDescription: "Vérifiez si de nouvelles versions sont disponibles",
+      changelogDescription: "Consultez les dernières modifications et améliorations",
+      checkingUpdates: "Vérification des mises à jour...",
+      updateHistory: "Historique des mises à jour",
+      updateHistoryDescription: "Enregistrement de toutes les mises à jour appliquées",
+      applicationDate: "Date d'application",
+      noUpdatesApplied: "Aucune mise à jour appliquée pour l'instant",
+      noUpdatesAvailable: "Aucune mise à jour disponible pour le moment",
+      applyingUpdate: "Application de la mise à jour...",
     },
     login: {
       title: "NBM - Network Backup Manager",
@@ -2844,6 +2974,32 @@ export const translations: Translations = {
         "dynamic-stars": "Animierte Sterne",
         "dynamic-matrix": "Matrix",
       },
+      onlineUpdate: "Online-Update",
+      onlineUpdateDescription: "Updates direkt aus einem Remote-Repository herunterladen und anwenden (GitHub, GitLab, etc.)",
+      updateUrl: "Update-URL",
+      updateUrlPlaceholder: "https://github.com/benutzer/repo/releases/download/v1.0.0/update.zip",
+      fetchUpdate: "Update herunterladen",
+      fetchingUpdate: "Wird heruntergeladen...",
+      invalidUrl: "Ungültige URL. Bitte verwenden Sie eine gültige Download-URL.",
+      urlRequired: "Bitte geben Sie eine URL ein",
+      updateFetched: "Update erfolgreich heruntergeladen",
+      updateFetchError: "Fehler beim Herunterladen des Updates",
+      fileUpdate: "Datei-Update",
+      fileUpdateDescription: "Laden Sie ein lokales Update-Paket hoch",
+      dragOrClick: "Datei ziehen oder klicken zum Auswählen",
+      acceptedFormats: "Akzeptierte Formate: .zip, .tar.gz",
+      selectFile: "Datei auswählen",
+      detectedVersion: "Erkannte Version:",
+      applying: "Wird angewendet...",
+      checkUpdatesDescription: "Prüfen Sie, ob neue Versionen verfügbar sind",
+      changelogDescription: "Sehen Sie die neuesten Änderungen und Verbesserungen",
+      checkingUpdates: "Suche nach Updates...",
+      updateHistory: "Update-Verlauf",
+      updateHistoryDescription: "Aufzeichnung aller angewendeten Updates",
+      applicationDate: "Anwendungsdatum",
+      noUpdatesApplied: "Noch keine Updates angewendet",
+      noUpdatesAvailable: "Derzeit keine Updates verfügbar",
+      applyingUpdate: "Update wird angewendet...",
     },
     login: {
       title: "NBM - Network Backup Manager",
