@@ -1781,6 +1781,469 @@ export async function registerRoutes(
     });
   });
 
+  // ============================================
+  // APIS DE AGENTES REMOTOS (ARQUITETURA DISTRIBUÍDA)
+  // ============================================
+
+  // Listar todos os agentes
+  app.get('/api/agents', isAuthenticated, async (req, res) => {
+    try {
+      const agentList = await storage.getAgents();
+      res.json(agentList);
+    } catch (e) {
+      console.error("Error listing agents:", e);
+      res.status(500).json({ message: "Erro ao listar agentes" });
+    }
+  });
+
+  // Obter agente por ID
+  app.get('/api/agents/:id', isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const agent = await storage.getAgentById(id);
+      if (!agent) {
+        return res.status(404).json({ message: "Agente não encontrado" });
+      }
+      res.json(agent);
+    } catch (e) {
+      console.error("Error getting agent:", e);
+      res.status(500).json({ message: "Erro ao obter agente" });
+    }
+  });
+
+  // Criar novo agente
+  app.post('/api/agents', isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const { insertAgentSchema } = await import("@shared/schema");
+      const validated = insertAgentSchema.parse(req.body);
+      
+      const user = req.user as any;
+      const userSub = user?.claims?.sub;
+      const userId = userSub ? await storage.getUserIdByReplitId(userSub) : null;
+      
+      const agent = await storage.createAgent({
+        ...validated,
+        createdBy: userId,
+      });
+      
+      res.status(201).json(agent);
+    } catch (e: any) {
+      console.error("Error creating agent:", e);
+      if (e.name === 'ZodError') {
+        return res.status(400).json({ message: "Dados inválidos", errors: e.errors });
+      }
+      res.status(500).json({ message: "Erro ao criar agente" });
+    }
+  });
+
+  // Atualizar agente
+  app.patch('/api/agents/:id', isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { updateAgentSchema } = await import("@shared/schema");
+      const validated = updateAgentSchema.parse(req.body);
+      
+      const updated = await storage.updateAgent(id, validated);
+      if (!updated) {
+        return res.status(404).json({ message: "Agente não encontrado" });
+      }
+      res.json(updated);
+    } catch (e: any) {
+      console.error("Error updating agent:", e);
+      if (e.name === 'ZodError') {
+        return res.status(400).json({ message: "Dados inválidos", errors: e.errors });
+      }
+      res.status(500).json({ message: "Erro ao atualizar agente" });
+    }
+  });
+
+  // Deletar agente
+  app.delete('/api/agents/:id', isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteAgent(id);
+      res.sendStatus(204);
+    } catch (e) {
+      console.error("Error deleting agent:", e);
+      res.status(500).json({ message: "Erro ao deletar agente" });
+    }
+  });
+
+  // Gerar token para agente
+  app.post('/api/agents/:id/tokens', isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const agent = await storage.getAgentById(id);
+      if (!agent) {
+        return res.status(404).json({ message: "Agente não encontrado" });
+      }
+      
+      const crypto = await import("crypto");
+      const token = crypto.randomBytes(32).toString('hex');
+      const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+      
+      const tokenRecord = await storage.createAgentToken({
+        agentId: id,
+        tokenHash,
+        name: req.body.name || 'default',
+        expiresAt: req.body.expiresAt ? new Date(req.body.expiresAt) : null,
+      });
+      
+      res.status(201).json({
+        ...tokenRecord,
+        token,
+      });
+    } catch (e) {
+      console.error("Error creating agent token:", e);
+      res.status(500).json({ message: "Erro ao criar token" });
+    }
+  });
+
+  // Listar tokens de um agente
+  app.get('/api/agents/:id/tokens', isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const tokens = await storage.getAgentTokens(id);
+      res.json(tokens.map(t => ({ ...t, tokenHash: undefined })));
+    } catch (e) {
+      console.error("Error listing agent tokens:", e);
+      res.status(500).json({ message: "Erro ao listar tokens" });
+    }
+  });
+
+  // Revogar token
+  app.delete('/api/agents/:agentId/tokens/:tokenId', isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const tokenId = parseInt(req.params.tokenId);
+      await storage.revokeAgentToken(tokenId);
+      res.sendStatus(204);
+    } catch (e) {
+      console.error("Error revoking token:", e);
+      res.status(500).json({ message: "Erro ao revogar token" });
+    }
+  });
+
+  // Jobs de um agente
+  app.get('/api/agents/:id/jobs', isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const jobs = await storage.getAgentJobs(id);
+      res.json(jobs);
+    } catch (e) {
+      console.error("Error listing agent jobs:", e);
+      res.status(500).json({ message: "Erro ao listar jobs" });
+    }
+  });
+
+  // Métricas de um agente
+  app.get('/api/agents/:id/metrics', isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const limit = parseInt(req.query.limit as string) || 100;
+      const metrics = await storage.getAgentMetrics(id, limit);
+      res.json(metrics);
+    } catch (e) {
+      console.error("Error listing agent metrics:", e);
+      res.status(500).json({ message: "Erro ao listar métricas" });
+    }
+  });
+
+  // Criar job para agente
+  app.post('/api/agents/:id/jobs', isAuthenticated, async (req, res) => {
+    try {
+      const agentId = parseInt(req.params.id);
+      const agent = await storage.getAgentById(agentId);
+      if (!agent) {
+        return res.status(404).json({ message: "Agente não encontrado" });
+      }
+      
+      const user = req.user as any;
+      const userSub = user?.claims?.sub;
+      const userId = userSub ? await storage.getUserIdByReplitId(userSub) : null;
+      
+      const job = await storage.createAgentJob({
+        agentId,
+        equipmentId: req.body.equipmentId || null,
+        scriptId: req.body.scriptId || null,
+        jobType: req.body.jobType || 'backup',
+        priority: req.body.priority || 5,
+        payload: req.body.payload || null,
+        requestedBy: userId,
+      });
+      
+      res.status(201).json(job);
+    } catch (e) {
+      console.error("Error creating job:", e);
+      res.status(500).json({ message: "Erro ao criar job" });
+    }
+  });
+
+  // Listar todos os jobs
+  app.get('/api/agent-jobs', isAuthenticated, async (req, res) => {
+    try {
+      const jobs = await storage.getAgentJobs();
+      res.json(jobs);
+    } catch (e) {
+      console.error("Error listing jobs:", e);
+      res.status(500).json({ message: "Erro ao listar jobs" });
+    }
+  });
+
+  // Obter job por ID
+  app.get('/api/agent-jobs/:id', isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const job = await storage.getAgentJobById(id);
+      if (!job) {
+        return res.status(404).json({ message: "Job não encontrado" });
+      }
+      res.json(job);
+    } catch (e) {
+      console.error("Error getting job:", e);
+      res.status(500).json({ message: "Erro ao obter job" });
+    }
+  });
+
+  // Eventos de um job
+  app.get('/api/agent-jobs/:id/events', isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const events = await storage.getAgentJobEvents(id);
+      res.json(events);
+    } catch (e) {
+      console.error("Error listing job events:", e);
+      res.status(500).json({ message: "Erro ao listar eventos" });
+    }
+  });
+
+  // Vincular equipamento a agente
+  app.post('/api/equipment/:equipmentId/agents', isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const equipmentId = parseInt(req.params.equipmentId);
+      const { agentId, priority } = req.body;
+      
+      const mapping = await storage.setEquipmentAgent({
+        equipmentId,
+        agentId,
+        priority: priority || 1,
+      });
+      
+      res.status(201).json(mapping);
+    } catch (e) {
+      console.error("Error linking equipment to agent:", e);
+      res.status(500).json({ message: "Erro ao vincular equipamento ao agente" });
+    }
+  });
+
+  // Listar agentes de um equipamento
+  app.get('/api/equipment/:equipmentId/agents', isAuthenticated, async (req, res) => {
+    try {
+      const equipmentId = parseInt(req.params.equipmentId);
+      const agentMappings = await storage.getEquipmentAgents(equipmentId);
+      res.json(agentMappings);
+    } catch (e) {
+      console.error("Error listing equipment agents:", e);
+      res.status(500).json({ message: "Erro ao listar agentes do equipamento" });
+    }
+  });
+
+  // Remover vínculo equipamento-agente
+  app.delete('/api/equipment/:equipmentId/agents/:agentId', isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const equipmentId = parseInt(req.params.equipmentId);
+      const agentId = parseInt(req.params.agentId);
+      await storage.removeEquipmentAgent(equipmentId, agentId);
+      res.sendStatus(204);
+    } catch (e) {
+      console.error("Error removing equipment agent:", e);
+      res.status(500).json({ message: "Erro ao remover vínculo" });
+    }
+  });
+
+  // ============================================
+  // WEBSOCKET GATEWAY PARA AGENTES
+  // ============================================
+
+  const agentWss = new WebSocketServer({ noServer: true });
+  const connectedAgents = new Map<number, WebSocket>();
+
+  httpServer.on('upgrade', (request, socket, head) => {
+    const url = new URL(request.url || '', `http://${request.headers.host}`);
+    
+    if (url.pathname === '/ws/agents') {
+      agentWss.handleUpgrade(request, socket, head, (ws) => {
+        agentWss.emit('connection', ws, request);
+      });
+    }
+  });
+
+  agentWss.on('connection', async (ws, request) => {
+    let authenticatedAgent: any = null;
+    
+    ws.on('message', async (data) => {
+      try {
+        const message = JSON.parse(data.toString());
+        
+        if (message.type === 'auth') {
+          const crypto = await import("crypto");
+          const tokenHash = crypto.createHash('sha256').update(message.token).digest('hex');
+          const agent = await storage.getAgentByToken(tokenHash);
+          
+          if (!agent) {
+            ws.send(JSON.stringify({ type: 'auth_error', message: 'Token inválido' }));
+            ws.close();
+            return;
+          }
+          
+          authenticatedAgent = agent;
+          connectedAgents.set(agent.id, ws);
+          
+          const clientIp = request.socket.remoteAddress || '';
+          await storage.updateAgentHeartbeat(agent.id, clientIp);
+          
+          ws.send(JSON.stringify({ 
+            type: 'auth_success', 
+            agentId: agent.id,
+            config: agent.config,
+          }));
+          
+          const queuedJobs = await storage.getQueuedJobsForAgent(agent.id);
+          if (queuedJobs.length > 0) {
+            ws.send(JSON.stringify({ type: 'jobs_pending', count: queuedJobs.length }));
+          }
+          
+          return;
+        }
+        
+        if (!authenticatedAgent) {
+          ws.send(JSON.stringify({ type: 'error', message: 'Não autenticado' }));
+          return;
+        }
+        
+        if (message.type === 'heartbeat') {
+          const clientIp = request.socket.remoteAddress || '';
+          await storage.updateAgentHeartbeat(authenticatedAgent.id, clientIp);
+          
+          if (message.metrics) {
+            await storage.createAgentMetric({
+              agentId: authenticatedAgent.id,
+              cpuUsage: message.metrics.cpu,
+              memoryUsage: message.metrics.memory,
+              activeSessions: message.metrics.activeSessions,
+              queuedJobs: message.metrics.queuedJobs,
+            });
+          }
+          
+          ws.send(JSON.stringify({ type: 'heartbeat_ack', timestamp: new Date().toISOString() }));
+        }
+        
+        if (message.type === 'job_request') {
+          const jobs = await storage.getQueuedJobsForAgent(authenticatedAgent.id);
+          if (jobs.length > 0) {
+            const job = jobs[0];
+            await storage.updateAgentJob(job.id, { status: 'running', startedAt: new Date() });
+            
+            const equip = job.equipmentId ? await storage.getEquipmentById(job.equipmentId) : null;
+            const script = job.scriptId ? await storage.getVendorScriptById(job.scriptId) : null;
+            
+            ws.send(JSON.stringify({
+              type: 'job',
+              job: {
+                id: job.id,
+                jobType: job.jobType,
+                equipment: equip ? {
+                  id: equip.id,
+                  name: equip.name,
+                  ip: equip.ip,
+                  port: equip.port,
+                  protocol: equip.protocol,
+                  manufacturer: equip.manufacturer,
+                  username: equip.username,
+                  password: equip.password,
+                } : null,
+                script: script ? {
+                  command: script.command,
+                  useShell: script.useShell,
+                  timeout: script.timeout,
+                  fileExtension: script.fileExtension,
+                } : null,
+                payload: job.payload,
+              },
+            }));
+          } else {
+            ws.send(JSON.stringify({ type: 'no_jobs' }));
+          }
+        }
+        
+        if (message.type === 'job_result') {
+          const { jobId, status, result, errorMessage } = message;
+          
+          await storage.updateAgentJob(jobId, {
+            status,
+            result,
+            errorMessage,
+            finishedAt: new Date(),
+          });
+          
+          await storage.createAgentJobEvent({
+            jobId,
+            eventType: status === 'success' ? 'completed' : 'failed',
+            message: errorMessage || 'Job completed',
+            payload: result,
+          });
+          
+          ws.send(JSON.stringify({ type: 'job_result_ack', jobId }));
+        }
+        
+        if (message.type === 'job_event') {
+          const { jobId, eventType, message: eventMessage, payload } = message;
+          
+          await storage.createAgentJobEvent({
+            jobId,
+            eventType,
+            message: eventMessage,
+            payload,
+          });
+        }
+        
+        if (message.type === 'config_sync') {
+          const equipmentList = await storage.getEquipment();
+          const agentEquipment = [];
+          
+          for (const equip of equipmentList) {
+            const agent = await storage.getAgentForEquipment(equip.id);
+            if (agent && agent.id === authenticatedAgent.id) {
+              agentEquipment.push(equip);
+            }
+          }
+          
+          const scripts = await storage.getVendorScripts();
+          
+          ws.send(JSON.stringify({
+            type: 'config',
+            equipment: agentEquipment,
+            scripts,
+          }));
+        }
+        
+      } catch (e) {
+        console.error('Agent WebSocket message error:', e);
+        ws.send(JSON.stringify({ type: 'error', message: 'Erro ao processar mensagem' }));
+      }
+    });
+    
+    ws.on('close', async () => {
+      if (authenticatedAgent) {
+        connectedAgents.delete(authenticatedAgent.id);
+        await storage.updateAgentStatus(authenticatedAgent.id, 'offline');
+      }
+    });
+    
+    ws.on('error', (err) => {
+      console.error('Agent WebSocket error:', err);
+    });
+  });
+
   return httpServer;
 }
 

@@ -636,7 +636,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createAgentJob(data: InsertAgentJob): Promise<AgentJob> {
-    const [job] = await db.insert(agentJobs).values(data).returning();
+    const [job] = await db.insert(agentJobs).values(data as any).returning();
     return job;
   }
 
