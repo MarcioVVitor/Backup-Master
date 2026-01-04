@@ -1,8 +1,8 @@
-# NBM CLOUD - Network Backup Manager Cloud
+# NBM CLOUD - Network Backup Management Cloud
 
 ## Overview
 
-NBM CLOUD (Network Backup Manager Cloud) is a web application for automated network equipment backup management with distributed architecture. The system allows users to register network devices (routers, switches, etc.) from various manufacturers (Huawei, Mikrotik, Cisco, Nokia, ZTE, Datacom, Juniper) and execute configuration backups via SSH/SFTP protocols. Backups are stored using cloud object storage and tracked in a PostgreSQL database.
+NBM CLOUD (Network Backup Management Cloud) is a web application for automated network equipment backup management with distributed architecture. The system allows users to register network devices (routers, switches, etc.) from various manufacturers (Huawei, Mikrotik, Cisco, Nokia, ZTE, Datacom, Juniper) and execute configuration backups via SSH/SFTP protocols. Backups are stored using cloud object storage and tracked in a PostgreSQL database.
 
 ## User Preferences
 
