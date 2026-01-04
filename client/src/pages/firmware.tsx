@@ -52,17 +52,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
 import { format } from "date-fns";
-
-const MANUFACTURERS = [
-  { value: "mikrotik", label: "Mikrotik" },
-  { value: "huawei", label: "Huawei" },
-  { value: "cisco", label: "Cisco" },
-  { value: "nokia", label: "Nokia" },
-  { value: "zte", label: "ZTE" },
-  { value: "datacom", label: "Datacom" },
-  { value: "datacom-dmos", label: "Datacom DMOS" },
-  { value: "juniper", label: "Juniper" },
-];
+import { useManufacturers } from "@/hooks/use-settings";
 
 interface Firmware {
   id: number;
@@ -385,6 +375,14 @@ export default function FirmwarePage() {
   const { data: equipment = [] } = useQuery<Equipment[]>({
     queryKey: ["/api/equipment"],
   });
+
+  const { data: manufacturersData = [] } = useManufacturers();
+  
+  // Transform manufacturers for select components
+  const MANUFACTURERS = manufacturersData.map(m => ({
+    value: m.name.toLowerCase(),
+    label: m.name
+  }));
 
   const uploadFirmware = useMutation({
     mutationFn: async (data: { file: File; name: string; version: string; manufacturer: string }) => {

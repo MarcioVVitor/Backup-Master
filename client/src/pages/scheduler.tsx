@@ -117,7 +117,7 @@ export default function SchedulerPage() {
 
   const createMutation = useMutation({
     mutationFn: async (data: PolicyFormData) => {
-      return apiRequest("/api/scheduler/policies", { method: "POST", body: JSON.stringify(data) });
+      return apiRequest("POST", "/api/scheduler/policies", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/scheduler/policies"] });
@@ -132,7 +132,7 @@ export default function SchedulerPage() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: PolicyFormData }) => {
-      return apiRequest(`/api/scheduler/policies/${id}`, { method: "PUT", body: JSON.stringify(data) });
+      return apiRequest("PUT", `/api/scheduler/policies/${id}`, data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/scheduler/policies"] });
@@ -147,7 +147,7 @@ export default function SchedulerPage() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      return apiRequest(`/api/scheduler/policies/${id}`, { method: "DELETE" });
+      return apiRequest("DELETE", `/api/scheduler/policies/${id}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/scheduler/policies"] });
@@ -160,7 +160,7 @@ export default function SchedulerPage() {
 
   const toggleMutation = useMutation({
     mutationFn: async (id: number) => {
-      return apiRequest(`/api/scheduler/policies/${id}/toggle`, { method: "POST" });
+      return apiRequest("POST", `/api/scheduler/policies/${id}/toggle`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/scheduler/policies"] });
