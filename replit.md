@@ -1,8 +1,14 @@
-# NBM CLOUD - Network Backup Management Cloud
+# NBM CLOUD v17.0 - Network Backup Management Cloud
 
 ## Overview
 
-NBM CLOUD (Network Backup Management Cloud) is a web application for automated network equipment backup management with distributed architecture. The system allows users to register network devices (routers, switches, etc.) from various manufacturers (Huawei, Mikrotik, Cisco, Nokia, ZTE, Datacom, Juniper) and execute configuration backups via SSH/SFTP protocols. Backups are stored using cloud object storage and tracked in a PostgreSQL database.
+NBM CLOUD (Network Backup Management Cloud) is a multi-tenant web application for automated network equipment backup management with distributed architecture. The system allows users to register network devices (routers, switches, etc.) from 8 supported manufacturers (Mikrotik, Huawei, Cisco, Nokia, ZTE, Datacom, Datacom-DMOS, Juniper) and execute configuration backups via SSH/SFTP protocols. Backups are stored using cloud object storage and tracked in a PostgreSQL database.
+
+### Multi-Tenant Architecture (v17.0)
+- **Tenant Isolation**: Complete data separation between companies with SQL-level enforcement
+- **Server Admin Mode**: NBM CLOUD Server admins can manage multiple companies
+- **Capacity**: Optimized for 2000+ backups per company with composite database indexes
+- **Security**: Cross-tenant access audit logging for server admin operations
 
 ## User Preferences
 
@@ -43,12 +49,26 @@ Users authenticate via Replit accounts. The `isAuthenticated` middleware protect
 - **Connection**: pg Pool with DATABASE_URL environment variable
 
 Key tables:
+- `companies` - Multi-tenant company/organization records
 - `users` - User accounts linked to Replit IDs
+- `user_companies` - User-company associations with roles
+- `server_admins` - NBM CLOUD Server administrators
 - `sessions` - Session storage for authentication
-- `equipment` - Network device records (name, IP, credentials, manufacturer)
-- `files` - Backup file metadata with object storage references
+- `equipment` - Network device records (name, IP, credentials, manufacturer) with company isolation
+- `files` - Backup file metadata with object storage references and company isolation
+- `backup_history` - Backup execution logs with status tracking
 - `backup_policies` - Automated backup scheduling policies with frequency rules
 - `backup_policy_runs` - Execution history for scheduled backup policies
+- `agents` - Remote proxy agents for distributed backup execution
+- `vendor_scripts` - Backup/update scripts per manufacturer
+
+### Database Performance Indexes (v17.0)
+Composite indexes optimized for multi-tenant high-volume queries:
+- `idx_files_company_created` - Fast backup listing per company
+- `idx_backup_history_company_executed` - Efficient history queries
+- `idx_equipment_company` - Quick equipment filtering by tenant
+- `idx_agents_company` - Agent lookup by company
+- `idx_backup_policies_company` - Policy management per tenant
 
 ### Object Storage
 - **Provider**: Google Cloud Storage via Replit's sidecar service

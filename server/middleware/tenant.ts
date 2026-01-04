@@ -84,6 +84,22 @@ export async function loadTenantUser(userId: number): Promise<TenantUser | null>
   };
 }
 
+function logCrossTenantAccess(
+  userId: number,
+  username: string,
+  requestedCompanyId: number,
+  action: string,
+  method: string,
+  path: string
+) {
+  const timestamp = new Date().toISOString();
+  console.log(
+    `[AUDIT:CROSS_TENANT] ${timestamp} | User: ${userId} (${username}) | ` +
+    `Action: ${action} | Company: ${requestedCompanyId} | ` +
+    `Request: ${method} ${path}`
+  );
+}
+
 export const withTenantContext: RequestHandler = async (req, res, next) => {
   try {
     const userInfo = await getUserFromRequest(req);
@@ -98,7 +114,20 @@ export const withTenantContext: RequestHandler = async (req, res, next) => {
       const companyIdFromHeader = req.headers["x-company-id"];
       if (companyIdFromHeader) {
         const requestedCompanyId = parseInt(companyIdFromHeader as string);
-        if (tenantUser.isServerAdmin || tenantUser.companies.some((c) => c.companyId === requestedCompanyId)) {
+        const userHasDirectAccess = tenantUser.companies.some((c) => c.companyId === requestedCompanyId);
+        
+        if (tenantUser.isServerAdmin && !userHasDirectAccess) {
+          logCrossTenantAccess(
+            tenantUser.id,
+            tenantUser.username,
+            requestedCompanyId,
+            "SERVER_ADMIN_ACCESS",
+            req.method,
+            req.path
+          );
+        }
+        
+        if (tenantUser.isServerAdmin || userHasDirectAccess) {
           req.companyId = requestedCompanyId;
         }
       } else if (tenantUser.activeCompanyId) {

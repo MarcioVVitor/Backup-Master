@@ -107,7 +107,10 @@ export const equipment = pgTable("equipment", {
   protocol: text("protocol").default("ssh"),
   enabled: boolean("enabled").default(true),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => [
+  index("idx_equipment_company").on(table.companyId),
+  index("idx_equipment_manufacturer").on(table.manufacturer),
+]);
 
 // Tabela de Arquivos/Backups (integrada com Object Storage)
 export const files = pgTable("files", {
@@ -122,7 +125,12 @@ export const files = pgTable("files", {
   status: text("status").default("success"),
   errorMessage: text("error_message"),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => [
+  index("idx_files_company").on(table.companyId),
+  index("idx_files_equipment").on(table.equipmentId),
+  index("idx_files_created_at").on(table.createdAt),
+  index("idx_files_company_created").on(table.companyId, table.createdAt),
+]);
 
 // Tabela de Histórico de Backups (logs de execução)
 export const backupHistory = pgTable("backup_history", {
@@ -138,7 +146,13 @@ export const backupHistory = pgTable("backup_history", {
   errorMessage: text("error_message"),
   executedBy: integer("executed_by").references(() => users.id),
   executedAt: timestamp("executed_at").defaultNow(),
-});
+}, (table) => [
+  index("idx_backup_history_company").on(table.companyId),
+  index("idx_backup_history_equipment").on(table.equipmentId),
+  index("idx_backup_history_executed_at").on(table.executedAt),
+  index("idx_backup_history_company_executed").on(table.companyId, table.executedAt),
+  index("idx_backup_history_status").on(table.status),
+]);
 
 // Tabela de Configurações do Sistema
 export const settings = pgTable("settings", {
@@ -219,7 +233,11 @@ export const backupPolicies = pgTable("backup_policies", {
   createdBy: integer("created_by").references(() => users.id),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (table) => [
+  index("idx_backup_policies_company").on(table.companyId),
+  index("idx_backup_policies_enabled").on(table.enabled),
+  index("idx_backup_policies_next_run").on(table.nextRunAt),
+]);
 
 // Tabela de Execuções de Políticas de Backup
 export const backupPolicyRuns = pgTable("backup_policy_runs", {
@@ -271,7 +289,10 @@ export const agents = pgTable("agents", {
   createdBy: integer("created_by").references(() => users.id),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (table) => [
+  index("idx_agents_company").on(table.companyId),
+  index("idx_agents_status").on(table.status),
+]);
 
 // Tabela de Tokens de Autenticação dos Agentes
 export const agentTokens = pgTable("agent_tokens", {

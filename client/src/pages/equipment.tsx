@@ -273,7 +273,13 @@ function CreateEquipmentDialog({ open, onOpenChange, manufacturers }: any) {
   );
 }
 
-function EditEquipmentDialog({ open, onOpenChange, id, equipment, manufacturers }: any) {
+function EditEquipmentDialog({ open, onOpenChange, id, equipment, manufacturers }: { 
+  open: boolean; 
+  onOpenChange: (open: boolean) => void; 
+  id: number; 
+  equipment: Equipment; 
+  manufacturers: { value: string; label: string }[] 
+}) {
   const { t } = useI18n();
   const { mutate, isPending } = useUpdateEquipment();
   const { toast } = useToast();
