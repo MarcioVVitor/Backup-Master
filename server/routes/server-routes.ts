@@ -57,17 +57,60 @@ export function createServerRoutes(isAuthenticated: any): Router {
     }
   });
 
+  const proxySchema = z.object({
+    name: z.string().min(2),
+    siteName: z.string().min(2),
+    ipAddress: z.string().optional(),
+    description: z.string().optional(),
+  });
+
+  const createCompanyWithProxiesSchema = insertCompanySchema.extend({
+    proxies: z.array(proxySchema).optional(),
+  });
+
   router.post("/companies", isAuthenticated, requireServerPermission("canCreateCompanies"), async (req, res) => {
     try {
-      const parsed = insertCompanySchema.parse(req.body);
+      const parsed = createCompanyWithProxiesSchema.parse(req.body);
+      const { proxies, ...companyData } = parsed;
       
-      const existing = await storage.getCompanyBySlug(parsed.slug);
+      const existing = await storage.getCompanyBySlug(companyData.slug);
       if (existing) {
         return res.status(400).json({ message: "Company slug already exists" });
       }
       
-      const company = await storage.createCompany(parsed);
-      res.status(201).json(company);
+      const company = await storage.createCompany(companyData);
+      
+      const createdProxies = [];
+      const failedProxies = [];
+      
+      if (proxies && proxies.length > 0) {
+        const uniqueProxies = proxies.filter((proxy, index, self) => 
+          index === self.findIndex(p => p.name === proxy.name)
+        );
+        
+        for (const proxy of uniqueProxies) {
+          try {
+            const agent = await storage.createAgent({
+              companyId: company.id,
+              name: proxy.name,
+              siteName: proxy.siteName,
+              ipAddress: proxy.ipAddress || null,
+              description: proxy.description || null,
+            });
+            createdProxies.push(agent);
+          } catch (proxyError) {
+            console.error(`Error creating proxy ${proxy.name}:`, proxyError);
+            failedProxies.push({ name: proxy.name, error: "Failed to create" });
+          }
+        }
+      }
+      
+      res.status(201).json({ 
+        ...company, 
+        proxies: createdProxies,
+        proxiesCreated: createdProxies.length,
+        failedProxies: failedProxies.length > 0 ? failedProxies : undefined
+      });
     } catch (e) {
       if (e instanceof z.ZodError) {
         return res.status(400).json({ message: "Invalid data", errors: e.errors });

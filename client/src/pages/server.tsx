@@ -27,9 +27,21 @@ import {
   Wrench,
   ChevronRight,
   Search,
-  ShieldX
+  ShieldX,
+  Trash2,
+  MapPin
 } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import type { Company, Agent } from "@shared/schema";
+
+const proxySchema = z.object({
+  name: z.string().min(2, "Nome do proxy deve ter pelo menos 2 caracteres"),
+  siteName: z.string().min(2, "Nome do site deve ter pelo menos 2 caracteres"),
+  ipAddress: z.string().optional(),
+  description: z.string().optional(),
+});
 
 const companyFormSchema = z.object({
   name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
@@ -39,9 +51,11 @@ const companyFormSchema = z.object({
   maxEquipment: z.number().min(1).default(100),
   maxAgents: z.number().min(1).default(5),
   active: z.boolean().default(true),
+  proxies: z.array(proxySchema).optional(),
 });
 
 type CompanyFormData = z.infer<typeof companyFormSchema>;
+type ProxyFormData = z.infer<typeof proxySchema>;
 
 export default function ServerPage() {
   const { t } = useI18n();
@@ -49,6 +63,8 @@ export default function ServerPage() {
   const [, setLocation] = useLocation();
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [proxies, setProxies] = useState<ProxyFormData[]>([]);
+  const [newProxy, setNewProxy] = useState<ProxyFormData>({ name: "", siteName: "", ipAddress: "", description: "" });
 
   const { data: adminCheck, isLoading: adminCheckLoading } = useQuery<{ isServerAdmin: boolean; serverRole: string | null }>({
     queryKey: ["/api/server/check-admin"],
@@ -73,13 +89,15 @@ export default function ServerPage() {
   });
 
   const createCompanyMutation = useMutation({
-    mutationFn: async (data: CompanyFormData) => {
+    mutationFn: async (data: CompanyFormData & { proxies?: ProxyFormData[] }) => {
       return await apiRequest("POST", "/api/server/companies", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/server/companies"] });
       queryClient.invalidateQueries({ queryKey: ["/api/server/stats"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/server/agents"] });
       setCreateDialogOpen(false);
+      resetForm();
       toast({ title: "Empresa criada com sucesso" });
     },
     onError: (error: any) => {
@@ -113,7 +131,24 @@ export default function ServerPage() {
   });
 
   const onSubmit = (data: CompanyFormData) => {
-    createCompanyMutation.mutate(data);
+    createCompanyMutation.mutate({ ...data, proxies });
+  };
+
+  const addProxy = () => {
+    if (newProxy.name && newProxy.siteName) {
+      setProxies([...proxies, newProxy]);
+      setNewProxy({ name: "", siteName: "", ipAddress: "", description: "" });
+    }
+  };
+
+  const removeProxy = (index: number) => {
+    setProxies(proxies.filter((_, i) => i !== index));
+  };
+
+  const resetForm = () => {
+    form.reset();
+    setProxies([]);
+    setNewProxy({ name: "", siteName: "", ipAddress: "", description: "" });
   };
 
   const filteredCompanies = companiesData?.filter(c => 
@@ -253,72 +288,28 @@ export default function ServerPage() {
                   data-testid="input-search"
                 />
               </div>
-              <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+              <Dialog open={createDialogOpen} onOpenChange={(open) => { setCreateDialogOpen(open); if (!open) resetForm(); }}>
                 <DialogTrigger asChild>
                   <Button data-testid="button-create-company">
                     <Plus className="h-4 w-4 mr-2" />
                     Nova Empresa
                   </Button>
                 </DialogTrigger>
-                <DialogContent>
+                <DialogContent className="max-w-2xl max-h-[90vh]">
                   <DialogHeader>
                     <DialogTitle>Criar Nova Empresa</DialogTitle>
                   </DialogHeader>
-                  <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                      <FormField
-                        control={form.control}
-                        name="name"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Nome da Empresa</FormLabel>
-                            <FormControl>
-                              <Input {...field} placeholder="Acme Corp" data-testid="input-company-name" />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="slug"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Slug (identificador unico)</FormLabel>
-                            <FormControl>
-                              <Input {...field} placeholder="acme-corp" data-testid="input-company-slug" />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="description"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Descricao</FormLabel>
-                            <FormControl>
-                              <Input {...field} placeholder="Descricao opcional" data-testid="input-company-description" />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <div className="grid grid-cols-3 gap-4">
+                  <ScrollArea className="max-h-[70vh] pr-4">
+                    <Form {...form}>
+                      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                         <FormField
                           control={form.control}
-                          name="maxUsers"
+                          name="name"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Max Usuarios</FormLabel>
+                              <FormLabel>Nome da Empresa</FormLabel>
                               <FormControl>
-                                <Input 
-                                  type="number" 
-                                  {...field} 
-                                  onChange={e => field.onChange(parseInt(e.target.value))}
-                                  data-testid="input-max-users"
-                                />
+                                <Input {...field} placeholder="Acme Corp" data-testid="input-company-name" />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -326,17 +317,12 @@ export default function ServerPage() {
                         />
                         <FormField
                           control={form.control}
-                          name="maxEquipment"
+                          name="slug"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Max Equipam.</FormLabel>
+                              <FormLabel>Slug (identificador unico)</FormLabel>
                               <FormControl>
-                                <Input 
-                                  type="number" 
-                                  {...field}
-                                  onChange={e => field.onChange(parseInt(e.target.value))}
-                                  data-testid="input-max-equipment"
-                                />
+                                <Input {...field} placeholder="acme-corp" data-testid="input-company-slug" />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -344,47 +330,197 @@ export default function ServerPage() {
                         />
                         <FormField
                           control={form.control}
-                          name="maxAgents"
+                          name="description"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Max Agentes</FormLabel>
+                              <FormLabel>Descricao</FormLabel>
                               <FormControl>
-                                <Input 
-                                  type="number" 
-                                  {...field}
-                                  onChange={e => field.onChange(parseInt(e.target.value))}
-                                  data-testid="input-max-agents"
-                                />
+                                <Input {...field} placeholder="Descricao opcional" data-testid="input-company-description" />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
-                      </div>
-                      <FormField
-                        control={form.control}
-                        name="active"
-                        render={({ field }) => (
-                          <FormItem className="flex items-center gap-3">
-                            <FormControl>
-                              <Switch
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                                data-testid="switch-active"
-                              />
-                            </FormControl>
-                            <FormLabel className="!mt-0">Empresa Ativa</FormLabel>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <DialogFooter>
-                        <Button type="submit" disabled={createCompanyMutation.isPending} data-testid="button-submit-company">
-                          {createCompanyMutation.isPending ? "Criando..." : "Criar Empresa"}
-                        </Button>
-                      </DialogFooter>
-                    </form>
-                  </Form>
+                        <div className="grid grid-cols-3 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="maxUsers"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Max Usuarios</FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    type="number" 
+                                    {...field} 
+                                    onChange={e => field.onChange(parseInt(e.target.value))}
+                                    data-testid="input-max-users"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="maxEquipment"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Max Equipam.</FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    type="number" 
+                                    {...field}
+                                    onChange={e => field.onChange(parseInt(e.target.value))}
+                                    data-testid="input-max-equipment"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="maxAgents"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Max Agentes</FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    type="number" 
+                                    {...field}
+                                    onChange={e => field.onChange(parseInt(e.target.value))}
+                                    data-testid="input-max-agents"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                        <FormField
+                          control={form.control}
+                          name="active"
+                          render={({ field }) => (
+                            <FormItem className="flex items-center gap-3">
+                              <FormControl>
+                                <Switch
+                                  checked={field.value}
+                                  onCheckedChange={field.onChange}
+                                  data-testid="switch-active"
+                                />
+                              </FormControl>
+                              <FormLabel className="!mt-0">Empresa Ativa</FormLabel>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <Separator className="my-4" />
+
+                        <div className="space-y-4">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <h4 className="font-medium">Proxies Iniciais</h4>
+                              <p className="text-sm text-muted-foreground">
+                                Adicione proxies para a empresa (opcional). Voce pode adicionar mais proxies depois.
+                              </p>
+                            </div>
+                            <Badge variant="outline">{proxies.length} proxy(s)</Badge>
+                          </div>
+
+                          {proxies.length > 0 && (
+                            <div className="space-y-2">
+                              {proxies.map((proxy, index) => (
+                                <div key={index} className="flex items-center gap-2 p-3 bg-muted rounded-lg">
+                                  <Network className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                                  <div className="flex-1 min-w-0">
+                                    <p className="font-medium text-sm truncate">{proxy.name}</p>
+                                    <p className="text-xs text-muted-foreground truncate">
+                                      <MapPin className="h-3 w-3 inline mr-1" />
+                                      {proxy.siteName}
+                                      {proxy.ipAddress && ` - ${proxy.ipAddress}`}
+                                    </p>
+                                  </div>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => removeProxy(index)}
+                                    data-testid={`button-remove-proxy-${index}`}
+                                  >
+                                    <Trash2 className="h-4 w-4 text-destructive" />
+                                  </Button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          <Card className="border-dashed">
+                            <CardContent className="pt-4 space-y-3">
+                              <div className="grid grid-cols-2 gap-3">
+                                <div className="space-y-1">
+                                  <label className="text-sm font-medium">Nome do Proxy</label>
+                                  <Input
+                                    value={newProxy.name}
+                                    onChange={(e) => setNewProxy({ ...newProxy, name: e.target.value })}
+                                    placeholder="Proxy Matriz"
+                                    data-testid="input-proxy-name"
+                                  />
+                                </div>
+                                <div className="space-y-1">
+                                  <label className="text-sm font-medium">Nome do Site/Local</label>
+                                  <Input
+                                    value={newProxy.siteName}
+                                    onChange={(e) => setNewProxy({ ...newProxy, siteName: e.target.value })}
+                                    placeholder="Matriz Sao Paulo"
+                                    data-testid="input-proxy-site"
+                                  />
+                                </div>
+                              </div>
+                              <div className="grid grid-cols-2 gap-3">
+                                <div className="space-y-1">
+                                  <label className="text-sm font-medium">IP do Proxy (opcional)</label>
+                                  <Input
+                                    value={newProxy.ipAddress}
+                                    onChange={(e) => setNewProxy({ ...newProxy, ipAddress: e.target.value })}
+                                    placeholder="192.168.1.100"
+                                    data-testid="input-proxy-ip"
+                                  />
+                                </div>
+                                <div className="space-y-1">
+                                  <label className="text-sm font-medium">Descricao (opcional)</label>
+                                  <Input
+                                    value={newProxy.description}
+                                    onChange={(e) => setNewProxy({ ...newProxy, description: e.target.value })}
+                                    placeholder="Proxy principal da matriz"
+                                    data-testid="input-proxy-description"
+                                  />
+                                </div>
+                              </div>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={addProxy}
+                                disabled={!newProxy.name || !newProxy.siteName}
+                                className="w-full"
+                                data-testid="button-add-proxy"
+                              >
+                                <Plus className="h-4 w-4 mr-2" />
+                                Adicionar Proxy
+                              </Button>
+                            </CardContent>
+                          </Card>
+                        </div>
+
+                        <DialogFooter className="pt-4">
+                          <Button type="submit" disabled={createCompanyMutation.isPending} data-testid="button-submit-company">
+                            {createCompanyMutation.isPending ? "Criando..." : `Criar Empresa${proxies.length > 0 ? ` com ${proxies.length} proxy(s)` : ""}`}
+                          </Button>
+                        </DialogFooter>
+                      </form>
+                    </Form>
+                  </ScrollArea>
                 </DialogContent>
               </Dialog>
             </div>
