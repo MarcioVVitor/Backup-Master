@@ -6,6 +6,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/use-auth";
 import { ThemeProvider, useTheme } from "@/contexts/theme-context";
 import { I18nProvider, useI18n } from "@/contexts/i18n-context";
+import { CompanyProvider } from "@/contexts/company-context";
+import { CompanySelector } from "@/components/company-selector";
 import { DynamicBackground } from "@/components/dynamic-backgrounds";
 
 import Home from "@/pages/home";
@@ -196,7 +198,10 @@ function AppLayout({ children }: { children: React.ReactNode }) {
                 {menuItems.find(m => m.url === location)?.title || 'NBM'}
               </h1>
             </div>
-            <ThemeToggle />
+            <div className="flex items-center gap-4">
+              <CompanySelector />
+              <ThemeToggle />
+            </div>
           </header>
           <main className="flex-1 overflow-auto bg-muted/10">
             {children}
@@ -233,12 +238,14 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <I18nProvider>
-          <TooltipProvider>
-            <AppLayout>
-              <Router />
-            </AppLayout>
-            <Toaster />
-          </TooltipProvider>
+          <CompanyProvider>
+            <TooltipProvider>
+              <AppLayout>
+                <Router />
+              </AppLayout>
+              <Toaster />
+            </TooltipProvider>
+          </CompanyProvider>
         </I18nProvider>
       </ThemeProvider>
     </QueryClientProvider>

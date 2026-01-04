@@ -15,9 +15,17 @@ export function createServerRoutes(isAuthenticated: any): Router {
       if (!tenantUser) {
         return res.status(401).json({ isServerAdmin: false, serverRole: null, message: "User not authenticated" });
       }
+      
+      const userCompanies = tenantUser.companies || [];
+      
       res.json({
         isServerAdmin: tenantUser.isServerAdmin || false,
         serverRole: tenantUser.serverRole || null,
+        userCompanies: userCompanies.map((uc: { companyId: number; companyName: string; role: string }) => ({
+          companyId: uc.companyId,
+          companyName: uc.companyName,
+          role: uc.role,
+        })),
       });
     } catch (e) {
       console.error("Error checking admin status:", e);
