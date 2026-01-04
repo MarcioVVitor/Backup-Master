@@ -29,7 +29,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [isDark, setIsDark] = useState<boolean>(false);
   const [backgroundId, setBackgroundId] = useState<string>("none");
   const [logoUrl, setLogoUrlState] = useState<string>("");
-  const [systemName, setSystemNameState] = useState<string>("NBM");
+  const [systemName, setSystemNameState] = useState<string>("NBM CLOUD");
 
   useEffect(() => {
     const stored = getStoredTheme();
