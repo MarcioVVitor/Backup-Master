@@ -246,6 +246,13 @@ export async function registerRoutes(
       return res.status(400).json({ message: "Nenhum arquivo enviado" });
     }
 
+    const companyId = req.companyId;
+    const isServerAdmin = req.tenantUser?.isServerAdmin;
+    
+    if (!companyId && !isServerAdmin) {
+      return res.status(403).json({ message: "Company context required" });
+    }
+
     const user = req.user as any;
     const userSub = user?.claims?.sub;
     const userId = userSub ? await storage.getUserIdByReplitId(userSub) : null;
@@ -271,6 +278,7 @@ export async function registerRoutes(
         size: req.file.size,
         mimeType: req.file.mimetype,
         status: "success",
+        companyId: companyId || null,
       });
 
       res.status(201).json(fileRecord);
@@ -280,24 +288,35 @@ export async function registerRoutes(
     }
   });
 
+  const checkBackupAccess = async (backupId: number, companyId: number | undefined, isServerAdmin: boolean | undefined) => {
+    const backup = await storage.getBackup(backupId);
+    if (!backup) return { allowed: false, backup: null, reason: "not_found" };
+    if (isServerAdmin) return { allowed: true, backup, reason: null };
+    if (backup.companyId !== companyId) return { allowed: false, backup, reason: "forbidden" };
+    return { allowed: true, backup, reason: null };
+  };
+
   app.get('/api/backups/:id/download', isAuthenticated, async (req, res) => {
     const id = parseInt(req.params.id);
-    const backup = await storage.getBackup(id);
+    const { allowed, backup, reason } = await checkBackupAccess(id, req.companyId, req.tenantUser?.isServerAdmin);
 
-    if (!backup) return res.status(404).send("Backup não encontrado");
+    if (!allowed) {
+      if (reason === "not_found") return res.status(404).send("Backup não encontrado");
+      return res.status(403).send("Access denied");
+    }
 
     const { objectStorageClient } = await import("./replit_integrations/object_storage/objectStorage");
     const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID;
     const bucket = objectStorageClient.bucket(bucketId!);
-    const file = bucket.file(backup.objectName);
+    const file = bucket.file(backup!.objectName);
 
     try {
       const [exists] = await file.exists();
       if (!exists) return res.status(404).send("Arquivo não encontrado no storage");
 
       const [buffer] = await file.download();
-      res.setHeader('Content-Type', backup.mimeType || 'application/octet-stream');
-      res.setHeader('Content-Disposition', `attachment; filename="${backup.filename}"`);
+      res.setHeader('Content-Type', backup!.mimeType || 'application/octet-stream');
+      res.setHeader('Content-Disposition', `attachment; filename="${backup!.filename}"`);
       res.send(buffer);
     } catch (e) {
       console.error("Error downloading:", e);
@@ -305,17 +324,20 @@ export async function registerRoutes(
     }
   });
 
-  // API - Visualizar conteúdo do backup
+  // API - Visualizar conteúdo do backup (tenant-scoped)
   app.get('/api/backups/:id/view', isAuthenticated, async (req, res) => {
     const id = parseInt(req.params.id);
-    const backup = await storage.getBackup(id);
+    const { allowed, backup, reason } = await checkBackupAccess(id, req.companyId, req.tenantUser?.isServerAdmin);
 
-    if (!backup) return res.status(404).json({ error: "Backup não encontrado" });
+    if (!allowed) {
+      if (reason === "not_found") return res.status(404).json({ error: "Backup não encontrado" });
+      return res.status(403).json({ error: "Access denied" });
+    }
 
     const { objectStorageClient } = await import("./replit_integrations/object_storage/objectStorage");
     const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID;
     const bucket = objectStorageClient.bucket(bucketId!);
-    const file = bucket.file(backup.objectName);
+    const file = bucket.file(backup!.objectName);
 
     try {
       const [exists] = await file.exists();
@@ -329,8 +351,8 @@ export async function registerRoutes(
 
       res.json({
         success: true,
-        filename: backup.filename,
-        size: backup.size,
+        filename: backup!.filename,
+        size: backup!.size,
         content,
         truncated,
         totalSize: buffer.length,
@@ -343,14 +365,17 @@ export async function registerRoutes(
 
   app.delete('/api/backups/:id', isAuthenticated, async (req, res) => {
     const id = parseInt(req.params.id);
-    const backup = await storage.getBackup(id);
+    const { allowed, backup, reason } = await checkBackupAccess(id, req.companyId, req.tenantUser?.isServerAdmin);
 
-    if (!backup) return res.status(404).json({ message: "Backup não encontrado" });
+    if (!allowed) {
+      if (reason === "not_found") return res.status(404).json({ message: "Backup não encontrado" });
+      return res.status(403).json({ message: "Access denied" });
+    }
 
     const { objectStorageClient } = await import("./replit_integrations/object_storage/objectStorage");
     const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID;
     const bucket = objectStorageClient.bucket(bucketId!);
-    const file = bucket.file(backup.objectName);
+    const file = bucket.file(backup!.objectName);
 
     try {
       await file.delete();
@@ -431,10 +456,21 @@ export async function registerRoutes(
     }
   });
 
-  // API - Histórico de backups
+  // API - Histórico de backups (tenant-scoped)
   app.get('/api/backup-history', isAuthenticated, async (req, res) => {
     try {
-      const history = await storage.getBackupHistory();
+      const companyId = req.companyId;
+      const isServerAdmin = req.tenantUser?.isServerAdmin;
+      
+      let history;
+      if (companyId) {
+        history = await storage.getBackupHistoryByCompany(companyId);
+      } else if (isServerAdmin) {
+        history = await storage.getBackupHistory();
+      } else {
+        return res.status(403).json({ success: false, error: "Company context required" });
+      }
+      
       res.json({ success: true, history });
     } catch (e) {
       console.error("Error getting backup history:", e);
@@ -442,10 +478,21 @@ export async function registerRoutes(
     }
   });
 
-  // Alias: /api/backups/history -> /api/backup-history
+  // Alias: /api/backups/history -> /api/backup-history (tenant-scoped)
   app.get('/api/backups/history', isAuthenticated, async (req, res) => {
     try {
-      const history = await storage.getBackupHistory();
+      const companyId = req.companyId;
+      const isServerAdmin = req.tenantUser?.isServerAdmin;
+      
+      let history;
+      if (companyId) {
+        history = await storage.getBackupHistoryByCompany(companyId);
+      } else if (isServerAdmin) {
+        history = await storage.getBackupHistory();
+      } else {
+        return res.status(403).json({ error: "Company context required" });
+      }
+      
       res.json(history);
     } catch (e) {
       console.error("Error getting backup history:", e);
@@ -453,10 +500,21 @@ export async function registerRoutes(
     }
   });
 
-  // API - Files (alias para backups com formato simplificado)
+  // API - Files (alias para backups com formato simplificado) (tenant-scoped)
   app.get('/api/files', isAuthenticated, async (req, res) => {
     try {
-      const backups = await storage.getBackups();
+      const companyId = req.companyId;
+      const isServerAdmin = req.tenantUser?.isServerAdmin;
+      
+      let backups;
+      if (companyId) {
+        backups = await storage.getBackupsByCompany(companyId);
+      } else if (isServerAdmin) {
+        backups = await storage.getBackups();
+      } else {
+        return res.status(403).json({ error: "Company context required" });
+      }
+      
       res.json(backups);
     } catch (e) {
       console.error("Error listing files:", e);
@@ -466,14 +524,17 @@ export async function registerRoutes(
 
   app.delete('/api/files/:id', isAuthenticated, async (req, res) => {
     const id = parseInt(req.params.id);
-    const backup = await storage.getBackup(id);
+    const { allowed, backup, reason } = await checkBackupAccess(id, req.companyId, req.tenantUser?.isServerAdmin);
 
-    if (!backup) return res.status(404).json({ message: "Arquivo não encontrado" });
+    if (!allowed) {
+      if (reason === "not_found") return res.status(404).json({ message: "Arquivo não encontrado" });
+      return res.status(403).json({ message: "Access denied" });
+    }
 
     const { objectStorageClient } = await import("./replit_integrations/object_storage/objectStorage");
     const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID;
     const bucket = objectStorageClient.bucket(bucketId!);
-    const file = bucket.file(backup.objectName);
+    const file = bucket.file(backup!.objectName);
 
     try {
       await file.delete();
@@ -485,9 +546,16 @@ export async function registerRoutes(
     res.sendStatus(204);
   });
 
-  // API - Executar backup em lote
+  // API - Executar backup em lote (tenant-scoped)
   app.post('/api/backups/execute', isAuthenticated, async (req, res) => {
     try {
+      const companyId = req.companyId;
+      const isServerAdmin = req.tenantUser?.isServerAdmin;
+      
+      if (!companyId && !isServerAdmin) {
+        return res.status(403).json({ message: "Company context required" });
+      }
+      
       const { equipmentIds } = req.body;
       
       if (!equipmentIds || !Array.isArray(equipmentIds) || equipmentIds.length === 0) {
@@ -508,6 +576,11 @@ export async function registerRoutes(
           continue;
         }
         
+        if (!isServerAdmin && equip.companyId !== companyId) {
+          results.push({ equipmentId, success: false, error: "Access denied" });
+          continue;
+        }
+        
         if (!equip.enabled) {
           results.push({ equipmentId, success: false, error: "Equipamento desabilitado" });
           continue;
@@ -521,6 +594,7 @@ export async function registerRoutes(
           ip: equip.ip,
           status: "running",
           executedBy: userId,
+          companyId: equip.companyId,
         });
 
         try {
@@ -546,6 +620,7 @@ export async function registerRoutes(
             size: result.length,
             mimeType: 'text/plain',
             status: "success",
+            companyId: equip.companyId,
           });
 
           const duration = (Date.now() - startTime) / 1000;

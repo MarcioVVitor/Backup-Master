@@ -251,6 +251,10 @@ export class DatabaseStorage implements IStorage {
   async getBackupHistory(): Promise<BackupHistoryRecord[]> {
     return await db.select().from(backupHistory).orderBy(desc(backupHistory.executedAt));
   }
+  
+  async getBackupHistoryByCompany(companyId: number): Promise<BackupHistoryRecord[]> {
+    return await db.select().from(backupHistory).where(eq(backupHistory.companyId, companyId)).orderBy(desc(backupHistory.executedAt));
+  }
 
   async createBackupHistory(data: InsertBackupHistory): Promise<BackupHistoryRecord> {
     const [record] = await db.insert(backupHistory).values(data).returning();
