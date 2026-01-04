@@ -124,8 +124,8 @@ function AppLayout({ children }: { children: React.ReactNode }) {
                 </div>
               )}
               <div className="flex flex-col">
-                <span className="font-bold text-sm leading-none">{systemName || "NBM"}</span>
-                <span className="text-[10px] text-muted-foreground">Backup Manager</span>
+                <span className="font-bold text-sm leading-none">{systemName || "NBM CLOUD"}</span>
+                <span className="text-[10px] text-muted-foreground">Network Backup Manager</span>
               </div>
             </div>
           </SidebarHeader>

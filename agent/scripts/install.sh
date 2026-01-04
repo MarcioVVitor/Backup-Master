@@ -31,10 +31,10 @@ SERVICE_USER="nbm-agent"
 
 print_banner() {
     echo -e "${BLUE}"
-    echo "======================================"
-    echo "  NBM Agent - Network Backup Manager"
+    echo "=========================================="
+    echo "  NBM CLOUD Agent - Network Backup Manager"
     echo "  Installation Script for Debian 13"
-    echo "======================================"
+    echo "=========================================="
     echo -e "${NC}"
 }
 

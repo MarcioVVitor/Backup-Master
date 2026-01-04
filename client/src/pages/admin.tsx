@@ -185,7 +185,7 @@ function ThemeConfigSection({
                 id="systemName"
                 value={systemName}
                 onChange={(e) => handleSystemNameChange(e.target.value)}
-                placeholder="NBM - Network Backup Manager"
+                placeholder="NBM CLOUD"
                 data-testid="input-system-name"
               />
             </div>
@@ -397,7 +397,7 @@ export default function AdminPage() {
   const { t } = useI18n();
   
   const [serverIp, setServerIp] = useState("");
-  const [systemName, setSystemName] = useState("NBM");
+  const [systemName, setSystemName] = useState("NBM CLOUD");
   const [primaryColor, setPrimaryColor] = useState("#3b82f6");
   const [logoUrl, setLogoUrl] = useState("");
   const [importDialogOpen, setImportDialogOpen] = useState(false);

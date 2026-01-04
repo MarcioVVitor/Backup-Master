@@ -1,6 +1,6 @@
-# NBM Agent - Network Backup Manager Remote Agent
+# NBM CLOUD Agent - Network Backup Manager Cloud
 
-O NBM Agent é um proxy local que se conecta ao servidor NBM na nuvem para executar backups de equipamentos de rede em redes remotas.
+O NBM CLOUD Agent é um proxy local que se conecta ao servidor NBM CLOUD para executar backups de equipamentos de rede em redes remotas.
 
 ## Requisitos
 
