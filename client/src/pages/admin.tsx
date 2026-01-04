@@ -328,7 +328,7 @@ function ThemeConfigSection({
                   </div>
                 </div>
                 <p className="font-medium text-sm">{theme.name}</p>
-                <p className="text-xs text-muted-foreground line-clamp-1">{theme.description}</p>
+                <p className="text-xs text-muted-foreground line-clamp-1">{t.admin.themeDescriptions[theme.id] || theme.description}</p>
               </div>
             ))}
           </div>
@@ -376,7 +376,7 @@ function ThemeConfigSection({
                     </div>
                   )}
                 </div>
-                <p className="font-medium text-xs text-center">{bg.name}</p>
+                <p className="font-medium text-xs text-center">{t.admin.backgroundNames[bg.id] || bg.name}</p>
                 <Badge 
                   variant="outline" 
                   className="mt-1 text-[10px] w-full justify-center"

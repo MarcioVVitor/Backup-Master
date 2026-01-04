@@ -7,6 +7,7 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { useI18n } from "@/contexts/i18n-context";
 
 export default function ExecutePage() {
   const { data: equipment } = useEquipment();
@@ -14,6 +15,7 @@ export default function ExecutePage() {
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
+  const { t } = useI18n();
 
   const filteredEquipment = equipment?.filter(e => 
     e.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -38,11 +40,11 @@ export default function ExecutePage() {
     if (selectedIds.length === 0) return;
     executeBackup(selectedIds, {
       onSuccess: () => {
-        toast({ title: "Backup iniciado", description: `Iniciando backup de ${selectedIds.length} dispositivos.` });
+        toast({ title: t.executeBackup.startingBackup, description: `${t.executeBackup.startingBackup} ${selectedIds.length} ${t.executeBackup.equipmentCount}.` });
         setSelectedIds([]);
       },
       onError: () => {
-        toast({ title: "Erro", description: "Falha ao iniciar backup.", variant: "destructive" });
+        toast({ title: t.common.error, description: t.executeBackup.executionFailed, variant: "destructive" });
       }
     });
   };
@@ -51,35 +53,35 @@ export default function ExecutePage() {
     <div className="p-6 md:p-8 space-y-6 animate-enter max-w-5xl mx-auto">
       <div className="flex flex-col md:flex-row justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Executar Backup</h1>
-          <p className="text-muted-foreground">Selecione os dispositivos para backup imediato</p>
+          <h1 className="text-3xl font-bold tracking-tight">{t.executeBackup.title}</h1>
+          <p className="text-muted-foreground">{t.executeBackup.selectEquipment}</p>
         </div>
         <div className="flex items-center gap-2">
            <Input 
-             placeholder="Filtrar..." 
+             placeholder={`${t.common.filter}...`}
              className="w-[200px]" 
              value={searchTerm}
              onChange={(e) => setSearchTerm(e.target.value)}
            />
            <Button onClick={handleExecute} disabled={isPending || selectedIds.length === 0} className="w-full md:w-auto">
             <Play className="h-4 w-4 mr-2" />
-            {isPending ? "Iniciando..." : `Executar (${selectedIds.length})`}
+            {isPending ? t.executeBackup.executing : `${t.common.execute} (${selectedIds.length})`}
           </Button>
         </div>
       </div>
 
       <Card>
         <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <CardTitle>Dispositivos Disponíveis</CardTitle>
+          <div className="flex items-center justify-between gap-2">
+            <CardTitle>{t.equipment.title}</CardTitle>
             <Button variant="outline" size="sm" onClick={handleSelectAll}>
               {selectedIds.length === filteredEquipment?.length ? (
                 <>
-                  <Square className="h-4 w-4 mr-2" /> Desmarcar Todos
+                  <Square className="h-4 w-4 mr-2" /> {t.executeBackup.deselectAll}
                 </>
               ) : (
                 <>
-                  <CheckSquare className="h-4 w-4 mr-2" /> Selecionar Todos
+                  <CheckSquare className="h-4 w-4 mr-2" /> {t.executeBackup.selectAllVisible}
                 </>
               )}
             </Button>
@@ -118,7 +120,7 @@ export default function ExecutePage() {
             })}
             {!filteredEquipment?.length && (
               <div className="col-span-full py-12 text-center text-muted-foreground">
-                Nenhum equipamento encontrado.
+                {t.executeBackup.noEquipmentFound}
               </div>
             )}
           </div>
