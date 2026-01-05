@@ -24,8 +24,22 @@ export function createServerRoutes(isAuthenticated: any): Router {
     });
   });
 
-  router.get("/check-admin", isAuthenticated, async (req, res) => {
+  router.get("/check-admin", async (req, res) => {
     try {
+      // Log session state for debugging
+      const user = req.user as any;
+      console.log("[check-admin] Session state:", {
+        isAuthenticated: req.isAuthenticated?.() || false,
+        hasUser: !!user,
+        userSub: user?.claims?.sub,
+        expiresAt: user?.expires_at,
+      });
+
+      // Manual auth check instead of middleware
+      if (!req.isAuthenticated?.() || !user?.expires_at) {
+        return res.json({ isServerAdmin: false, serverRole: null, notAuthenticated: true });
+      }
+
       const { loadTenantUser } = await import("../middleware/tenant");
       const { db } = await import("../db");
       const { users } = await import("@shared/schema");
