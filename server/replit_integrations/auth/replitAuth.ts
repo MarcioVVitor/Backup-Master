@@ -35,6 +35,8 @@ export function getSession(): RequestHandler {
     tableName: "sessions",
   });
   
+  const isProduction = process.env.NODE_ENV === "production";
+  
   sharedSessionMiddleware = session({
     secret: process.env.SESSION_SECRET!,
     store: sessionStore,
@@ -42,7 +44,7 @@ export function getSession(): RequestHandler {
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      secure: true,
+      secure: isProduction,
       sameSite: "lax",
       maxAge: sessionTtl,
     },
