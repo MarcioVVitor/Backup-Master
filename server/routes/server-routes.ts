@@ -39,7 +39,15 @@ export function createServerRoutes(isAuthenticated: any): Router {
       }
       
       if (!tenantUser) {
-        console.log("[check-admin] No tenantUser found, user object:", JSON.stringify(req.user));
+        const user = req.user as any;
+        console.log("[check-admin] No tenantUser found");
+        console.log("[check-admin] req.user:", JSON.stringify(user));
+        console.log("[check-admin] claims.sub:", user?.claims?.sub);
+        
+        // Try to find the user in DB
+        const allUsers = await db.select().from(users);
+        console.log("[check-admin] Users in DB:", allUsers.map(u => ({ id: u.id, username: u.username, replitId: u.replitId })));
+        
         return res.status(401).json({ isServerAdmin: false, serverRole: null, message: "User not authenticated" });
       }
       
