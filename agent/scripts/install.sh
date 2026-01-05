@@ -111,9 +111,41 @@ install_agent() {
     SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     AGENT_DIR="$(dirname "$SCRIPT_DIR")"
     
-    cp -r "$AGENT_DIR/src" "$INSTALL_DIR/"
-    cp "$AGENT_DIR/package.json" "$INSTALL_DIR/"
-    cp "$AGENT_DIR/tsconfig.json" "$INSTALL_DIR/"
+    # Check if local agent files exist
+    if [[ -f "$AGENT_DIR/package.json" && -d "$AGENT_DIR/src" ]]; then
+        echo -e "${GREEN}Using local agent files...${NC}"
+        cp -r "$AGENT_DIR/src" "$INSTALL_DIR/"
+        cp "$AGENT_DIR/package.json" "$INSTALL_DIR/"
+        cp "$AGENT_DIR/tsconfig.json" "$INSTALL_DIR/"
+    else
+        echo -e "${GREEN}Downloading agent from GitHub...${NC}"
+        
+        # Install git if not present
+        if ! command -v git &> /dev/null; then
+            apt-get install -y -qq git
+        fi
+        
+        # Clone repository to temp dir
+        TEMP_DIR=$(mktemp -d)
+        git clone --depth 1 https://github.com/MarcioVVitor/nbm-cloud.git "$TEMP_DIR" || {
+            echo -e "${RED}Failed to clone repository${NC}"
+            rm -rf "$TEMP_DIR"
+            exit 1
+        }
+        
+        # Copy agent files
+        if [[ -d "$TEMP_DIR/agent/src" ]]; then
+            cp -r "$TEMP_DIR/agent/src" "$INSTALL_DIR/"
+            cp "$TEMP_DIR/agent/package.json" "$INSTALL_DIR/"
+            cp "$TEMP_DIR/agent/tsconfig.json" "$INSTALL_DIR/"
+        else
+            echo -e "${RED}Agent files not found in repository${NC}"
+            rm -rf "$TEMP_DIR"
+            exit 1
+        fi
+        
+        rm -rf "$TEMP_DIR"
+    fi
     
     cd "$INSTALL_DIR"
     npm install --production=false --silent
