@@ -11,12 +11,41 @@ export function createServerRoutes(isAuthenticated: any): Router {
 
   router.get("/check-admin", isAuthenticated, async (req, res) => {
     try {
-      const tenantUser = req.tenantUser;
+      const { loadTenantUser } = await import("../middleware/tenant");
+      const { db } = await import("../db");
+      const { users } = await import("@shared/schema");
+      const { eq } = await import("drizzle-orm");
+      
+      let tenantUser = req.tenantUser;
+      
+      // If tenantUser not loaded by global middleware, load it now
       if (!tenantUser) {
+        const user = req.user as any;
+        let userId: number | null = null;
+        
+        // Check Replit Auth
+        if (user?.claims?.sub) {
+          const [dbUser] = await db.select().from(users).where(eq(users.replitId, user.claims.sub));
+          if (dbUser) userId = dbUser.id;
+        }
+        // Check standalone auth
+        else if ((req.session as any)?.user?.id) {
+          userId = (req.session as any).user.id;
+        }
+        
+        if (userId) {
+          tenantUser = await loadTenantUser(userId) ?? undefined;
+        }
+      }
+      
+      if (!tenantUser) {
+        console.log("[check-admin] No tenantUser found, user object:", JSON.stringify(req.user));
         return res.status(401).json({ isServerAdmin: false, serverRole: null, message: "User not authenticated" });
       }
       
       const userCompanies = tenantUser.companies || [];
+      
+      console.log(`[check-admin] User ${tenantUser.username} isServerAdmin: ${tenantUser.isServerAdmin}`);
       
       res.json({
         isServerAdmin: tenantUser.isServerAdmin || false,
