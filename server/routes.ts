@@ -82,6 +82,20 @@ export async function registerRoutes(
     res.json({ standalone: isStandalone });
   });
 
+  // Diagnostic endpoint to check session state
+  app.get('/api/debug/session', (req, res) => {
+    const user = req.user as any;
+    res.json({
+      hasCookie: !!req.headers.cookie,
+      sessionId: req.sessionID?.substring(0, 8) + '...',
+      isAuthenticated: req.isAuthenticated?.() || false,
+      hasUser: !!user,
+      userSub: user?.claims?.sub || null,
+      expiresAt: user?.expires_at || null,
+      nodeEnv: process.env.NODE_ENV,
+    });
+  });
+
   // Serve agent installation script
   app.get('/install/agent.sh', async (req, res) => {
     try {
