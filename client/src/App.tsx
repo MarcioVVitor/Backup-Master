@@ -78,8 +78,13 @@ function AppLayout({ children }: { children: React.ReactNode }) {
   const { background, logoUrl, systemName } = useTheme();
   const { t } = useI18n();
   
-  const { data: serverAdminCheck } = useQuery<{ isServerAdmin: boolean; serverRole: string | null }>({
+  const { data: serverAdminCheck, isLoading: isAdminLoading } = useQuery<{ isServerAdmin: boolean; serverRole: string | null } | null>({
     queryKey: ["/api/server/check-admin"],
+    queryFn: async () => {
+      const res = await fetch("/api/server/check-admin", { credentials: "include" });
+      if (!res.ok) return null;
+      return res.json();
+    },
     enabled: !!user,
   });
 
