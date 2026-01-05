@@ -2034,6 +2034,22 @@ export async function registerRoutes(
         companyId = sessionUser?.companyId;
       }
       
+      // Also try to get from tenantUser if available
+      if (!companyId && req.tenantUser?.activeCompanyId) {
+        companyId = req.tenantUser.activeCompanyId;
+      }
+      
+      console.log("[agents] Creating agent:", { 
+        validated, 
+        companyId, 
+        userId, 
+        userSub,
+        tenantUser: req.tenantUser ? { 
+          id: req.tenantUser.id, 
+          activeCompanyId: req.tenantUser.activeCompanyId 
+        } : null 
+      });
+      
       const agent = await storage.createAgent({
         ...validated,
         companyId: companyId || validated.companyId,
@@ -2046,7 +2062,7 @@ export async function registerRoutes(
       if (e.name === 'ZodError') {
         return res.status(400).json({ message: "Dados inválidos", errors: e.errors });
       }
-      res.status(500).json({ message: "Erro ao criar agente" });
+      res.status(500).json({ message: e.message || "Erro ao criar agente" });
     }
   });
 
