@@ -49,6 +49,7 @@ async function getGitHubClient(): Promise<Octokit> {
 // Arquivos a serem publicados
 const filesToPublish = [
   // Arquivos principais
+  'README.md',
   'package.json',
   'package-lock.json',
   'tsconfig.json',
