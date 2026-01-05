@@ -82,6 +82,26 @@ export async function registerRoutes(
     res.json({ standalone: isStandalone });
   });
 
+  // Serve agent installation script
+  app.get('/install/agent.sh', async (req, res) => {
+    try {
+      const fs = await import('fs');
+      const path = await import('path');
+      const scriptPath = path.join(process.cwd(), 'agent', 'scripts', 'install.sh');
+      if (fs.existsSync(scriptPath)) {
+        res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+        res.setHeader('Content-Disposition', 'attachment; filename="install.sh"');
+        const content = fs.readFileSync(scriptPath, 'utf-8');
+        res.send(content);
+      } else {
+        res.status(404).send('Script not found');
+      }
+    } catch (e) {
+      console.error('Error serving agent script:', e);
+      res.status(500).send('Error');
+    }
+  });
+
   app.use(withTenantContext);
 
   const serverRoutes = createServerRoutes(isAuthenticated);
