@@ -2528,6 +2528,236 @@ export async function registerRoutes(
     });
   });
 
+  // ============================================
+  // ROTAS DE EMPRESAS (Server Admin Only)
+  // ============================================
+  
+  const { isServerAdmin: isServerAdminMiddleware } = await import("./middleware/tenant");
+  
+  // Listar empresas
+  app.get('/api/companies', isAuthenticated, isServerAdminMiddleware, async (req, res) => {
+    try {
+      const { db } = await import("./db");
+      const { companies } = await import("@shared/schema");
+      const companyList = await db.select().from(companies).orderBy(companies.name);
+      res.json(companyList);
+    } catch (e) {
+      console.error("Error listing companies:", e);
+      res.status(500).json({ message: "Erro ao listar empresas" });
+    }
+  });
+  
+  // Criar empresa
+  app.post('/api/companies', isAuthenticated, isServerAdminMiddleware, async (req, res) => {
+    try {
+      const { insertCompanySchema, companies } = await import("@shared/schema");
+      const validated = insertCompanySchema.parse(req.body);
+      const { db } = await import("./db");
+      
+      const [company] = await db.insert(companies).values({
+        name: validated.name,
+        slug: validated.slug,
+        description: validated.description,
+        logo: validated.logo,
+        active: validated.active,
+        maxUsers: validated.maxUsers,
+        maxEquipment: validated.maxEquipment,
+        maxAgents: validated.maxAgents,
+      }).returning();
+      res.status(201).json(company);
+    } catch (e: any) {
+      console.error("Error creating company:", e);
+      if (e.name === 'ZodError') {
+        return res.status(400).json({ message: "Dados inválidos", errors: e.errors });
+      }
+      res.status(500).json({ message: e.message || "Erro ao criar empresa" });
+    }
+  });
+  
+  // Atualizar empresa
+  app.patch('/api/companies/:id', isAuthenticated, isServerAdminMiddleware, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { updateCompanySchema, companies } = await import("@shared/schema");
+      const validated = updateCompanySchema.parse(req.body);
+      const { db } = await import("./db");
+      const { eq } = await import("drizzle-orm");
+      
+      const updateData: Record<string, any> = { updatedAt: new Date() };
+      if (validated.name !== undefined) updateData.name = validated.name;
+      if (validated.slug !== undefined) updateData.slug = validated.slug;
+      if (validated.description !== undefined) updateData.description = validated.description;
+      if (validated.logo !== undefined) updateData.logo = validated.logo;
+      if (validated.active !== undefined) updateData.active = validated.active;
+      if (validated.maxUsers !== undefined) updateData.maxUsers = validated.maxUsers;
+      if (validated.maxEquipment !== undefined) updateData.maxEquipment = validated.maxEquipment;
+      if (validated.maxAgents !== undefined) updateData.maxAgents = validated.maxAgents;
+      
+      const [updated] = await db.update(companies)
+        .set(updateData)
+        .where(eq(companies.id, id))
+        .returning();
+        
+      if (!updated) {
+        return res.status(404).json({ message: "Empresa não encontrada" });
+      }
+      res.json(updated);
+    } catch (e: any) {
+      console.error("Error updating company:", e);
+      if (e.name === 'ZodError') {
+        return res.status(400).json({ message: "Dados inválidos", errors: e.errors });
+      }
+      res.status(500).json({ message: e.message || "Erro ao atualizar empresa" });
+    }
+  });
+  
+  // Deletar empresa
+  app.delete('/api/companies/:id', isAuthenticated, isServerAdminMiddleware, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { db } = await import("./db");
+      const { companies, userCompanies } = await import("@shared/schema");
+      const { eq } = await import("drizzle-orm");
+      
+      // Remove user associations first
+      await db.delete(userCompanies).where(eq(userCompanies.companyId, id));
+      
+      await db.delete(companies).where(eq(companies.id, id));
+      res.sendStatus(204);
+    } catch (e) {
+      console.error("Error deleting company:", e);
+      res.status(500).json({ message: "Erro ao excluir empresa" });
+    }
+  });
+  
+  // Listar usuários de uma empresa
+  app.get('/api/companies/:id/users', isAuthenticated, isServerAdminMiddleware, async (req, res) => {
+    try {
+      const companyId = parseInt(req.params.id);
+      const { db } = await import("./db");
+      const { userCompanies, users } = await import("@shared/schema");
+      const { eq } = await import("drizzle-orm");
+      
+      const companyUsers = await db
+        .select({
+          id: userCompanies.id,
+          userId: userCompanies.userId,
+          companyId: userCompanies.companyId,
+          role: userCompanies.role,
+          isDefault: userCompanies.isDefault,
+          user: {
+            id: users.id,
+            username: users.username,
+            name: users.name,
+            email: users.email,
+          },
+        })
+        .from(userCompanies)
+        .leftJoin(users, eq(userCompanies.userId, users.id))
+        .where(eq(userCompanies.companyId, companyId));
+        
+      res.json(companyUsers);
+    } catch (e) {
+      console.error("Error listing company users:", e);
+      res.status(500).json({ message: "Erro ao listar usuários da empresa" });
+    }
+  });
+  
+  // Adicionar usuário a uma empresa
+  app.post('/api/companies/:id/users', isAuthenticated, isServerAdminMiddleware, async (req, res) => {
+    try {
+      const companyId = parseInt(req.params.id);
+      const { username, role } = req.body;
+      
+      if (!username) {
+        return res.status(400).json({ message: "Username é obrigatório" });
+      }
+      
+      const { db } = await import("./db");
+      const { users, userCompanies } = await import("@shared/schema");
+      const { eq, and } = await import("drizzle-orm");
+      
+      // Find user by username
+      const [user] = await db.select().from(users).where(eq(users.username, username));
+      if (!user) {
+        return res.status(404).json({ message: "Usuário não encontrado" });
+      }
+      
+      // Check if already associated
+      const [existing] = await db.select().from(userCompanies)
+        .where(and(
+          eq(userCompanies.userId, user.id),
+          eq(userCompanies.companyId, companyId)
+        ));
+        
+      if (existing) {
+        return res.status(400).json({ message: "Usuário já está vinculado a esta empresa" });
+      }
+      
+      // Check if user has any company
+      const userCompanyList = await db.select().from(userCompanies)
+        .where(eq(userCompanies.userId, user.id));
+      
+      const isDefault = userCompanyList.length === 0;
+      
+      const [created] = await db.insert(userCompanies).values({
+        userId: user.id,
+        companyId,
+        role: role || 'admin',
+        isDefault,
+      }).returning();
+      
+      res.status(201).json(created);
+    } catch (e: any) {
+      console.error("Error adding user to company:", e);
+      res.status(500).json({ message: e.message || "Erro ao adicionar usuário" });
+    }
+  });
+  
+  // Remover usuário de uma empresa
+  app.delete('/api/companies/:id/users/:userId', isAuthenticated, isServerAdminMiddleware, async (req, res) => {
+    try {
+      const companyId = parseInt(req.params.id);
+      const userId = parseInt(req.params.userId);
+      
+      const { db } = await import("./db");
+      const { userCompanies } = await import("@shared/schema");
+      const { and, eq } = await import("drizzle-orm");
+      
+      // Check if this is the user's only company
+      const userCompanyList = await db.select().from(userCompanies)
+        .where(eq(userCompanies.userId, userId));
+      
+      if (userCompanyList.length <= 1) {
+        return res.status(400).json({ 
+          message: "Não é possível remover o usuário da única empresa associada. Adicione-o a outra empresa primeiro." 
+        });
+      }
+      
+      // If removing from default company, set another as default
+      const currentAssoc = userCompanyList.find(uc => uc.companyId === companyId);
+      if (currentAssoc?.isDefault) {
+        const newDefault = userCompanyList.find(uc => uc.companyId !== companyId);
+        if (newDefault) {
+          await db.update(userCompanies)
+            .set({ isDefault: true })
+            .where(eq(userCompanies.id, newDefault.id));
+        }
+      }
+      
+      await db.delete(userCompanies)
+        .where(and(
+          eq(userCompanies.userId, userId),
+          eq(userCompanies.companyId, companyId)
+        ));
+        
+      res.sendStatus(204);
+    } catch (e) {
+      console.error("Error removing user from company:", e);
+      res.status(500).json({ message: "Erro ao remover usuário" });
+    }
+  });
+
   return httpServer;
 }
 
