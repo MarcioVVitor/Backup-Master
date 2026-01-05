@@ -43,6 +43,7 @@ export function getSession(): RequestHandler {
     cookie: {
       httpOnly: true,
       secure: true,
+      sameSite: "lax",
       maxAge: sessionTtl,
     },
   });
@@ -121,9 +122,24 @@ export async function setupAuth(app: Express) {
 
   app.get("/api/callback", (req, res, next) => {
     ensureStrategy(req.hostname);
-    passport.authenticate(`replitauth:${req.hostname}`, {
-      successReturnToOrRedirect: "/",
-      failureRedirect: "/api/login",
+    passport.authenticate(`replitauth:${req.hostname}`, (err: any, user: any, info: any) => {
+      console.log(`[callback] Auth result - err: ${err}, hasUser: ${!!user}, info: ${JSON.stringify(info)}`);
+      if (err) {
+        console.error(`[callback] Error:`, err);
+        return res.redirect("/api/login");
+      }
+      if (!user) {
+        console.log(`[callback] No user, redirecting to login`);
+        return res.redirect("/api/login");
+      }
+      req.logIn(user, (loginErr) => {
+        if (loginErr) {
+          console.error(`[callback] Login error:`, loginErr);
+          return res.redirect("/api/login");
+        }
+        console.log(`[callback] Login successful, session: ${req.sessionID}`);
+        return res.redirect("/");
+      });
     })(req, res, next);
   });
 
