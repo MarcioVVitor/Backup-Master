@@ -23,6 +23,7 @@ import TerminalPage from "@/pages/terminal";
 import Scheduler from "@/pages/scheduler";
 import Agents from "@/pages/agents";
 import ServerPage from "@/pages/server";
+import Companies from "@/pages/companies";
 import Login from "@/pages/login";
 import NotFound from "@/pages/not-found";
 
@@ -53,7 +54,8 @@ import {
   TerminalSquare,
   Calendar,
   Network,
-  Cloud
+  Cloud,
+  Building2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -108,7 +110,10 @@ function AppLayout({ children }: { children: React.ReactNode }) {
   ];
   
   const menuItems = serverAdminCheck?.isServerAdmin 
-    ? [...baseMenuItems, { title: t.menu.nbmCloudServer, url: "/server", icon: Cloud }]
+    ? [...baseMenuItems, 
+       { title: "Empresas", url: "/companies", icon: Building2 },
+       { title: t.menu.nbmCloudServer, url: "/server", icon: Cloud }
+      ]
     : baseMenuItems;
   
   const isSuperAdmin = serverAdminCheck?.isServerAdmin;
@@ -240,6 +245,7 @@ function Router() {
       <Route path="/agents" component={Agents} />
       <Route path="/admin" component={Admin} />
       <Route path="/server" component={ServerPage} />
+      <Route path="/companies" component={Companies} />
       <Route component={NotFound} />
     </Switch>
   );
