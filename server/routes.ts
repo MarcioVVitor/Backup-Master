@@ -2027,8 +2027,16 @@ export async function registerRoutes(
       const userSub = user?.claims?.sub;
       const userId = userSub ? await storage.getUserIdByReplitId(userSub) : null;
       
+      // Get companyId from tenant context or standalone session
+      let companyId = req.companyId;
+      if (!companyId && isStandalone) {
+        const sessionUser = (req.session as any)?.user;
+        companyId = sessionUser?.companyId;
+      }
+      
       const agent = await storage.createAgent({
         ...validated,
+        companyId: companyId || validated.companyId,
         createdBy: userId,
       });
       
