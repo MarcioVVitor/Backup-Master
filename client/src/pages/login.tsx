@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useI18n } from "@/contexts/i18n-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,8 +18,13 @@ async function loginUser(credentials: { username: string; password: string }) {
   });
   
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Erro ao fazer login");
+    const text = await response.text();
+    try {
+      const error = JSON.parse(text);
+      throw new Error(error.message || "Erro ao fazer login");
+    } catch {
+      throw new Error("Erro ao fazer login - use o botao Entrar com Replit");
+    }
   }
   
   return response.json();
@@ -34,11 +39,28 @@ async function registerUser(data: { username: string; password: string; name?: s
   });
   
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Erro ao registrar");
+    const text = await response.text();
+    try {
+      const error = JSON.parse(text);
+      throw new Error(error.message || "Erro ao registrar");
+    } catch {
+      throw new Error("Registro nao disponivel - use o botao Entrar com Replit");
+    }
   }
   
   return response.json();
+}
+
+async function checkAuthMode(): Promise<{ standalone: boolean }> {
+  try {
+    const response = await fetch("/api/auth/mode", { credentials: "include" });
+    if (response.ok) {
+      return response.json();
+    }
+  } catch {
+    // Ignore errors
+  }
+  return { standalone: false };
 }
 
 export default function Login() {
@@ -48,6 +70,14 @@ export default function Login() {
   
   const [loginData, setLoginData] = useState({ username: "", password: "" });
   const [registerData, setRegisterData] = useState({ username: "", password: "", confirmPassword: "", name: "", email: "" });
+  
+  const { data: authMode } = useQuery({
+    queryKey: ["/api/auth/mode"],
+    queryFn: checkAuthMode,
+    staleTime: Infinity,
+  });
+  
+  const isStandalone = authMode?.standalone ?? false;
   
   const loginMutation = useMutation({
     mutationFn: loginUser,
@@ -100,6 +130,10 @@ export default function Login() {
       email: registerData.email || undefined,
     });
   };
+
+  const handleReplitLogin = () => {
+    window.location.href = "/api/login";
+  };
   
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted/50 p-4">
@@ -113,125 +147,147 @@ export default function Login() {
         </div>
         
         <Card>
-          <Tabs defaultValue="login">
-            <CardHeader className="pb-4">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="login" data-testid="tab-login">
-                  <LogIn className="h-4 w-4 mr-2" />
-                  {t.common.connect}
-                </TabsTrigger>
-                <TabsTrigger value="register" data-testid="tab-register">
-                  <UserPlus className="h-4 w-4 mr-2" />
-                  {t.common.add}
-                </TabsTrigger>
-              </TabsList>
-            </CardHeader>
-            
-            <CardContent>
-              <TabsContent value="login" className="mt-0">
-                <form onSubmit={handleLogin} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="login-username">{t.admin.username}</Label>
-                    <Input
-                      id="login-username"
-                      data-testid="input-login-username"
-                      placeholder={t.admin.username}
-                      value={loginData.username}
-                      onChange={(e) => setLoginData({ ...loginData, username: e.target.value })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="login-password">{t.admin.password}</Label>
-                    <Input
-                      id="login-password"
-                      data-testid="input-login-password"
-                      type="password"
-                      placeholder={t.admin.password}
-                      value={loginData.password}
-                      onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
-                    />
-                  </div>
-                  <Button 
-                    type="submit" 
-                    className="w-full" 
-                    data-testid="button-login"
-                    disabled={loginMutation.isPending}
-                  >
-                    {loginMutation.isPending ? t.common.loading : t.common.connect}
-                  </Button>
-                </form>
-              </TabsContent>
+          {isStandalone ? (
+            <Tabs defaultValue="login">
+              <CardHeader className="pb-4">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="login" data-testid="tab-login">
+                    <LogIn className="h-4 w-4 mr-2" />
+                    {t.common.connect}
+                  </TabsTrigger>
+                  <TabsTrigger value="register" data-testid="tab-register">
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    {t.common.add}
+                  </TabsTrigger>
+                </TabsList>
+              </CardHeader>
               
-              <TabsContent value="register" className="mt-0">
-                <form onSubmit={handleRegister} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="register-username">Usuario *</Label>
-                    <Input
-                      id="register-username"
-                      data-testid="input-register-username"
-                      placeholder="Escolha um usuario"
-                      value={registerData.username}
-                      onChange={(e) => setRegisterData({ ...registerData, username: e.target.value })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="register-name">Nome</Label>
-                    <Input
-                      id="register-name"
-                      data-testid="input-register-name"
-                      placeholder="Seu nome completo"
-                      value={registerData.name}
-                      onChange={(e) => setRegisterData({ ...registerData, name: e.target.value })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="register-email">E-mail</Label>
-                    <Input
-                      id="register-email"
-                      data-testid="input-register-email"
-                      type="email"
-                      placeholder="seu@email.com"
-                      value={registerData.email}
-                      onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="register-password">Senha *</Label>
-                    <Input
-                      id="register-password"
-                      data-testid="input-register-password"
-                      type="password"
-                      placeholder="Escolha uma senha"
-                      value={registerData.password}
-                      onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="register-confirm">Confirmar Senha *</Label>
-                    <Input
-                      id="register-confirm"
-                      data-testid="input-register-confirm"
-                      type="password"
-                      placeholder="Repita a senha"
-                      value={registerData.confirmPassword}
-                      onChange={(e) => setRegisterData({ ...registerData, confirmPassword: e.target.value })}
-                    />
-                  </div>
-                  <Button 
-                    type="submit" 
-                    className="w-full" 
-                    data-testid="button-register"
-                    disabled={registerMutation.isPending}
-                  >
-                    {registerMutation.isPending ? "Registrando..." : "Criar Conta"}
-                  </Button>
-                  <p className="text-xs text-muted-foreground text-center">
-                    O primeiro usuario registrado sera o administrador do sistema.
-                  </p>
-                </form>
-              </TabsContent>
+              <CardContent>
+                <TabsContent value="login" className="mt-0">
+                  <form onSubmit={handleLogin} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="login-username">{t.admin.username}</Label>
+                      <Input
+                        id="login-username"
+                        data-testid="input-login-username"
+                        placeholder={t.admin.username}
+                        value={loginData.username}
+                        onChange={(e) => setLoginData({ ...loginData, username: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="login-password">{t.admin.password}</Label>
+                      <Input
+                        id="login-password"
+                        data-testid="input-login-password"
+                        type="password"
+                        placeholder={t.admin.password}
+                        value={loginData.password}
+                        onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
+                      />
+                    </div>
+                    <Button 
+                      type="submit" 
+                      className="w-full" 
+                      data-testid="button-login"
+                      disabled={loginMutation.isPending}
+                    >
+                      {loginMutation.isPending ? t.common.loading : t.common.connect}
+                    </Button>
+                  </form>
+                </TabsContent>
+                
+                <TabsContent value="register" className="mt-0">
+                  <form onSubmit={handleRegister} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="register-username">Usuario *</Label>
+                      <Input
+                        id="register-username"
+                        data-testid="input-register-username"
+                        placeholder="Escolha um usuario"
+                        value={registerData.username}
+                        onChange={(e) => setRegisterData({ ...registerData, username: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="register-name">Nome</Label>
+                      <Input
+                        id="register-name"
+                        data-testid="input-register-name"
+                        placeholder="Seu nome completo"
+                        value={registerData.name}
+                        onChange={(e) => setRegisterData({ ...registerData, name: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="register-email">E-mail</Label>
+                      <Input
+                        id="register-email"
+                        data-testid="input-register-email"
+                        type="email"
+                        placeholder="seu@email.com"
+                        value={registerData.email}
+                        onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="register-password">Senha *</Label>
+                      <Input
+                        id="register-password"
+                        data-testid="input-register-password"
+                        type="password"
+                        placeholder="Escolha uma senha"
+                        value={registerData.password}
+                        onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="register-confirm">Confirmar Senha *</Label>
+                      <Input
+                        id="register-confirm"
+                        data-testid="input-register-confirm"
+                        type="password"
+                        placeholder="Repita a senha"
+                        value={registerData.confirmPassword}
+                        onChange={(e) => setRegisterData({ ...registerData, confirmPassword: e.target.value })}
+                      />
+                    </div>
+                    <Button 
+                      type="submit" 
+                      className="w-full" 
+                      data-testid="button-register"
+                      disabled={registerMutation.isPending}
+                    >
+                      {registerMutation.isPending ? "Registrando..." : "Criar Conta"}
+                    </Button>
+                    <p className="text-xs text-muted-foreground text-center">
+                      O primeiro usuario registrado sera o administrador do sistema.
+                    </p>
+                  </form>
+                </TabsContent>
+              </CardContent>
+            </Tabs>
+          ) : (
+            <CardContent className="pt-6">
+              <div className="space-y-4">
+                <p className="text-center text-muted-foreground text-sm">
+                  Faca login com sua conta Replit para acessar o sistema.
+                </p>
+                <Button 
+                  onClick={handleReplitLogin}
+                  className="w-full" 
+                  size="lg"
+                  data-testid="button-replit-login"
+                >
+                  <LogIn className="h-4 w-4 mr-2" />
+                  Entrar com Replit
+                </Button>
+                <p className="text-xs text-muted-foreground text-center">
+                  Voce sera redirecionado para a pagina de login do Replit.
+                </p>
+              </div>
             </CardContent>
-          </Tabs>
+          )}
         </Card>
         
         <p className="text-center text-xs text-muted-foreground mt-6">

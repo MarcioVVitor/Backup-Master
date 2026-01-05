@@ -78,6 +78,10 @@ export async function registerRoutes(
     isAuthenticated = replitAuth.isAuthenticated;
   }
 
+  app.get('/api/auth/mode', (req, res) => {
+    res.json({ standalone: isStandalone });
+  });
+
   app.use(withTenantContext);
 
   const serverRoutes = createServerRoutes(isAuthenticated);
