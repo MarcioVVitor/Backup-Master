@@ -28,7 +28,7 @@ Sistema multi-tenant para gerenciamento automatizado de backups de equipamentos 
 
 ```bash
 # Clonar repositório
-git clone https://github.com/seu-org/nbm-cloud.git
+git clone https://github.com/MarcioVVitor/nbm-cloud.git
 cd nbm-cloud
 
 # Instalar dependências
