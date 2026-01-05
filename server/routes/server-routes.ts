@@ -9,6 +9,21 @@ const validMaintenanceActions = ["status_check", "restart", "update", "logs", "c
 export function createServerRoutes(isAuthenticated: any): Router {
   const router = Router();
 
+  // Debug endpoint without auth middleware to compare
+  router.get("/debug-session", (req, res) => {
+    const user = req.user as any;
+    res.json({
+      path: req.path,
+      hasCookie: !!req.headers.cookie,
+      cookieHeader: req.headers.cookie?.substring(0, 50) + '...',
+      sessionId: req.sessionID?.substring(0, 8) + '...',
+      isAuthenticated: req.isAuthenticated?.() || false,
+      hasUser: !!user,
+      userSub: user?.claims?.sub || null,
+      expiresAt: user?.expires_at || null,
+    });
+  });
+
   router.get("/check-admin", isAuthenticated, async (req, res) => {
     try {
       const { loadTenantUser } = await import("../middleware/tenant");
