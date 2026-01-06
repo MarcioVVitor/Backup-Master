@@ -276,6 +276,9 @@ class NBMAgent {
         case "auth_error":
           this.log("error", `Authentication failed: ${message.message}`);
           break;
+        case "backup_job":
+          this.executeBackupJob(message);
+          break;
         case "job":
           this.executeJob(message.payload || message.job);
           break;
@@ -351,6 +354,143 @@ class NBMAgent {
 
     this.activeJobs.delete(job.jobId);
     this.send("job_result", result);
+  }
+
+  // Execute backup job from server (real-time backup request)
+  private async executeBackupJob(message: any) {
+    const { jobId, equipment, config } = message;
+    this.log("info", `Starting backup job ${jobId} for ${equipment.name} (${equipment.ip})`);
+    
+    const controller = new AbortController();
+    this.activeJobs.set(jobId, controller);
+
+    try {
+      const output = await this.executeBackupSSH(equipment, config, controller.signal);
+      
+      this.log("info", `Backup job ${jobId} completed successfully, ${output.length} bytes`);
+      
+      // Send result back to server
+      if (this.ws?.readyState === WebSocket.OPEN) {
+        this.ws.send(JSON.stringify({
+          type: "backup_result",
+          jobId,
+          success: true,
+          output,
+        }));
+      }
+    } catch (error: any) {
+      this.log("error", `Backup job ${jobId} failed: ${error.message}`);
+      
+      if (this.ws?.readyState === WebSocket.OPEN) {
+        this.ws.send(JSON.stringify({
+          type: "backup_result",
+          jobId,
+          success: false,
+          error: error.message,
+        }));
+      }
+    }
+
+    this.activeJobs.delete(jobId);
+  }
+
+  // Execute SSH backup command
+  private executeBackupSSH(equipment: any, config: any, signal: AbortSignal): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const conn = new SSHClient();
+      let output = "";
+
+      const timeout = setTimeout(() => {
+        conn.end();
+        reject(new Error(`Backup timeout after ${config.timeout || 60000}ms`));
+      }, config.timeout || 60000);
+
+      signal.addEventListener("abort", () => {
+        clearTimeout(timeout);
+        conn.end();
+        reject(new Error("Backup cancelled"));
+      });
+
+      conn.on("ready", () => {
+        this.log("debug", `SSH connected to ${equipment.ip} for backup`);
+        
+        if (config.useShell) {
+          conn.shell((err, stream) => {
+            if (err) {
+              clearTimeout(timeout);
+              reject(err);
+              return;
+            }
+
+            stream.on("data", (data: Buffer) => {
+              output += data.toString();
+            });
+
+            stream.on("close", () => {
+              clearTimeout(timeout);
+              conn.end();
+              resolve(output);
+            });
+
+            // Send the backup command
+            stream.write(config.command + "\n");
+            
+            // Wait for output to complete
+            setTimeout(() => {
+              stream.end();
+            }, config.timeout ? config.timeout - 5000 : 25000);
+          });
+        } else {
+          conn.exec(config.command, (err, stream) => {
+            if (err) {
+              clearTimeout(timeout);
+              reject(err);
+              return;
+            }
+
+            stream.on("data", (data: Buffer) => {
+              output += data.toString();
+            });
+
+            stream.stderr.on("data", (data: Buffer) => {
+              output += data.toString();
+            });
+
+            stream.on("close", () => {
+              clearTimeout(timeout);
+              conn.end();
+              resolve(output);
+            });
+          });
+        }
+      });
+
+      conn.on("error", (err) => {
+        clearTimeout(timeout);
+        reject(err);
+      });
+
+      conn.connect({
+        host: equipment.ip,
+        port: equipment.port || 22,
+        username: equipment.username,
+        password: equipment.password,
+        readyTimeout: 30000,
+        algorithms: {
+          kex: [
+            "curve25519-sha256",
+            "curve25519-sha256@libssh.org",
+            "ecdh-sha2-nistp256",
+            "ecdh-sha2-nistp384",
+            "ecdh-sha2-nistp521",
+            "diffie-hellman-group-exchange-sha256",
+            "diffie-hellman-group14-sha256",
+            "diffie-hellman-group14-sha1",
+            "diffie-hellman-group1-sha1",
+          ],
+        },
+      });
+    });
   }
 
   private executeSSH(job: JobPayload, signal: AbortSignal): Promise<string> {

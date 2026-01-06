@@ -455,6 +455,10 @@ export async function registerRoutes(
     res.sendStatus(204);
   });
 
+  // Reference to agent execution function (set later when WebSocket is initialized)
+  let executeBackupViaAgentRef: ((agentId: number, equip: any, config: any) => Promise<string>) | null = null;
+  let getConnectedAgentRef: ((agentId: number) => boolean) | null = null;
+
   // API - Executar Backup via SSH (tenant-scoped)
   app.post('/api/backup/execute/:equipmentId', isAuthenticated, async (req, res) => {
     const equipmentId = parseInt(req.params.equipmentId);
@@ -488,7 +492,29 @@ export async function registerRoutes(
 
     try {
       const config = await getBackupConfig(equip.manufacturer);
-      const result = await executeSSHBackup(equip, config);
+      
+      // Try to use agent if available
+      let result: string;
+      const equipmentAgents = await storage.getEquipmentAgents(equipmentId);
+      let usedAgent = false;
+      
+      for (const mapping of equipmentAgents) {
+        if (getConnectedAgentRef && getConnectedAgentRef(mapping.agentId)) {
+          console.log(`[backup] Using agent ${mapping.agentId} for equipment ${equip.name}`);
+          try {
+            result = await executeBackupViaAgentRef!(mapping.agentId, equip, config);
+            usedAgent = true;
+            break;
+          } catch (agentErr: any) {
+            console.warn(`[backup] Agent ${mapping.agentId} failed:`, agentErr.message);
+          }
+        }
+      }
+      
+      if (!usedAgent) {
+        console.log(`[backup] No agent available, trying direct SSH for ${equip.name}`);
+        result = await executeSSHBackup(equip, config);
+      }
 
       const { objectStorageClient } = await import("./replit_integrations/object_storage/objectStorage");
       const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID;
@@ -2411,6 +2437,53 @@ export async function registerRoutes(
 
   const agentWss = new WebSocketServer({ noServer: true });
   const connectedAgents = new Map<number, WebSocket>();
+  const pendingBackupJobs = new Map<string, { resolve: (result: any) => void, reject: (err: any) => void, timeout: NodeJS.Timeout }>();
+  
+  // Helper function to execute backup via agent
+  async function executeBackupViaAgent(agentId: number, equip: any, config: any): Promise<string> {
+    const ws = connectedAgents.get(agentId);
+    if (!ws || ws.readyState !== 1) {
+      throw new Error('Agente não está conectado');
+    }
+    
+    const jobId = `backup-${equip.id}-${Date.now()}`;
+    
+    return new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        pendingBackupJobs.delete(jobId);
+        reject(new Error('Timeout aguardando resposta do agente'));
+      }, (config.timeout || 60000) + 10000);
+      
+      pendingBackupJobs.set(jobId, { resolve, reject, timeout });
+      
+      ws.send(JSON.stringify({
+        type: 'backup_job',
+        jobId,
+        equipment: {
+          id: equip.id,
+          name: equip.name,
+          ip: equip.ip,
+          port: equip.port || 22,
+          protocol: equip.protocol || 'ssh',
+          username: equip.username,
+          password: equip.password,
+          manufacturer: equip.manufacturer,
+        },
+        config: {
+          command: config.command,
+          useShell: config.useShell,
+          timeout: config.timeout,
+        }
+      }));
+    });
+  }
+  
+  // Set references for backup route to use
+  executeBackupViaAgentRef = executeBackupViaAgent;
+  getConnectedAgentRef = (agentId: number) => {
+    const ws = connectedAgents.get(agentId);
+    return ws !== undefined && ws.readyState === 1;
+  };
 
   httpServer.on('upgrade', (request, socket, head) => {
     const url = new URL(request.url || '', `http://${request.headers.host}`);
@@ -2487,6 +2560,21 @@ export async function registerRoutes(
           }
           
           ws.send(JSON.stringify({ type: 'heartbeat_ack', timestamp: new Date().toISOString() }));
+        }
+        
+        // Handle backup result from agent
+        if (message.type === 'backup_result') {
+          const pending = pendingBackupJobs.get(message.jobId);
+          if (pending) {
+            clearTimeout(pending.timeout);
+            pendingBackupJobs.delete(message.jobId);
+            
+            if (message.success) {
+              pending.resolve(message.output);
+            } else {
+              pending.reject(new Error(message.error || 'Erro desconhecido no agente'));
+            }
+          }
         }
         
         if (message.type === 'job_request') {
