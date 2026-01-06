@@ -133,7 +133,9 @@ class NBMAgent {
   private async connect() {
     if (this.isShuttingDown) return;
 
-    const wsUrl = `${this.config.serverUrl.replace(/^http/, "ws")}/ws/agents`;
+    // Remove trailing slash from serverUrl before building WebSocket URL
+    const baseUrl = this.config.serverUrl.replace(/\/+$/, '');
+    const wsUrl = `${baseUrl.replace(/^http/, "ws")}/ws/agents`;
     this.log("info", `Connecting to ${wsUrl}...`);
 
     try {
