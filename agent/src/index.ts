@@ -145,10 +145,10 @@ class NBMAgent {
       });
 
       this.ws.on("open", () => {
-        this.log("info", "Connected to NBM server");
+        this.log("info", "Connected to NBM server, sending authentication...");
         this.reconnectAttempts = 0;
-        this.startHeartbeat();
-        this.sendSystemInfo();
+        // First authenticate with token
+        this.sendAuth();
       });
 
       this.ws.on("message", (data) => {
@@ -189,11 +189,17 @@ class NBMAgent {
   private startHeartbeat() {
     this.heartbeatTimer = setInterval(() => {
       if (this.ws?.readyState === WebSocket.OPEN) {
-        this.send("heartbeat", {
-          timestamp: new Date().toISOString(),
-          activeJobs: this.activeJobs.size,
-          systemInfo: this.getSystemMetrics(),
-        });
+        const metrics = this.getSystemMetrics();
+        // Send heartbeat in format server expects
+        this.ws.send(JSON.stringify({
+          type: "heartbeat",
+          metrics: {
+            cpu: parseFloat(metrics.memoryUsage as string),
+            memory: parseFloat(metrics.memoryUsage as string),
+            activeSessions: this.activeJobs.size,
+            queuedJobs: 0,
+          }
+        }));
       }
     }, this.config.heartbeatInterval);
   }
@@ -202,6 +208,16 @@ class NBMAgent {
     if (this.heartbeatTimer) {
       clearInterval(this.heartbeatTimer);
       this.heartbeatTimer = null;
+    }
+  }
+
+  private sendAuth() {
+    // Send authentication message with token
+    if (this.ws?.readyState === WebSocket.OPEN) {
+      this.ws.send(JSON.stringify({ 
+        type: 'auth', 
+        token: this.config.agentToken 
+      }));
     }
   }
 
@@ -249,11 +265,30 @@ class NBMAgent {
       this.log("debug", `Received message: ${message.type}`);
 
       switch (message.type) {
+        case "auth_success":
+          this.log("info", `Authentication successful! Agent ID: ${message.agentId}`);
+          // Now start heartbeat and send system info
+          this.startHeartbeat();
+          this.sendSystemInfo();
+          break;
+        case "auth_error":
+          this.log("error", `Authentication failed: ${message.message}`);
+          break;
         case "job":
-          this.executeJob(message.payload);
+          this.executeJob(message.payload || message.job);
+          break;
+        case "jobs_pending":
+          this.log("info", `${message.count} jobs pending, requesting...`);
+          this.send("job_request", {});
+          break;
+        case "no_jobs":
+          this.log("debug", "No jobs in queue");
+          break;
+        case "heartbeat_ack":
+          this.log("debug", `Heartbeat acknowledged at ${message.timestamp}`);
           break;
         case "cancel_job":
-          this.cancelJob(message.payload.jobId);
+          this.cancelJob(message.payload?.jobId || message.jobId);
           break;
         case "config_update":
           this.handleConfigUpdate(message.payload);
