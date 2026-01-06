@@ -42,8 +42,17 @@ export function createServerRoutes(isAuthenticated: any): Router {
 
       const { loadTenantUser } = await import("../middleware/tenant");
       const { db } = await import("../db");
-      const { users } = await import("@shared/schema");
+      const { users, serverAdmins } = await import("@shared/schema");
       const { eq } = await import("drizzle-orm");
+      
+      // Debug: Check user and server_admins directly
+      const [dbUser] = await db.select().from(users).where(eq(users.replitId, user.claims.sub));
+      console.log("[check-admin] Found dbUser:", dbUser ? { id: dbUser.id, username: dbUser.username, replitId: dbUser.replitId } : null);
+      
+      if (dbUser) {
+        const [serverAdmin] = await db.select().from(serverAdmins).where(eq(serverAdmins.userId, dbUser.id));
+        console.log("[check-admin] Found serverAdmin:", serverAdmin);
+      }
       
       let tenantUser = req.tenantUser;
       
