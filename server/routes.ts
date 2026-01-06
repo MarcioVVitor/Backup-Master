@@ -44,10 +44,18 @@ const isAdmin = async (req: any, res: any, next: any) => {
       return res.status(403).json({ message: "Acesso negado" });
     }
     const { db } = await import("./db");
-    const { users } = await import("@shared/schema");
+    const { users, serverAdmins } = await import("@shared/schema");
     const { eq } = await import("drizzle-orm");
     const [dbUser] = await db.select().from(users).where(eq(users.replitId, userSub));
-    if (!dbUser || (dbUser.role !== 'admin' && !dbUser.isAdmin)) {
+    if (!dbUser) {
+      return res.status(403).json({ message: "Usuário não encontrado" });
+    }
+    
+    // Check if user is server admin
+    const [serverAdmin] = await db.select().from(serverAdmins).where(eq(serverAdmins.userId, dbUser.id));
+    
+    // Allow if: company admin, global admin, or server admin
+    if (dbUser.role !== 'admin' && !dbUser.isAdmin && !serverAdmin) {
       return res.status(403).json({ message: "Apenas administradores podem acessar este recurso" });
     }
     next();
