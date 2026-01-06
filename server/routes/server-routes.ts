@@ -66,6 +66,19 @@ export function createServerRoutes(isAuthenticated: any): Router {
         });
       }
       
+      // Bootstrap: If no server_admins exist and this is the first user, make them admin
+      const allServerAdmins = await db.select().from(serverAdmins);
+      if (allServerAdmins.length === 0 && dbUser) {
+        // No admins exist - make this user the first server admin
+        const [newAdmin] = await db.insert(serverAdmins).values({
+          userId: dbUser.id,
+          role: 'super_admin',
+          permissions: { all: true },
+        }).returning();
+        console.log(`[BOOTSTRAP] Created first server admin: ${dbUser.username} (id: ${dbUser.id})`);
+        debugServerAdmin = newAdmin;
+      }
+      
       let tenantUser = req.tenantUser;
       
       // If tenantUser not loaded by global middleware, load it now
