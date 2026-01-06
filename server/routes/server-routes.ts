@@ -47,11 +47,20 @@ export function createServerRoutes(isAuthenticated: any): Router {
       
       // Debug: Check user and server_admins directly
       const [dbUser] = await db.select().from(users).where(eq(users.replitId, user.claims.sub));
-      console.log("[check-admin] Found dbUser:", dbUser ? { id: dbUser.id, username: dbUser.username, replitId: dbUser.replitId } : null);
       
+      let debugServerAdmin = null;
       if (dbUser) {
         const [serverAdmin] = await db.select().from(serverAdmins).where(eq(serverAdmins.userId, dbUser.id));
-        console.log("[check-admin] Found serverAdmin:", serverAdmin);
+        debugServerAdmin = serverAdmin;
+      }
+      
+      // Return debug info temporarily
+      if (req.query.debug === 'true') {
+        return res.json({
+          userSub: user.claims.sub,
+          dbUser: dbUser ? { id: dbUser.id, username: dbUser.username, replitId: dbUser.replitId } : null,
+          serverAdmin: debugServerAdmin,
+        });
       }
       
       let tenantUser = req.tenantUser;
