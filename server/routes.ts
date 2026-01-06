@@ -2366,6 +2366,38 @@ export async function registerRoutes(
     }
   });
 
+  // Endpoint de diagnóstico para testar token do agente (público para debug)
+  app.post('/api/agents/verify-token', async (req, res) => {
+    try {
+      const { token } = req.body;
+      if (!token) {
+        return res.status(400).json({ valid: false, message: 'Token não fornecido' });
+      }
+      
+      const crypto = await import("crypto");
+      const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+      console.log('[verify-token] Testing token, hash:', tokenHash.substring(0, 16) + '...');
+      
+      const agent = await storage.getAgentByToken(tokenHash);
+      
+      if (!agent) {
+        console.log('[verify-token] Token NOT FOUND');
+        return res.json({ valid: false, message: 'Token inválido ou expirado' });
+      }
+      
+      console.log('[verify-token] Token VALID for agent:', agent.id, agent.name);
+      res.json({ 
+        valid: true, 
+        agentId: agent.id, 
+        agentName: agent.name,
+        status: agent.status 
+      });
+    } catch (e) {
+      console.error("Error verifying token:", e);
+      res.status(500).json({ valid: false, message: 'Erro ao verificar token' });
+    }
+  });
+
   // ============================================
   // WEBSOCKET GATEWAY PARA AGENTES
   // ============================================
@@ -2375,8 +2407,10 @@ export async function registerRoutes(
 
   httpServer.on('upgrade', (request, socket, head) => {
     const url = new URL(request.url || '', `http://${request.headers.host}`);
+    console.log('[ws-upgrade] Request to:', url.pathname, 'from:', request.socket.remoteAddress);
     
     if (url.pathname === '/ws/agents') {
+      console.log('[ws-upgrade] Handling agent WebSocket upgrade');
       agentWss.handleUpgrade(request, socket, head, (ws) => {
         agentWss.emit('connection', ws, request);
       });
@@ -2384,22 +2418,27 @@ export async function registerRoutes(
   });
 
   agentWss.on('connection', async (ws, request) => {
+    console.log('[ws-agents] New connection from:', request.socket.remoteAddress);
     let authenticatedAgent: any = null;
     
     ws.on('message', async (data) => {
       try {
         const message = JSON.parse(data.toString());
+        console.log('[ws-agents] Received message type:', message.type);
         
         if (message.type === 'auth') {
           const crypto = await import("crypto");
           const tokenHash = crypto.createHash('sha256').update(message.token).digest('hex');
+          console.log('[ws-agents] Auth attempt, token hash:', tokenHash.substring(0, 16) + '...');
           const agent = await storage.getAgentByToken(tokenHash);
           
           if (!agent) {
+            console.log('[ws-agents] Auth failed - token not found');
             ws.send(JSON.stringify({ type: 'auth_error', message: 'Token inválido' }));
             ws.close();
             return;
           }
+          console.log('[ws-agents] Auth success for agent:', agent.id, agent.name);
           
           authenticatedAgent = agent;
           connectedAgents.set(agent.id, ws);
