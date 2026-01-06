@@ -136,6 +136,7 @@ export interface IStorage {
 
   // Agentes (proxies locais)
   getAgents(): Promise<Agent[]>;
+  getAgentsByCompany(companyId: number): Promise<Agent[]>;
   getAgentById(id: number): Promise<Agent | undefined>;
   createAgent(data: InsertAgent): Promise<Agent>;
   updateAgent(id: number, data: Partial<InsertAgent>): Promise<Agent | undefined>;

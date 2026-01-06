@@ -2049,7 +2049,16 @@ export async function registerRoutes(
   // Listar todos os agentes
   app.get('/api/agents', isAuthenticated, async (req, res) => {
     try {
-      const agentList = await storage.getAgents();
+      const companyId = req.companyId;
+      const isServerAdmin = req.tenantUser?.isServerAdmin;
+      
+      let agentList: any[] = [];
+      if (isServerAdmin && !companyId) {
+        agentList = await storage.getAgents();
+      } else if (companyId) {
+        agentList = await storage.getAgentsByCompany(companyId);
+      }
+      
       res.json(agentList);
     } catch (e) {
       console.error("Error listing agents:", e);
@@ -2311,13 +2320,11 @@ export async function registerRoutes(
         return res.status(400).json({ message: "Company context required" });
       }
       
-      let mappings;
+      let mappings: any[] = [];
       if (isServerAdmin && !companyId) {
         mappings = await storage.getAllEquipmentAgentsAdmin();
       } else if (companyId) {
         mappings = await storage.getAllEquipmentAgents(companyId);
-      } else {
-        mappings = [];
       }
       
       res.json(mappings);

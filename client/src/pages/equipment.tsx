@@ -293,7 +293,7 @@ function EquipmentForm({
               {agents.map(agent => (
                 <SelectItem key={agent.id} value={agent.id.toString()}>
                   <div className="flex items-center gap-2">
-                    <span className={`h-2 w-2 rounded-full ${agent.isOnline ? "bg-green-500" : "bg-gray-400"}`} />
+                    <span className={`h-2 w-2 rounded-full ${agent.status === "online" ? "bg-green-500" : "bg-gray-400"}`} />
                     {agent.name}
                   </div>
                 </SelectItem>
@@ -419,7 +419,7 @@ function EditEquipmentDialog({ open, onOpenChange, id, equipment, manufacturers,
           manufacturers={manufacturers}
           agents={agents}
           equipmentId={id}
-          linkedAgentId={linkedAgent?.id}
+          linkedAgentId={linkedAgentId}
         />
       </DialogContent>
     </Dialog>
