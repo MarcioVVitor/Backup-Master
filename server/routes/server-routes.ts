@@ -56,10 +56,13 @@ export function createServerRoutes(isAuthenticated: any): Router {
       
       // Return debug info temporarily
       if (req.query.debug === 'true') {
+        // Also get all server_admins for debugging
+        const allServerAdmins = await db.select().from(serverAdmins);
         return res.json({
           userSub: user.claims.sub,
           dbUser: dbUser ? { id: dbUser.id, username: dbUser.username, replitId: dbUser.replitId } : null,
           serverAdmin: debugServerAdmin,
+          allServerAdmins: allServerAdmins,
         });
       }
       
