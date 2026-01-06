@@ -558,7 +558,7 @@ export async function registerRoutes(
         errorMessage: e.message,
       });
 
-      res.status(500).json({ success: false, error: e.message });
+      res.status(500).json({ success: false, error: e.message, message: e.message || "Erro de conexão SSH" });
     }
   });
 
