@@ -73,7 +73,7 @@ export function createServerRoutes(isAuthenticated: any): Router {
         const [newAdmin] = await db.insert(serverAdmins).values({
           userId: dbUser.id,
           role: 'super_admin',
-          permissions: { all: true },
+          permissions: { all: true } as any,
         }).returning();
         console.log(`[BOOTSTRAP] Created first server admin: ${dbUser.username} (id: ${dbUser.id})`);
         debugServerAdmin = newAdmin;
