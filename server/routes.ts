@@ -163,7 +163,10 @@ export async function registerRoutes(
       const companyId = req.companyId;
       const isServerAdmin = req.tenantUser?.isServerAdmin;
       
+      console.log('[equipment:create] companyId:', companyId, 'isServerAdmin:', isServerAdmin, 'body:', JSON.stringify(req.body));
+      
       if (!companyId && !isServerAdmin) {
+        console.log('[equipment:create] REJECTED - no company context');
         return res.status(403).json({ message: "Company context required" });
       }
       
@@ -175,17 +178,21 @@ export async function registerRoutes(
       } else if (companyId) {
         finalCompanyId = companyId;
       } else {
+        console.log('[equipment:create] REJECTED - no companyId available');
         return res.status(400).json({ message: "Company ID required" });
       }
       
+      console.log('[equipment:create] Creating with finalCompanyId:', finalCompanyId);
       const equipmentData = { ...parsed, companyId: finalCompanyId };
       const equipment = await storage.createEquipment(equipmentData);
+      console.log('[equipment:create] SUCCESS - id:', equipment.id);
       res.status(201).json(sanitizeEquipment(equipment));
     } catch (e) {
       if (e instanceof z.ZodError) {
+        console.log('[equipment:create] ZodError:', JSON.stringify(e.errors));
         return res.status(400).json({ message: "Dados inválidos", errors: e.errors });
       }
-      console.error("Error creating equipment:", e);
+      console.error("[equipment:create] ERROR:", e);
       res.status(500).json({ message: "Erro ao criar equipamento" });
     }
   });
