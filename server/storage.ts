@@ -58,7 +58,7 @@ import {
   type UserCompany,
   type InsertUserCompany
 } from "@shared/schema";
-import { eq, desc, sql, and, gte, lt } from "drizzle-orm";
+import { eq, desc, sql, and, gte, lt, inArray } from "drizzle-orm";
 
 export interface IStorage {
   getUserIdByReplitId(replitId: string): Promise<number | null>;
@@ -166,6 +166,8 @@ export interface IStorage {
 
   // Vinculação Equipamento-Agente
   getEquipmentAgents(equipmentId: number): Promise<EquipmentAgent[]>;
+  getAllEquipmentAgents(companyId: number): Promise<EquipmentAgent[]>;
+  getAllEquipmentAgentsAdmin(): Promise<EquipmentAgent[]>;
   setEquipmentAgent(data: InsertEquipmentAgent): Promise<EquipmentAgent>;
   removeEquipmentAgent(equipmentId: number, agentId: number): Promise<void>;
   getAgentForEquipment(equipmentId: number): Promise<Agent | undefined>;
@@ -738,6 +740,24 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(equipmentAgents)
       .where(eq(equipmentAgents.equipmentId, equipmentId))
       .orderBy(equipmentAgents.priority);
+  }
+
+  async getAllEquipmentAgents(companyId: number): Promise<EquipmentAgent[]> {
+    const companyEquipment = await db.select({ id: equipment.id })
+      .from(equipment)
+      .where(eq(equipment.companyId, companyId));
+    
+    const equipmentIds = companyEquipment.map(e => e.id);
+    if (equipmentIds.length === 0) return [];
+    
+    return await db.select().from(equipmentAgents)
+      .where(inArray(equipmentAgents.equipmentId, equipmentIds))
+      .orderBy(equipmentAgents.equipmentId, equipmentAgents.priority);
+  }
+
+  async getAllEquipmentAgentsAdmin(): Promise<EquipmentAgent[]> {
+    return await db.select().from(equipmentAgents)
+      .orderBy(equipmentAgents.equipmentId, equipmentAgents.priority);
   }
 
   async setEquipmentAgent(data: InsertEquipmentAgent): Promise<EquipmentAgent> {

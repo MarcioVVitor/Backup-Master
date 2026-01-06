@@ -494,7 +494,7 @@ export async function registerRoutes(
       const config = await getBackupConfig(equip.manufacturer);
       
       // Try to use agent if available
-      let result: string;
+      let result: string = "";
       const equipmentAgents = await storage.getEquipmentAgents(equipmentId);
       let usedAgent = false;
       
@@ -2298,6 +2298,32 @@ export async function registerRoutes(
     } catch (e) {
       console.error("Error listing job events:", e);
       res.status(500).json({ message: "Erro ao listar eventos" });
+    }
+  });
+
+  // Listar todos os mapeamentos equipment-agent da empresa
+  app.get('/api/equipment-agents', isAuthenticated, async (req, res) => {
+    try {
+      const companyId = req.companyId;
+      const isServerAdmin = req.tenantUser?.isServerAdmin;
+      
+      if (!companyId && !isServerAdmin) {
+        return res.status(400).json({ message: "Company context required" });
+      }
+      
+      let mappings;
+      if (isServerAdmin && !companyId) {
+        mappings = await storage.getAllEquipmentAgentsAdmin();
+      } else if (companyId) {
+        mappings = await storage.getAllEquipmentAgents(companyId);
+      } else {
+        mappings = [];
+      }
+      
+      res.json(mappings);
+    } catch (e) {
+      console.error("Error listing all equipment agents:", e);
+      res.status(500).json({ message: "Erro ao listar mapeamentos" });
     }
   });
 

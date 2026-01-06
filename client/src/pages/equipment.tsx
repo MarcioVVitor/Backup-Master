@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useEquipment, useCreateEquipment, useUpdateEquipment, useDeleteEquipment } from "@/hooks/use-equipment";
 import { useManufacturers } from "@/hooks/use-settings";
 import { useI18n } from "@/contexts/i18n-context";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
-import { Plus, Search, Pencil, Trash2 } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, Server } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Table,
@@ -30,16 +32,36 @@ import {
 import { Label } from "@/components/ui/label";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { insertEquipmentSchema, type InsertEquipment, type Equipment } from "@shared/schema";
+import { insertEquipmentSchema, type InsertEquipment, type Equipment, type Agent } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
+import { Badge } from "@/components/ui/badge";
+
+interface EquipmentAgentMapping {
+  id: number;
+  equipmentId: number;
+  agentId: number;
+  priority: number;
+  createdAt: string;
+}
 
 export default function EquipmentPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const { data: equipment, isLoading } = useEquipment();
   const { data: manufacturers } = useManufacturers();
+  const { data: agents = [] } = useQuery<Agent[]>({
+    queryKey: ["/api/agents"],
+  });
+  const { data: equipmentAgentMappings = [] } = useQuery<EquipmentAgentMapping[]>({
+    queryKey: ["/api/equipment-agents"],
+  });
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const { t } = useI18n();
+  
+  const getLinkedAgentId = (equipmentId: number): number | null => {
+    const mapping = equipmentAgentMappings.find(m => m.equipmentId === equipmentId);
+    return mapping?.agentId || null;
+  };
 
   const filteredEquipment = equipment?.filter(e => 
     e.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -127,7 +149,8 @@ export default function EquipmentPage() {
       <CreateEquipmentDialog 
         open={isCreateOpen} 
         onOpenChange={setIsCreateOpen} 
-        manufacturers={manufacturers || []} 
+        manufacturers={manufacturers || []}
+        agents={agents}
       />
       
       {editingId && (
@@ -137,24 +160,37 @@ export default function EquipmentPage() {
           id={editingId}
           manufacturers={manufacturers || []}
           equipment={equipment?.find(e => e.id === editingId)!}
+          agents={agents}
+          linkedAgentId={getLinkedAgentId(editingId)}
         />
       )}
     </div>
   );
 }
 
+interface EquipmentFormData extends InsertEquipment {
+  selectedAgentId?: number | null;
+}
+
 function EquipmentForm({ 
   onSubmit, 
   defaultValues, 
   isPending, 
-  manufacturers 
+  manufacturers,
+  agents,
+  equipmentId,
+  linkedAgentId
 }: { 
-  onSubmit: (data: InsertEquipment) => void, 
+  onSubmit: (data: InsertEquipment, agentId?: number | null) => void, 
   defaultValues?: Partial<InsertEquipment>,
   isPending: boolean,
-  manufacturers: { value: string, label: string }[] 
+  manufacturers: { value: string, label: string }[],
+  agents?: Agent[],
+  equipmentId?: number,
+  linkedAgentId?: number | null
 }) {
   const { t } = useI18n();
+  const [selectedAgentId, setSelectedAgentId] = useState<number | null>(linkedAgentId || null);
   const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm<InsertEquipment>({
     resolver: zodResolver(insertEquipmentSchema),
     defaultValues: defaultValues || {
@@ -163,9 +199,13 @@ function EquipmentForm({
       enabled: true
     }
   });
+  
+  const handleFormSubmit = (data: InsertEquipment) => {
+    onSubmit(data, selectedAgentId);
+  };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label>{t.common.name}</Label>
@@ -235,6 +275,37 @@ function EquipmentForm({
         </div>
       </div>
 
+      {agents && agents.length > 0 && (
+        <div className="space-y-2">
+          <Label className="flex items-center gap-2">
+            <Server className="h-4 w-4" />
+            Agente Proxy (Opcional)
+          </Label>
+          <Select 
+            onValueChange={(val) => setSelectedAgentId(val === "none" ? null : parseInt(val))} 
+            defaultValue={linkedAgentId ? linkedAgentId.toString() : "none"}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Selecione um agente..." />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">Nenhum (conexão direta)</SelectItem>
+              {agents.map(agent => (
+                <SelectItem key={agent.id} value={agent.id.toString()}>
+                  <div className="flex items-center gap-2">
+                    <span className={`h-2 w-2 rounded-full ${agent.isOnline ? "bg-green-500" : "bg-gray-400"}`} />
+                    {agent.name}
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-muted-foreground">
+            Vincule um agente para executar backups via proxy em redes privadas
+          </p>
+        </div>
+      )}
+
       <div className="flex justify-end pt-4">
         <Button type="submit" disabled={isPending}>
           {isPending ? t.common.saving : t.equipment.saveEquipment}
@@ -244,14 +315,28 @@ function EquipmentForm({
   );
 }
 
-function CreateEquipmentDialog({ open, onOpenChange, manufacturers }: any) {
+function CreateEquipmentDialog({ open, onOpenChange, manufacturers, agents }: { 
+  open: boolean; 
+  onOpenChange: (open: boolean) => void; 
+  manufacturers: { value: string; label: string }[];
+  agents: Agent[];
+}) {
   const { t } = useI18n();
   const { mutate, isPending } = useCreateEquipment();
   const { toast } = useToast();
 
-  const handleSubmit = (data: InsertEquipment) => {
+  const handleSubmit = async (data: InsertEquipment, agentId?: number | null) => {
     mutate(data, {
-      onSuccess: () => {
+      onSuccess: async (newEquipment: any) => {
+        if (agentId && newEquipment?.id) {
+          try {
+            await apiRequest("POST", `/api/equipment/${newEquipment.id}/agents`, { agentId, priority: 1 });
+            queryClient.invalidateQueries({ queryKey: ["/api/equipment-agents"] });
+            queryClient.invalidateQueries({ queryKey: ["/api/equipment"] });
+          } catch (e) {
+            console.error("Failed to link agent:", e);
+          }
+        }
         toast({ title: t.common.success, description: t.equipment.createSuccess });
         onOpenChange(false);
       },
@@ -267,26 +352,51 @@ function CreateEquipmentDialog({ open, onOpenChange, manufacturers }: any) {
         <DialogHeader>
           <DialogTitle>{t.equipment.addEquipment}</DialogTitle>
         </DialogHeader>
-        <EquipmentForm onSubmit={handleSubmit} isPending={isPending} manufacturers={manufacturers} />
+        <EquipmentForm 
+          onSubmit={handleSubmit} 
+          isPending={isPending} 
+          manufacturers={manufacturers}
+          agents={agents}
+        />
       </DialogContent>
     </Dialog>
   );
 }
 
-function EditEquipmentDialog({ open, onOpenChange, id, equipment, manufacturers }: { 
+function EditEquipmentDialog({ open, onOpenChange, id, equipment, manufacturers, agents, linkedAgentId }: { 
   open: boolean; 
   onOpenChange: (open: boolean) => void; 
   id: number; 
   equipment: Equipment; 
-  manufacturers: { value: string; label: string }[] 
+  manufacturers: { value: string; label: string }[];
+  agents: Agent[];
+  linkedAgentId: number | null;
 }) {
   const { t } = useI18n();
   const { mutate, isPending } = useUpdateEquipment();
   const { toast } = useToast();
 
-  const handleSubmit = (data: InsertEquipment) => {
+  const handleSubmit = async (data: InsertEquipment, agentId?: number | null) => {
     mutate({ id, ...data }, {
-      onSuccess: () => {
+      onSuccess: async () => {
+        if (linkedAgentId && linkedAgentId !== agentId) {
+          try {
+            await apiRequest("DELETE", `/api/equipment/${id}/agents/${linkedAgentId}`);
+          } catch (e) {
+            console.error("Failed to unlink old agent:", e);
+          }
+        }
+        
+        if (agentId && agentId !== linkedAgentId) {
+          try {
+            await apiRequest("POST", `/api/equipment/${id}/agents`, { agentId, priority: 1 });
+          } catch (e) {
+            console.error("Failed to link new agent:", e);
+          }
+        }
+        
+        queryClient.invalidateQueries({ queryKey: ["/api/equipment-agents"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/equipment"] });
         toast({ title: t.common.success, description: t.equipment.updateSuccess });
         onOpenChange(false);
       },
@@ -306,7 +416,10 @@ function EditEquipmentDialog({ open, onOpenChange, id, equipment, manufacturers 
           onSubmit={handleSubmit} 
           defaultValues={equipment} 
           isPending={isPending} 
-          manufacturers={manufacturers} 
+          manufacturers={manufacturers}
+          agents={agents}
+          equipmentId={id}
+          linkedAgentId={linkedAgent?.id}
         />
       </DialogContent>
     </Dialog>
