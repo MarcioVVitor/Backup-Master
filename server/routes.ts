@@ -520,7 +520,9 @@ export async function registerRoutes(
       const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID;
       if (!bucketId) throw new Error("Bucket não configurado");
 
-      const filename = `${equip.name}_${Date.now()}${config.extension}`;
+      const now = new Date();
+      const dateStr = now.toISOString().slice(0,10).replace(/-/g,'') + '_' + now.toTimeString().slice(0,8).replace(/:/g,'');
+      const filename = `${equip.name}_${dateStr}${config.extension}`;
       const objectName = `backups/${equip.manufacturer}/${equip.name}/${filename}`;
       const bucket = objectStorageClient.bucket(bucketId);
       const file = bucket.file(objectName);
@@ -715,7 +717,9 @@ export async function registerRoutes(
           const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID;
           if (!bucketId) throw new Error("Bucket não configurado");
 
-          const filename = `${equip.name}_${Date.now()}${config.extension}`;
+          const now = new Date();
+          const dateStr = now.toISOString().slice(0,10).replace(/-/g,'') + '_' + now.toTimeString().slice(0,8).replace(/:/g,'');
+          const filename = `${equip.name}_${dateStr}${config.extension}`;
           const objectName = `backups/${equip.manufacturer}/${equip.name}/${filename}`;
           const bucket = objectStorageClient.bucket(bucketId);
           const file = bucket.file(objectName);
