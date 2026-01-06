@@ -711,7 +711,29 @@ export async function registerRoutes(
 
         try {
           const config = await getBackupConfig(equip.manufacturer);
-          const result = await executeSSHBackup(equip, config);
+          
+          // Try to use agent if available
+          let result: string = "";
+          const equipmentAgents = await storage.getEquipmentAgents(equipmentId);
+          let usedAgent = false;
+          
+          for (const mapping of equipmentAgents) {
+            if (getConnectedAgentRef && getConnectedAgentRef(mapping.agentId)) {
+              console.log(`[batch-backup] Using agent ${mapping.agentId} for equipment ${equip.name}`);
+              try {
+                result = await executeBackupViaAgentRef!(mapping.agentId, equip, config);
+                usedAgent = true;
+                break;
+              } catch (agentErr: any) {
+                console.warn(`[batch-backup] Agent ${mapping.agentId} failed:`, agentErr.message);
+              }
+            }
+          }
+          
+          if (!usedAgent) {
+            console.log(`[batch-backup] No agent available, trying direct SSH for ${equip.name}`);
+            result = await executeSSHBackup(equip, config);
+          }
 
           const { objectStorageClient } = await import("./replit_integrations/object_storage/objectStorage");
           const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID;
@@ -744,9 +766,9 @@ export async function registerRoutes(
             fileId: fileRecord.id,
           });
 
-          results.push({ equipmentId, success: true, backup: fileRecord, duration });
+          results.push({ equipmentId, success: true, backup: fileRecord, duration, usedAgent });
         } catch (e: any) {
-          console.error(`Erro backup SSH para ${equip.name}:`, e);
+          console.error(`Erro backup para ${equip.name}:`, e);
           const duration = (Date.now() - startTime) / 1000;
           
           await storage.updateBackupHistory(historyRecord.id, {
