@@ -2,7 +2,7 @@
 
 ## Requisitos Mínimos
 
-- **Sistema Operacional**: Ubuntu 20.04+, Debian 11+, CentOS 8+, ou Rocky Linux 8+
+- **Sistema Operacional**: Debian 13 (Trixie), Ubuntu 22.04+, CentOS 9+, Rocky Linux 9+
 - **CPU**: 2 cores
 - **RAM**: 4GB
 - **Disco**: 20GB (+ espaço para backups)
@@ -19,34 +19,67 @@ cd nbm-cloud
 sudo ./deploy/install.sh
 ```
 
-## Instalação Manual
+O instalador vai:
+- Detectar automaticamente o sistema operacional
+- Instalar Node.js 20 LTS via repositório oficial NodeSource
+- Instalar PostgreSQL 16 via repositório oficial PGDG
+- Configurar Nginx como proxy reverso com suporte a WebSocket
+- Criar serviço systemd para inicialização automática
+- Opcionalmente configurar SSL com Let's Encrypt
+- Opcionalmente configurar firewall UFW
 
-### 1. Instalar Node.js 20
+## Instalação Manual no Debian 13 (Trixie)
+
+### 1. Instalar Dependências Base
 
 ```bash
-# Ubuntu/Debian
-curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-sudo apt-get install -y nodejs
-
-# CentOS/RHEL
-curl -fsSL https://rpm.nodesource.com/setup_20.x | sudo bash -
-sudo dnf install -y nodejs
+sudo apt update && sudo apt upgrade -y
+sudo apt install -y curl wget git gnupg ca-certificates lsb-release build-essential python3 openssl
 ```
 
-### 2. Instalar PostgreSQL 16
+### 2. Instalar Node.js 20 (via NodeSource)
 
 ```bash
-# Ubuntu/Debian
-sudo apt-get install -y postgresql postgresql-contrib
+# Criar diretório de chaves
+sudo mkdir -p /etc/apt/keyrings
 
-# CentOS/RHEL
-sudo dnf install -y postgresql-server postgresql-contrib
-sudo postgresql-setup --initdb
+# Adicionar chave GPG do NodeSource
+curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | sudo gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
+
+# Adicionar repositório
+echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_20.x nodistro main" | sudo tee /etc/apt/sources.list.d/nodesource.list
+
+# Instalar Node.js
+sudo apt update
+sudo apt install -y nodejs
+
+# Verificar
+node --version  # v20.x.x
+npm --version
+```
+
+### 3. Instalar PostgreSQL 16 (via PGDG)
+
+```bash
+# Adicionar chave GPG do PostgreSQL
+curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor -o /etc/apt/keyrings/postgresql.gpg
+
+# Adicionar repositório (para Debian 13 Trixie)
+echo "deb [signed-by=/etc/apt/keyrings/postgresql.gpg] https://apt.postgresql.org/pub/repos/apt trixie-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
+
+# Instalar PostgreSQL 16
+sudo apt update
+sudo apt install -y postgresql-16 postgresql-client-16 postgresql-contrib
+
+# Habilitar e iniciar
 sudo systemctl enable postgresql
 sudo systemctl start postgresql
+
+# Verificar
+psql --version  # PostgreSQL 16.x
 ```
 
-### 3. Criar Banco de Dados
+### 4. Criar Banco de Dados
 
 ```bash
 sudo -u postgres psql
