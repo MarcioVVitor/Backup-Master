@@ -238,6 +238,24 @@ export function createServerRoutes(isAuthenticated: any): Router {
     }
   });
 
+  router.patch("/companies/:id", isAuthenticated, isServerAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const parsed = insertCompanySchema.partial().parse(req.body);
+      const company = await storage.updateCompany(id, parsed);
+      if (!company) {
+        return res.status(404).json({ message: "Company not found" });
+      }
+      res.json(company);
+    } catch (e) {
+      if (e instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: e.errors });
+      }
+      console.error("Error updating company:", e);
+      res.status(500).json({ message: "Error updating company" });
+    }
+  });
+
   router.delete("/companies/:id", isAuthenticated, requireServerPermission("canDeleteCompanies"), async (req, res) => {
     try {
       const id = parseInt(req.params.id);

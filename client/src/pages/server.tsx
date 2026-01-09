@@ -77,6 +77,8 @@ export default function ServerPage() {
   const [newAdminUserId, setNewAdminUserId] = useState<string>("");
   const [newAdminRole, setNewAdminRole] = useState<string>("server_admin");
   const [editAdminRole, setEditAdminRole] = useState<string>("");
+  const [editCompanyDialogOpen, setEditCompanyDialogOpen] = useState(false);
+  const [editingCompany, setEditingCompany] = useState<Company | null>(null);
 
   const { data: adminCheck, isLoading: adminCheckLoading } = useQuery<{ isServerAdmin: boolean; serverRole: string | null }>({
     queryKey: ["/api/server/check-admin"],
@@ -180,6 +182,36 @@ export default function ServerPage() {
     },
     onError: (error: any) => {
       toast({ title: "Erro ao atualizar administrador", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const deleteCompanyMutation = useMutation({
+    mutationFn: async (companyId: number) => {
+      return await apiRequest("DELETE", `/api/server/companies/${companyId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/server/companies"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/server/stats"] });
+      toast({ title: "Empresa excluida com sucesso" });
+    },
+    onError: (error: any) => {
+      toast({ title: "Erro ao excluir empresa", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const updateCompanyMutation = useMutation({
+    mutationFn: async (data: { id: number; updates: Partial<CompanyFormData> }) => {
+      return await apiRequest("PATCH", `/api/server/companies/${data.id}`, data.updates);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/server/companies"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/server/stats"] });
+      setEditCompanyDialogOpen(false);
+      setEditingCompany(null);
+      toast({ title: "Empresa atualizada com sucesso" });
+    },
+    onError: (error: any) => {
+      toast({ title: "Erro ao atualizar empresa", description: error.message, variant: "destructive" });
     },
   });
 
@@ -642,9 +674,47 @@ export default function ServerPage() {
                             <p><Users className="h-3 w-3 inline mr-1" />{company.maxUsers} usuarios</p>
                             <p className="text-muted-foreground">{company.maxEquipment} equipamentos</p>
                           </div>
-                          <Button variant="ghost" size="icon">
-                            <ChevronRight className="h-4 w-4" />
-                          </Button>
+                          <div className="flex items-center gap-1">
+                            <Button 
+                              variant="ghost" 
+                              size="icon"
+                              onClick={() => {
+                                setEditingCompany(company);
+                                setEditCompanyDialogOpen(true);
+                              }}
+                              data-testid={`button-edit-company-${company.id}`}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button variant="ghost" size="icon" data-testid={`button-delete-company-${company.id}`}>
+                                  <Trash2 className="h-4 w-4 text-destructive" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Excluir Empresa</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Tem certeza que deseja excluir a empresa "{company.name}"? 
+                                    Esta acao nao pode ser desfeita e todos os dados associados serao perdidos.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => deleteCompanyMutation.mutate(company.id)}
+                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                  >
+                                    Excluir
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                            <Button variant="ghost" size="icon">
+                              <ChevronRight className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     </CardContent>
@@ -944,6 +1014,122 @@ export default function ServerPage() {
           )}
         </Tabs>
       </div>
+
+      <Dialog open={editCompanyDialogOpen} onOpenChange={setEditCompanyDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Editar Empresa</DialogTitle>
+          </DialogHeader>
+          {editingCompany && (
+            <EditCompanyForm 
+              company={editingCompany} 
+              onSave={(updates) => updateCompanyMutation.mutate({ id: editingCompany.id, updates })}
+              onCancel={() => {
+                setEditCompanyDialogOpen(false);
+                setEditingCompany(null);
+              }}
+              isPending={updateCompanyMutation.isPending}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
+  );
+}
+
+function EditCompanyForm({ 
+  company, 
+  onSave, 
+  onCancel,
+  isPending 
+}: { 
+  company: Company; 
+  onSave: (updates: Partial<CompanyFormData>) => void;
+  onCancel: () => void;
+  isPending: boolean;
+}) {
+  const [name, setName] = useState(company.name);
+  const [description, setDescription] = useState(company.description || "");
+  const [maxUsers, setMaxUsers] = useState(company.maxUsers ?? 10);
+  const [maxEquipment, setMaxEquipment] = useState(company.maxEquipment ?? 100);
+  const [maxAgents, setMaxAgents] = useState(company.maxAgents ?? 5);
+  const [active, setActive] = useState(company.active ?? true);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSave({
+      name,
+      description,
+      maxUsers,
+      maxEquipment,
+      maxAgents,
+      active,
+    });
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Nome</label>
+        <Input 
+          value={name} 
+          onChange={(e) => setName(e.target.value)} 
+          data-testid="input-edit-company-name"
+        />
+      </div>
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Descricao</label>
+        <Textarea 
+          value={description} 
+          onChange={(e) => setDescription(e.target.value)}
+          data-testid="input-edit-company-description"
+        />
+      </div>
+      <div className="grid grid-cols-3 gap-4">
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Max Usuarios</label>
+          <Input 
+            type="number" 
+            value={maxUsers} 
+            onChange={(e) => setMaxUsers(parseInt(e.target.value) || 0)}
+            data-testid="input-edit-company-max-users"
+          />
+        </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Max Equipam.</label>
+          <Input 
+            type="number" 
+            value={maxEquipment} 
+            onChange={(e) => setMaxEquipment(parseInt(e.target.value) || 0)}
+            data-testid="input-edit-company-max-equipment"
+          />
+        </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Max Agentes</label>
+          <Input 
+            type="number" 
+            value={maxAgents} 
+            onChange={(e) => setMaxAgents(parseInt(e.target.value) || 0)}
+            data-testid="input-edit-company-max-agents"
+          />
+        </div>
+      </div>
+      <div className="flex items-center gap-2">
+        <Switch 
+          checked={active} 
+          onCheckedChange={setActive}
+          data-testid="switch-edit-company-active"
+        />
+        <label className="text-sm font-medium">Empresa Ativa</label>
+      </div>
+      <DialogFooter>
+        <Button type="button" variant="outline" onClick={onCancel}>
+          Cancelar
+        </Button>
+        <Button type="submit" disabled={isPending} data-testid="button-save-company">
+          {isPending ? "Salvando..." : "Salvar"}
+        </Button>
+      </DialogFooter>
+    </form>
   );
 }
