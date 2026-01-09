@@ -1,0 +1,111 @@
+root@SRV-NBM-CLOUD-PROXY-01[~/nbm-cloud]# cd
+root@SRV-NBM-CLOUD-PROXY-01[~]# 
+root@SRV-NBM-CLOUD-PROXY-01[~]# 
+root@SRV-NBM-CLOUD-PROXY-01[~]# 
+root@SRV-NBM-CLOUD-PROXY-01[~]# git add -A
+fatal: not a git repository (or any of the parent directories): .git
+root@SRV-NBM-CLOUD-PROXY-01[~]# cd /root/nbm-cloud
+git pull
+bash install/install.sh install
+Already up to date.
+
+============================================================
+     _   _ ____  __  __ 
+    | \ | |  _ \|  \/  |
+    |  \| | |_) | |\/| |
+    | |\  |  __/| |  | |
+    |_| \_|_|   |_|  |_|
+
+    Network Backup Manager - Instalador
+    Versao 1.0.0 para Debian 13
+============================================================
+
+[INFO] Verificando sistema operacional...
+[OK] Sistema operacional verificado: Debian 13.2
+[INFO] Atualizando lista de pacotes...
+W: https://deb.nodesource.com/node_20.x/dists/nodistro/InRelease: Policy will reject signature within a year, see --audit for details
+[OK] Lista de pacotes atualizada
+[INFO] Instalando dependencias do sistema...
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+curl is already the newest version (8.14.1-2+deb13u2).
+wget is already the newest version (1.25.0-2).
+gnupg is already the newest version (2.4.7-21).
+ca-certificates is already the newest version (20250419).
+lsb-release is already the newest version (12.1-1).
+build-essential is already the newest version (12.12).
+git is already the newest version (1:2.47.3-0+deb13u1).
+openssh-client is already the newest version (1:10.0p1-7).
+openssl is already the newest version (3.5.4-1~deb13u1).
+sudo is already the newest version (1.9.16p2-3).
+unzip is already the newest version (6.0-29).
+zip is already the newest version (3.0-15).
+tar is already the newest version (1.35+dfsg-3.1).
+gzip is already the newest version (1.13-1).
+0 upgraded, 0 newly installed, 0 to remove and 1 not upgraded.
+[OK] Dependencias do sistema instaladas
+[INFO] Instalando Node.js 20...
+[OK] Node.js v20.19.6 ja instalado
+[INFO] Instalando PostgreSQL 15...
+[OK] PostgreSQL ja instalado
+[INFO] Criando usuario e grupo do sistema...
+[OK] Usuario nbm criado
+[INFO] Criando diretorios...
+[OK] Diretorios criados
+[INFO] Configurando banco de dados...
+[INFO] Configurando autenticacao PostgreSQL em: /etc/postgresql/15/main/pg_hba.conf
+[OK] pg_hba.conf configurado
+[INFO] Atualizando senha do usuario PostgreSQL...
+ALTER ROLE
+GRANT
+GRANT
+ALTER DEFAULT PRIVILEGES
+[OK] Banco de dados configurado
+[INFO] Instalando aplicacao NBM...
+[OK] Arquivos da aplicacao instalados
+[INFO] Criando arquivo de configuracao...
+[OK] Arquivo .env criado
+[INFO] Instalando dependencias Node.js...
+npm warn deprecated node-domexception@1.0.0: Use your platform's native DOMException instead
+
+added 651 packages, and audited 652 packages in 14s
+
+91 packages are looking for funding
+  run `npm fund` for details
+
+4 high severity vulnerabilities
+
+To address all issues, run:
+  npm audit fix
+
+Run `npm audit` for details.
+[OK] Dependencias Node.js instaladas
+[INFO] Compilando aplicacao...
+
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/opt/nbm/script/build.ts' imported from /opt/nbm/
+    at finalizeResolution (node:internal/modules/esm/resolve:283:11)
+    at moduleResolve (node:internal/modules/esm/resolve:952:10)
+    at defaultResolve (node:internal/modules/esm/resolve:1188:11)
+    at nextResolve (node:internal/modules/esm/hooks:864:28)
+    at resolveBase (file:///opt/nbm/node_modules/tsx/dist/esm/index.mjs?1767993277603:2:3744)
+    at resolveDirectory (file:///opt/nbm/node_modules/tsx/dist/esm/index.mjs?1767993277603:2:4243)
+    at resolveTsPaths (file:///opt/nbm/node_modules/tsx/dist/esm/index.mjs?1767993277603:2:4984)
+    at resolve (file:///opt/nbm/node_modules/tsx/dist/esm/index.mjs?1767993277603:2:5361)
+    at nextResolve (node:internal/modules/esm/hooks:864:28)
+    at Hooks.resolve (node:internal/modules/esm/hooks:306:30) {
+  code: 'ERR_MODULE_NOT_FOUND',
+  url: 'file:///opt/nbm/script/build.ts'
+}
+
+Node.js v20.19.6
+npm notice
+npm notice New major version of npm available! 10.8.2 -> 11.7.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.7.0
+npm notice To update run: npm install -g npm@11.7.0
+npm notice
+[ERROR] Falha ao compilar aplicacao
+root@SRV-NBM-CLOUD-PROXY-01[~/nbm-cloud]# 
