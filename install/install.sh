@@ -44,7 +44,7 @@ NBM_DATA="/var/lib/nbm"
 NBM_LOG="/var/log/nbm"
 NBM_PORT=5000
 NODE_VERSION="20"
-POSTGRES_VERSION="15"
+POSTGRES_VERSION="16"
 
 # Funcoes de log
 log_info() {
@@ -152,9 +152,17 @@ install_nodejs() {
         fi
     fi
     
-    # Adicionar repositorio NodeSource
-    log_info "Adicionando repositorio NodeSource..."
-    curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash -
+    # Criar diretorio de keyrings (metodo seguro para Debian 13+)
+    mkdir -p /etc/apt/keyrings
+    
+    # Adicionar chave GPG do NodeSource (metodo seguro sem apt-key)
+    log_info "Adicionando repositorio NodeSource (metodo seguro com keyring)..."
+    curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
+    
+    # Adicionar repositorio com signed-by
+    echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_${NODE_VERSION}.x nodistro main" > /etc/apt/sources.list.d/nodesource.list
+    
+    apt-get update
     
     log_info "Instalando nodejs..."
     DEBIAN_FRONTEND=noninteractive apt-get install -y nodejs
@@ -178,15 +186,20 @@ install_postgresql() {
         return
     fi
     
-    # Adicionar repositorio PostgreSQL
-    log_info "Adicionando repositorio PostgreSQL..."
-    echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list
-    curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /etc/apt/trusted.gpg.d/postgresql.gpg
+    # Criar diretorio de keyrings (metodo seguro para Debian 13+)
+    mkdir -p /etc/apt/keyrings
+    
+    # Adicionar chave GPG do PostgreSQL (metodo seguro sem apt-key)
+    log_info "Adicionando repositorio PostgreSQL (metodo seguro com keyring)..."
+    curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /etc/apt/keyrings/postgresql.gpg
+    
+    # Adicionar repositorio com signed-by
+    echo "deb [signed-by=/etc/apt/keyrings/postgresql.gpg] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list
     
     apt-get update
     
     log_info "Instalando postgresql-${POSTGRES_VERSION}..."
-    DEBIAN_FRONTEND=noninteractive apt-get install -y postgresql-${POSTGRES_VERSION} postgresql-contrib-${POSTGRES_VERSION}
+    DEBIAN_FRONTEND=noninteractive apt-get install -y postgresql-${POSTGRES_VERSION} postgresql-client-${POSTGRES_VERSION} postgresql-contrib
     
     # Iniciar servico
     systemctl enable postgresql
