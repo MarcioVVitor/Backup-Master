@@ -57,6 +57,7 @@ import {
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR, enUS, es, fr, de } from "date-fns/locale";
+import { Link } from "wouter";
 
 const dateLocales: Record<string, any> = {
   pt: ptBR,
@@ -240,10 +241,18 @@ export default function AgentsPage() {
           <h1 className="text-2xl font-bold" data-testid="text-page-title">{t.agents.title}</h1>
           <p className="text-muted-foreground" data-testid="text-page-subtitle">{t.agents.subtitle}</p>
         </div>
-        <Button onClick={handleCreate} data-testid="button-add-agent">
-          <Plus className="w-4 h-4 mr-2" />
-          {t.agents.addAgent}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Link href="/agent-console">
+            <Button variant="outline" data-testid="button-agent-console">
+              <Terminal className="w-4 h-4 mr-2" />
+              Console
+            </Button>
+          </Link>
+          <Button onClick={handleCreate} data-testid="button-add-agent">
+            <Plus className="w-4 h-4 mr-2" />
+            {t.agents.addAgent}
+          </Button>
+        </div>
       </div>
 
       <Card>

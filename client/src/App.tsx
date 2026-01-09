@@ -22,6 +22,7 @@ import Firmware from "@/pages/firmware";
 import TerminalPage from "@/pages/terminal";
 import Scheduler from "@/pages/scheduler";
 import Agents from "@/pages/agents";
+import AgentConsole from "@/pages/agent-console";
 import ServerPage from "@/pages/server";
 import Companies from "@/pages/companies";
 import Login from "@/pages/login";
@@ -248,6 +249,7 @@ function Router() {
       <Route path="/terminal" component={TerminalPage} />
       <Route path="/execute" component={Execute} />
       <Route path="/agents" component={Agents} />
+      <Route path="/agent-console" component={AgentConsole} />
       <Route path="/admin" component={Admin} />
       <Route path="/server" component={ServerPage} />
       <Route path="/companies" component={Companies} />

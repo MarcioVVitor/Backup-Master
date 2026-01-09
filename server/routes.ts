@@ -2497,6 +2497,211 @@ export async function registerRoutes(
   const agentWss = new WebSocketServer({ noServer: true });
   const connectedAgents = new Map<number, WebSocket>();
   const pendingBackupJobs = new Map<string, { resolve: (result: any) => void, reject: (err: any) => void, timeout: NodeJS.Timeout }>();
+  const pendingDiagnosticsJobs = new Map<string, { resolve: (result: any) => void, reject: (err: any) => void, timeout: NodeJS.Timeout }>();
+  const pendingTerminalSessions = new Map<string, { onOutput: (output: string, isComplete: boolean) => void }>();
+  const pendingUpdateJobs = new Map<string, { resolve: (result: any) => void, reject: (err: any) => void, timeout: NodeJS.Timeout }>();
+  const pendingTestConnectionJobs = new Map<string, { resolve: (result: any) => void, reject: (err: any) => void, timeout: NodeJS.Timeout }>();
+
+  // API - Agent Diagnostics
+  app.get('/api/agents/:id/diagnostics', isAuthenticated, async (req, res) => {
+    try {
+      const agentId = parseInt(req.params.id);
+      const companyId = req.companyId;
+      const isServerAdmin = req.tenantUser?.isServerAdmin;
+      
+      // Verify agent belongs to user's company
+      const agent = await storage.getAgentById(agentId);
+      if (!agent) {
+        return res.status(404).json({ success: false, message: 'Agente não encontrado' });
+      }
+      if (!isServerAdmin && agent.companyId !== companyId) {
+        return res.status(403).json({ success: false, message: 'Acesso negado' });
+      }
+      
+      const ws = connectedAgents.get(agentId);
+      
+      if (!ws || ws.readyState !== 1) {
+        return res.status(400).json({ success: false, message: 'Agente não está conectado' });
+      }
+      
+      const requestId = `diag-${agentId}-${Date.now()}`;
+      
+      const diagnostics = await new Promise<any>((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          pendingDiagnosticsJobs.delete(requestId);
+          reject(new Error('Timeout aguardando diagnóstico do agente'));
+        }, 30000);
+        
+        pendingDiagnosticsJobs.set(requestId, { resolve, reject, timeout });
+        
+        ws.send(JSON.stringify({
+          type: 'request_diagnostics',
+          requestId,
+        }));
+      });
+      
+      res.json({ success: true, diagnostics });
+    } catch (e: any) {
+      console.error('Error getting diagnostics:', e);
+      res.status(500).json({ success: false, message: e.message });
+    }
+  });
+
+  // API - Agent Terminal (execute command)
+  app.post('/api/agents/:id/terminal', isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const agentId = parseInt(req.params.id);
+      const companyId = req.companyId;
+      const isServerAdmin = req.tenantUser?.isServerAdmin;
+      const { command } = req.body;
+      
+      if (!command) {
+        return res.status(400).json({ success: false, message: 'Comando não fornecido' });
+      }
+      
+      // Verify agent belongs to user's company
+      const agent = await storage.getAgentById(agentId);
+      if (!agent) {
+        return res.status(404).json({ success: false, message: 'Agente não encontrado' });
+      }
+      if (!isServerAdmin && agent.companyId !== companyId) {
+        return res.status(403).json({ success: false, message: 'Acesso negado' });
+      }
+      
+      const ws = connectedAgents.get(agentId);
+      
+      if (!ws || ws.readyState !== 1) {
+        return res.status(400).json({ success: false, message: 'Agente não está conectado' });
+      }
+      
+      const sessionId = `term-${agentId}-${Date.now()}`;
+      let output = '';
+      
+      const result = await new Promise<string>((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          pendingTerminalSessions.delete(sessionId);
+          resolve(output + '\n[Timeout: comando demorou mais de 60s]');
+        }, 60000);
+        
+        pendingTerminalSessions.set(sessionId, {
+          onOutput: (chunk: string, isComplete: boolean) => {
+            output += chunk;
+            if (isComplete) {
+              clearTimeout(timeout);
+              resolve(output);
+            }
+          }
+        });
+        
+        ws.send(JSON.stringify({
+          type: 'terminal_command',
+          sessionId,
+          command,
+        }));
+      });
+      
+      res.json({ success: true, output: result });
+    } catch (e: any) {
+      console.error('Error executing terminal command:', e);
+      res.status(500).json({ success: false, message: e.message });
+    }
+  });
+
+  // API - Agent Update
+  app.post('/api/agents/:id/update', isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const agentId = parseInt(req.params.id);
+      const companyId = req.companyId;
+      const isServerAdmin = req.tenantUser?.isServerAdmin;
+      const { updateType, updateUrl, version } = req.body;
+      
+      // Verify agent belongs to user's company
+      const agent = await storage.getAgentById(agentId);
+      if (!agent) {
+        return res.status(404).json({ success: false, message: 'Agente não encontrado' });
+      }
+      if (!isServerAdmin && agent.companyId !== companyId) {
+        return res.status(403).json({ success: false, message: 'Acesso negado' });
+      }
+      
+      const ws = connectedAgents.get(agentId);
+      
+      if (!ws || ws.readyState !== 1) {
+        return res.status(400).json({ success: false, message: 'Agente não está conectado' });
+      }
+      
+      const requestId = `update-${agentId}-${Date.now()}`;
+      
+      const result = await new Promise<any>((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          pendingUpdateJobs.delete(requestId);
+          reject(new Error('Timeout aguardando atualização do agente'));
+        }, 300000); // 5 minutes for update
+        
+        pendingUpdateJobs.set(requestId, { resolve, reject, timeout });
+        
+        ws.send(JSON.stringify({
+          type: 'update_agent',
+          requestId,
+          updateType: updateType || 'full',
+          updateUrl,
+          version,
+        }));
+      });
+      
+      res.json({ success: true, result });
+    } catch (e: any) {
+      console.error('Error updating agent:', e);
+      res.status(500).json({ success: false, message: e.message });
+    }
+  });
+
+  // API - Test Agent Connection (ping equipment through agent)
+  app.post('/api/agents/:id/test-connection', isAuthenticated, async (req, res) => {
+    try {
+      const agentId = parseInt(req.params.id);
+      const companyId = req.companyId;
+      const isServerAdmin = req.tenantUser?.isServerAdmin;
+      const { targetIp, targetPort, protocol } = req.body;
+      
+      // Verify agent belongs to user's company
+      const agent = await storage.getAgentById(agentId);
+      if (!agent) {
+        return res.status(404).json({ success: false, message: 'Agente não encontrado' });
+      }
+      if (!isServerAdmin && agent.companyId !== companyId) {
+        return res.status(403).json({ success: false, message: 'Acesso negado' });
+      }
+      
+      const ws = connectedAgents.get(agentId);
+      
+      if (!ws || ws.readyState !== 1) {
+        return res.status(400).json({ success: false, message: 'Agente não está conectado' });
+      }
+      
+      const requestId = `test-${agentId}-${Date.now()}`;
+      
+      const result = await new Promise<any>((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          pendingTestConnectionJobs.delete(requestId);
+          reject(new Error('Timeout no teste de conexão'));
+        }, 30000);
+        
+        pendingTestConnectionJobs.set(requestId, { resolve, reject, timeout });
+        
+        ws.send(JSON.stringify({
+          type: 'test_connection',
+          requestId,
+          target: { ip: targetIp, port: targetPort || 22, protocol: protocol || 'ssh' },
+        }));
+      });
+      
+      res.json({ success: true, result });
+    } catch (e: any) {
+      console.error('Error testing connection:', e);
+      res.status(500).json({ success: false, message: e.message });
+    }
+  });
   
   // Helper function to execute backup via agent
   async function executeBackupViaAgent(agentId: number, equip: any, config: any): Promise<string> {
@@ -2723,6 +2928,52 @@ export async function registerRoutes(
             equipment: agentEquipment,
             scripts,
           }));
+        }
+        
+        // Handle diagnostics response from agent
+        if (message.type === 'diagnostics_result') {
+          const pending = pendingDiagnosticsJobs.get(message.requestId);
+          if (pending) {
+            clearTimeout(pending.timeout);
+            pendingDiagnosticsJobs.delete(message.requestId);
+            pending.resolve(message.diagnostics);
+          }
+        }
+        
+        // Handle terminal output from agent
+        if (message.type === 'terminal_output') {
+          const sessionId = message.sessionId;
+          const pending = pendingTerminalSessions.get(sessionId);
+          if (pending) {
+            pending.onOutput(message.output, message.isComplete);
+            if (message.isComplete) {
+              pendingTerminalSessions.delete(sessionId);
+            }
+          }
+        }
+        
+        // Handle update result from agent
+        if (message.type === 'update_result') {
+          const pending = pendingUpdateJobs.get(message.requestId);
+          if (pending) {
+            clearTimeout(pending.timeout);
+            pendingUpdateJobs.delete(message.requestId);
+            if (message.success) {
+              pending.resolve(message);
+            } else {
+              pending.reject(new Error(message.error || 'Update failed'));
+            }
+          }
+        }
+        
+        // Handle test connection result from agent
+        if (message.type === 'test_connection_result') {
+          const pending = pendingTestConnectionJobs.get(message.requestId);
+          if (pending) {
+            clearTimeout(pending.timeout);
+            pendingTestConnectionJobs.delete(message.requestId);
+            pending.resolve(message.result);
+          }
         }
         
       } catch (e) {
