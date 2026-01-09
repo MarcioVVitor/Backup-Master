@@ -103,3 +103,38 @@ Composite indexes optimized for multi-tenant high-volume queries:
 - `@tanstack/react-query` - Client-side data fetching
 - `@uppy/core` / `@uppy/aws-s3` - File upload handling
 - `express` / `express-session` - Web server and sessions
+
+## Linux Agent
+
+### Agent Location
+- **Path**: `agents/linux/`
+- **Main Script**: `nbm-agent.sh` - Main agent script with WebSocket support
+- **Installer**: `install.sh` - Automated installation script
+- **Uninstaller**: `uninstall.sh` - Clean removal script
+
+### Agent Features
+- WebSocket connection to NBM CLOUD server
+- SSH/Telnet backup execution for network equipment
+- Remote terminal access (admin-only)
+- System diagnostics reporting
+- Self-update from GitHub repository
+- Automatic reconnection on disconnect
+
+### Agent Installation
+```bash
+# Clone repository and run installer
+git clone https://github.com/YOUR_USERNAME/nbm-agent.git
+cd nbm-agent/agents/linux
+sudo ./install.sh
+```
+
+### Agent Configuration
+- Config file: `/opt/nbm-agent/config.json`
+- Log file: `/opt/nbm-agent/logs/agent.log`
+- Systemd service: `nbm-agent`
+
+### Agent Commands
+- `systemctl status nbm-agent` - Check status
+- `systemctl restart nbm-agent` - Restart agent
+- `/opt/nbm-agent/nbm-agent.sh update` - Update from GitHub
+- `/opt/nbm-agent/nbm-agent.sh diagnostics` - Show diagnostics
