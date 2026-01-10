@@ -2798,7 +2798,9 @@ export async function registerRoutes(
     
     ws.on('message', async (data) => {
       try {
-        const message = JSON.parse(data.toString());
+        const dataStr = data.toString();
+        console.log('[ws-agents] Received message, size:', dataStr.length, 'bytes');
+        const message = JSON.parse(dataStr);
         console.log('[ws-agents] Received message type:', message.type);
         
         if (message.type === 'auth') {
@@ -2859,8 +2861,10 @@ export async function registerRoutes(
         
         // Handle backup result from agent
         if (message.type === 'backup_result') {
+          console.log(`[ws-agents] Received backup_result for jobId: ${message.jobId}, success: ${message.success}, output length: ${message.output?.length || 0}`);
           const pending = pendingBackupJobs.get(message.jobId);
           if (pending) {
+            console.log(`[ws-agents] Found pending job, resolving...`);
             clearTimeout(pending.timeout);
             pendingBackupJobs.delete(message.jobId);
             
@@ -2869,6 +2873,8 @@ export async function registerRoutes(
             } else {
               pending.reject(new Error(message.error || 'Erro desconhecido no agente'));
             }
+          } else {
+            console.log(`[ws-agents] No pending job found for jobId: ${message.jobId}`);
           }
         }
         
