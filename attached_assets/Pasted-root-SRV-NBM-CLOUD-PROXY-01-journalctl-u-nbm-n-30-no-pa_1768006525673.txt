@@ -1,0 +1,15 @@
+root@SRV-NBM-CLOUD-PROXY-01[~]# journalctl -u nbm -n 30 --no-pager | grep -i "error\|equipment\|falha"
+Jan 09 21:52:57 SRV-NBM-CLOUD-PROXY-01 nbm[12245]: 9:52:57 PM [express] GET /api/server/stats 304 in 11ms :: {"totalCompanies":1,"activeCompanies":1,"totalAgents":0,"onlineAgents":0,"offlineAgents":0,"agentsByStatus":{"online":0,"offline":0,"error":0}}
+Jan 09 21:52:57 SRV-NBM-CLOUD-PROXY-01 nbm[12245]: 9:52:57 PM [express] GET /api/server/companies 304 in 28ms :: [{"id":1,"name":"GRUPOJET","slug":"grupojet","description":"Grupo Jetelecom","logo":null,"active":true,"maxUsers":10,"maxEquipment":100,"maxAgents":5,"settings":null,"createdAt":"2026-01-09T18:39:21.005Z","updatedAt":"2026-01-09T18:39:21.005Z"}]
+Jan 09 21:53:04 SRV-NBM-CLOUD-PROXY-01 nbm[12245]: 9:53:04 PM [express] PATCH /api/server/companies/1 200 in 13ms :: {"id":1,"name":"GRUPOJET","slug":"grupojet","description":"Grupo Jetelecom","logo":null,"active":true,"maxUsers":10,"maxEquipment":1000,"maxAgents":5,"settings":null,"createdAt":"2026-01-09T18:39:21.005Z","updatedAt":"2026-01-10T00:53:04.943Z"}
+Jan 09 21:53:04 SRV-NBM-CLOUD-PROXY-01 nbm[12245]: 9:53:04 PM [express] GET /api/server/companies 200 in 8ms :: [{"id":1,"name":"GRUPOJET","slug":"grupojet","description":"Grupo Jetelecom","logo":null,"active":true,"maxUsers":10,"maxEquipment":1000,"maxAgents":5,"settings":null,"createdAt":"2026-01-09T18:39:21.005Z","updatedAt":"2026-01-10T00:53:04.943Z"}]
+Jan 09 21:53:04 SRV-NBM-CLOUD-PROXY-01 nbm[12245]: 9:53:04 PM [express] GET /api/server/stats 304 in 9ms :: {"totalCompanies":1,"activeCompanies":1,"totalAgents":0,"onlineAgents":0,"offlineAgents":0,"agentsByStatus":{"online":0,"offline":0,"error":0}}
+Jan 09 21:53:10 SRV-NBM-CLOUD-PROXY-01 nbm[12245]: 9:53:10 PM [express] GET /api/equipment 304 in 8ms :: []
+Jan 09 21:53:10 SRV-NBM-CLOUD-PROXY-01 nbm[12245]: 9:53:10 PM [express] GET /api/equipment-agents 200 in 40ms :: []
+Jan 09 21:54:22 SRV-NBM-CLOUD-PROXY-01 nbm[12245]: [equipment:create] companyId: undefined isServerAdmin: true body: {"name":"CPE-GER-GNA-NOVO-MUNDO-01","ip":"143.255.196.2","manufacturer":"mikrotik","model":"CCR1036-8G-2S+ ","username":"admin","password":"@2Dc9d967","port":2250,"protocol":"ssh","enabled":true}
+Jan 09 21:54:22 SRV-NBM-CLOUD-PROXY-01 nbm[12245]: [equipment:create] REJECTED - no companyId available
+Jan 09 21:54:22 SRV-NBM-CLOUD-PROXY-01 nbm[12245]: 9:54:22 PM [express] POST /api/equipment 400 in 38ms :: {"message":"Company ID required"}
+root@SRV-NBM-CLOUD-PROXY-01[~]# 
+
+
+
