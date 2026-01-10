@@ -1,0 +1,26 @@
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01:~# tail -30 /opt/nbm-agent/logs/agent.log | grep -v "Heartbeat"
+[2026-01-10 11:39:23] [DEBUG] Received: {"type":"error","message":"Erro ao processar mensagem"}
+[2026-01-10 11:39:23] [DEBUG] Received: {"type":"error","message":"Erro ao processar mensagem"}
+[2026-01-10 11:39:23] [WARN] Server error: Erro ao processar mensagem
+[2026-01-10 11:39:23] [WARN] Server error: Erro ao processar mensagem
+[2026-01-10 11:39:23] [DEBUG] Received: {"type":"error","message":"Erro ao processar mensagem"}
+[2026-01-10 11:39:23] [DEBUG] Received: {"type":"error","message":"Erro ao processar mensagem"}
+[2026-01-10 11:39:23] [WARN] Server error: Erro ao processar mensagem
+[2026-01-10 11:39:23] [WARN] Server error: Erro ao processar mensagem
+[2026-01-10 11:39:31] [DEBUG] Received: {"type":"error","message":"Erro ao processar mensagem"}
+[2026-01-10 11:39:31] [DEBUG] Received: {"type":"error","message":"Erro ao processar mensagem"}
+[2026-01-10 11:39:31] [WARN] Server error: Erro ao processar mensagem
+[2026-01-10 11:39:31] [WARN] Server error: Erro ao processar mensagem
+[2026-01-10 11:39:51] [DEBUG] Sent heartbeat
+[2026-01-10 11:39:51] [DEBUG] Sent heartbeat
+[2026-01-10 11:39:51] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-10T14:39:51.484Z"}
+[2026-01-10 11:39:51] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-10T14:39:51.484Z"}
+[2026-01-10 11:40:21] [DEBUG] Sent heartbeat
+[2026-01-10 11:40:21] [DEBUG] Sent heartbeat
+[2026-01-10 11:40:21] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-10T14:40:21.484Z"}
+[2026-01-10 11:40:21] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-10T14:40:21.484Z"}
+[2026-01-10 11:40:51] [DEBUG] Sent heartbeat
+[2026-01-10 11:40:51] [DEBUG] Sent heartbeat
+[2026-01-10 11:40:51] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-10T14:40:51.491Z"}
+[2026-01-10 11:40:51] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-10T14:40:51.491Z"}
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01:~# 
