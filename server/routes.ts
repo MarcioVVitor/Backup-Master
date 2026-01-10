@@ -367,16 +367,22 @@ export async function registerRoutes(
       return res.status(403).send("Access denied");
     }
 
-    const { objectStorageClient } = await import("./replit_integrations/object_storage/objectStorage");
-    const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID;
-    const bucket = objectStorageClient.bucket(bucketId!);
-    const file = bucket.file(backup!.objectName);
-
     try {
-      const [exists] = await file.exists();
-      if (!exists) return res.status(404).send("Arquivo não encontrado no storage");
-
-      const [buffer] = await file.download();
+      const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID;
+      let buffer: Buffer;
+      
+      if (bucketId) {
+        const { objectStorageClient } = await import("./replit_integrations/object_storage/objectStorage");
+        const bucket = objectStorageClient.bucket(bucketId);
+        const file = bucket.file(backup!.objectName);
+        const [exists] = await file.exists();
+        if (!exists) return res.status(404).send("Arquivo não encontrado no storage");
+        [buffer] = await file.download();
+      } else {
+        const { localStorageClient } = await import("./local-storage");
+        buffer = await localStorageClient.readFile(backup!.objectName, backup!.companyId || undefined);
+      }
+      
       res.setHeader('Content-Type', backup!.mimeType || 'application/octet-stream');
       res.setHeader('Content-Disposition', `attachment; filename="${backup!.filename}"`);
       res.send(buffer);
@@ -396,16 +402,22 @@ export async function registerRoutes(
       return res.status(403).json({ error: "Access denied" });
     }
 
-    const { objectStorageClient } = await import("./replit_integrations/object_storage/objectStorage");
-    const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID;
-    const bucket = objectStorageClient.bucket(bucketId!);
-    const file = bucket.file(backup!.objectName);
-
     try {
-      const [exists] = await file.exists();
-      if (!exists) return res.status(404).json({ error: "Arquivo não encontrado no storage" });
-
-      const [buffer] = await file.download();
+      const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID;
+      let buffer: Buffer;
+      
+      if (bucketId) {
+        const { objectStorageClient } = await import("./replit_integrations/object_storage/objectStorage");
+        const bucket = objectStorageClient.bucket(bucketId);
+        const file = bucket.file(backup!.objectName);
+        const [exists] = await file.exists();
+        if (!exists) return res.status(404).json({ error: "Arquivo não encontrado no storage" });
+        [buffer] = await file.download();
+      } else {
+        const { localStorageClient } = await import("./local-storage");
+        buffer = await localStorageClient.readFile(backup!.objectName, backup!.companyId || undefined);
+      }
+      
       const fullContent = req.query.full === 'true';
       const maxLength = fullContent ? buffer.length : 50000;
       const content = buffer.toString('utf-8').slice(0, maxLength);
@@ -436,13 +448,17 @@ export async function registerRoutes(
       return res.status(403).json({ message: "Access denied" });
     }
 
-    const { objectStorageClient } = await import("./replit_integrations/object_storage/objectStorage");
-    const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID;
-    const bucket = objectStorageClient.bucket(bucketId!);
-    const file = bucket.file(backup!.objectName);
-
     try {
-      await file.delete();
+      const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID;
+      if (bucketId) {
+        const { objectStorageClient } = await import("./replit_integrations/object_storage/objectStorage");
+        const bucket = objectStorageClient.bucket(bucketId);
+        const file = bucket.file(backup!.objectName);
+        await file.delete();
+      } else {
+        const { localStorageClient } = await import("./local-storage");
+        await localStorageClient.deleteFile(backup!.objectName, backup!.companyId || undefined);
+      }
     } catch (e) {
       console.warn("Falha ao deletar do storage:", e);
     }
@@ -516,18 +532,21 @@ export async function registerRoutes(
         result = await executeSSHBackup(equip, config);
       }
 
-      const { objectStorageClient } = await import("./replit_integrations/object_storage/objectStorage");
-      const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID;
-      if (!bucketId) throw new Error("Bucket não configurado");
-
       const now = new Date();
       const dateStr = now.toISOString().slice(0,10).replace(/-/g,'') + '_' + now.toTimeString().slice(0,8).replace(/:/g,'');
       const filename = `${equip.name}_${dateStr}${config.extension}`;
       const objectName = `backups/${equip.manufacturer}/${equip.name}/${filename}`;
-      const bucket = objectStorageClient.bucket(bucketId);
-      const file = bucket.file(objectName);
-
-      await file.save(Buffer.from(result), { contentType: 'text/plain' });
+      
+      const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID;
+      if (bucketId) {
+        const { objectStorageClient } = await import("./replit_integrations/object_storage/objectStorage");
+        const bucket = objectStorageClient.bucket(bucketId);
+        const file = bucket.file(objectName);
+        await file.save(Buffer.from(result), { contentType: 'text/plain' });
+      } else {
+        const { localStorageClient } = await import("./local-storage");
+        await localStorageClient.saveFile(objectName, Buffer.from(result), equip.companyId || undefined);
+      }
 
       const fileRecord = await storage.createBackup({
         userId: userId || 1,
@@ -639,13 +658,17 @@ export async function registerRoutes(
       return res.status(403).json({ message: "Access denied" });
     }
 
-    const { objectStorageClient } = await import("./replit_integrations/object_storage/objectStorage");
-    const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID;
-    const bucket = objectStorageClient.bucket(bucketId!);
-    const file = bucket.file(backup!.objectName);
-
     try {
-      await file.delete();
+      const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID;
+      if (bucketId) {
+        const { objectStorageClient } = await import("./replit_integrations/object_storage/objectStorage");
+        const bucket = objectStorageClient.bucket(bucketId);
+        const file = bucket.file(backup!.objectName);
+        await file.delete();
+      } else {
+        const { localStorageClient } = await import("./local-storage");
+        await localStorageClient.deleteFile(backup!.objectName, backup!.companyId || undefined);
+      }
     } catch (e) {
       console.warn("Falha ao deletar do storage:", e);
     }
@@ -735,18 +758,21 @@ export async function registerRoutes(
             result = await executeSSHBackup(equip, config);
           }
 
-          const { objectStorageClient } = await import("./replit_integrations/object_storage/objectStorage");
-          const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID;
-          if (!bucketId) throw new Error("Bucket não configurado");
-
           const now = new Date();
           const dateStr = now.toISOString().slice(0,10).replace(/-/g,'') + '_' + now.toTimeString().slice(0,8).replace(/:/g,'');
           const filename = `${equip.name}_${dateStr}${config.extension}`;
           const objectName = `backups/${equip.manufacturer}/${equip.name}/${filename}`;
-          const bucket = objectStorageClient.bucket(bucketId);
-          const file = bucket.file(objectName);
-
-          await file.save(Buffer.from(result), { contentType: 'text/plain' });
+          
+          const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID;
+          if (bucketId) {
+            const { objectStorageClient } = await import("./replit_integrations/object_storage/objectStorage");
+            const bucket = objectStorageClient.bucket(bucketId);
+            const file = bucket.file(objectName);
+            await file.save(Buffer.from(result), { contentType: 'text/plain' });
+          } else {
+            const { localStorageClient } = await import("./local-storage");
+            await localStorageClient.saveFile(objectName, Buffer.from(result), equip.companyId || undefined);
+          }
 
           const fileRecord = await storage.createBackup({
             userId: userId || 1,
