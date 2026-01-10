@@ -1,0 +1,38 @@
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[~]# cat << 'SCRIPT' > /tmp/update-agent.sh
+#!/bin/bash
+AGENT_FILE="/opt/nbm-agent/nbm-agent.sh"
+
+# Backup original
+cp "$AGENT_FILE" "$AGENT_FILE.bak"
+
+# Replace the execute_backup|backup_job block
+sed -i '/execute_backup|backup_job|test_connection|request_diagnostics|terminal_command|update_agent)/,/;;/{
+s/response=\$(handle_message "\$msg")/response=\$(handle_message "\$msg")/
+s/if \[\[ -n "\$response" \]\]; then/if [[ -n "\$response" ]]; then\n                        local resp_len=\$\{#response\}\n                        log_info "Sending response, length: \$resp_len bytes"/
+s/echo "\$response" >\&"\${WSCAT\[1\]}"/if printf '"'"'%s\\n'"'"' "\$response" >\&"\${WSCAT[1]}" 2>\/dev\/null; then\n                            log_info "Response sent successfully (\$resp_len bytes)"\n                        else\n                            log_error "Failed to send response (\$resp_len bytes)"\n                        fi/
+s/log_debug "Sent response: \$response"//
+}' "$AGENT_FILE"
+
+# Replace the job block
+sed -i '/^[[:space:]]*job)/,/;;/{
+s/if \[\[ -n "\$response" \]\]; then/if [[ -n "\$response" ]]; then\n                        local resp_len=\$\{#response\}/
+s/echo "\$response" >\&"\${WSCAT\[1\]}"/log_info "Sending job response, length: \$resp_len bytes"\n                        printf '"'"'%s\\n'"'"' "\$response" >\&"\${WSCAT[1]}" 2>\/dev\/null || log_error "Failed to send jochmod +x /tmp/update-agent.sh && /tmp/update-agent.sh
+Agent updated. Restarting...
+[2026-01-10 18:33:56] [DEBUG] Heartbeat acknowledged
+[2026-01-10 18:34:11] [DEBUG] Sent heartbeat
+[2026-01-10 18:34:11] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-10T21:34:11.818Z"}
+[2026-01-10 18:34:11] [DEBUG] Heartbeat acknowledged
+[2026-01-10 18:34:19] [INFO] Stopping agent (PID: 1023)...
+[2026-01-10 18:34:19] [INFO] Agent stopped
+[2026-01-10 18:34:19] [INFO] Configuration loaded: Agent=proxy-grupojet-01, Server=http://143.255.197.25:5000
+[2026-01-10 18:34:19] [INFO] Starting NBM CLOUD Agent v1.0.0
+[2026-01-10 18:34:19] [INFO] Agent started with PID: 1357
+[2026-01-10 18:34:19] [INFO] Connecting to WebSocket: ws://143.255.197.25:5000/ws/agents
+[2026-01-10 18:34:19] [INFO] Establishing WebSocket connection...
+[2026-01-10 18:34:19] [DEBUG] WebSocket process started with PID: 1369
+[2026-01-10 18:34:19] [DEBUG] Sent auth message
+[2026-01-10 18:34:19] [DEBUG] Received: {"type":"auth_success","agentId":1,"config":null}
+[2026-01-10 18:34:19] [INFO] Authentication successful
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[~]# echo "BASE64_AQUI" | base64 -d > /opt/nbm-agent/nbm-agent.sh && chmod +x /opt/nbm-agent/nbm-agent.sh && systemctl restart nbm-agent
+base64: invalid input
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[~]# 
