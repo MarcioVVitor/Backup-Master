@@ -1,0 +1,66 @@
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01:~# # Verificar se o agente está conectado
+tail -30 /opt/nbm-agent/logs/agent.log
+
+# Atualizar e reiniciar
+curl -fsSL "https://raw.githubusercontent.com/MarcioVVitor/Backup-Master/main/agents/linux/nbm-agent.sh?$(date +%s)" -o /opt/nbm-agent/nbm-agent.sh && chmod +x /opt/nbm-agent/nbm-agent.sh && systemctl restart nbm-agent && sleep 5 && tail -30 /opt/nbm-agent/logs/agent.log
+[2026-01-10 15:05:59] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-10T18:05:59.768Z"}
+[2026-01-10 15:05:59] [DEBUG] Heartbeat acknowledged
+[2026-01-10 15:06:29] [DEBUG] Sent heartbeat
+[2026-01-10 15:06:29] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-10T18:06:29.788Z"}
+[2026-01-10 15:06:29] [DEBUG] Heartbeat acknowledged
+[2026-01-10 15:06:59] [DEBUG] Sent heartbeat
+[2026-01-10 15:07:29] [DEBUG] Sent heartbeat
+[2026-01-10 15:07:29] [DEBUG] Received: websocat: WebSocketError: I/O failure
+[2026-01-10 15:07:29] [DEBUG] Unhandled message type: 
+/opt/nbm-agent/nbm-agent.sh: line 437: "${WSCAT[0]}": Bad file descriptor
+[2026-01-10 15:07:29] [WARN] WebSocket disconnected, reconnecting in 10 seconds...
+[2026-01-10 15:07:39] [INFO] Establishing WebSocket connection...
+[2026-01-10 15:07:39] [DEBUG] WebSocket process started with PID: 18350
+[2026-01-10 15:07:39] [DEBUG] Sent auth message
+[2026-01-10 15:07:39] [DEBUG] Received: {"type":"auth_success","agentId":1,"config":null}
+[2026-01-10 15:07:39] [INFO] Authentication successful
+[2026-01-10 15:08:09] [DEBUG] Sent heartbeat
+[2026-01-10 15:08:09] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-10T18:08:09.836Z"}
+[2026-01-10 15:08:09] [DEBUG] Heartbeat acknowledged
+[2026-01-10 15:08:20] [INFO] Stopping agent (PID: 18154)...
+[2026-01-10 15:08:20] [INFO] Agent stopped
+[2026-01-10 15:08:20] [INFO] Configuration loaded: Agent=proxy-grupojet-01, Server=http://143.255.197.25:5000
+[2026-01-10 15:08:20] [INFO] Starting NBM CLOUD Agent v1.0.0
+[2026-01-10 15:08:20] [INFO] Agent started with PID: 18382
+[2026-01-10 15:08:20] [INFO] Connecting to WebSocket: ws://143.255.197.25:5000/ws/agents
+[2026-01-10 15:08:20] [INFO] Establishing WebSocket connection...
+[2026-01-10 15:08:20] [DEBUG] WebSocket process started with PID: 18395
+[2026-01-10 15:08:20] [DEBUG] Sent auth message
+[2026-01-10 15:08:20] [DEBUG] Received: {"type":"auth_success","agentId":1,"config":null}
+[2026-01-10 15:08:20] [INFO] Authentication successful
+[2026-01-10 15:07:39] [INFO] Establishing WebSocket connection...
+[2026-01-10 15:07:39] [DEBUG] WebSocket process started with PID: 18350
+[2026-01-10 15:07:39] [DEBUG] Sent auth message
+[2026-01-10 15:07:39] [DEBUG] Received: {"type":"auth_success","agentId":1,"config":null}
+[2026-01-10 15:07:39] [INFO] Authentication successful
+[2026-01-10 15:08:09] [DEBUG] Sent heartbeat
+[2026-01-10 15:08:09] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-10T18:08:09.836Z"}
+[2026-01-10 15:08:09] [DEBUG] Heartbeat acknowledged
+[2026-01-10 15:08:20] [INFO] Stopping agent (PID: 18154)...
+[2026-01-10 15:08:20] [INFO] Agent stopped
+[2026-01-10 15:08:20] [INFO] Configuration loaded: Agent=proxy-grupojet-01, Server=http://143.255.197.25:5000
+[2026-01-10 15:08:20] [INFO] Starting NBM CLOUD Agent v1.0.0
+[2026-01-10 15:08:20] [INFO] Agent started with PID: 18382
+[2026-01-10 15:08:20] [INFO] Connecting to WebSocket: ws://143.255.197.25:5000/ws/agents
+[2026-01-10 15:08:20] [INFO] Establishing WebSocket connection...
+[2026-01-10 15:08:20] [DEBUG] WebSocket process started with PID: 18395
+[2026-01-10 15:08:20] [DEBUG] Sent auth message
+[2026-01-10 15:08:20] [DEBUG] Received: {"type":"auth_success","agentId":1,"config":null}
+[2026-01-10 15:08:20] [INFO] Authentication successful
+[2026-01-10 15:08:29] [INFO] Stopping agent (PID: 18382)...
+[2026-01-10 15:08:29] [INFO] Agent stopped
+[2026-01-10 15:08:29] [INFO] Configuration loaded: Agent=proxy-grupojet-01, Server=http://143.255.197.25:5000
+[2026-01-10 15:08:29] [INFO] Starting NBM CLOUD Agent v1.0.0
+[2026-01-10 15:08:29] [INFO] Agent started with PID: 18421
+[2026-01-10 15:08:29] [INFO] Connecting to WebSocket: ws://143.255.197.25:5000/ws/agents
+[2026-01-10 15:08:29] [INFO] Establishing WebSocket connection...
+[2026-01-10 15:08:29] [DEBUG] WebSocket process started with PID: 18433
+[2026-01-10 15:08:29] [DEBUG] Sent auth message
+[2026-01-10 15:08:29] [DEBUG] Received: {"type":"auth_success","agentId":1,"config":null}
+[2026-01-10 15:08:30] [INFO] Authentication successful
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01:~# 
