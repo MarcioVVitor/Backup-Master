@@ -355,25 +355,28 @@ handle_message() {
             fi
             ;;
             
-        execute_backup)
+        execute_backup|backup_job)
             local job_id=$(echo "$message" | jq -r '.jobId')
             local equipment=$(echo "$message" | jq -r '.equipment')
             local config=$(echo "$message" | jq -r '.config')
             
-            local host=$(echo "$equipment" | jq -r '.ipAddress')
+            # Support both field naming conventions
+            local host=$(echo "$equipment" | jq -r '.ip // .ipAddress')
             local port=$(echo "$equipment" | jq -r '.port // 22')
             local username=$(echo "$equipment" | jq -r '.username')
             local password=$(echo "$equipment" | jq -r '.password')
-            local command=$(echo "$config" | jq -r '.backupCommand')
+            local command=$(echo "$config" | jq -r '.command // .backupCommand')
             
-            log_info "Executing backup job $job_id for $host"
+            log_info "Executing backup job $job_id for $host:$port with command: $command"
             
             local output
             if output=$(execute_ssh_backup "$host" "$port" "$username" "$password" "$command" 120); then
                 # Escape output for JSON
                 output=$(echo "$output" | jq -Rs .)
+                log_info "Backup successful, output length: $(echo "$output" | wc -c) bytes"
                 echo "{\"type\": \"backup_result\", \"jobId\": \"$job_id\", \"success\": true, \"output\": $output}"
             else
+                log_error "Backup failed for $host"
                 echo "{\"type\": \"backup_result\", \"jobId\": \"$job_id\", \"success\": false, \"error\": \"Backup execution failed\"}"
             fi
             ;;
@@ -445,7 +448,7 @@ connect_websocket() {
                 heartbeat_ack)
                     log_debug "Heartbeat acknowledged"
                     ;;
-                execute_backup|test_connection|request_diagnostics|terminal_command)
+                execute_backup|backup_job|test_connection|request_diagnostics|terminal_command|update_agent)
                     response=$(handle_message "$msg")
                     if [[ -n "$response" ]]; then
                         echo "$response" >&3

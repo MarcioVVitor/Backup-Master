@@ -1,0 +1,51 @@
+root@SRV-NBM-CLOUD-PROXY-01[~]# cd /root/nbm-cloud && git pull && cp -r * /opt/nbm/ && chown -R nbm:nbm /opt/nbm && cd /opt/nbm && sudo -u nbm npx tsx script/build.ts && systemctl restart nbm
+remote: Enumerating objects: 6, done.
+remote: Counting objects: 100% (6/6), done.
+remote: Compressing objects: 100% (2/2), done.
+remote: Total 4 (delta 2), reused 4 (delta 2), pack-reused 0 (from 0)
+Unpacking objects: 100% (4/4), 17.11 KiB | 1.43 MiB/s, done.
+From https://github.com/MarcioVVitor/Backup-Master
+   ec144af..fa7a75d  main       -> origin/main
+Updating ec144af..fa7a75d
+Fast-forward
+ attached_assets/Pasted-root-SRV-AGENTE-PROXY-NBM-CLOUD-01-sshpass-p-2Dc9d967-s_1768043913377.txt | 2034 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 2034 insertions(+)
+ create mode 100644 attached_assets/Pasted-root-SRV-AGENTE-PROXY-NBM-CLOUD-01-sshpass-p-2Dc9d967-s_1768043913377.txt
+building client...
+vite v7.3.0 building client environment for production...
+✓ 3312 modules transformed.
+../dist/public/index.html                     2.87 kB │ gzip:   1.04 kB
+../dist/public/assets/index-BzezBBps.css     80.70 kB │ gzip:  13.49 kB
+../dist/public/assets/index-C_FR7112.js   1,296.99 kB │ gzip: 357.27 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 13.03s
+building server...
+
+  dist/index.cjs  1.3mb ⚠️
+
+⚡ Done in 445ms
+root@SRV-NBM-CLOUD-PROXY-01[/opt/nbm]# cd
+root@SRV-NBM-CLOUD-PROXY-01[~]# cd /root/nbm-cloud && git pull && cp -r * /opt/nbm/ && chown -R nbm:nbm /opt/nbm && cd /opt/nbm && sudo -u nbm npx tsx script/build.ts && systemctl restart nbm
+Already up to date.
+building client...
+vite v7.3.0 building client environment for production...
+✓ 3312 modules transformed.
+../dist/public/index.html                     2.87 kB │ gzip:   1.04 kB
+../dist/public/assets/index-BzezBBps.css     80.70 kB │ gzip:  13.49 kB
+../dist/public/assets/index-C_FR7112.js   1,296.99 kB │ gzip: 357.27 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 13.39s
+building server...
+
+  dist/index.cjs  1.3mb ⚠️
+
+⚡ Done in 174ms
+root@SRV-NBM-CLOUD-PROXY-01[/opt/nbm]# 
