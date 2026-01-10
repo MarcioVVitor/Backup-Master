@@ -1,0 +1,32 @@
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01:~# tail -40 /opt/nbm-agent/logs/agent.log | grep -v "Heartbeat acknowledged"
+[2026-01-10 11:34:04] [WARN] Server error: Erro ao processar mensagem
+[2026-01-10 11:34:04] [WARN] Server error: Erro ao processar mensagem
+[2026-01-10 11:34:04] [DEBUG] Received: {"type":"error","message":"Erro ao processar mensagem"}
+[2026-01-10 11:34:04] [DEBUG] Received: {"type":"error","message":"Erro ao processar mensagem"}
+[2026-01-10 11:34:04] [WARN] Server error: Erro ao processar mensagem
+[2026-01-10 11:34:04] [WARN] Server error: Erro ao processar mensagem
+[2026-01-10 11:34:23] [DEBUG] Received: {"type":"error","message":"Erro ao processar mensagem"}
+[2026-01-10 11:34:23] [DEBUG] Received: {"type":"error","message":"Erro ao processar mensagem"}
+[2026-01-10 11:34:23] [WARN] Server error: Erro ao processar mensagem
+[2026-01-10 11:34:23] [WARN] Server error: Erro ao processar mensagem
+[2026-01-10 11:34:33] [DEBUG] Sent heartbeat
+[2026-01-10 11:34:33] [DEBUG] Sent heartbeat
+[2026-01-10 11:34:33] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-10T14:34:33.694Z"}
+[2026-01-10 11:34:33] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-10T14:34:33.694Z"}
+[2026-01-10 11:35:03] [DEBUG] Sent heartbeat
+[2026-01-10 11:35:03] [DEBUG] Sent heartbeat
+[2026-01-10 11:35:03] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-10T14:35:03.709Z"}
+[2026-01-10 11:35:03] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-10T14:35:03.709Z"}
+[2026-01-10 11:35:33] [DEBUG] Sent heartbeat
+[2026-01-10 11:35:33] [DEBUG] Sent heartbeat
+[2026-01-10 11:35:33] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-10T14:35:33.713Z"}
+[2026-01-10 11:35:33] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-10T14:35:33.713Z"}
+[2026-01-10 11:36:03] [DEBUG] Sent heartbeat
+[2026-01-10 11:36:03] [DEBUG] Sent heartbeat
+[2026-01-10 11:36:03] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-10T14:36:03.748Z"}
+[2026-01-10 11:36:03] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-10T14:36:03.748Z"}
+[2026-01-10 11:36:33] [DEBUG] Sent heartbeat
+[2026-01-10 11:36:33] [DEBUG] Sent heartbeat
+[2026-01-10 11:36:33] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-10T14:36:33.751Z"}
+[2026-01-10 11:36:33] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-10T14:36:33.751Z"}
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01:~# 
