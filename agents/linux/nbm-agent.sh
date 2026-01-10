@@ -392,35 +392,85 @@ connect_websocket() {
     
     log_info "Connecting to WebSocket: $ws_url"
     
-    # Send authentication message first
-    local register_msg=$(cat <<EOF
-{"type":"auth","token":"$AGENT_TOKEN","agentId":$AGENT_ID,"name":"$AGENT_NAME","version":"$AGENT_VERSION"}
-EOF
-)
+    # Create named pipe for bidirectional communication
+    local fifo_in="/tmp/nbm-agent-in-$$"
+    local fifo_out="/tmp/nbm-agent-out-$$"
+    mkfifo "$fifo_in" 2>/dev/null || true
+    mkfifo "$fifo_out" 2>/dev/null || true
+    
+    trap "rm -f $fifo_in $fifo_out" EXIT
     
     while true; do
         log_info "Establishing WebSocket connection..."
         
-        # Use websocat for WebSocket communication
+        # Start websocat in background with bidirectional pipes
+        websocat -t "$ws_url" < "$fifo_in" > "$fifo_out" 2>&1 &
+        local ws_pid=$!
+        
+        # Open fifo_in for writing (keeps pipe open)
+        exec 3>"$fifo_in"
+        
+        # Send authentication message
+        local auth_msg="{\"type\":\"auth\",\"token\":\"$AGENT_TOKEN\",\"agentId\":$AGENT_ID,\"name\":\"$AGENT_NAME\",\"version\":\"$AGENT_VERSION\"}"
+        echo "$auth_msg" >&3
+        log_debug "Sent auth message"
+        
+        # Start heartbeat sender in background
         (
-            echo "$register_msg"
-            while read -r line; do
-                if [[ -n "$line" ]]; then
-                    response=$(handle_message "$line")
-                    if [[ -n "$response" ]]; then
-                        echo "$response"
-                    fi
-                fi
+            while kill -0 $ws_pid 2>/dev/null; do
+                sleep 30
+                echo '{"type":"heartbeat"}' >&3 2>/dev/null || break
+                log_debug "Sent heartbeat"
             done
-        ) | websocat -t "$ws_url" 2>&1 | while read -r msg; do
-            log_debug "Received: $msg"
-            if [[ -n "$msg" ]]; then
-                response=$(handle_message "$msg")
-                if [[ -n "$response" ]]; then
-                    log_debug "Sending: $response"
-                fi
+        ) &
+        local heartbeat_pid=$!
+        
+        # Read responses and handle messages
+        while read -r msg <"$fifo_out"; do
+            if [[ -z "$msg" ]]; then
+                continue
             fi
+            
+            log_debug "Received: $msg"
+            local msg_type=$(echo "$msg" | jq -r '.type // empty' 2>/dev/null)
+            
+            case "$msg_type" in
+                auth_success)
+                    log_info "Authentication successful"
+                    ;;
+                auth_error)
+                    log_error "Authentication failed: $(echo "$msg" | jq -r '.message')"
+                    break
+                    ;;
+                heartbeat_ack)
+                    log_debug "Heartbeat acknowledged"
+                    ;;
+                execute_backup|test_connection|request_diagnostics|terminal_command)
+                    response=$(handle_message "$msg")
+                    if [[ -n "$response" ]]; then
+                        echo "$response" >&3
+                        log_debug "Sent response: $response"
+                    fi
+                    ;;
+                job)
+                    response=$(handle_message "$msg")
+                    if [[ -n "$response" ]]; then
+                        echo "$response" >&3
+                    fi
+                    ;;
+                error)
+                    log_warn "Server error: $(echo "$msg" | jq -r '.message')"
+                    ;;
+                *)
+                    log_debug "Unhandled message type: $msg_type"
+                    ;;
+            esac
         done
+        
+        # Cleanup
+        kill $heartbeat_pid 2>/dev/null || true
+        kill $ws_pid 2>/dev/null || true
+        exec 3>&-
         
         log_warn "WebSocket disconnected, reconnecting in 10 seconds..."
         sleep 10
