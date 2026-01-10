@@ -371,15 +371,19 @@ handle_message() {
             log_info "Executing backup job $job_id for $host:$port with command: $command"
             
             local output
+            local json_response
             if output=$(execute_ssh_backup "$host" "$port" "$username" "$password" "$command" 120); then
-                # Escape output for JSON
-                output=$(echo "$output" | jq -Rs .)
-                log_info "Backup successful, output length: $(echo "$output" | wc -c) bytes"
-                echo "{\"type\": \"backup_result\", \"jobId\": \"$job_id\", \"success\": true, \"output\": $output}"
+                # Use jq to build a proper JSON response (handles all escaping)
+                json_response=$(jq -n --arg type "backup_result" --arg jobId "$job_id" --arg output "$output" \
+                    '{type: $type, jobId: $jobId, success: true, output: $output}')
+                log_info "Backup successful, output length: ${#output} bytes"
             else
+                json_response=$(jq -n --arg type "backup_result" --arg jobId "$job_id" --arg error "Backup execution failed" \
+                    '{type: $type, jobId: $jobId, success: false, error: $error}')
                 log_error "Backup failed for $host"
-                echo "{\"type\": \"backup_result\", \"jobId\": \"$job_id\", \"success\": false, \"error\": \"Backup execution failed\"}"
             fi
+            # Output JSON on single line (jq -c ensures compact output)
+            echo "$json_response" | jq -c .
             ;;
             
         *)
