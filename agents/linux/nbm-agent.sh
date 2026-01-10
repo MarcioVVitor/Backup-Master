@@ -415,14 +415,14 @@ connect_websocket() {
         echo "$auth_msg" >&"${WSCAT[1]}"
         log_debug "Sent auth message"
         
-        # Copy file descriptor for heartbeat subprocess
-        local ws_write_fd=${WSCAT[1]}
+        # Duplicate fd for heartbeat - fd 5 will be a copy of the write fd
+        exec 5>&"${WSCAT[1]}"
         
-        # Start heartbeat sender in background using eval to preserve fd
+        # Start heartbeat sender in background using duplicated fd
         {
             while kill -0 $WSCAT_PID 2>/dev/null; do
                 sleep 30
-                echo '{"type":"heartbeat"}' >&$ws_write_fd 2>/dev/null || break
+                echo '{"type":"heartbeat"}' >&5 2>/dev/null || break
                 log_debug "Sent heartbeat"
             done
         } &
@@ -471,6 +471,7 @@ connect_websocket() {
         done
         
         # Cleanup
+        exec 5>&- 2>/dev/null || true  # Close duplicated fd
         kill $heartbeat_pid 2>/dev/null || true
         kill $WSCAT_PID 2>/dev/null || true
         
