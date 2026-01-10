@@ -1,0 +1,43 @@
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01:~# cat /opt/nbm-agent/logs/agent.log | tail -20
+[2026-01-09 22:58:04] [INFO] Establishing WebSocket connection...
+[2026-01-09 22:58:04] [INFO] Establishing WebSocket connection...
+[2026-01-09 22:58:04] [INFO] Stopping agent (PID: 2000)...
+[2026-01-09 22:58:04] [INFO] Stopping agent (PID: 2000)...
+[2026-01-09 22:58:04] [INFO] Agent stopped
+[2026-01-09 22:58:04] [INFO] Agent stopped
+[2026-01-09 22:58:15] [INFO] Configuration loaded: Agent=proxy-grupojet-01, Server=http://143.255.197.25:5000
+[2026-01-09 22:58:15] [INFO] Configuration loaded: Agent=proxy-grupojet-01, Server=http://143.255.197.25:5000
+[2026-01-09 22:58:15] [INFO] Starting NBM CLOUD Agent v1.0.0
+[2026-01-09 22:58:15] [INFO] Starting NBM CLOUD Agent v1.0.0
+[2026-01-09 22:58:15] [INFO] Connecting to WebSocket: ws://143.255.197.25:5000/ws/agent
+[2026-01-09 22:58:15] [INFO] Connecting to WebSocket: ws://143.255.197.25:5000/ws/agent
+[2026-01-09 22:58:15] [INFO] Agent started with PID: 2040
+[2026-01-09 22:58:15] [INFO] Agent started with PID: 2040
+[2026-01-09 22:58:15] [INFO] Establishing WebSocket connection...
+[2026-01-09 22:58:15] [INFO] Establishing WebSocket connection...
+[2026-01-09 22:58:15] [INFO] Stopping agent (PID: 2040)...
+[2026-01-09 22:58:15] [INFO] Stopping agent (PID: 2040)...
+[2026-01-09 22:58:15] [INFO] Agent stopped
+[2026-01-09 22:58:15] [INFO] Agent stopped
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01:~# journalctl -u nbm-agent -n 20 --no-pager
+Jan 09 22:57:23 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: Started nbm-agent.service - NBM CLOUD Agent - Network Backup Proxy.
+Jan 09 22:57:23 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Deactivated successfully.
+Jan 09 22:57:33 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Scheduled restart job, restart counter is at 11.
+Jan 09 22:57:33 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: Started nbm-agent.service - NBM CLOUD Agent - Network Backup Proxy.
+Jan 09 22:57:34 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Deactivated successfully.
+Jan 09 22:57:44 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Scheduled restart job, restart counter is at 12.
+Jan 09 22:57:44 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: Started nbm-agent.service - NBM CLOUD Agent - Network Backup Proxy.
+Jan 09 22:57:44 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Deactivated successfully.
+Jan 09 22:57:54 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Scheduled restart job, restart counter is at 13.
+Jan 09 22:57:54 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: Started nbm-agent.service - NBM CLOUD Agent - Network Backup Proxy.
+Jan 09 22:57:54 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Deactivated successfully.
+Jan 09 22:58:04 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Scheduled restart job, restart counter is at 14.
+Jan 09 22:58:04 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: Started nbm-agent.service - NBM CLOUD Agent - Network Backup Proxy.
+Jan 09 22:58:04 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Deactivated successfully.
+Jan 09 22:58:14 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Scheduled restart job, restart counter is at 15.
+Jan 09 22:58:14 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: Started nbm-agent.service - NBM CLOUD Agent - Network Backup Proxy.
+Jan 09 22:58:15 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Deactivated successfully.
+Jan 09 22:58:25 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Scheduled restart job, restart counter is at 16.
+Jan 09 22:58:25 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: Started nbm-agent.service - NBM CLOUD Agent - Network Backup Proxy.
+Jan 09 22:58:25 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Deactivated successfully.
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01:~# 

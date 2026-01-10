@@ -387,7 +387,7 @@ handle_message() {
 
 # Main WebSocket connection loop
 connect_websocket() {
-    local ws_url="${SERVER_URL/https:/wss:}/ws/agent"
+    local ws_url="${SERVER_URL/https:/wss:}/ws/agents"
     ws_url="${ws_url/http:/ws:}"
     
     log_info "Connecting to WebSocket: $ws_url"
