@@ -1,0 +1,2034 @@
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01:~# sshpass -p '@2Dc9d967' ssh -o StrictHostKeyChecking=no -p 2250 admin@143.255.196.2 "/export compact"
+# 2026-01-10 08:18:17 by RouterOS 7.20.5
+# software id = D95X-YDCH
+#
+# model = CCR1036-8G-2S+
+# serial number = D83A0DDFF341
+/interface bridge
+add name=BRIDGE-CFE-CATALAO_SAA_AG_CONGADAS-CGC-3732-PRIMARY port-cost-mode=\
+    short protocol-mode=none
+add name=BRIDGE-CFE-CATALAO_SAA_AG_CONGADAS-CGC-3732-SECUNDARY \
+    port-cost-mode=short protocol-mode=none
+add name="BRIDGE-CFE-SAA_AG_GOIANESIA-0792-(JETGO079201001)-PRIMARY" \
+    port-cost-mode=short protocol-mode=none
+# MTU > L2MTU
+add mtu=1998 name=\
+    "BRIDGE-CFE-SAA_AG_GOIANESIA-0792-(JETGO079201001)-SECUDARY" \
+    port-cost-mode=short protocol-mode=none
+add name=BRIDGE-CFE-SAA_AG_MINEIROS-CGC-0871-PRIMARY port-cost-mode=short \
+    protocol-mode=none
+add name=BRIDGE-CFE-SAA_AG_MINEIROS-CGC-0871-SEGUNDARY port-cost-mode=short \
+    protocol-mode=none
+add name=BRIDGE-CFE-SAA_PAB_JUSTICA_ESTADUAL_ITUBIARA-CGC-3213-PRIMARY \
+    port-cost-mode=short protocol-mode=none
+add name=BRIDGE-CFE-SAA_PAB_JUSTICA_ESTADUAL_ITUBIARA-CGC-3213-SEGUNDARY \
+    port-cost-mode=short protocol-mode=none
+add name=BRIDGE-CFE-SANTO_ANTONIO_DECOBERTO-CGC-4223-PRIMARY port-cost-mode=\
+    short protocol-mode=none
+add name=BRIDGE-CFE-SANTO_ANTONIO_DECOBERTO-CGC-4223-SEGUNDARY \
+    port-cost-mode=short protocol-mode=none
+add name=BRIDGE-CFE_CIDADE_OCIDENTAL-CGC4222-PRIMARY port-cost-mode=short \
+    protocol-mode=none
+add name=BRIDGE-CFE_CIDADE_OCIDENTAL-CGC4222-SEGUNDARY port-cost-mode=short \
+    protocol-mode=none
+add name=BRIDGE-CPE-SAA_AG_VALPARAISO-CGC-2437-PRIMARY port-cost-mode=short \
+    protocol-mode=none
+add name=BRIDGE-CPE-SAA_AG_VALPARAISO-CGC-2437-SECUNDARY port-cost-mode=short \
+    protocol-mode=none
+add name=BRIDGE-CPE-SAA_AG_VALPARAISO_CENTR-CGC-4501-PRIMARY port-cost-mode=\
+    short protocol-mode=none
+add name=BRIDGE-CPE-SAA_AG_VALPARAISO_CENTR-CGC-4501-SEGUNDARY \
+    port-cost-mode=short protocol-mode=none
+add name=BRIDGE-CPE_AG_GOIANIRA-CGC-3405-PRIMARY port-cost-mode=short \
+    protocol-mode=none
+add name=BRIDGE-CPE_AG_GOIANIRA-CGC-3405-SEGUNDARY port-cost-mode=short \
+    protocol-mode=none
+add name=BRIDGE-EOIP-TELEBRAS-PIRES-RIO protocol-mode=none
+add comment=BRIDGE-GER-DWDM-ULA name=BRIDGE-GER-DWDM-ULA protocol-mode=none
+add name=BRIDGE-TELEBRAS/INSS-ANINCUNS port-cost-mode=short protocol-mode=\
+    none
+add name=BRIDGE-TELEBRAS/INSS-BELAVISTA port-cost-mode=short protocol-mode=\
+    none
+add name=BRIDGE-TELEBRAS/INSS-CATALAO port-cost-mode=short protocol-mode=none
+add name=BRIDGE-TELEBRAS/INSS-CERES port-cost-mode=short protocol-mode=none
+add name=BRIDGE-TELEBRAS/INSS-CIDADE_GOIAS port-cost-mode=short \
+    protocol-mode=none
+add name=BRIDGE-TELEBRAS/INSS-FORMOSA port-cost-mode=short protocol-mode=none
+add name=BRIDGE-TELEBRAS/INSS-GOIANESIA port-cost-mode=short protocol-mode=\
+    none
+# MTU > L2MTU
+add mtu=1998 name=BRIDGE-TELEBRAS/INSS-GOIANIRA port-cost-mode=short \
+    protocol-mode=none
+add name=BRIDGE-TELEBRAS/INSS-GOIATUBA port-cost-mode=short protocol-mode=\
+    none
+add name=BRIDGE-TELEBRAS/INSS-IPORA port-cost-mode=short protocol-mode=none
+add name=BRIDGE-TELEBRAS/INSS-ITABERAI port-cost-mode=short protocol-mode=\
+    none
+add name=BRIDGE-TELEBRAS/INSS-ITAPUTANGA port-cost-mode=short protocol-mode=\
+    none
+add name=BRIDGE-TELEBRAS/INSS-JARAGUA port-cost-mode=short protocol-mode=none
+add name=BRIDGE-TELEBRAS/INSS-JUSSARA port-cost-mode=short protocol-mode=none
+add name=BRIDGE-TELEBRAS/INSS-MINACU port-cost-mode=short protocol-mode=none
+add name="BRIDGE-TELEBRAS/INSS-NIQUELANDIA-(NQA-JCP-0495-26)" port-cost-mode=\
+    short protocol-mode=none
+add name=BRIDGE-TELEBRAS/INSS-OCIDENTAL port-cost-mode=short protocol-mode=\
+    none
+add name=BRIDGE-TELEBRAS/INSS-PADRE_BERNARDO port-cost-mode=short \
+    protocol-mode=none
+add name=BRIDGE-TELEBRAS/INSS-PIRENOPOLIS port-cost-mode=short protocol-mode=\
+    none
+add name=BRIDGE-TELEBRAS/INSS-PLANALTINA port-cost-mode=short protocol-mode=\
+    none
+add name=BRIDGE-TELEBRAS/INSS-PORONGATU port-cost-mode=short protocol-mode=\
+    none
+add name=BRIDGE-TELEBRAS/INSS-POSSE port-cost-mode=short protocol-mode=none
+add name=BRIDGE-TELEBRAS/INSS-QUIRINOPOLIS port-cost-mode=short \
+    protocol-mode=none
+add name=BRIDGE-TELEBRAS/INSS-SANT_ANT_DESCOBERTO port-cost-mode=short \
+    protocol-mode=none
+add name=BRIDGE-TELEBRAS/INSS-SAO_MIGUEL_ARAGUAIA port-cost-mode=short \
+    protocol-mode=none
+add name=BRIDGE-TELEBRAS/INSS-SAO_SIMAO port-cost-mode=short protocol-mode=\
+    none
+add name=BRIDGE-TELEBRAS/INSS-URUACU port-cost-mode=short protocol-mode=none
+add name=BRIDGE-TELEBRAS/INSS_NOVA_CAIAPONIA port-cost-mode=short \
+    protocol-mode=none
+add name=BRIDGE-V11-GER-DWDM protocol-mode=none
+add add-dhcp-option82=yes dhcp-snooping=yes name=BRIDGE-WIFI-GNA \
+    port-cost-mode=short protocol-mode=none
+add name=ESCRITORIO-GOIANIA protocol-mode=none
+add name=LOOIPV6 protocol-mode=none
+add name=LoopBack protocol-mode=none
+add name=LoopBack-OpenVpn protocol-mode=none
+add name=Loopbackup protocol-mode=none
+/interface ethernet
+set [ find default-name=ether1 ] name=ether1-ESCRITORIO_GOIANIA
+set [ find default-name=ether2 ] name=ether2-RACK_VMWARE
+set [ find default-name=ether5 ] name=ether5-WIFI-DEPOSITO
+set [ find default-name=ether6 ] name=ether6-NOKIA-ANDRADE
+set [ find default-name=ether7 ] comment=V11-DWDM-DCI-908-DIR-UBERABA name=\
+    ether7-DWDM-DCI-908-DIR-UBERABA
+set [ find default-name=ether8 ] name=ether8-GER-DATACOM-4770
+set [ find default-name=sfp-sfpplus1 ] mtu=1580 name=sfp-sfpplus1-UPLINK_10GB
+set [ find default-name=sfp-sfpplus2 ] mtu=1580 name=\
+    sfp-sfpplus2-DOWNLINK_10GB
+/interface eoip
+add local-address=143.255.197.62 mac-address=02:CA:E6:C9:17:F4 mtu=1998 name=\
+    EOIP-CATALAO_SAA_AG_CONGADAS-CGC-3732 remote-address=179.189.2.133 \
+    tunnel-id=137
+add disabled=yes local-address=143.255.197.62 mac-address=02:E4:90:F6:4B:D6 \
+    mtu=1998 name="EOIP-CPE-TELEBRAS/INSS-GOIANIRA-(GIN-JCP-0495-16)" \
+    remote-address=45.226.40.204 tunnel-id=114
+add local-address=143.255.197.62 mac-address=02:E4:90:F6:4B:D6 mtu=1998 name=\
+    "EOIP-CPE-TELEBRAS/INSS-POSSE-(PSX-JCP-0495-31)" remote-address=\
+    168.228.164.81 tunnel-id=122
+add local-address=143.255.197.62 mac-address=02:DE:32:F0:80:0E mtu=1998 name=\
+    "EOIP-CPE_SAA_AG_GOIANESIA-0792-(JETGO079201001)" remote-address=\
+    177.10.238.110 tunnel-id=141
+add disabled=yes local-address=143.255.197.62 mac-address=02:DE:42:8E:CF:80 \
+    name=EOIP-SAA_AG-JATAI-CGC-0565 remote-address=10.0.55.137 tunnel-id=136
+add local-address=143.255.197.62 mac-address=02:AD:C1:A0:73:F6 mtu=1998 name=\
+    EOIP-SAA_AG._ITUMBIARA-CGC-08304/2022 remote-address=10.0.55.129 \
+    tunnel-id=135
+add local-address=143.255.197.62 mac-address=02:EA:DA:9A:FA:8C mtu=1998 name=\
+    EOIP-SAA_AG_CIDADE_OCIDENTAL-CGC-4222 remote-address=192.145.213.35 \
+    tunnel-id=129
+add local-address=143.255.196.2 mac-address=02:AD:C1:A0:73:F6 mtu=1998 name=\
+    "EOIP-SAA_AG_GOIANIRA-CGC-3405-(JETGO3405010011)" remote-address=\
+    187.62.232.105 tunnel-id=132
+add local-address=143.255.197.62 mac-address=02:FC:4C:D8:8A:8E mtu=1998 name=\
+    EOIP-SAA_AG_MINEIROS-CGC-0871 remote-address=45.169.204.171 tunnel-id=139
+add local-address=143.255.197.62 mac-address=02:3B:87:A3:F3:B5 mtu=1998 name=\
+    EOIP-SAA_AG_VALPARAISO-CGC-2437 remote-address=192.145.213.37 tunnel-id=\
+    140
+add local-address=143.255.197.62 mac-address=02:60:E2:18:E9:9C mtu=1998 name=\
+    "EOIP-SAA_AG_VALPARAISO_CENTR-CGC-4501   " remote-address=192.145.213.38 \
+    tunnel-id=126
+add disabled=yes local-address=143.255.197.62 mac-address=02:AD:C1:A0:73:F6 \
+    mtu=1998 name=EOIP-SAA_PAB_JUSTICA_ESTADUAL_ITUBIARA-CGC-3213 \
+    remote-address=10.0.55.130 tunnel-id=134
+add local-address=143.255.197.62 mac-address=02:18:26:93:7F:C3 mtu=1998 name=\
+    EOIP-SANTO_ANTONIO_DECOBERTO-CGC-4223 remote-address=45.186.119.2 \
+    tunnel-id=131
+add disabled=yes local-address=143.255.197.62 mac-address=02:63:07:BF:C6:52 \
+    mtu=1998 name=EOIP-TELEBRAS-PIRES-RIO remote-address=187.44.64.181 \
+    tunnel-id=1000
+add disabled=yes local-address=143.255.197.62 mac-address=02:E4:90:F6:4B:D6 \
+    mtu=1998 name="EOIP-TELEBRAS/INSS-ANINCUNS-(ANU-JCP-0495-8)" \
+    remote-address=186.233.136.239 tunnel-id=123
+add disabled=yes local-address=143.255.197.62 mac-address=02:F1:E3:7C:63:17 \
+    name="EOIP-TELEBRAS/INSS-BELA_VISTA- (BGS-JCP-0495-09)" remote-address=\
+    143.202.129.5 tunnel-id=125
+add disabled=yes local-address=143.255.197.62 mac-address=02:B6:88:AD:93:DF \
+    mtu=1998 name="EOIP-TELEBRAS/INSS-CATALAO-(CTL-JCP-0495-11)" \
+    remote-address=179.189.2.251 tunnel-id=113
+add disabled=yes local-address=143.255.197.62 mac-address=02:E0:44:2F:BD:E2 \
+    mtu=1998 name="EOIP-TELEBRAS/INSS-CERES-(CEE-JCP-0495-12)" \
+    remote-address=168.227.29.238 tunnel-id=104
+add local-address=143.255.197.62 mac-address=02:32:41:2F:EA:2D mtu=1998 name=\
+    "EOIP-TELEBRAS/INSS-CIDADE_GOIAS-(GOA-JCP-0495-25)" remote-address=\
+    177.8.156.47 tunnel-id=111
+add disabled=yes local-address=143.255.197.62 mac-address=02:51:08:65:3D:0A \
+    mtu=1998 name="EOIP-TELEBRAS/INSS-FORMOSA-(FRM-JCP-0495-14)" \
+    remote-address=131.0.58.57 tunnel-id=121
+add disabled=yes local-address=143.255.197.62 mac-address=02:E0:44:2F:BD:E2 \
+    mtu=1998 name="EOIP-TELEBRAS/INSS-GOIANESIA-(GNE-JCP-0495-15)" \
+    remote-address=177.10.238.101 tunnel-id=107
+add disabled=yes local-address=143.255.197.62 mac-address=02:7A:1F:42:27:7D \
+    name="EOIP-TELEBRAS/INSS-GOIATUBA-(GTB-JCP-0495-17)" remote-address=\
+    170.246.118.146 tunnel-id=110
+add disabled=yes local-address=143.255.197.62 mac-address=02:DF:75:41:80:6B \
+    mtu=1998 name="EOIP-TELEBRAS/INSS-IPORA-(IPA-JCP-0495-18)" \
+    remote-address=45.237.122.80 tunnel-id=128
+add disabled=yes local-address=143.255.197.62 mac-address=02:CA:61:09:3A:5E \
+    mtu=1998 name="EOIP-TELEBRAS/INSS-ITABERAI-(IEI-JCP-0495-19)" \
+    remote-address=177.10.234.235 tunnel-id=108
+add disabled=yes local-address=143.255.197.62 mac-address=02:E0:44:2F:BD:E2 \
+    mtu=1998 name="EOIP-TELEBRAS/INSS-ITAPUTANGA-(IPG-JCP-0495-20)" \
+    remote-address=177.10.238.238 tunnel-id=102
+add disabled=yes local-address=143.255.197.62 mac-address=02:4B:02:50:C8:83 \
+    mtu=1998 name="EOIP-TELEBRAS/INSS-JARAGUA-(JRG-JCP-0495-21)" \
+    remote-address=168.227.31.234 tunnel-id=106
+add disabled=yes local-address=143.255.196.2 mac-address=02:CA:5C:E4:AB:6A \
+    mtu=1998 name="EOIP-TELEBRAS/INSS-JUSSARA-(JUS-JCP-0495-22)" \
+    remote-address=45.234.64.11 tunnel-id=117
+add local-address=143.255.197.62 mac-address=02:7A:1F:42:27:7D mtu=1998 name=\
+    "EOIP-TELEBRAS/INSS-MINACU-(MKU-JCP-0495-24)" remote-address=\
+    168.228.151.4 tunnel-id=115
+add disabled=yes local-address=143.255.197.62 mac-address=02:7D:98:73:F5:EC \
+    name="EOIP-TELEBRAS/INSS-NIQUELANDIA-(NQA-JCP-0495-26)" remote-address=\
+    177.67.106.25 tunnel-id=133
+add disabled=yes local-address=143.255.197.62 mac-address=02:E0:44:2F:BD:E2 \
+    mtu=1998 name="EOIP-TELEBRAS/INSS-OCIDENTAL-(CDOL-JCP-0495-1)" \
+    remote-address=192.145.213.36 tunnel-id=105
+add local-address=143.255.197.62 mac-address=02:EA:89:EA:5C:D0 name=\
+    "EOIP-TELEBRAS/INSS-PADRE_BERNARDO-(PBN-JCP-0495-28)" remote-address=\
+    131.161.44.204 tunnel-id=120
+add disabled=yes local-address=143.255.197.62 mac-address=02:E0:44:2F:BD:E2 \
+    mtu=1998 name="EOIP-TELEBRAS/INSS-PIRENOPOLIS-(PPS-JCP-0495-29)" \
+    remote-address=177.10.235.226 tunnel-id=103
+add disabled=yes local-address=143.255.197.62 mac-address=02:70:A1:D5:67:1C \
+    name="EOIP-TELEBRAS/INSS-PLANALTINA-(PWL-JCP-0495-38)" remote-address=\
+    45.169.45.21 tunnel-id=119
+add disabled=yes local-address=143.255.197.62 mac-address=02:4B:A4:1D:74:D5 \
+    mtu=1998 name="EOIP-TELEBRAS/INSS-PORONGATU-(PGT-JCP-0495-2)" \
+    remote-address=45.70.195.63 tunnel-id=109
+add disabled=yes local-address=143.255.197.62 mac-address=02:E4:90:F6:4B:D6 \
+    mtu=1998 name="EOIP-TELEBRAS/INSS-QUIRINOPOLIS-(QNP-JCP-0495-32)" \
+    remote-address=177.53.45.29 tunnel-id=130
+add local-address=143.255.197.62 mac-address=02:3E:85:CF:68:3E mtu=1998 name=\
+    "EOIP-TELEBRAS/INSS-SANT_ANT_DESCOBERTO-(SADD-JCP-0495-33)" \
+    remote-address=177.55.223.12 tunnel-id=112
+add disabled=yes local-address=143.255.197.62 mac-address=02:BA:E8:17:C8:3E \
+    mtu=1998 name="EOIP-TELEBRAS/INSS-SAO_SIMAO-(SSM-JCP-0495-35)" \
+    remote-address=170.80.244.75 tunnel-id=127
+add disabled=yes local-address=143.255.197.62 mac-address=02:07:F2:65:60:17 \
+    mtu=1998 name="EOIP-TELEBRAS/INSS-URUACU-(URC-JCP-0495-36)" \
+    remote-address=177.67.105.142 tunnel-id=118
+add disabled=yes local-address=143.255.197.62 mac-address=02:E0:44:2F:BD:E2 \
+    mtu=1998 name="EOIP-TELEBRAS/INSS_NOVA_CAIAPONIA-(CON-JCP-0495-10)" \
+    remote-address=45.234.6.17 tunnel-id=100
+add disabled=yes local-address=143.255.197.62 mac-address=02:E8:2A:12:28:7D \
+    mtu=1998 name=EOPI-CAIXA_CIDADE_OCIDENTAL-CGC4222 remote-address=\
+    192.145.213.35 tunnel-id=142
+add local-address=143.255.197.62 mac-address=02:98:DC:10:70:DA name=\
+    EOPI-CAIXA_CIDADE_OCIDENTAL-CGC4222<>GNA remote-address=192.145.213.35 \
+    tunnel-id=101
+add local-address=143.255.197.62 mac-address=02:E0:44:2F:BD:E2 mtu=1998 name=\
+    OEIP-GNA-URA remote-address=177.85.6.110 tunnel-id=99
+/interface wireguard
+add listen-port=13233 mtu=1420 name=VPN-WIREGUARD-client.julio
+add listen-port=13235 mtu=1420 name=VPN-WIREGUARD-jet.alencar
+add listen-port=13234 mtu=1420 name=VPN-WIREGUARD-jet.avner
+add listen-port=13243 mtu=1420 name=VPN-WIREGUARD-jet.brunoddos
+add listen-port=13236 mtu=1420 name=VPN-WIREGUARD-jet.diegoddos
+add listen-port=13231 mtu=1420 name=VPN-WIREGUARD-jet.douglasgov
+add listen-port=13240 mtu=1420 name=VPN-WIREGUARD-jet.giba
+add listen-port=13239 mtu=1420 name=VPN-WIREGUARD-jet.gustavo9
+add listen-port=13230 mtu=1420 name=VPN-WIREGUARD-jet.israel
+add listen-port=13242 mtu=1420 name=VPN-WIREGUARD-jet.marcio
+add listen-port=13241 mtu=1420 name=VPN-WIREGUARD-jet.marciovitor
+add listen-port=13232 mtu=1420 name=VPN-WIREGUARD-jet.rubens
+add listen-port=13238 mtu=1420 name=VPN-WIREGUARD-jet.rubens2
+add listen-port=13237 mtu=1420 name=VPN-WIREGUARD-jet.thyago
+/interface vlan
+add interface=sfp-sfpplus2-DOWNLINK_10GB name=" V2670-GER-DWDM-UBERLANDIA" \
+    vlan-id=2670
+add interface=sfp-sfpplus2-DOWNLINK_10GB name=2269-GERENCIA-DWDM-GNA-IUA \
+    vlan-id=2269
+add interface=sfp-sfpplus2-DOWNLINK_10GB name=2408-teste-rfc vlan-id=2408
+add interface="EOIP-TELEBRAS/INSS-ANINCUNS-(ANU-JCP-0495-8)" mtu=1998 name=\
+    "ANINCUNS-(ANU-JCP-0495-8)-OUT" vlan-id=1210
+add disabled=yes interface="EOIP-TELEBRAS/INSS-BELA_VISTA- (BGS-JCP-0495-09)" \
+    mtu=1998 name="BELA_VISTA- (BGS-JCP-0495-09)-OUT" vlan-id=1212
+add interface="EOIP-TELEBRAS/INSS_NOVA_CAIAPONIA-(CON-JCP-0495-10)" mtu=1998 \
+    name="CAIAPONIA-(CON-JCP-0495-10)-OUT" vlan-id=1202
+add interface=EOIP-SAA_AG_MINEIROS-CGC-0871 mtu=1998 name=\
+    "CEF-VLAN-PRI-(JETGO087101001)-OUT" vlan-id=1774
+add interface=EOIP-SAA_AG_VALPARAISO-CGC-2437 mtu=1998 name=\
+    "CEF-VLAN-PRI-(JETGO243701001)-OUT" vlan-id=2214
+add interface=EOIP-CATALAO_SAA_AG_CONGADAS-CGC-3732 mtu=1998 name=\
+    "CEF-VLAN-PRI-(JETGO373201001)-OUT" vlan-id=1777
+add interface="EOIP-SAA_AG_GOIANIRA-CGC-3405-(JETGO3405010011)" mtu=1998 \
+    name="CEF-VLAN-PRI-(JETGO3405010011)-OUT" vlan-id=1776
+add interface="EOIP-SAA_AG_VALPARAISO_CENTR-CGC-4501   " mtu=1998 name=\
+    "CEF-VLAN-PRIMARY-ID(JETGO450101001)-OUT" vlan-id=2213
+add interface=sfp-sfpplus1-UPLINK_10GB name=\
+    CEF-VLAN-PRIMARY-ID-JETGO422201002-IN vlan-id=2200
+add interface=sfp-sfpplus1-UPLINK_10GB name=\
+    CEF-VLAN-PRIMARY-ID-JETGO422301001-IN vlan-id=2208
+add interface=sfp-sfpplus1-UPLINK_10GB name=\
+    CEF-VLAN-PRIMARY-ID-JETGO450101001-IN vlan-id=2213
+add interface=sfp-sfpplus1-UPLINK_10GB name=\
+    CEF-VLAN-PRIMARY-JETGO087101001-IN vlan-id=1774
+add interface=sfp-sfpplus1-UPLINK_10GB name=\
+    CEF-VLAN-PRIMARY-JETGO243701001-IN vlan-id=2214
+add interface=sfp-sfpplus1-UPLINK_10GB name=\
+    CEF-VLAN-PRIMARY-JETGO373201001-IN vlan-id=1777
+add interface=sfp-sfpplus1-UPLINK_10GB name=\
+    CEF-VLAN-PRIMARY-JETGO3405010011-IN vlan-id=1776
+add interface=EOIP-SAA_AG_MINEIROS-CGC-0871 mtu=1998 name=\
+    "CEF-VLAN-SEC-(JETGO087101001)-OUT" vlan-id=2774
+add interface=EOIP-SAA_AG_VALPARAISO-CGC-2437 mtu=1998 name=\
+    "CEF-VLAN-SEC-(JETGO243701001)-OUT" vlan-id=3214
+add interface=EOIP-CATALAO_SAA_AG_CONGADAS-CGC-3732 mtu=1998 name=\
+    "CEF-VLAN-SEC-(JETGO373201001)-OUT" vlan-id=2777
+add interface="EOIP-SAA_AG_GOIANIRA-CGC-3405-(JETGO3405010011)" mtu=1998 \
+    name="CEF-VLAN-SEC-(JETGO3405010011)-OUT" vlan-id=2776
+add interface="EOIP-SAA_AG_VALPARAISO_CENTR-CGC-4501   " mtu=1998 name=\
+    "CEF-VLAN-SECONDARY-ID(JETGO450101001)-OUT" vlan-id=3213
+add interface=sfp-sfpplus1-UPLINK_10GB name=\
+    CEF-VLAN-SECONDARY-ID-JETGO422201002-IN vlan-id=3200
+add interface=sfp-sfpplus1-UPLINK_10GB name=\
+    CEF-VLAN-SECONDARY-ID-JETGO422301001-IN vlan-id=3208
+add interface=sfp-sfpplus1-UPLINK_10GB name=\
+    CEF-VLAN-SECONDARY-ID-JETGO450101001-IN vlan-id=3213
+add interface=sfp-sfpplus1-UPLINK_10GB name=\
+    CEF-VLAN-SECONDARY-JETGO087101001-IN vlan-id=2774
+add interface=sfp-sfpplus1-UPLINK_10GB name=\
+    CEF-VLAN-SECONDARY-JETGO243701001-IN vlan-id=3214
+add interface=sfp-sfpplus1-UPLINK_10GB name=\
+    CEF-VLAN-SECONDARY-JETGO340501001-IN vlan-id=2776
+add interface=sfp-sfpplus1-UPLINK_10GB name=\
+    CEF-VLAN-SECONDARY-JETGO373201001-IN vlan-id=2777
+add interface="EOIP-TELEBRAS/INSS-CERES-(CEE-JCP-0495-12)" mtu=1998 name=\
+    "CERES-(CEE-JCP-0495-12)-OUT" vlan-id=987
+add interface="EOIP-CPE_SAA_AG_GOIANESIA-0792-(JETGO079201001)" mtu=1998 \
+    name="CFE-VLAN-PRI-(JETGO079201001)-OUT" vlan-id=1773
+add interface=sfp-sfpplus1-UPLINK_10GB name=\
+    CFE-VLAN-PRIMARY-JETGO079201001-IN vlan-id=1773
+add interface="EOIP-CPE_SAA_AG_GOIANESIA-0792-(JETGO079201001)" mtu=1998 \
+    name="CFE-VLAN-SEC-(JETGO079201001)-OUT" vlan-id=2773
+add interface=sfp-sfpplus1-UPLINK_10GB mtu=1518 name=\
+    CFE-VLAN-SECONDARY-JETGO079201001-IN vlan-id=2773
+add interface="EOIP-TELEBRAS/INSS-CIDADE_GOIAS-(GOA-JCP-0495-25)" mtu=1998 \
+    name="CIDADE_GOIAS-(GOA-JCP-0495-25)-OUT" vlan-id=997
+add interface=EOIP-SAA_AG_CIDADE_OCIDENTAL-CGC-4222 mtu=1998 name=\
+    CIDADE_OCIDENTAL-CGC-4222-OUT vlan-id=11
+add interface=sfp-sfpplus2-DOWNLINK_10GB name=\
+    CLI-CAIXA-ADMINISTRATIVO-GO787573001 vlan-id=1323
+add interface=sfp-sfpplus2-DOWNLINK_10GB name=CLI-NET-SUPREMA-VIRTUALIZACAO \
+    vlan-id=20
+add interface=sfp-sfpplus2-DOWNLINK_10GB name=\
+    CLI-NET-SUPREMA-VIRTUALIZACAO-LINK vlan-id=21
+add interface=sfp-sfpplus2-DOWNLINK_10GB name=CLI-NET-SUPREMA-VM vlan-id=30
+add interface=sfp-sfpplus1-UPLINK_10GB name=\
+    CLI-TELEBRAS-INSS-ANINCUNS-ANU-JCP-0495-8-IN vlan-id=1210
+add interface=sfp-sfpplus1-UPLINK_10GB name=\
+    CLI-TELEBRAS-INSS-BELAVISTA-BGS-JCP-0495-09-IN vlan-id=1212
+add interface=sfp-sfpplus1-UPLINK_10GB mtu=1576 name=\
+    CLI-TELEBRAS-INSS-CATALAO-CTL-JCP-0495-11-IN vlan-id=999
+add interface="EOIP-TELEBRAS/INSS-CATALAO-(CTL-JCP-0495-11)" mtu=1998 name=\
+    CLI-TELEBRAS-INSS-CATALAO-CTL-JCP-0495-11-OUT vlan-id=999
+add interface=sfp-sfpplus1-UPLINK_10GB name=\
+    CLI-TELEBRAS-INSS-CERES-CEE-JCP-0495-12-IN vlan-id=987
+add interface=sfp-sfpplus1-UPLINK_10GB name=\
+    CLI-TELEBRAS-INSS-CIDADE-GOIAS-GOA-JCP-0495-25-IN vlan-id=997
+add interface=sfp-sfpplus1-UPLINK_10GB name=\
+    CLI-TELEBRAS-INSS-FORMOSA-FRM-JCP-0495-14-IN vlan-id=1206
+add interface=sfp-sfpplus1-UPLINK_10GB name=\
+    CLI-TELEBRAS-INSS-GOIANESIA-GNE-JCP-0495-15-IN vlan-id=986
+add interface=sfp-sfpplus1-UPLINK_10GB name=\
+    CLI-TELEBRAS-INSS-GOIANIRA-GIN-JCP-0495-16-IN vlan-id=1200
+add interface=sfp-sfpplus1-UPLINK_10GB name=\
+    CLI-TELEBRAS-INSS-GOIATUBA-GTB-JCP-0495-17-IN vlan-id=996
+add interface=sfp-sfpplus1-UPLINK_10GB name=\
+    CLI-TELEBRAS-INSS-IPORA-IPA-JCP-0495-18-IN vlan-id=1216
+add interface=sfp-sfpplus1-UPLINK_10GB name=\
+    CLI-TELEBRAS-INSS-ITABERAI-IEI-JCP-0495-19-IN vlan-id=991
+add interface=sfp-sfpplus1-UPLINK_10GB name=\
+    CLI-TELEBRAS-INSS-ITAPUTANGA-IPG-JCP-0495-20-IN vlan-id=985
+add interface=sfp-sfpplus1-UPLINK_10GB name=\
+    CLI-TELEBRAS-INSS-JARAGUA-JRG-JCP-0495-21-IN vlan-id=989
+add interface=sfp-sfpplus1-UPLINK_10GB name=\
+    CLI-TELEBRAS-INSS-MINACU-MKU-JCP-0495-24-IN vlan-id=1201
+add interface=sfp-sfpplus1-UPLINK_10GB name=\
+    CLI-TELEBRAS-INSS-NIQUELANDIA-NQA-JCP-0495-26-IN vlan-id=1228
+add interface=sfp-sfpplus1-UPLINK_10GB name=\
+    CLI-TELEBRAS-INSS-NOVA-CAIAPONIA-CON-JCP-0495-10-IN vlan-id=1202
+add interface=sfp-sfpplus1-UPLINK_10GB name=\
+    CLI-TELEBRAS-INSS-OCIDENTAL-CDOL-JCP-0495-1-IN vlan-id=992
+add interface=sfp-sfpplus1-UPLINK_10GB name=\
+    CLI-TELEBRAS-INSS-PADRE-BERNARDO-PBN-JCP-0495-28-IN vlan-id=1205
+add interface=sfp-sfpplus1-UPLINK_10GB name=\
+    CLI-TELEBRAS-INSS-PIRENOPOLIS-PPS-JCP-0495-29-IN vlan-id=988
+add interface=sfp-sfpplus1-UPLINK_10GB name=\
+    CLI-TELEBRAS-INSS-PLANALTINA-PWL-JCP-0495-38-IN vlan-id=1204
+add interface=sfp-sfpplus1-UPLINK_10GB name=\
+    CLI-TELEBRAS-INSS-PORANGATU-PGT-JCP-0495-2-IN vlan-id=993
+add interface=sfp-sfpplus1-UPLINK_10GB name=\
+    CLI-TELEBRAS-INSS-POSSE-PSX-JCP-0495-31-IN vlan-id=1207
+add interface=sfp-sfpplus1-UPLINK_10GB name=\
+    CLI-TELEBRAS-INSS-QUIRINOPOLIS-QNP-JCP-0495-32-IN vlan-id=1218
+add interface=sfp-sfpplus1-UPLINK_10GB name=\
+    CLI-TELEBRAS-INSS-SANT-ANT-DESCOBERTO-SADD-JCP-0495-33-IN vlan-id=998
+add interface=sfp-sfpplus1-UPLINK_10GB name=\
+    CLI-TELEBRAS-INSS-SAO-MIGUEL-ARAGUAIA-SGG-JCP-0495-34-IN vlan-id=1211
+add interface=sfp-sfpplus1-UPLINK_10GB name=\
+    CLI-TELEBRAS-INSS-SAO-SIMAO-SSM-JCP-0495-35-IN vlan-id=1214
+add interface=sfp-sfpplus1-UPLINK_10GB name=\
+    CLI-TELEBRAS-INSS-URUACU-URC-JCP-0495-36-IN vlan-id=1203
+add interface=sfp-sfpplus1-UPLINK_10GB name=\
+    CLI-TELEBRAS-PIRES-RIO-INSS-PIR-JCP-0495-30-IN vlan-id=981
+add interface=sfp-sfpplus2-DOWNLINK_10GB name=CLI-UNE-TELECOM vlan-id=1366
+add comment=DHCP-IDRACK interface=sfp-sfpplus2-DOWNLINK_10GB name=DHCP-IDRACK \
+    vlan-id=226
+add interface=sfp-sfpplus1-UPLINK_10GB name=DWDM-NOKIA-BRASILIA vlan-id=994
+add interface="EOIP-TELEBRAS/INSS-FORMOSA-(FRM-JCP-0495-14)" mtu=1998 name=\
+    "FORMOSA-(FRM-JCP-0495-14)-OUT" vlan-id=1206
+add interface="EOIP-TELEBRAS/INSS-GOIANESIA-(GNE-JCP-0495-15)" mtu=1998 name=\
+    "GOIANESIA-(GNE-JCP-0495-15)-OUT" vlan-id=986
+add interface="EOIP-CPE-TELEBRAS/INSS-GOIANIRA-(GIN-JCP-0495-16)" mtu=1998 \
+    name="GOIANIRA-(GIN-JCP-0495-16)-OUT" vlan-id=1200
+add interface="EOIP-TELEBRAS/INSS-GOIATUBA-(GTB-JCP-0495-17)" mtu=1998 name=\
+    "GOIATUBA-(GTB-JCP-0495-17)-OUT" vlan-id=996
+add interface=sfp-sfpplus2-DOWNLINK_10GB name=HUAWEI-NCE-EQUIPAMENT vlan-id=\
+    1645
+add interface=sfp-sfpplus2-DOWNLINK_10GB name=HUAWEI-NCE-MNS vlan-id=1644
+add interface="EOIP-TELEBRAS/INSS-IPORA-(IPA-JCP-0495-18)" mtu=1998 name=\
+    "IPORA-(IPA-JCP-0495-18)-OUT" vlan-id=1216
+add interface="EOIP-TELEBRAS/INSS-ITABERAI-(IEI-JCP-0495-19)" mtu=1998 name=\
+    "ITABERAI-(IEI-JCP-0495-19)-OUT" vlan-id=991
+add interface="EOIP-TELEBRAS/INSS-ITAPUTANGA-(IPG-JCP-0495-20)" mtu=1998 \
+    name="ITAPURANGA-(IPG-JCP-0495-20)-OUT" vlan-id=985
+add interface="EOIP-TELEBRAS/INSS-JARAGUA-(JRG-JCP-0495-21)" mtu=1998 name=\
+    "JARAGUA-(JRG-JCP-0495-21)-OUT" vlan-id=989
+add interface="EOIP-TELEBRAS/INSS-JUSSARA-(JUS-JCP-0495-22)" mtu=1998 name=\
+    "JUSSARA-(JUS-JCP-0495-22)-OUT" vlan-id=994
+add interface="EOIP-TELEBRAS/INSS-MINACU-(MKU-JCP-0495-24)" mtu=1998 name=\
+    "MINACU-(MKU-JCP-0495-24)-OUT" vlan-id=1201
+add interface=sfp-sfpplus1-UPLINK_10GB name=MONITORAMENTO vlan-id=9
+add interface="EOIP-TELEBRAS/INSS-NIQUELANDIA-(NQA-JCP-0495-26)" name=\
+    "NIQUELANDIA-(NQA-JCP-0495-26)-OUT" vlan-id=1228
+add interface=sfp-sfpplus2-DOWNLINK_10GB name=NNI-GNA-AEROPORTO-CCR vlan-id=\
+    1649
+add interface="EOIP-TELEBRAS/INSS-OCIDENTAL-(CDOL-JCP-0495-1)" mtu=1998 name=\
+    "OCIDENTAL-(CDOL-JCP-0495-1)-OUT" vlan-id=992
+add interface=sfp-sfpplus1-UPLINK_10GB name=OSPF-GNA-CPE-CGNAT-DIR-NE8000 \
+    vlan-id=4010
+add interface="EOIP-TELEBRAS/INSS-PADRE_BERNARDO-(PBN-JCP-0495-28)" mtu=1998 \
+    name="PADRE_BERNARDO-(PBN-JCP-0495-28)-OUT" vlan-id=1205
+add interface="EOIP-TELEBRAS/INSS-PIRENOPOLIS-(PPS-JCP-0495-29)" mtu=1998 \
+    name="PIRENOPOLIS-(PPS-JCP-0495-29)-OUT" vlan-id=988
+add interface="EOIP-TELEBRAS/INSS-PLANALTINA-(PWL-JCP-0495-38)" mtu=1998 \
+    name="PLANALTINA-(PWL-JCP-0495-38)-OUT" vlan-id=1204
+add interface="EOIP-TELEBRAS/INSS-PORONGATU-(PGT-JCP-0495-2)" mtu=1998 name=\
+    "PORONGATU-(PGT-JCP-0495-2)-OUT" vlan-id=993
+add interface="EOIP-CPE-TELEBRAS/INSS-POSSE-(PSX-JCP-0495-31)" mtu=1998 name=\
+    "POSSE-(PSX-JCP-0495-31)-OUT" vlan-id=1207
+add interface="EOIP-TELEBRAS/INSS-QUIRINOPOLIS-(QNP-JCP-0495-32)" mtu=1998 \
+    name="QUIRINOPOLIS-(QNP-JCP-0495-32)-OUT" vlan-id=1218
+add interface=EOIP-SAA_AG-JATAI-CGC-0565 name=SAA_AG-JATAI-CGC-0565-IN \
+    vlan-id=15
+add interface=EOIP-SANTO_ANTONIO_DECOBERTO-CGC-4223 mtu=1998 name=\
+    SANTO_ANTONIO_DECOBERTO-WIFI vlan-id=12
+add interface="EOIP-TELEBRAS/INSS-SANT_ANT_DESCOBERTO-(SADD-JCP-0495-33)" \
+    mtu=1998 name="SANT_ANT_DESCOBERTO-(SADD-JCP-0495-33)-OUT" vlan-id=998
+add interface="EOIP-TELEBRAS/INSS-SAO_SIMAO-(SSM-JCP-0495-35)" mtu=1998 name=\
+    "SAO_SIMAO-(SSM-JCP-0495-35)-OUT" vlan-id=1214
+add interface=sfp-sfpplus1-UPLINK_10GB name=SERVIDOR_R540 vlan-id=4
+add interface=sfp-sfpplus2-DOWNLINK_10GB name=SRV-VIRTUALIZADOS vlan-id=1001
+add interface=sfp-sfpplus1-UPLINK_10GB name=UPLINK_CCR vlan-id=1000
+add interface="EOIP-TELEBRAS/INSS-URUACU-(URC-JCP-0495-36)" mtu=1998 name=\
+    "URUACU-(URC-JCP-0495-36)-OUT" vlan-id=1203
+add interface=sfp-sfpplus2-DOWNLINK_10GB name=V3-SRV-HUAWEI-NCE vlan-id=3
+add comment=V11-DWDM-DCI-908-DIR-UBERABA interface=sfp-sfpplus2-DOWNLINK_10GB \
+    name=V11-DWDM-DCI-908-DIR-UBERABA vlan-id=11
+add interface=OEIP-GNA-URA name=V199-GER-DWDM-ULA-JPI-ARI vlan-id=199
+add interface=sfp-sfpplus2-DOWNLINK_10GB name=V225-ESCRITORIO-JETELECOM \
+    vlan-id=225
+add interface=sfp-sfpplus2-DOWNLINK_10GB name=V1701-GER-DWDM-POP-URA-CRT \
+    vlan-id=1701
+add interface=sfp-sfpplus2-DOWNLINK_10GB name=V1702-GER-DWDM-POP-URA-POSTO \
+    vlan-id=1702
+add interface=sfp-sfpplus2-DOWNLINK_10GB name=V1704-DHCP-POP-URA-POST050 \
+    vlan-id=1704
+add interface=sfp-sfpplus2-DOWNLINK_10GB name=V2020-GER-PROJETO-FENIX \
+    vlan-id=2020
+add comment=V2090-GER-DWDM-REDE-SAMM interface=sfp-sfpplus2-DOWNLINK_10GB \
+    name=V2090-GER-DWDM-REDE-SAMM vlan-id=2090
+add interface=sfp-sfpplus2-DOWNLINK_10GB name=V3832-GER-DWDM-IPAMERI vlan-id=\
+    3832
+add interface=sfp-sfpplus2-DOWNLINK_10GB name=V3833-GER-DWDM-CATALAO vlan-id=\
+    3833
+add interface=EOIP-TELEBRAS-PIRES-RIO mtu=1998 name=\
+    VLAN-EOPI-TELEBRAS-PIRES-RIO-OUT vlan-id=981
+add interface=EOPI-CAIXA_CIDADE_OCIDENTAL-CGC4222<>GNA mtu=1998 name=\
+    "VLAN-PRIMARY-ID(JETGO422201002)-OUT" vlan-id=2200
+add interface=EOIP-SANTO_ANTONIO_DECOBERTO-CGC-4223 mtu=1998 name=\
+    "VLAN-PRIMARY-ID(JETGO422301001)-OUT" vlan-id=2208
+add interface=EOPI-CAIXA_CIDADE_OCIDENTAL-CGC4222<>GNA name=\
+    "VLAN-SECONDARY-ID(JETGO422201002)-OUT" vlan-id=3200
+add interface=EOIP-SANTO_ANTONIO_DECOBERTO-CGC-4223 mtu=1998 name=\
+    "VLAN-SECONDARY-ID(JETGO422301001)-OUT" vlan-id=3208
+add interface=sfp-sfpplus2-DOWNLINK_10GB name=WIFI-CAIXA-AP_GOIANIA vlan-id=\
+    1541
+add interface=sfp-sfpplus2-DOWNLINK_10GB name=WIFI-CAIXA_ANEL_GNA001 vlan-id=\
+    1540
+add interface=sfp-sfpplus2-DOWNLINK_10GB name=WIFI-CAIXA_ANPAPOLIS vlan-id=\
+    1539
+add interface=sfp-sfpplus2-DOWNLINK_10GB name=WIFI-CAIXA_CRISTALINA vlan-id=\
+    1537
+add interface=EOIP-SAA_AG._ITUMBIARA-CGC-08304/2022 mtu=1998 name=\
+    WIFI-EOIP-SAA_AG._ITUMBIARA-CGC-08304/2022 vlan-id=14
+add interface=sfp-sfpplus2-DOWNLINK_10GB name=WIFI-EVENTO-FLAMBOYANT vlan-id=\
+    70
+add interface=sfp-sfpplus2-DOWNLINK_10GB name=WIFI-FEIRA-ALDEIA-VALE vlan-id=\
+    684
+add interface=sfp-sfpplus2-DOWNLINK_10GB name=WIFI-GNA vlan-id=1538
+add interface=sfp-sfpplus2-DOWNLINK_10GB name=WIFI-PNSA-ASSUNSAO vlan-id=1550
+add interface=sfp-sfpplus2-DOWNLINK_10GB name=WIFI-RIO_VERDE vlan-id=200
+add interface="EOIP-SAA_AG_VALPARAISO_CENTR-CGC-4501   " mtu=1998 name=\
+    WIFI-SAA_AG_VALPARAISO_CENTR-CGC-4501-OUT vlan-id=10
+add interface=EOIP-SAA_PAB_JUSTICA_ESTADUAL_ITUBIARA-CGC-3213 mtu=1998 name=\
+    WIFI-SAA_PAB_JUSTICA_ESTADUAL_ITUBIARA-CGC-3213-OUT vlan-id=13
+/interface vxlan
+add dont-fragment=disabled mac-address=42:DF:33:71:B9:AE mtu=1998 name=\
+    "VXLAN-TELEBRAS/INSS-SAO_MIGUEL_ARAGUAIA-(SGG-JCP-0495-34)" port=8472 \
+    vni=10
+/interface vlan
+add interface="VXLAN-TELEBRAS/INSS-SAO_MIGUEL_ARAGUAIA-(SGG-JCP-0495-34)" \
+    mtu=1998 name="SAO_MIGUEL_ARAGUAIA-(SGG-JCP-0495-34)-OUT" vlan-id=1211
+/interface lte apn
+set [ find default=yes ] ip-type=ipv4 use-network-apn=no
+/interface wireless security-profiles
+set [ find default=yes ] supplicant-identity=MikroTik
+/ip pool
+add name=DHCP-CAIXA-ADM ranges=100.200.1.2-100.200.1.254
+add name=DHCP-WIFI-GNA ranges=100.100.0.2-100.100.7.254
+add name=dhcp_pool11 ranges=192.168.88.2-192.168.88.254
+add name=dhcp_pool12 ranges=192.168.100.10-192.168.100.254
+add name=dhcp_pool13 ranges=100.64.0.2-100.64.15.254
+add name=dhcp_pool15 ranges=192.168.15.2-192.168.15.254
+add name=dhcp_pool16 ranges=192.168.100.2-192.168.100.254
+add name=dhcp_pool17 ranges=192.168.20.2-192.168.20.254
+add name=dhcp_pool18 ranges=192.168.255.2-192.168.255.254
+add comment=OPENVPN name=openvpn ranges=172.17.2.2-172.17.2.254
+add name=dhcp_pool20 ranges=\
+    100.127.0.1-100.127.14.255,100.127.15.1-100.127.15.254
+add name=dhcp_pool21 ranges=100.127.0.2-100.127.15.254
+add name=dhcp_pool22 ranges=192.168.254.2-192.168.254.254
+/ip dhcp-server
+add address-pool=DHCP-CAIXA-ADM interface=\
+    CLI-CAIXA-ADMINISTRATIVO-GO787573001 name=dhcp4
+add address-pool=dhcp_pool15 interface=2408-teste-rfc name=dhcp3
+add address-pool=dhcp_pool16 interface=V225-ESCRITORIO-JETELECOM name=dhcp2
+add address-pool=dhcp_pool17 disabled=yes interface=WIFI-EVENTO-FLAMBOYANT \
+    name=dhcp5
+add address-pool=dhcp_pool18 interface=DHCP-IDRACK name=dhcp6
+add address-pool=dhcp_pool21 interface=BRIDGE-WIFI-GNA name=dhcp1
+add address-pool=dhcp_pool22 interface=V1704-DHCP-POP-URA-POST050 name=dhcp7
+/ip smb users
+set [ find default=yes ] disabled=yes
+/ipv6 pool
+add name="DHCP PD" prefix=2804:ef0:0:100::/56 prefix-length=64
+add name=VPN-WIREGUARD-PD prefix=2804:ef0:0:1a00::/56 prefix-length=64
+/port
+set 0 name=serial0
+set 1 name=serial1
+/queue simple
+add disabled=yes max-limit=1M/1M name=marcus target=192.168.88.218/32
+add max-limit=100M/100M name=CLI-CAIXA-ADMINISTRATIVO-GO787573001 queue=\
+    pcq-upload-default/pcq-download-default target=\
+    CLI-CAIXA-ADMINISTRATIVO-GO787573001
+add disabled=yes limit-at=307200k/307200k max-limit=307200k/307200k name=\
+    WIFI-EVENTO-FLAMBOYANT queue=pcq-upload-default/pcq-download-default \
+    target=192.168.20.3/32 total-max-limit=307200k
+add max-limit=50M/50M name=CLI-CODEMP-MARKETING-GNA-JAB-20173 queue=\
+    pcq-upload-default/pcq-download-default target=172.16.27.8/30
+/routing bgp template
+set default disabled=no output.network=bgp-networks
+/routing id
+add disabled=no id=172.16.249.18 name=OSPF-ID select-dynamic-id=""
+/routing ospf instance
+add disabled=yes name=default-v2 redistribute=connected router-id=OSPF-ID
+add disabled=yes name=default-v3 redistribute=connected router-id=OSPF-ID \
+    version=3
+/routing ospf area
+add disabled=yes instance=default-v2 name=backbone-v2
+add disabled=yes instance=default-v3 name=backbone-v3
+/snmp community
+add addresses=::/0 name=jetnet@2025
+/system logging action
+add name=Graylog remote=172.17.255.20 remote-port=1543 target=remote
+/interface bridge port
+add bridge=BRIDGE-TELEBRAS/INSS-PORONGATU ingress-filtering=no interface=\
+    "PORONGATU-(PGT-JCP-0495-2)-OUT" internal-path-cost=10 path-cost=10
+add bridge=BRIDGE-TELEBRAS/INSS-PIRENOPOLIS ingress-filtering=no interface=\
+    "PIRENOPOLIS-(PPS-JCP-0495-29)-OUT" internal-path-cost=10 path-cost=10
+add bridge=BRIDGE-TELEBRAS/INSS-PIRENOPOLIS ingress-filtering=no interface=\
+    CLI-TELEBRAS-INSS-PIRENOPOLIS-PPS-JCP-0495-29-IN internal-path-cost=10 \
+    path-cost=10
+add bridge=BRIDGE-TELEBRAS/INSS-OCIDENTAL ingress-filtering=no interface=\
+    CLI-TELEBRAS-INSS-OCIDENTAL-CDOL-JCP-0495-1-IN internal-path-cost=10 \
+    path-cost=10
+add bridge=BRIDGE-TELEBRAS/INSS-OCIDENTAL ingress-filtering=no interface=\
+    "OCIDENTAL-(CDOL-JCP-0495-1)-OUT" internal-path-cost=10 path-cost=10
+add bridge=BRIDGE-TELEBRAS/INSS-PORONGATU ingress-filtering=no interface=\
+    CLI-TELEBRAS-INSS-PORANGATU-PGT-JCP-0495-2-IN internal-path-cost=10 \
+    path-cost=10
+add bridge=BRIDGE-TELEBRAS/INSS-JARAGUA ingress-filtering=no interface=\
+    "JARAGUA-(JRG-JCP-0495-21)-OUT" internal-path-cost=10 path-cost=10
+add bridge=BRIDGE-TELEBRAS/INSS-JARAGUA ingress-filtering=no interface=\
+    CLI-TELEBRAS-INSS-JARAGUA-JRG-JCP-0495-21-IN internal-path-cost=10 \
+    path-cost=10
+add bridge=BRIDGE-TELEBRAS/INSS-ITAPUTANGA ingress-filtering=no interface=\
+    "ITAPURANGA-(IPG-JCP-0495-20)-OUT" internal-path-cost=10 path-cost=10
+add bridge=BRIDGE-TELEBRAS/INSS-ITAPUTANGA ingress-filtering=no interface=\
+    CLI-TELEBRAS-INSS-ITAPUTANGA-IPG-JCP-0495-20-IN internal-path-cost=10 \
+    path-cost=10
+add bridge=BRIDGE-TELEBRAS/INSS-ITABERAI ingress-filtering=no interface=\
+    "ITABERAI-(IEI-JCP-0495-19)-OUT" internal-path-cost=10 path-cost=10
+add bridge=BRIDGE-TELEBRAS/INSS-ITABERAI ingress-filtering=no interface=\
+    CLI-TELEBRAS-INSS-ITABERAI-IEI-JCP-0495-19-IN internal-path-cost=10 \
+    path-cost=10
+add bridge=BRIDGE-TELEBRAS/INSS-GOIANESIA ingress-filtering=no interface=\
+    "GOIANESIA-(GNE-JCP-0495-15)-OUT" internal-path-cost=10 path-cost=10
+add bridge=BRIDGE-TELEBRAS/INSS-GOIANESIA ingress-filtering=no interface=\
+    CLI-TELEBRAS-INSS-GOIANESIA-GNE-JCP-0495-15-IN internal-path-cost=10 \
+    path-cost=10
+add bridge=BRIDGE-TELEBRAS/INSS-CERES ingress-filtering=no interface=\
+    "CERES-(CEE-JCP-0495-12)-OUT" internal-path-cost=10 path-cost=10
+add bridge=BRIDGE-TELEBRAS/INSS-CERES ingress-filtering=no interface=\
+    CLI-TELEBRAS-INSS-CERES-CEE-JCP-0495-12-IN internal-path-cost=10 \
+    path-cost=10
+add bridge=BRIDGE-TELEBRAS/INSS-GOIATUBA ingress-filtering=no interface=\
+    "GOIATUBA-(GTB-JCP-0495-17)-OUT" internal-path-cost=10 path-cost=10
+add bridge=BRIDGE-TELEBRAS/INSS-GOIATUBA ingress-filtering=no interface=\
+    CLI-TELEBRAS-INSS-GOIATUBA-GTB-JCP-0495-17-IN internal-path-cost=10 \
+    path-cost=10
+add bridge=BRIDGE-CFE_CIDADE_OCIDENTAL-CGC4222-PRIMARY ingress-filtering=no \
+    interface=CEF-VLAN-PRIMARY-ID-JETGO422201002-IN internal-path-cost=10 \
+    path-cost=10
+add bridge=BRIDGE-CFE_CIDADE_OCIDENTAL-CGC4222-PRIMARY ingress-filtering=no \
+    interface="VLAN-PRIMARY-ID(JETGO422201002)-OUT" internal-path-cost=10 \
+    path-cost=10
+add bridge=BRIDGE-CFE_CIDADE_OCIDENTAL-CGC4222-SEGUNDARY ingress-filtering=no \
+    interface=CEF-VLAN-SECONDARY-ID-JETGO422201002-IN internal-path-cost=10 \
+    path-cost=10
+add bridge=BRIDGE-CFE_CIDADE_OCIDENTAL-CGC4222-SEGUNDARY ingress-filtering=no \
+    interface="VLAN-SECONDARY-ID(JETGO422201002)-OUT" internal-path-cost=10 \
+    path-cost=10
+add bridge=BRIDGE-TELEBRAS/INSS-CIDADE_GOIAS ingress-filtering=no interface=\
+    CLI-TELEBRAS-INSS-CIDADE-GOIAS-GOA-JCP-0495-25-IN internal-path-cost=10 \
+    path-cost=10
+add bridge=BRIDGE-TELEBRAS/INSS-CIDADE_GOIAS ingress-filtering=no interface=\
+    "CIDADE_GOIAS-(GOA-JCP-0495-25)-OUT" internal-path-cost=10 path-cost=10
+add bridge=BRIDGE-TELEBRAS/INSS-SANT_ANT_DESCOBERTO ingress-filtering=no \
+    interface="SANT_ANT_DESCOBERTO-(SADD-JCP-0495-33)-OUT" \
+    internal-path-cost=10 path-cost=10
+add bridge=BRIDGE-TELEBRAS/INSS-SANT_ANT_DESCOBERTO ingress-filtering=no \
+    interface=CLI-TELEBRAS-INSS-SANT-ANT-DESCOBERTO-SADD-JCP-0495-33-IN \
+    internal-path-cost=10 path-cost=10
+add bridge=BRIDGE-TELEBRAS/INSS-CATALAO ingress-filtering=no interface=\
+    CLI-TELEBRAS-INSS-CATALAO-CTL-JCP-0495-11-OUT internal-path-cost=10 \
+    path-cost=10
+add bridge=BRIDGE-TELEBRAS/INSS-CATALAO ingress-filtering=no interface=\
+    CLI-TELEBRAS-INSS-CATALAO-CTL-JCP-0495-11-IN internal-path-cost=10 \
+    path-cost=10
+add bridge=BRIDGE-TELEBRAS/INSS-GOIANIRA ingress-filtering=no interface=\
+    "GOIANIRA-(GIN-JCP-0495-16)-OUT" internal-path-cost=10 path-cost=10
+add bridge=BRIDGE-TELEBRAS/INSS-GOIANIRA ingress-filtering=no interface=\
+    CLI-TELEBRAS-INSS-GOIANIRA-GIN-JCP-0495-16-IN internal-path-cost=10 \
+    path-cost=10
+add bridge=BRIDGE-TELEBRAS/INSS-MINACU ingress-filtering=no interface=\
+    "MINACU-(MKU-JCP-0495-24)-OUT" internal-path-cost=10 path-cost=10
+add bridge=BRIDGE-TELEBRAS/INSS-MINACU ingress-filtering=no interface=\
+    CLI-TELEBRAS-INSS-MINACU-MKU-JCP-0495-24-IN internal-path-cost=10 \
+    path-cost=10
+add bridge=BRIDGE-TELEBRAS/INSS_NOVA_CAIAPONIA ingress-filtering=no \
+    interface="CAIAPONIA-(CON-JCP-0495-10)-OUT" internal-path-cost=10 \
+    path-cost=10
+add bridge=BRIDGE-TELEBRAS/INSS_NOVA_CAIAPONIA ingress-filtering=no \
+    interface=CLI-TELEBRAS-INSS-NOVA-CAIAPONIA-CON-JCP-0495-10-IN \
+    internal-path-cost=10 path-cost=10
+add bridge=BRIDGE-TELEBRAS/INSS-JUSSARA ingress-filtering=no interface=\
+    "JUSSARA-(JUS-JCP-0495-22)-OUT" internal-path-cost=10 path-cost=10
+add bridge=BRIDGE-TELEBRAS/INSS-JUSSARA ingress-filtering=no interface=\
+    DWDM-NOKIA-BRASILIA internal-path-cost=10 path-cost=10
+add bridge=BRIDGE-TELEBRAS/INSS-URUACU ingress-filtering=no interface=\
+    "URUACU-(URC-JCP-0495-36)-OUT" internal-path-cost=10 path-cost=10
+add bridge=BRIDGE-TELEBRAS/INSS-URUACU ingress-filtering=no interface=\
+    CLI-TELEBRAS-INSS-URUACU-URC-JCP-0495-36-IN internal-path-cost=10 \
+    path-cost=10
+add bridge=BRIDGE-TELEBRAS/INSS-PLANALTINA ingress-filtering=no interface=\
+    "PLANALTINA-(PWL-JCP-0495-38)-OUT" internal-path-cost=10 path-cost=10
+add bridge=BRIDGE-TELEBRAS/INSS-PLANALTINA ingress-filtering=no interface=\
+    CLI-TELEBRAS-INSS-PLANALTINA-PWL-JCP-0495-38-IN internal-path-cost=10 \
+    path-cost=10
+add bridge=BRIDGE-TELEBRAS/INSS-PADRE_BERNARDO ingress-filtering=no \
+    interface="PADRE_BERNARDO-(PBN-JCP-0495-28)-OUT" internal-path-cost=10 \
+    path-cost=10
+add bridge=BRIDGE-TELEBRAS/INSS-PADRE_BERNARDO ingress-filtering=no \
+    interface=CLI-TELEBRAS-INSS-PADRE-BERNARDO-PBN-JCP-0495-28-IN \
+    internal-path-cost=10 path-cost=10
+add bridge=BRIDGE-TELEBRAS/INSS-FORMOSA ingress-filtering=no interface=\
+    "FORMOSA-(FRM-JCP-0495-14)-OUT" internal-path-cost=10 path-cost=10
+add bridge=BRIDGE-TELEBRAS/INSS-FORMOSA ingress-filtering=no interface=\
+    CLI-TELEBRAS-INSS-FORMOSA-FRM-JCP-0495-14-IN internal-path-cost=10 \
+    path-cost=10
+add bridge=BRIDGE-TELEBRAS/INSS-POSSE ingress-filtering=no interface=\
+    "POSSE-(PSX-JCP-0495-31)-OUT" internal-path-cost=10 path-cost=10
+add bridge=BRIDGE-TELEBRAS/INSS-POSSE ingress-filtering=no interface=\
+    CLI-TELEBRAS-INSS-POSSE-PSX-JCP-0495-31-IN internal-path-cost=10 \
+    path-cost=10
+add bridge=BRIDGE-TELEBRAS/INSS-ANINCUNS ingress-filtering=no interface=\
+    "ANINCUNS-(ANU-JCP-0495-8)-OUT" internal-path-cost=10 path-cost=10
+add bridge=BRIDGE-TELEBRAS/INSS-ANINCUNS ingress-filtering=no interface=\
+    CLI-TELEBRAS-INSS-ANINCUNS-ANU-JCP-0495-8-IN internal-path-cost=10 \
+    path-cost=10
+add bridge=BRIDGE-TELEBRAS/INSS-SAO_MIGUEL_ARAGUAIA ingress-filtering=no \
+    interface=CLI-TELEBRAS-INSS-SAO-MIGUEL-ARAGUAIA-SGG-JCP-0495-34-IN \
+    internal-path-cost=10 path-cost=10
+add bridge=BRIDGE-TELEBRAS/INSS-SAO_MIGUEL_ARAGUAIA ingress-filtering=no \
+    interface="SAO_MIGUEL_ARAGUAIA-(SGG-JCP-0495-34)-OUT" internal-path-cost=\
+    10 path-cost=10
+add bridge=BRIDGE-TELEBRAS/INSS-BELAVISTA ingress-filtering=no interface=\
+    "BELA_VISTA- (BGS-JCP-0495-09)-OUT" internal-path-cost=10 path-cost=10
+add bridge=BRIDGE-TELEBRAS/INSS-BELAVISTA ingress-filtering=no interface=\
+    CLI-TELEBRAS-INSS-BELAVISTA-BGS-JCP-0495-09-IN internal-path-cost=10 \
+    path-cost=10
+add bridge=BRIDGE-WIFI-GNA disabled=yes ingress-filtering=no interface=\
+    WIFI-SAA_AG_VALPARAISO_CENTR-CGC-4501-OUT internal-path-cost=10 \
+    path-cost=10
+add bridge=BRIDGE-TELEBRAS/INSS-SAO_SIMAO ingress-filtering=no interface=\
+    "SAO_SIMAO-(SSM-JCP-0495-35)-OUT" internal-path-cost=10 path-cost=10
+add bridge=BRIDGE-TELEBRAS/INSS-SAO_SIMAO ingress-filtering=no interface=\
+    CLI-TELEBRAS-INSS-SAO-SIMAO-SSM-JCP-0495-35-IN internal-path-cost=10 \
+    path-cost=10
+add bridge=BRIDGE-TELEBRAS/INSS-IPORA ingress-filtering=no interface=\
+    "IPORA-(IPA-JCP-0495-18)-OUT" internal-path-cost=10 path-cost=10
+add bridge=BRIDGE-TELEBRAS/INSS-IPORA ingress-filtering=no interface=\
+    CLI-TELEBRAS-INSS-IPORA-IPA-JCP-0495-18-IN internal-path-cost=10 \
+    path-cost=10
+add bridge=BRIDGE-WIFI-GNA disabled=yes ingress-filtering=no interface=\
+    CIDADE_OCIDENTAL-CGC-4222-OUT internal-path-cost=10 path-cost=10
+add bridge=BRIDGE-CPE-SAA_AG_VALPARAISO_CENTR-CGC-4501-SEGUNDARY \
+    ingress-filtering=no interface=\
+    "CEF-VLAN-SECONDARY-ID(JETGO450101001)-OUT" internal-path-cost=10 \
+    path-cost=10
+add bridge=BRIDGE-CPE-SAA_AG_VALPARAISO_CENTR-CGC-4501-SEGUNDARY \
+    ingress-filtering=no interface=CEF-VLAN-SECONDARY-ID-JETGO450101001-IN \
+    internal-path-cost=10 path-cost=10
+add bridge=BRIDGE-CPE-SAA_AG_VALPARAISO_CENTR-CGC-4501-PRIMARY \
+    ingress-filtering=no interface="CEF-VLAN-PRIMARY-ID(JETGO450101001)-OUT" \
+    internal-path-cost=10 path-cost=10
+add bridge=BRIDGE-CPE-SAA_AG_VALPARAISO_CENTR-CGC-4501-PRIMARY \
+    ingress-filtering=no interface=CEF-VLAN-PRIMARY-ID-JETGO450101001-IN \
+    internal-path-cost=10 path-cost=10
+add bridge=BRIDGE-TELEBRAS/INSS-QUIRINOPOLIS ingress-filtering=no interface=\
+    "QUIRINOPOLIS-(QNP-JCP-0495-32)-OUT" internal-path-cost=10 path-cost=10
+add bridge=BRIDGE-TELEBRAS/INSS-QUIRINOPOLIS ingress-filtering=no interface=\
+    CLI-TELEBRAS-INSS-QUIRINOPOLIS-QNP-JCP-0495-32-IN internal-path-cost=10 \
+    path-cost=10
+add bridge=BRIDGE-WIFI-GNA disabled=yes ingress-filtering=no interface=\
+    SANTO_ANTONIO_DECOBERTO-WIFI internal-path-cost=10 path-cost=10
+add bridge=BRIDGE-CFE-SANTO_ANTONIO_DECOBERTO-CGC-4223-PRIMARY \
+    ingress-filtering=no interface=CEF-VLAN-PRIMARY-ID-JETGO422301001-IN \
+    internal-path-cost=10 path-cost=10
+add bridge=BRIDGE-CFE-SANTO_ANTONIO_DECOBERTO-CGC-4223-PRIMARY \
+    ingress-filtering=no interface="VLAN-PRIMARY-ID(JETGO422301001)-OUT" \
+    internal-path-cost=10 path-cost=10
+add bridge=BRIDGE-CFE-SANTO_ANTONIO_DECOBERTO-CGC-4223-SEGUNDARY \
+    ingress-filtering=no interface="VLAN-SECONDARY-ID(JETGO422301001)-OUT" \
+    internal-path-cost=10 path-cost=10
+add bridge=BRIDGE-CFE-SANTO_ANTONIO_DECOBERTO-CGC-4223-SEGUNDARY \
+    ingress-filtering=no interface=CEF-VLAN-SECONDARY-ID-JETGO422301001-IN \
+    internal-path-cost=10 path-cost=10
+add bridge=BRIDGE-CPE_AG_GOIANIRA-CGC-3405-PRIMARY ingress-filtering=no \
+    interface=CEF-VLAN-PRIMARY-JETGO3405010011-IN internal-path-cost=10 \
+    path-cost=10
+add bridge=BRIDGE-CPE_AG_GOIANIRA-CGC-3405-PRIMARY ingress-filtering=no \
+    interface="CEF-VLAN-PRI-(JETGO3405010011)-OUT" internal-path-cost=10 \
+    path-cost=10
+add bridge=BRIDGE-CPE_AG_GOIANIRA-CGC-3405-SEGUNDARY ingress-filtering=no \
+    interface=CEF-VLAN-SECONDARY-JETGO340501001-IN internal-path-cost=10 \
+    path-cost=10
+add bridge=BRIDGE-CPE_AG_GOIANIRA-CGC-3405-SEGUNDARY ingress-filtering=no \
+    interface="CEF-VLAN-SEC-(JETGO3405010011)-OUT" internal-path-cost=10 \
+    path-cost=10
+add bridge="BRIDGE-TELEBRAS/INSS-NIQUELANDIA-(NQA-JCP-0495-26)" \
+    ingress-filtering=no interface="NIQUELANDIA-(NQA-JCP-0495-26)-OUT" \
+    internal-path-cost=10 path-cost=10
+add bridge="BRIDGE-TELEBRAS/INSS-NIQUELANDIA-(NQA-JCP-0495-26)" \
+    ingress-filtering=no interface=\
+    CLI-TELEBRAS-INSS-NIQUELANDIA-NQA-JCP-0495-26-IN internal-path-cost=10 \
+    path-cost=10
+add bridge=BRIDGE-WIFI-GNA disabled=yes ingress-filtering=no interface=\
+    WIFI-SAA_PAB_JUSTICA_ESTADUAL_ITUBIARA-CGC-3213-OUT internal-path-cost=10 \
+    path-cost=10
+add bridge=BRIDGE-WIFI-GNA disabled=yes ingress-filtering=no interface=\
+    WIFI-EOIP-SAA_AG._ITUMBIARA-CGC-08304/2022 internal-path-cost=10 \
+    path-cost=10
+add bridge=BRIDGE-WIFI-GNA disabled=yes ingress-filtering=no interface=\
+    SAA_AG-JATAI-CGC-0565-IN internal-path-cost=10 path-cost=10
+add bridge=BRIDGE-CFE-SAA_AG_MINEIROS-CGC-0871-PRIMARY ingress-filtering=no \
+    interface=CEF-VLAN-PRIMARY-JETGO087101001-IN internal-path-cost=10 \
+    path-cost=10
+add bridge=BRIDGE-CFE-SAA_AG_MINEIROS-CGC-0871-PRIMARY ingress-filtering=no \
+    interface="CEF-VLAN-PRI-(JETGO087101001)-OUT" internal-path-cost=10 \
+    path-cost=10
+add bridge=BRIDGE-CFE-SAA_AG_MINEIROS-CGC-0871-SEGUNDARY ingress-filtering=no \
+    interface=CEF-VLAN-SECONDARY-JETGO087101001-IN internal-path-cost=10 \
+    path-cost=10
+add bridge=BRIDGE-CFE-SAA_AG_MINEIROS-CGC-0871-SEGUNDARY ingress-filtering=no \
+    interface="CEF-VLAN-SEC-(JETGO087101001)-OUT" internal-path-cost=10 \
+    path-cost=10
+add bridge=BRIDGE-CFE-CATALAO_SAA_AG_CONGADAS-CGC-3732-PRIMARY \
+    ingress-filtering=no interface=CEF-VLAN-PRIMARY-JETGO373201001-IN \
+    internal-path-cost=10 path-cost=10
+add bridge=BRIDGE-CFE-CATALAO_SAA_AG_CONGADAS-CGC-3732-PRIMARY \
+    ingress-filtering=no interface="CEF-VLAN-PRI-(JETGO373201001)-OUT" \
+    internal-path-cost=10 path-cost=10
+add bridge=BRIDGE-CFE-CATALAO_SAA_AG_CONGADAS-CGC-3732-SECUNDARY \
+    ingress-filtering=no interface=CEF-VLAN-SECONDARY-JETGO373201001-IN \
+    internal-path-cost=10 path-cost=10
+add bridge=BRIDGE-CFE-CATALAO_SAA_AG_CONGADAS-CGC-3732-SECUNDARY \
+    ingress-filtering=no interface="CEF-VLAN-SEC-(JETGO373201001)-OUT" \
+    internal-path-cost=10 path-cost=10
+add bridge=BRIDGE-WIFI-GNA disabled=yes ingress-filtering=no interface=\
+    WIFI-RIO_VERDE internal-path-cost=10 path-cost=10
+add bridge=BRIDGE-CPE-SAA_AG_VALPARAISO-CGC-2437-SECUNDARY ingress-filtering=\
+    no interface="CEF-VLAN-SEC-(JETGO243701001)-OUT" internal-path-cost=10 \
+    path-cost=10
+add bridge=BRIDGE-CPE-SAA_AG_VALPARAISO-CGC-2437-SECUNDARY ingress-filtering=\
+    no interface=CEF-VLAN-SECONDARY-JETGO243701001-IN internal-path-cost=10 \
+    path-cost=10
+add bridge=BRIDGE-CPE-SAA_AG_VALPARAISO-CGC-2437-PRIMARY ingress-filtering=no \
+    interface=CEF-VLAN-PRIMARY-JETGO243701001-IN internal-path-cost=10 \
+    path-cost=10
+add bridge=BRIDGE-CPE-SAA_AG_VALPARAISO-CGC-2437-PRIMARY ingress-filtering=no \
+    interface="CEF-VLAN-PRI-(JETGO243701001)-OUT" internal-path-cost=10 \
+    path-cost=10
+add bridge=BRIDGE-WIFI-GNA disabled=yes ingress-filtering=no interface=\
+    WIFI-CAIXA_ANPAPOLIS internal-path-cost=10 path-cost=10
+add bridge=BRIDGE-WIFI-GNA ingress-filtering=no interface=WIFI-GNA \
+    internal-path-cost=10 path-cost=10
+add bridge=BRIDGE-WIFI-GNA disabled=yes ingress-filtering=no interface=\
+    WIFI-CAIXA_ANEL_GNA001 internal-path-cost=10 path-cost=10
+add bridge=BRIDGE-WIFI-GNA disabled=yes ingress-filtering=no interface=\
+    WIFI-CAIXA-AP_GOIANIA internal-path-cost=10 path-cost=10
+add bridge="BRIDGE-CFE-SAA_AG_GOIANESIA-0792-(JETGO079201001)-PRIMARY" \
+    ingress-filtering=no interface="CFE-VLAN-PRI-(JETGO079201001)-OUT" \
+    internal-path-cost=10 path-cost=10
+add bridge="BRIDGE-CFE-SAA_AG_GOIANESIA-0792-(JETGO079201001)-PRIMARY" \
+    ingress-filtering=no interface=CFE-VLAN-PRIMARY-JETGO079201001-IN \
+    internal-path-cost=10 path-cost=10
+add bridge="BRIDGE-CFE-SAA_AG_GOIANESIA-0792-(JETGO079201001)-SECUDARY" \
+    ingress-filtering=no interface=CFE-VLAN-SECONDARY-JETGO079201001-IN \
+    internal-path-cost=10 path-cost=10
+add bridge="BRIDGE-CFE-SAA_AG_GOIANESIA-0792-(JETGO079201001)-SECUDARY" \
+    ingress-filtering=no interface="CFE-VLAN-SEC-(JETGO079201001)-OUT" \
+    internal-path-cost=10 path-cost=10
+add bridge=BRIDGE-WIFI-GNA disabled=yes ingress-filtering=no interface=\
+    WIFI-CAIXA_CRISTALINA internal-path-cost=10 path-cost=10
+add bridge=BRIDGE-WIFI-GNA interface=WIFI-FEIRA-ALDEIA-VALE \
+    internal-path-cost=10 path-cost=10
+add bridge=BRIDGE-WIFI-GNA interface=ether5-WIFI-DEPOSITO internal-path-cost=\
+    10 path-cost=10
+add bridge=BRIDGE-WIFI-GNA disabled=yes interface=CLI-NET-SUPREMA-VM
+add bridge=BRIDGE-EOIP-TELEBRAS-PIRES-RIO interface=\
+    CLI-TELEBRAS-PIRES-RIO-INSS-PIR-JCP-0495-30-IN
+add bridge=BRIDGE-EOIP-TELEBRAS-PIRES-RIO interface=\
+    VLAN-EOPI-TELEBRAS-PIRES-RIO-OUT
+add bridge=BRIDGE-WIFI-GNA interface=WIFI-PNSA-ASSUNSAO
+add bridge=BRIDGE-WIFI-GNA interface=WIFI-EVENTO-FLAMBOYANT
+add bridge=ESCRITORIO-GOIANIA interface=ether1-ESCRITORIO_GOIANIA
+add bridge=BRIDGE-WIFI-GNA disabled=yes interface=*FF internal-path-cost=10 \
+    path-cost=10
+add bridge=BRIDGE-GER-DWDM-ULA interface=OEIP-GNA-URA
+add bridge=BRIDGE-V11-GER-DWDM interface=ether7-DWDM-DCI-908-DIR-UBERABA
+add bridge=BRIDGE-V11-GER-DWDM interface=V11-DWDM-DCI-908-DIR-UBERABA
+/ip firewall connection tracking
+set udp-timeout=10s
+/ip neighbor discovery-settings
+set discover-interface-list=all
+/ip settings
+set max-neighbor-entries=8192
+/ipv6 settings
+set accept-router-advertisements=yes max-neighbor-entries=8192 \
+    soft-max-neighbor-entries=8191
+/interface l2tp-server server
+set enabled=yes use-ipsec=yes
+/interface pptp-server server
+# PPTP connections are considered unsafe, it is suggested to use a more modern VPN protocol instead
+set authentication=pap,chap,mschap1,mschap2 enabled=yes
+/interface vxlan vteps
+add interface="VXLAN-TELEBRAS/INSS-SAO_MIGUEL_ARAGUAIA-(SGG-JCP-0495-34)" \
+    remote-ip=168.90.52.44
+/interface wireguard peers
+add allowed-address=0.0.0.0/0,::/0 client-address=\
+    172.31.253.2/30,2804:ef0:0:1a00::1/64 client-dns=\
+    186.237.223.117,186.237.223.118,2804:ef0:0:5::117,2804:ef0:0:5::118 \
+    client-endpoint=143.255.197.62 client-keepalive=10s client-listen-port=\
+    13230 interface=VPN-WIREGUARD-jet.israel name=jet.isael preshared-key=\
+    "yGr2Do8MKC4vGllnvvnsftdMRkVcZiQAhc1CXZR9/3s=" private-key=\
+    "CGj91YUX2eQW/3eavHZHyzPOQVEDi8v2zBlcj2bzwFU=" public-key=\
+    "RacAwXUKQDPVuLLskS5/b/zYvI4bWkiy+qfR1ycQGFI="
+add allowed-address=0.0.0.0/0,::/0 client-address=\
+    172.31.253.6/30,2804:ef0:0:1a01::1/64 client-dns=\
+    186.237.223.117,186.237.223.118,2804:ef0:0:5::117,2804:ef0:0:5::118 \
+    client-endpoint=143.255.197.62 client-keepalive=10s client-listen-port=\
+    13231 interface=VPN-WIREGUARD-jet.douglasgov name=jet.douglasgov \
+    preshared-key="KG++uC6YCnLjl59ReGwZsWNxgnTecjG7RNDYl8IHdlc=" private-key=\
+    "CKQtYPEbZMHxruy3Sj3/yEDS+55j/yRNdRqiifSA+nc=" public-key=\
+    "R/4cIc1ibkdW5l1FkvQDjZKxUGkV33JxL+LEOuDdljU="
+add allowed-address=0.0.0.0/0,::/0 client-address=\
+    172.31.253.10/30,2804:ef0:0:1a02::1/64 client-dns=\
+    186.237.223.117,186.237.223.118,2804:ef0:0:5::117,2804:ef0:0:5::118 \
+    client-endpoint=143.255.197.62 client-keepalive=10s client-listen-port=\
+    13232 interface=VPN-WIREGUARD-jet.rubens name=jet.rubens preshared-key=\
+    "2LYyagZ+j4/228AokXyRq6MxFt7huWcZt7udxEMub0A=" private-key=\
+    "GI5x2MbNute1fOAEf+BXxuXgQdI8uhMIM4v/Im2q/ks=" public-key=\
+    "16B77lsdkbdS0vscDeHyemr03tq0O3jUY+sP58h8NFQ="
+add allowed-address=0.0.0.0/0,::/0 client-address=\
+    172.31.253.14/30,2804:ef0:0:1a03::1/64 client-dns=\
+    186.237.223.117,186.237.223.118,2804:ef0:0:5::117,2804:ef0:0:5::118 \
+    client-endpoint=143.255.197.62 client-keepalive=10s client-listen-port=\
+    13233 interface=VPN-WIREGUARD-client.julio name=client.julio \
+    preshared-key="KNxZf4a0PnKlz1Yqgd0RYmYC3laR3uAc7KaCE0546F4=" private-key=\
+    "OJRSMxuG6+EArzYbXRdFZSOKs6JYzWAc8+IrpXoXQms=" public-key=\
+    "zcAlJacH27Nx/hGPmB5MkBMK+p1qylQS8JbAebHmYAU="
+add allowed-address=0.0.0.0/0,::/0 client-address=\
+    172.31.253.18/30,2804:ef0:0:1a04::1/64 client-dns=\
+    186.237.223.117,186.237.223.118,2804:ef0:0:5::117,2804:ef0:0:5::118 \
+    client-endpoint=143.255.197.62 client-keepalive=10s client-listen-port=\
+    13234 interface=VPN-WIREGUARD-jet.avner name=jet.avner preshared-key=\
+    "wO2YNkFMsGg9JBQAfrFRv/+hvN/b+xQuUCnDjjPOg1U=" private-key=\
+    "kCrwy6M6ynvnTgnKln5F94U5HpoYi42LkorUeeT7xUk=" public-key=\
+    "Yl8DlPhYaq4xzUBcpugNJdYl17kzGLQjJu1PBSZ6tlY="
+add allowed-address=0.0.0.0/0,::/0 client-address=\
+    172.31.253.22/30,2804:ef0:0:1a05::1/64 client-dns=\
+    186.237.223.117,186.237.223.118,2804:ef0:0:5::117,2804:ef0:0:5::118 \
+    client-endpoint=143.255.197.62 client-keepalive=10s client-listen-port=\
+    12325 interface=VPN-WIREGUARD-jet.alencar name=jet.alencar preshared-key=\
+    "eNZddClz00GkorvkcUonOgB+2Md3CViKER+L0CqmT3Y=" private-key=\
+    "sLOIDDVIrhA0lcSHPlnXgMELfPXi42Ou5qXEi8jZ7Ws=" public-key=\
+    "iG8i1IsxR4WgKk6Xo5+twKKeehGOKJVhJ7PwZ5gH8F8="
+add allowed-address=0.0.0.0/0,::/0 client-address=\
+    172.31.253.26/30,2804:ef0:0:1a06::1/64 client-dns=\
+    186.237.223.117,186.237.223.118,2804:ef0:0:5::117,2804:ef0:0:5::118 \
+    client-endpoint=143.255.197.62 client-keepalive=10s client-listen-port=\
+    13236 interface=VPN-WIREGUARD-jet.diegoddos name=jet.diegoddos \
+    preshared-key="aHjCLhA0aqneb/F/EQq2N3wUfDdOVTiFQGP3kyTEel8=" private-key=\
+    "gP4a+b7N8v23TZ4wBO+LVQRUBbkQ0pPUGBADljH8ZUQ=" public-key=\
+    "jz7Kj1L1IzuBRt8haonTWhhSZJo73MDKHIzgTzEfKHc="
+add allowed-address=0.0.0.0/0,::/0 client-address=\
+    172.31.253.30/30,2804:ef0:0:1a07::1/64 client-dns=\
+    186.237.223.117,186.237.223.118,2804:ef0:0:5::117,2804:ef0:0:5::118 \
+    client-endpoint=143.255.197.62 client-keepalive=10s client-listen-port=\
+    13237 interface=VPN-WIREGUARD-jet.thyago name=jet.thyago preshared-key=\
+    "gD9UUg0UcYsmcfLSzLLV/XKCVRNj568VWLZ7jBm5pEo=" private-key=\
+    "CGmKoisLQd57BSELvK7+IGGqrSp6fSlBNYY1mQaLFkI=" public-key=\
+    "XaZ9arDUt93Lwy4pSHuAX/76OjIJiG8ACaXPx5pKPzk="
+add allowed-address=0.0.0.0/0,::/0 client-address=\
+    172.31.253.34/30,2804:ef0:0:1a08::1/64 client-dns=\
+    186.237.223.117,186.237.223.118,2804:ef0:0:5::117,2804:ef0:0:5::118 \
+    client-endpoint=143.255.197.62 client-keepalive=10s client-listen-port=\
+    13238 interface=VPN-WIREGUARD-jet.rubens2 name=jet.rubens2 preshared-key=\
+    "QLeJmPMH1DyuDeBNRrRN3pFgtSCP38BAjQ0CGL8nSkU=" private-key=\
+    "+MA2IC/m10aasfrOipwUxGZzqqKeVXoPyTTjLZYHX00=" public-key=\
+    "yOqhp2uW4d0w0dMdJtAnsIn5aIsrwYF5JVTgE2LbNxc="
+add allowed-address=0.0.0.0/0,::/0 client-address=\
+    172.31.253.38/30,2804:ef0:0:1a09::1/64 client-dns=\
+    186.237.223.117,186.237.223.118,2804:ef0:0:5::117,2804:ef0:0:5::118 \
+    client-endpoint=143.255.197.62 client-keepalive=10s client-listen-port=\
+    13240 interface=VPN-WIREGUARD-jet.giba name=jet.giba preshared-key=\
+    "qN5TIjkrsQ4f3yJA/KpvGS9t47cM3UGFQ3YYZMEt22E=" private-key=\
+    "WKxsHCKj5ntLIWfJmKrqsn0xo7QmW0MWd7Lm+6cInFE=" public-key=\
+    "ZlPPnfl25uy0g8+YHF6R0UpghUSgkNmus+HmRfMDBA8="
+add allowed-address=0.0.0.0/0,::/0 client-address=\
+    172.31.253.42/30,2804:ef0:0:1a0a::1/64 client-dns=\
+    186.237.223.117,186.237.223.118,2804:ef0:0:5::117,2804:ef0:0:5::118 \
+    client-endpoint=143.255.197.62 client-keepalive=10s client-listen-port=\
+    13241 interface=VPN-WIREGUARD-jet.marciovitor name=jet.marciovitor \
+    preshared-key="KCBhgqN/y7dAvn6KWdwy2wMqWyuqgrv+Z0BCbO6050g=" private-key=\
+    "IJY9nYMp7905LIBp7zHt17dH1XxKV6odt9A6+EGPeWw=" public-key=\
+    "4sCa8bK6S29sYcyZIT4Fpp3sOJ1hYmaYqekzJp4bpww="
+add allowed-address=0.0.0.0/0,::/0 client-address=\
+    172.31.253.46/30,2804:ef0:0:1a0b::1/64 client-dns=\
+    186.237.223.117,186.237.223.118,2804:ef0:0:5::117,2804:ef0:0:5::118 \
+    client-endpoint=143.255.197.62 client-keepalive=10s client-listen-port=\
+    13242 interface=VPN-WIREGUARD-jet.marcio name=jet.marcio preshared-key=\
+    "GBAXO0vw6s3aglpTrZsrmWq+ERv9TD2QibAkeIxRn34=" private-key=\
+    "YCGGBRkHQAPtE9rRZJv4B57h7SzroyHilPTJjy8kZkk=" public-key=\
+    "hSlewlP6/2+2g36oaLrEoGhnud62YTvL1s5Nl/3eni4="
+add allowed-address=0.0.0.0/0,::/0 client-address=\
+    172.31.253.50/30,2804:ef0:0:1a0c::1/64 client-dns=\
+    186.237.223.117,186.237.223.118 client-endpoint=143.255.197.62 \
+    client-keepalive=20s client-listen-port=13243 interface=\
+    VPN-WIREGUARD-jet.brunoddos name=jet-brunoddos preshared-key=\
+    "GI7MS5lTj9a2cgarVVseSXWEvqLzVWdsxp2FdMUYw3I=" private-key=\
+    "+Ej/YkYP25pCRt63TVwOCyW82mRy0p/nrr3ES95/BUc=" public-key=\
+    "OHX8Ll4ABcupZ1QdaN+NMkHLBwec1fxN9appANILckg="
+/ip address
+add address=143.255.197.62/30 interface=UPLINK_CCR network=143.255.197.60
+add address=172.20.1.1/30 comment=SRV-CACTI interface=MONITORAMENTO network=\
+    172.20.1.0
+add address=172.20.1.5/30 comment=SRV-TACACSGUI interface=SRV-VIRTUALIZADOS \
+    network=172.20.1.4
+add address=192.168.100.1/24 interface=V225-ESCRITORIO-JETELECOM network=\
+    192.168.100.0
+add address=172.20.1.9/30 comment=SRV-PABX_VIRTUAL interface=\
+    SRV-VIRTUALIZADOS network=172.20.1.8
+add address=172.31.255.1/30 interface=MONITORAMENTO network=172.31.255.0
+add address=172.34.97.1/24 interface=MONITORAMENTO network=172.34.97.0
+add address=172.34.96.1/24 interface=MONITORAMENTO network=172.34.96.0
+add address=172.17.255.1/24 interface=MONITORAMENTO network=172.17.255.0
+add address=172.31.254.1/24 interface=MONITORAMENTO network=172.31.254.0
+add address=10.34.96.1/24 interface=MONITORAMENTO network=10.34.96.0
+add address=10.34.97.1/24 interface=MONITORAMENTO network=10.34.97.0
+add address=143.255.196.2/30 interface=UPLINK_CCR network=143.255.196.0
+add address=10.0.36.13/30 interface=SERVIDOR_R540 network=10.0.36.12
+add address=177.85.249.42/30 interface=UPLINK_CCR network=177.85.249.40
+add address=172.16.80.1/24 interface=MONITORAMENTO network=172.16.80.0
+add address=177.85.249.238/30 interface=UPLINK_CCR network=177.85.249.236
+add address=172.16.247.114/30 interface=sfp-sfpplus1-UPLINK_10GB network=\
+    172.16.247.112
+add address=172.18.1.1/29 interface=CLI-NET-SUPREMA-VIRTUALIZACAO network=\
+    172.18.1.0
+add address=186.237.222.201/29 interface=CLI-NET-SUPREMA-VIRTUALIZACAO-LINK \
+    network=186.237.222.200
+add address=172.21.1.1/24 interface=CLI-NET-SUPREMA-VIRTUALIZACAO-LINK \
+    network=172.21.1.0
+add address=172.18.1.9/29 interface=CLI-NET-SUPREMA-VIRTUALIZACAO network=\
+    172.18.1.8
+add address=172.31.255.5/30 comment=A10-VTHUNDER interface=MONITORAMENTO \
+    network=172.31.255.4
+add address=172.31.255.9/30 comment=A10-AGALAXY interface=MONITORAMENTO \
+    network=172.31.255.8
+add address=100.200.1.1/24 interface=CLI-CAIXA-ADMINISTRATIVO-GO787573001 \
+    network=100.200.1.0
+add address=186.237.219.9 disabled=yes interface=Loopbackup network=\
+    186.237.219.9
+add address=186.237.222.224/27 interface=Loopbackup network=186.237.222.224
+add address=172.20.1.13/30 comment=SRV-SYS-FRONTEND-GRUPOJET interface=\
+    MONITORAMENTO network=172.20.1.12
+add address=172.20.1.17/30 comment=SRV-SYS-DB-GRUPOJET interface=\
+    MONITORAMENTO network=172.20.1.16
+add address=177.85.252.169/29 interface=CLI-NET-SUPREMA-VIRTUALIZACAO-LINK \
+    network=177.85.252.168
+add address=177.85.252.162/30 interface=UPLINK_CCR network=177.85.252.160
+add address=10.0.41.97/30 comment=DWDM-DCI-BHE-NORTH-21005 interface=\
+    V2020-GER-PROJETO-FENIX network=10.0.41.96
+add address=10.0.41.101/30 comment=DWDM-DCI-BSA-SIA-Z100 interface=\
+    V2020-GER-PROJETO-FENIX network=10.0.41.100
+add address=10.0.41.109/30 comment=DWDM-DCI-CRT-CEN-H1019 interface=\
+    V2020-GER-PROJETO-FENIX network=10.0.41.108
+add address=10.0.41.105/30 comment=DWDM-DCI-BSA-SIA-H1018 interface=\
+    V2020-GER-PROJETO-FENIX network=10.0.41.104
+add address=10.0.41.113/30 comment=DWDM-DCI-PIR-CEN-H1021 interface=\
+    V2020-GER-PROJETO-FENIX network=10.0.41.112
+add address=10.0.41.117/30 comment=DWDM-DCI-GNA-NVMD-21004 interface=\
+    V2020-GER-PROJETO-FENIX network=10.0.41.116
+add address=10.0.41.121/30 comment=DWDM-DCI-URA-MHT-21003 interface=\
+    V2020-GER-PROJETO-FENIX network=10.0.41.120
+add address=10.0.21.125/30 comment=DWDM-BOM-JESUS-LAPA disabled=yes \
+    interface=2269-GERENCIA-DWDM-GNA-IUA network=10.0.21.124
+add address=10.0.41.129/30 comment=DWDM-DCI-BRE-SP4-Z1001 interface=\
+    V2020-GER-PROJETO-FENIX network=10.0.41.128
+add address=10.0.41.133/30 comment=DWDM-INDIARA-3 disabled=yes interface=\
+    2269-GERENCIA-DWDM-GNA-IUA network=10.0.41.132
+add address=10.0.41.137/30 comment=DWDM-LV-GIRASSOL disabled=yes interface=\
+    2269-GERENCIA-DWDM-GNA-IUA network=10.0.41.136
+add address=10.0.41.141/30 comment=DWDM-LV-PIRENOPOLIS disabled=yes \
+    interface=2269-GERENCIA-DWDM-GNA-IUA network=10.0.41.140
+add address=10.0.41.145/30 comment=DWDM-LV-CALDAS-NOVAS disabled=yes \
+    interface=2269-GERENCIA-DWDM-GNA-IUA network=10.0.41.144
+add address=10.0.41.149/30 comment=DWDM-LV-JARAGUA-1 disabled=yes interface=\
+    2269-GERENCIA-DWDM-GNA-IUA network=10.0.41.148
+add address=10.0.41.153/30 comment=DWDM-LV-JARAGUA-2 disabled=yes interface=\
+    2269-GERENCIA-DWDM-GNA-IUA network=10.0.41.152
+add address=172.31.253.5/30 comment=VPN-WIREGUARD interface=\
+    VPN-WIREGUARD-jet.douglasgov network=172.31.253.4
+add address=172.31.253.1/30 comment=VPN-WIREGUARD interface=\
+    VPN-WIREGUARD-jet.israel network=172.31.253.0
+add address=172.31.253.9/30 comment=VPN-WIREGUARD interface=\
+    VPN-WIREGUARD-jet.rubens network=172.31.253.8
+add address=172.31.253.13/30 comment=VPN-WIREGUARD interface=\
+    VPN-WIREGUARD-client.julio network=172.31.253.12
+add address=172.31.253.17/30 comment=VPN-WIREGUARD interface=\
+    VPN-WIREGUARD-jet.avner network=172.31.253.16
+add address=172.31.253.21/30 comment=VPN-WIREGUARD interface=\
+    VPN-WIREGUARD-jet.alencar network=172.31.253.20
+add address=172.31.253.25/30 comment=VPN-WIREGUARD interface=\
+    VPN-WIREGUARD-jet.diegoddos network=172.31.253.24
+add address=172.31.253.29/30 comment=VPN-WIREGUARD interface=\
+    VPN-WIREGUARD-jet.thyago network=172.31.253.28
+add address=172.31.253.33/30 comment=VPN-WIREGUARD interface=\
+    VPN-WIREGUARD-jet.rubens2 network=172.31.253.32
+add address=172.31.253.37/30 comment=VPN-WIREGUARD interface=\
+    VPN-WIREGUARD-jet.giba network=172.31.253.36
+add address=172.31.253.45/30 comment=VPN-WIREGUARD interface=\
+    VPN-WIREGUARD-jet.marcio network=172.31.253.44
+add address=172.31.253.41/30 comment=VPN-WIREGUARD interface=\
+    VPN-WIREGUARD-jet.marciovitor network=172.31.253.40
+add address=10.0.41.125/30 comment=DWDM-DCI-LRA-VIALUX-21002 interface=\
+    V2020-GER-PROJETO-FENIX network=10.0.41.124
+add address=172.31.253.49/30 comment=VPN-WIREGUARD interface=\
+    VPN-WIREGUARD-jet.brunoddos network=172.31.253.48
+add address=172.19.255.1/24 interface=MONITORAMENTO network=172.19.255.0
+add address=172.16.249.18/30 interface=OSPF-GNA-CPE-CGNAT-DIR-NE8000 network=\
+    172.16.249.16
+add address=10.0.41.157/30 comment=DWDM-RIO-VERDE-2 disabled=yes interface=\
+    2269-GERENCIA-DWDM-GNA-IUA network=10.0.41.156
+add address=10.0.41.161/30 comment=DWDM-PIRANHAS disabled=yes interface=\
+    2269-GERENCIA-DWDM-GNA-IUA network=10.0.41.160
+add address=192.168.0.1/24 interface=V2020-GER-PROJETO-FENIX network=\
+    192.168.0.0
+add address=192.168.15.1/24 interface=2408-teste-rfc network=192.168.15.0
+add address=10.0.41.165/30 comment=DWDM-MORRINHOS disabled=yes interface=\
+    2269-GERENCIA-DWDM-GNA-IUA network=10.0.41.164
+add address=10.0.41.169/30 comment=DWDM-GOIATUBA disabled=yes interface=\
+    2269-GERENCIA-DWDM-GNA-IUA network=10.0.41.168
+add address=192.168.1.1/24 interface=ether8-GER-DATACOM-4770 network=\
+    192.168.1.0
+add address=10.0.41.177/30 comment=V3832-GER-DWDM-IPAMERI interface=\
+    V3832-GER-DWDM-IPAMERI network=10.0.41.176
+add address=10.0.41.181/30 comment=V3833-GER-DWDM-CATALAO interface=\
+    V3833-GER-DWDM-CATALAO network=10.0.41.180
+add address=10.0.41.17/30 interface=DWDM-NOKIA-BRASILIA network=10.0.41.16
+add address=186.237.223.11 comment=CLI-CAIXA-ADMINISTRATIVO-GO787573001 \
+    interface=Loopbackup network=186.237.223.11
+add address=192.168.20.1/24 disabled=yes interface=WIFI-EVENTO-FLAMBOYANT \
+    network=192.168.20.0
+add address=10.0.41.173/30 comment=DWDM-LV-ITABERAI-1 disabled=yes interface=\
+    2269-GERENCIA-DWDM-GNA-IUA network=10.0.41.172
+add address=10.0.41.177/30 comment=DWDM-LV-ITABERAI-2-VERIFICAR disabled=yes \
+    interface=2269-GERENCIA-DWDM-GNA-IUA network=10.0.41.176
+add address=177.86.168.130 interface=LoopBack network=177.86.168.130
+add address=10.0.41.185/30 comment=DWDM-LV-ARAGOIANIA-VERIFICAR disabled=yes \
+    interface=2269-GERENCIA-DWDM-GNA-IUA network=10.0.41.184
+add address=10.0.41.201/30 comment=V2269-GER-DWDM-DCI-PARKS-PIRACANJUBA \
+    disabled=yes interface=2269-GERENCIA-DWDM-GNA-IUA network=10.0.41.200
+add address=10.0.41.253/30 comment=SRV-HUAWEI-NCE interface=HUAWEI-NCE-MNS \
+    network=10.0.41.252
+add address=10.0.41.249/30 comment=SRV-HUAWEI-NCE interface=\
+    HUAWEI-NCE-EQUIPAMENT network=10.0.41.248
+add address=172.16.27.1/30 comment=\
+    CLI-RANCHEIRO-EXPRESS-400MB--GNA-JEMP-19233 interface=\
+    NNI-GNA-AEROPORTO-CCR network=172.16.27.0
+add address=192.168.255.1/24 comment=IDRACK interface=DHCP-IDRACK network=\
+    192.168.255.0
+add address=10.0.36.17/30 comment=SRV-PROXMOX-BACKUP-SERVER interface=\
+    SERVIDOR_R540 network=10.0.36.16
+add address=10.0.41.1/30 interface=V3-SRV-HUAWEI-NCE network=10.0.41.0
+add address=10.0.41.245/30 disabled=yes interface=V3-SRV-HUAWEI-NCE network=\
+    10.0.41.244
+add address=172.16.27.5/30 comment=CLI-NESCAFE-100MB-GNA-JEMP-19255 \
+    interface=NNI-GNA-AEROPORTO-CCR network=172.16.27.4
+add address=10.0.41.77/30 comment=TESTE-TESTE-TESTE-DWDM interface=\
+    V225-ESCRITORIO-JETELECOM network=10.0.41.76
+add address=10.0.41.41/30 comment=TESTE-TESTE-TESTE-DWDM interface=\
+    V225-ESCRITORIO-JETELECOM network=10.0.41.40
+add address=172.17.2.1/24 comment=OPENVPN disabled=yes interface=\
+    LoopBack-OpenVpn network=172.17.2.0
+add address=10.0.41.193/30 comment=DWDM-DCI-PARKS-UBERLANDIA-ONNET/TECPAR \
+    interface=V199-GER-DWDM-ULA-JPI-ARI network=10.0.41.192
+add address=10.0.41.197/30 comment=\
+    DWDM-HUAWEI-OSN8800-UBERLANDIA-ONNET/TECPAR interface=\
+    V199-GER-DWDM-ULA-JPI-ARI network=10.0.41.196
+add address=10.0.41.25/30 comment=\
+    DWDM-HUAWEI-OSN9800-JOAOPINEIRO-ONNET/TECPAR interface=\
+    V199-GER-DWDM-ULA-JPI-ARI network=10.0.41.24
+add address=10.0.41.185/30 comment=DWDM-HUAWEI-OSN9800-ARAGUARI-ONNET/TECPAR \
+    interface=V199-GER-DWDM-ULA-JPI-ARI network=10.0.41.184
+add address=10.0.41.189/30 comment=\
+    DWDM-CDI-PARKS-ARAGUARI-ONNET/TECPAR-RETIRADO interface=\
+    V199-GER-DWDM-ULA-JPI-ARI network=10.0.41.188
+add address=10.10.10.1 interface=V225-ESCRITORIO-JETELECOM network=255.0.0.0
+add address=100.127.0.1/20 comment=DHCP-WIFI-PNSA interface=BRIDGE-WIFI-GNA \
+    network=100.127.0.0
+add address=177.85.252.249/29 comment=DHCP-WIFI-PNSA interface=LoopBack \
+    network=177.85.252.248
+add address=10.0.41.221/30 comment=DWDM-RPO-CRO-H1023-OSN9800 interface=\
+    V2020-GER-PROJETO-FENIX network=10.0.41.220
+add address=10.0.41.225/30 comment=DWDM-RPO-CRO-H1024-OSN9800 interface=\
+    V2020-GER-PROJETO-FENIX network=10.0.41.224
+add address=10.0.41.229/30 comment=DWDM-GTA-CRO-H1025-OSN9800 interface=\
+    V2020-GER-PROJETO-FENIX network=10.0.41.228
+add address=10.0.41.233/30 comment=DWDM-GTA-CRO-H1026-OSN9800 interface=\
+    V2020-GER-PROJETO-FENIX network=10.0.41.232
+add address=10.0.41.237/30 comment=DWDM-ARQ-CEN-H1027-OSN9800 interface=\
+    V2020-GER-PROJETO-FENIX network=10.0.41.236
+add address=10.0.253.21/30 comment=DWDM-CLS-CLIENT-H1030 interface=\
+    V2020-GER-PROJETO-FENIX network=10.0.253.20
+add address=10.0.253.25/30 comment=DWDM-GIR-CLIENT-H1031 interface=\
+    V2020-GER-PROJETO-FENIX network=10.0.253.24
+add address=10.0.253.29/30 comment=DWDM-BRS-CLIENT-H1032-SH-0 interface=\
+    V2020-GER-PROJETO-FENIX network=10.0.253.28
+add address=10.0.253.33/30 comment=DWDM-BRS-CLIENT-H1032-SH-1 interface=\
+    V2020-GER-PROJETO-FENIX network=10.0.253.32
+add address=10.0.253.37/30 comment=DWDM-BDO-CLIENT-H1033 interface=\
+    V2020-GER-PROJETO-FENIX network=10.0.253.36
+add address=10.0.253.49/30 comment=MGL-PLAY-H1036-PROJETO-FENIX interface=\
+    V2020-GER-PROJETO-FENIX network=10.0.253.48
+add address=10.0.253.45/30 comment=10.0.253.45/30 interface=\
+    V2020-GER-PROJETO-FENIX network=10.0.253.44
+add address=10.0.253.57/30 comment=10.0.253.57/30 interface=\
+    V2020-GER-PROJETO-FENIX network=10.0.253.56
+add address=10.0.253.61/30 comment=10.0.253.61/30 interface=\
+    V2020-GER-PROJETO-FENIX network=10.0.253.60
+add address=10.0.253.69/30 comment=V1702-GER-DWDM-POP-URA-POSTO interface=\
+    V1702-GER-DWDM-POP-URA-POSTO network=10.0.253.68
+add address=10.0.253.65/30 comment=V1701-GER-DWDM-POP-URA-CRT interface=\
+    V1701-GER-DWDM-POP-URA-CRT network=10.0.253.64
+add address=10.0.253.73/30 comment=V1701-GER-DWDM-POP-URA-CRT interface=\
+    V1701-GER-DWDM-POP-URA-CRT network=10.0.253.72
+add address=10.0.253.53/30 comment=V1701-GER-DWDM-POP-URA-CRT interface=\
+    V1701-GER-DWDM-POP-URA-CRT network=10.0.253.52
+add address=192.168.254.1/24 interface=V1704-DHCP-POP-URA-POST050 network=\
+    192.168.254.0
+add address=10.0.253.249/30 comment=V12020-GER-DWDM-SW3-PE-LRA-VIA-LUX-01 \
+    interface=V2020-GER-PROJETO-FENIX network=10.0.253.248
+add address=100.126.200.1/24 comment=TESTE-SDWAN interface=\
+    V225-ESCRITORIO-JETELECOM network=100.126.200.0
+add address=10.0.253.253/30 comment=V1702-GER-DWDM-URA-POSTO50 interface=\
+    V1702-GER-DWDM-POP-URA-POSTO network=10.0.253.252
+add address=10.0.61.1/24 comment=TEMPORARIO-LIMEIRA interface=\
+    V2020-GER-PROJETO-FENIX network=10.0.61.0
+add address=10.0.253.77/30 comment=10.0.253.77/30 interface=\
+    V2020-GER-PROJETO-FENIX network=10.0.253.76
+add address=10.0.253.81/30 comment=10.0.253.81/30 interface=\
+    V2020-GER-PROJETO-FENIX network=10.0.253.80
+add address=10.0.253.85/30 comment=10.0.253.85/30 interface=\
+    V2020-GER-PROJETO-FENIX network=10.0.253.84
+add address=10.0.253.93/30 comment=LIMEIRA interface=V2020-GER-PROJETO-FENIX \
+    network=10.0.253.92
+add address=10.0.41.33/30 disabled=yes interface=ether6-NOKIA-ANDRADE \
+    network=10.0.41.32
+add address=10.0.253.97/30 comment=PROJETO-FENIX-DWDM-NOKIA-JAI-060 \
+    interface=V2090-GER-DWDM-REDE-SAMM network=10.0.253.96
+add address=10.0.253.101/30 comment=PROJETO-FENIX-HORTOLANDIA interface=\
+    V2090-GER-DWDM-REDE-SAMM network=10.0.253.100
+add address=10.0.253.105/30 comment=V2020-GER-DWDM-BRE-DCI-HUAWEI908 \
+    interface=V2020-GER-PROJETO-FENIX network=10.0.253.104
+add address=10.0.253.109/30 comment=PROJETO-FENIX-DOCUMENTAR interface=\
+    V2020-GER-PROJETO-FENIX network=10.0.253.108
+add address=10.0.253.113/30 comment=PROJETO-FENIX-DOCUMENTAR interface=\
+    V2020-GER-PROJETO-FENIX network=10.0.253.112
+add address=10.0.253.117/30 comment=PROJETO-FENIX-DOCUMENTAR interface=\
+    V2020-GER-PROJETO-FENIX network=10.0.253.116
+add address=10.0.253.121/30 comment=PROJETO-FENIX-DOCUMENTAR interface=\
+    V2020-GER-PROJETO-FENIX network=10.0.253.120
+add address=10.0.253.125/30 comment=PROJETO-FENIX-DOCUMENTAR interface=\
+    V2020-GER-PROJETO-FENIX network=10.0.253.124
+add address=10.0.253.129/30 comment=PROJETO-FENIX-DOCUMENTAR interface=\
+    V2020-GER-PROJETO-FENIX network=10.0.253.128
+add address=10.0.253.133/30 comment=PROJETO-FENIX-DOCUMENTAR interface=\
+    V2020-GER-PROJETO-FENIX network=10.0.253.132
+add address=10.0.253.137/30 comment=PROJETO-FENIX-DOCUMENTAR interface=\
+    V2020-GER-PROJETO-FENIX network=10.0.253.136
+add address=10.0.253.141/30 comment=PROJETO-FENIX-LIMEIRA-NAVE interface=\
+    V2020-GER-PROJETO-FENIX network=10.0.253.140
+add address=172.16.27.9/30 comment=CLI-CODEMP-MARKETING-GNA-JAB-20173 \
+    interface=NNI-GNA-AEROPORTO-CCR network=172.16.27.8
+add address=10.0.253.41/30 comment=CLS-PLAY-H1035-PROJETO-FENIX interface=\
+    V2020-GER-PROJETO-FENIX network=10.0.253.40
+add address=186.237.222.5/30 comment=TESTE-CAPTIVE-PORTAL interface=\
+    V225-ESCRITORIO-JETELECOM network=186.237.222.4
+/ip dhcp-server network
+add address=100.100.0.0/21 dns-server=186.237.223.117,186.237.223.118 \
+    gateway=100.100.0.1
+add address=100.127.0.0/20 dns-server=186.237.223.117,186.237.223.118 \
+    gateway=100.127.0.1
+add address=100.200.1.0/24 dns-server=8.8.8.8,8.8.4.4 gateway=100.200.1.1
+add address=192.168.15.0/24 gateway=192.168.15.1
+add address=192.168.100.0/24 gateway=192.168.100.1
+add address=192.168.254.0/24 dns-none=yes gateway=192.168.254.1
+add address=192.168.255.0/24 gateway=192.168.255.1
+/ip dns
+set servers=1.1.1.1,1.0.0.1,2804:ef0:0:5::117,2804:ef0:0:5::118
+/ip firewall address-list
+add address=45.191.205.163 list="VIRTUALIZA\C7AO SUPREMA"
+add address=143.255.197.170 list="VIRTUALIZA\C7AO SUPREMA"
+add address=179.83.119.179 list="VIRTUALIZA\C7AO SUPREMA"
+add address=200.0.40.10 list="VIRTUALIZA\C7AO SUPREMA"
+add address=187.72.231.82 list="VIRTUALIZA\C7AO SUPREMA"
+add address=177.85.252.171 list="VIRTUALIZA\C7AO SUPREMA"
+/ip firewall filter
+add action=accept chain=forward dst-address=10.0.36.0/24 src-address=\
+    172.17.255.6
+add action=accept chain=forward dst-address=172.17.255.6 src-address=\
+    10.0.36.0/24
+add action=accept chain=forward dst-address=172.17.255.6 src-address=\
+    172.18.255.0/24
+add action=accept chain=forward dst-address=172.18.255.0/24 src-address=\
+    172.17.255.6
+add action=fasttrack-connection chain=forward connection-state=\
+    established,related hw-offload=yes
+add action=accept chain=forward connection-state=established,related
+add action=fasttrack-connection chain=forward connection-state=\
+    established,related hw-offload=yes
+add action=accept chain=forward connection-state=established,related
+add action=accept chain=input comment=VPN-WIREGUARD dst-port=13230 protocol=\
+    udp
+add action=accept chain=input comment=VPN-WIREGUARD dst-port=13231 protocol=\
+    udp
+add action=accept chain=input comment=VPN-WIREGUARD dst-port=13239 protocol=\
+    udp
+add action=accept chain=input comment=VPN-WIREGUARD dst-port=13240 protocol=\
+    udp
+add action=accept chain=input comment=VPN-WIREGUARD dst-port=13246 protocol=\
+    udp
+add action=accept chain=input comment=VPN-WIREGUARD dst-port=13245 protocol=\
+    udp
+add action=accept chain=input comment=VPN-WIREGUARD dst-port=13244 protocol=\
+    udp
+add action=accept chain=input comment=VPN-WIREGUARD dst-port=13243 protocol=\
+    udp
+add action=accept chain=input comment=VPN-WIREGUARD dst-port=13242 protocol=\
+    udp
+add action=accept chain=input comment=VPN-WIREGUARD dst-port=13241 protocol=\
+    udp
+add action=accept chain=input comment=VPN-WIREGUARD dst-port=13238 protocol=\
+    udp
+add action=accept chain=input comment=VPN-WIREGUARD dst-port=13237 protocol=\
+    udp
+add action=accept chain=input comment=VPN-WIREGUARD dst-port=13236 protocol=\
+    udp
+add action=accept chain=input comment=VPN-WIREGUARD dst-port=13235 protocol=\
+    udp
+add action=accept chain=input comment=VPN-WIREGUARD dst-port=13234 protocol=\
+    udp
+add action=accept chain=input comment=VPN-WIREGUARD dst-port=13233 protocol=\
+    udp
+add action=accept chain=input comment=VPN-WIREGUARD dst-port=13232 protocol=\
+    udp
+add action=accept chain=input comment=OPENVPN dst-port=1194 protocol=tcp
+add action=accept chain=input comment=OPENVPN dst-port=1194 protocol=udp
+add action=accept chain=input comment=OPENVPN dst-port=443 protocol=tcp
+add action=accept chain=input comment=OPENVPN dst-port=443 protocol=udp
+add action=accept chain=forward comment=OPENVPN src-address=172.17.2.0/24
+add action=accept chain=forward comment=OPENVPN dst-address=172.17.2.0/24
+/ip firewall nat
+add action=dst-nat chain=dstnat comment="DIRECIONAMENTO DNS" disabled=yes \
+    dst-port=53 protocol=udp src-address=172.31.253.0/24 to-addresses=1.0.0.1 \
+    to-ports=53
+add action=dst-nat chain=dstnat comment="DIRECIONAMENTO DNS" disabled=yes \
+    dst-port=53 protocol=udp to-addresses=1.0.0.1 to-ports=53
+add action=netmap chain=srcnat comment=OPENVPN src-address=172.17.2.0/24 \
+    to-addresses=143.255.197.62
+add action=same chain=srcnat comment=NAT-WIFI-PNSA same-not-by-dst=no \
+    src-address=100.127.0.0/20 to-addresses=177.85.252.248/29
+add action=same chain=srcnat comment=TESTE-SDWAN same-not-by-dst=no \
+    src-address=100.126.200.0/24 to-addresses=177.85.252.248/29
+add action=src-nat chain=srcnat comment=SALVACAO disabled=yes dst-address=\
+    10.0.10.2 to-addresses=10.0.10.1
+add action=dst-nat chain=dstnat dst-address=177.86.168.130 dst-port=1812 \
+    protocol=tcp to-addresses=172.17.255.10 to-ports=1812
+add action=dst-nat chain=dstnat comment=ESCRITORIO-SP dst-address=\
+    143.255.197.62 dst-port=1019 protocol=tcp to-addresses=177.85.249.18 \
+    to-ports=1018
+add action=dst-nat chain=dstnat dst-address=177.86.168.130 dst-port=1813 \
+    protocol=tcp to-addresses=172.17.255.10 to-ports=1813
+add action=dst-nat chain=dstnat dst-address=177.86.168.130 dst-port=1812 \
+    protocol=udp to-addresses=172.17.255.10 to-ports=1812
+add action=dst-nat chain=dstnat dst-address=177.86.168.130 dst-port=1813 \
+    protocol=udp to-addresses=172.17.255.10 to-ports=1813
+add action=dst-nat chain=dstnat comment=SRV-FUSIONHUB-CRT dst-address=\
+    143.255.196.2 dst-port=12301 protocol=udp to-addresses=172.17.255.17 \
+    to-ports=12301
+add action=dst-nat chain=dstnat comment=SRV-FUSIONHUB-CLT dst-address=\
+    143.255.196.2 dst-port=12303 protocol=udp to-addresses=172.17.255.18 \
+    to-ports=12303
+add action=dst-nat chain=dstnat comment=SRV-FUSIONHUB-CRT dst-address=\
+    143.255.196.2 dst-port=12300 protocol=udp to-addresses=172.17.255.17 \
+    to-ports=12300
+add action=dst-nat chain=dstnat comment=SRV-FUSIONHUB-CLT dst-address=\
+    143.255.196.2 dst-port=12302 protocol=udp to-addresses=172.17.255.18 \
+    to-ports=12302
+add action=dst-nat chain=dstnat comment=SRV-FUSIONHUB-CRT dst-address=\
+    143.255.196.2 dst-port=12301 protocol=tcp to-addresses=172.17.255.17 \
+    to-ports=12301
+add action=dst-nat chain=dstnat comment=SRV-FUSIONHUB-CLT dst-address=\
+    143.255.196.2 dst-port=12303 protocol=tcp to-addresses=172.17.255.18 \
+    to-ports=12303
+add action=dst-nat chain=dstnat comment=SRV-FUSIONHUB-CRT dst-address=\
+    143.255.196.2 dst-port=12300 protocol=tcp to-addresses=172.17.255.17 \
+    to-ports=12300
+add action=dst-nat chain=dstnat comment=SRV-FUSIONHUB-CLT dst-address=\
+    143.255.196.2 dst-port=12302 protocol=tcp to-addresses=172.17.255.18 \
+    to-ports=12302
+add action=src-nat chain=srcnat comment=VPN-WIREGUARD disabled=yes \
+    src-address=172.31.253.30 to-addresses=177.85.252.248
+add action=src-nat chain=srcnat comment=VPN-WIREGUARD src-address=\
+    172.31.253.0/24 to-addresses=143.255.197.62
+add action=src-nat chain=srcnat comment=V1704-DHCP-POP-URA-POST050-MON-AC \
+    src-address=10.0.253.252/30 to-addresses=143.255.197.62
+add action=netmap chain=srcnat comment=VPN src-address=192.168.90.0/24 \
+    to-addresses=143.255.197.62
+add action=netmap chain=srcnat comment=CLI-CAIXA-ADMINISTRATIVO-GO787573001 \
+    src-address=100.200.1.0/24 to-addresses=186.237.223.11
+add action=netmap chain=srcnat comment=MASCAREDE-CGNAT disabled=yes \
+    src-address=100.100.0.0/20 to-addresses=186.237.222.224/27
+add action=masquerade chain=srcnat comment=GERAL src-address=172.20.1.0/24
+add action=masquerade chain=srcnat comment=SRV-HUAWEI-NCE src-address=\
+    10.0.41.254
+add action=same chain=srcnat comment=EVENTNO same-not-by-dst=no src-address=\
+    192.168.20.0/24 to-addresses=143.255.196.2
+add action=masquerade chain=srcnat comment=TESTE-RFC src-address=\
+    192.168.15.0/24
+add action=dst-nat chain=dstnat comment=VIRTUALIZACAO-NETSUPREMA-3 \
+    dst-address=186.237.222.201 dst-port=9090 protocol=tcp src-address-list=\
+    "VIRTUALIZA\C7AO SUPREMA" to-addresses=172.18.1.11 to-ports=443
+add action=dst-nat chain=dstnat comment=VIRTUALIZACAO-NETSUPREMA-3 disabled=\
+    yes dst-port=5432 protocol=tcp src-address-list="VIRTUALIZA\C7AO SUPREMA" \
+    to-ports=5432
+add action=dst-nat chain=dstnat comment=VIRTUALIZACAO-NETSUPREMA-4 \
+    dst-address=186.237.222.201 src-address-list="VIRTUALIZA\C7AO SUPREMA" \
+    to-addresses=172.18.1.11
+add action=dst-nat chain=dstnat dst-address=143.255.197.62 dst-port=1019 \
+    protocol=tcp to-addresses=10.10.10.1 to-ports=8291
+add action=src-nat chain=srcnat comment="SALVA\C7\C3O" dst-address=10.1.1.2 \
+    to-addresses=10.1.1.1
+add action=masquerade chain=srcnat disabled=yes src-address=100.64.0.0/22 \
+    to-addresses=186.237.222.224/27
+add action=dst-nat chain=dstnat comment=CAMERA-PAINEL-LED dst-address=\
+    143.255.197.62 dst-port=90 protocol=tcp to-addresses=192.168.0.7 \
+    to-ports=90
+add action=dst-nat chain=dstnat comment=SRV-TFTP dst-address=143.255.197.62 \
+    dst-port=69 protocol=udp to-addresses=172.16.80.12 to-ports=69
+add action=dst-nat chain=dstnat comment=CAMERA-PAINEL-LED dst-address=\
+    143.255.197.62 dst-port=8000 protocol=tcp to-addresses=192.168.0.7 \
+    to-ports=8000
+add action=dst-nat chain=dstnat comment="ACESSO DDOS" disabled=yes \
+    dst-address=143.255.196.1 dst-port=443 protocol=tcp to-addresses=\
+    172.34.21.42 to-ports=443
+add action=dst-nat chain=dstnat comment="ACESSO DDOS" disabled=yes \
+    dst-address=143.255.196.1 to-addresses=172.31.24.42
+add action=dst-nat chain=dstnat comment=SW_HUAWEI disabled=yes dst-port=2222 \
+    protocol=tcp to-addresses=192.168.1.253 to-ports=22
+add action=dst-nat chain=dstnat comment=SW_HUAWEI disabled=yes dst-port=9090 \
+    protocol=tcp to-addresses=10.0.39.30 to-ports=443
+add action=dst-nat chain=dstnat comment=SW_HUAWEI disabled=yes dst-port=8080 \
+    protocol=tcp to-addresses=10.1.1.2 to-ports=443
+add action=dst-nat chain=dstnat comment=SW_HUAWEI disabled=yes dst-address=\
+    143.255.196.1 dst-port=8081 protocol=tcp to-addresses=10.0.39.30 \
+    to-ports=80
+add action=dst-nat chain=dstnat comment=SW_HUAWEI disabled=yes dst-address=\
+    143.255.196.1 dst-port=8081 protocol=udp to-addresses=10.0.39.30 \
+    to-ports=80
+add action=dst-nat chain=dstnat comment=SW_HUAWEI disabled=yes dst-port=8081 \
+    protocol=tcp to-addresses=172.19.1.2 to-ports=443
+add action=dst-nat chain=dstnat comment=SRV-SERVER_2019 disabled=yes \
+    dst-address=143.255.196.2 dst-port=33858 protocol=tcp to-addresses=\
+    10.0.36.14 to-ports=3389
+add action=netmap chain=srcnat comment=SRV-SERVER_2019 src-address=\
+    10.0.36.12/30 to-addresses=143.255.197.62
+add action=netmap chain=srcnat comment=NETMAP-ESCRITORIO-GRUPOJET \
+    src-address=192.168.100.0/24 to-addresses=143.255.196.2
+add action=netmap chain=srcnat comment=WINXP src-address=172.16.80.12 \
+    to-addresses=143.255.197.62
+add action=masquerade chain=srcnat comment=GERAL src-address=192.168.30.0/24
+add action=masquerade chain=srcnat comment=GERAL dst-address=177.85.249.42 \
+    src-address=30.30.30.0/30
+add action=masquerade chain=srcnat comment=GERAL src-address=30.30.30.4/30
+add action=masquerade chain=srcnat comment=GERAL src-address=192.168.40.0/24
+add action=dst-nat chain=dstnat comment=CACTI dst-address=143.255.196.2 \
+    dst-port=8083 protocol=tcp to-addresses=172.20.1.2 to-ports=80
+add action=dst-nat chain=dstnat comment=SRV-VTHUNDER--A10 disabled=yes \
+    dst-address=143.255.197.62 dst-port=8181 protocol=tcp to-addresses=\
+    10.15.176.130 to-ports=443
+add action=dst-nat chain=dstnat comment=SRV-VTHUNDER--A10 dst-address=\
+    177.85.249.238 dst-port=22 protocol=tcp to-addresses=172.31.255.6 \
+    to-ports=22
+add action=dst-nat chain=dstnat comment=A10-AGALAXY dst-address=177.85.249.42 \
+    dst-port=22 protocol=tcp to-addresses=172.31.255.10 to-ports=22
+add action=dst-nat chain=dstnat comment=A10-AGALAXY dst-address=177.85.249.42 \
+    dst-port=443 protocol=tcp to-addresses=172.31.255.10 to-ports=443
+add action=masquerade chain=srcnat comment=SRV-VTHUNDER--A10 src-address=\
+    172.31.255.4/30
+add action=masquerade chain=srcnat comment=A10-AGALAXY src-address=\
+    172.31.255.8/30
+add action=accept chain=srcnat dst-address=172.18.255.0/24 src-address=\
+    172.17.255.6
+add action=accept chain=srcnat dst-address=172.17.255.6 src-address=\
+    172.18.255.0/24
+add action=accept chain=srcnat dst-address=10.0.36.0/24 src-address=\
+    172.17.255.6
+add action=accept chain=srcnat dst-address=172.17.255.6 src-address=\
+    10.0.36.0/24
+add action=masquerade chain=srcnat comment=PROXY_ZABBIX-3 src-address=\
+    172.34.97.0/24
+add action=same chain=srcnat dst-address=172.31.22.118 same-not-by-dst=no \
+    src-address=10.34.96.0/24 to-addresses=143.255.196.2
+add action=masquerade chain=srcnat comment=ZABBIX_NOVO src-address=\
+    10.34.96.0/24
+add action=masquerade chain=srcnat comment=ZABBIX src-address=172.34.96.0/24
+add action=masquerade chain=srcnat comment=MAQUINAS-VIRTUAIS-IP-PRIVADO \
+    src-address=172.17.255.0/24
+add action=masquerade chain=srcnat comment=ZABBIX src-address=172.19.255.10
+add action=masquerade chain=srcnat comment=SRV-HUAWEI_R18 src-address=\
+    10.0.41.0/30
+add action=masquerade chain=srcnat comment=SRV-WEBLCT src-address=\
+    172.31.255.0/30
+add action=dst-nat chain=dstnat comment=CAMERAS-UNE dst-address=\
+    143.255.197.62 dst-port=37777 protocol=tcp to-addresses=192.168.100.2 \
+    to-ports=37777
+add action=dst-nat chain=dstnat comment=CAMERAS-UNE disabled=yes dst-address=\
+    143.255.197.62 dst-port=9000 protocol=tcp to-addresses=172.17.255.20 \
+    to-ports=9000
+add action=dst-nat chain=dstnat comment=SRV-LOG disabled=yes dst-address=\
+    143.255.197.62 dst-port=2233 protocol=tcp to-addresses=172.17.255.20 \
+    to-ports=22
+add action=dst-nat chain=dstnat comment=PADTEC_LIGHTPAD dst-address=\
+    143.255.196.2 dst-port=7 protocol=tcp to-addresses=172.17.255.5 to-ports=\
+    7
+add action=dst-nat chain=dstnat comment=PADTEC_LIGHTPAD dst-address=\
+    143.255.196.2 dst-port=8092 protocol=tcp to-addresses=172.17.255.5 \
+    to-ports=80
+add action=dst-nat chain=dstnat comment=PADTEC_LIGHTPAD dst-address=\
+    143.255.196.2 dst-port=2230 protocol=tcp to-addresses=172.17.255.5 \
+    to-ports=22
+add action=dst-nat chain=dstnat comment=PADTEC_LIGHTPAD dst-address=\
+    143.255.196.2 dst-port=8900-9999 protocol=tcp to-addresses=172.17.255.5 \
+    to-ports=8900-9999
+add action=dst-nat chain=dstnat comment=PADTEC_LIGHTPAD dst-address=\
+    143.255.196.2 dst-port=16090 protocol=tcp to-addresses=172.17.255.5 \
+    to-ports=16090
+add action=dst-nat chain=dstnat comment=PADTEC_LIGHTPAD dst-address=\
+    143.255.196.2 dst-port=8896 protocol=tcp to-addresses=172.17.255.5 \
+    to-ports=8896
+add action=dst-nat chain=dstnat comment=PADTEC_LIGHTPAD dst-address=\
+    143.255.196.2 dst-port=8897 protocol=tcp to-addresses=172.17.255.5 \
+    to-ports=8897
+add action=dst-nat chain=dstnat comment=PADTEC_LIGHTPAD dst-address=\
+    143.255.196.2 dst-port=8894 protocol=tcp to-addresses=172.17.255.5 \
+    to-ports=8894
+add action=dst-nat chain=dstnat comment=PADTEC_LIGHTPAD dst-address=\
+    143.255.196.2 dst-port=8895 protocol=tcp to-addresses=172.17.255.5 \
+    to-ports=8895
+add action=dst-nat chain=dstnat comment=PADTEC_LIGHTPAD dst-address=\
+    143.255.196.2 dst-port=8893 protocol=tcp to-addresses=172.17.255.5 \
+    to-ports=8893
+add action=dst-nat chain=dstnat comment=PADTEC_LIGHTPAD dst-address=\
+    143.255.196.2 dst-port=8891 protocol=tcp to-addresses=172.17.255.5 \
+    to-ports=8891
+add action=dst-nat chain=dstnat comment=PADTEC_LIGHTPAD dst-address=\
+    143.255.196.2 dst-port=8892 protocol=tcp to-addresses=172.17.255.5 \
+    to-ports=8892
+add action=dst-nat chain=dstnat comment=PADTEC_LIGHTPAD dst-address=\
+    143.255.196.2 dst-port=8088 protocol=tcp to-addresses=172.17.255.5 \
+    to-ports=8080
+add action=dst-nat chain=dstnat comment=PADTEC_LIGHTPAD dst-address=\
+    143.255.196.2 dst-port=8890 protocol=tcp to-addresses=172.17.255.5 \
+    to-ports=8890
+add action=dst-nat chain=dstnat comment=PADTEC_LIGHTPAD dst-address=\
+    143.255.196.2 dst-port=1099 protocol=tcp to-addresses=172.17.255.5 \
+    to-ports=1099
+add action=dst-nat chain=dstnat comment=PADTEC_LIGHTPAD dst-address=\
+    143.255.196.2 dst-port=2001 protocol=tcp to-addresses=172.17.255.5 \
+    to-ports=2001
+add action=dst-nat chain=dstnat comment=ZABBIX_FRONTEND dst-address=\
+    143.255.196.2 dst-port=80 protocol=tcp to-addresses=10.34.96.2 to-ports=\
+    80
+add action=dst-nat chain=dstnat comment=ZABBIX_FRONTEND dst-address=\
+    143.255.196.2 dst-port=443 protocol=tcp to-addresses=10.34.96.2 to-ports=\
+    443
+add action=dst-nat chain=dstnat comment=ZABBIX_FRONTEND-GRAFANA dst-address=\
+    143.255.196.2 dst-port=3000 protocol=tcp to-addresses=10.34.96.2 \
+    to-ports=3000
+add action=dst-nat chain=dstnat comment=SRV-RPKI dst-address=143.255.196.2 \
+    dst-port=3001 protocol=tcp to-addresses=172.17.255.8 to-ports=3000
+add action=dst-nat chain=dstnat comment=ZABBIX_FRONTEND dst-address=\
+    143.255.196.2 dst-port=2222 protocol=tcp to-addresses=10.34.96.2 \
+    to-ports=22
+add action=dst-nat chain=dstnat comment=ZABBIX_PROXY_1 dst-address=\
+    143.255.196.2 dst-port=2223 protocol=tcp to-addresses=10.34.96.3 \
+    to-ports=22
+add action=dst-nat chain=dstnat comment=ZABBIX_PROXY_2 dst-address=\
+    143.255.196.2 dst-port=2224 protocol=tcp to-addresses=10.34.96.4 \
+    to-ports=22
+add action=dst-nat chain=dstnat comment=ZABBIX_PROXY_3 dst-address=\
+    143.255.196.2 dst-port=2225 protocol=tcp to-addresses=10.34.96.5 \
+    to-ports=22
+add action=dst-nat chain=dstnat comment=ZABBIX-PROXY3 dst-address=\
+    143.255.196.2 dst-port=2226 protocol=tcp to-addresses=10.34.97.6 \
+    to-ports=22
+add action=dst-nat chain=dstnat comment=SRV-RPKI dst-address=143.255.196.2 \
+    dst-port=2231 protocol=tcp to-addresses=172.17.255.8 to-ports=22
+add action=dst-nat chain=dstnat comment=SRV-RADIUS_EQUIP dst-address=\
+    143.255.196.2 dst-port=2232 protocol=tcp to-addresses=172.17.255.10 \
+    to-ports=22
+add action=dst-nat chain=dstnat comment=ZABBIX-PROXY-4 dst-address=\
+    143.255.196.2 dst-port=2264 protocol=tcp to-addresses=10.34.96.7 \
+    to-ports=22
+add action=dst-nat chain=dstnat comment=SRV-ZABBIX-FRENT-END dst-address=\
+    143.255.196.2 dst-port=2265 protocol=tcp to-addresses=10.34.96.8 \
+    to-ports=22
+add action=dst-nat chain=dstnat comment=SRV-ZABBIX-BANCO-DADOS dst-address=\
+    143.255.196.2 dst-port=2266 protocol=tcp to-addresses=10.34.96.9 \
+    to-ports=22
+add action=dst-nat chain=dstnat comment=VM-LICITACAO dst-address=\
+    143.255.196.2 dst-port=3496 protocol=tcp to-addresses=172.17.255.4 \
+    to-ports=3389
+add action=dst-nat chain=dstnat comment=SRV-PRTG dst-address=143.255.196.2 \
+    dst-port=3497 protocol=tcp to-addresses=172.17.255.3 to-ports=3389
+add action=dst-nat chain=dstnat comment=WEBLCT dst-address=143.255.196.2 \
+    dst-port=3498 protocol=tcp to-addresses=172.31.255.2 to-ports=3389
+add action=dst-nat chain=dstnat comment=SRV-NMS-PARKS dst-address=\
+    143.255.196.2 dst-port=3499 protocol=tcp to-addresses=172.17.255.21 \
+    to-ports=3389
+add action=dst-nat chain=dstnat comment=SRV-HUAWEI-U2000 disabled=yes \
+    dst-address=143.255.196.2 dst-port=56453 protocol=tcp to-addresses=\
+    172.17.255.22 to-ports=56453
+add action=dst-nat chain=dstnat comment=SRV-PRTG-DESATIVADO disabled=yes \
+    dst-address=143.255.196.2 dst-port=56452 protocol=tcp to-addresses=\
+    172.17.255.3 to-ports=56452
+add action=dst-nat chain=dstnat comment=SRV-NETBOX dst-address=143.255.196.2 \
+    dst-port=2227 protocol=tcp to-addresses=172.17.255.2 to-ports=22
+add action=dst-nat chain=dstnat comment=SRV-NETBOX dst-address=143.255.196.2 \
+    dst-port=8790 protocol=tcp to-addresses=172.17.255.2 to-ports=80
+add action=jump chain=srcnat disabled=yes jump-target=CGNAT_100_64_0 \
+    src-address=100.64.0.0/24
+add action=jump chain=srcnat disabled=yes jump-target=CGNAT_100_64_1 \
+    src-address=100.64.1.0/24
+add action=jump chain=srcnat disabled=yes jump-target=CGNAT_100_64_2 \
+    src-address=100.64.2.0/24
+add action=jump chain=srcnat disabled=yes jump-target=CGNAT_100_64_3 \
+    src-address=100.64.3.0/24
+add action=jump chain=srcnat disabled=yes jump-target=CGNAT_100_64_4 \
+    src-address=100.64.4.0/24
+add action=jump chain=srcnat disabled=yes jump-target=CGNAT_100_64_5 \
+    src-address=100.64.5.0/24
+add action=jump chain=srcnat disabled=yes jump-target=CGNAT_100_64_6 \
+    src-address=100.64.6.0/24
+add action=jump chain=srcnat disabled=yes jump-target=CGNAT_100_64_7 \
+    src-address=100.64.7.0/24
+add action=jump chain=srcnat disabled=yes jump-target=CGNAT_100_64_8 \
+    src-address=100.64.8.0/24
+add action=jump chain=srcnat disabled=yes jump-target=CGNAT_100_64_9 \
+    src-address=100.64.9.0/24
+add action=jump chain=srcnat disabled=yes jump-target=CGNAT_100_64_10 \
+    src-address=100.64.10.0/24
+add action=jump chain=srcnat disabled=yes jump-target=CGNAT_100_64_11 \
+    src-address=100.64.11.0/24
+add action=jump chain=srcnat disabled=yes jump-target=CGNAT_100_64_12 \
+    src-address=100.64.12.0/24
+add action=jump chain=srcnat disabled=yes jump-target=CGNAT_100_64_13 \
+    src-address=100.64.13.0/24
+add action=jump chain=srcnat disabled=yes jump-target=CGNAT_100_64_14 \
+    src-address=100.64.14.0/24
+add action=jump chain=srcnat disabled=yes jump-target=CGNAT_100_64_15 \
+    src-address=100.64.15.0/24
+add action=jump chain=CGNAT_100_64_0 disabled=yes jump-target=CGNAT_0 \
+    src-address=100.64.0.0/25
+add action=jump chain=CGNAT_100_64_0 disabled=yes jump-target=CGNAT_1 \
+    src-address=100.64.0.128/25
+add action=jump chain=CGNAT_100_64_1 disabled=yes jump-target=CGNAT_2 \
+    src-address=100.64.1.0/25
+add action=jump chain=CGNAT_100_64_1 disabled=yes jump-target=CGNAT_3 \
+    src-address=100.64.1.128/25
+add action=jump chain=CGNAT_100_64_2 disabled=yes jump-target=CGNAT_4 \
+    src-address=100.64.2.0/25
+add action=jump chain=CGNAT_100_64_2 disabled=yes jump-target=CGNAT_5 \
+    src-address=100.64.2.128/25
+add action=jump chain=CGNAT_100_64_3 disabled=yes jump-target=CGNAT_6 \
+    src-address=100.64.3.0/25
+add action=jump chain=CGNAT_100_64_3 disabled=yes jump-target=CGNAT_7 \
+    src-address=100.64.3.128/25
+add action=jump chain=CGNAT_100_64_4 disabled=yes jump-target=CGNAT_8 \
+    src-address=100.64.4.0/25
+add action=jump chain=CGNAT_100_64_4 disabled=yes jump-target=CGNAT_9 \
+    src-address=100.64.4.128/25
+add action=jump chain=CGNAT_100_64_5 disabled=yes jump-target=CGNAT_10 \
+    src-address=100.64.5.0/25
+add action=jump chain=CGNAT_100_64_5 disabled=yes jump-target=CGNAT_11 \
+    src-address=100.64.5.128/25
+add action=jump chain=CGNAT_100_64_6 disabled=yes jump-target=CGNAT_12 \
+    src-address=100.64.6.0/25
+add action=jump chain=CGNAT_100_64_6 disabled=yes jump-target=CGNAT_13 \
+    src-address=100.64.6.128/25
+add action=jump chain=CGNAT_100_64_7 disabled=yes jump-target=CGNAT_14 \
+    src-address=100.64.7.0/25
+add action=jump chain=CGNAT_100_64_7 disabled=yes jump-target=CGNAT_15 \
+    src-address=100.64.7.128/25
+add action=jump chain=CGNAT_100_64_8 disabled=yes jump-target=CGNAT_16 \
+    src-address=100.64.8.0/25
+add action=jump chain=CGNAT_100_64_8 disabled=yes jump-target=CGNAT_17 \
+    src-address=100.64.8.128/25
+add action=jump chain=CGNAT_100_64_9 disabled=yes jump-target=CGNAT_18 \
+    src-address=100.64.9.0/25
+add action=jump chain=CGNAT_100_64_9 disabled=yes jump-target=CGNAT_19 \
+    src-address=100.64.9.128/25
+add action=jump chain=CGNAT_100_64_10 disabled=yes jump-target=CGNAT_20 \
+    src-address=100.64.10.0/25
+add action=jump chain=CGNAT_100_64_10 disabled=yes jump-target=CGNAT_21 \
+    src-address=100.64.10.128/25
+add action=jump chain=CGNAT_100_64_11 disabled=yes jump-target=CGNAT_22 \
+    src-address=100.64.11.0/25
+add action=jump chain=CGNAT_100_64_11 disabled=yes jump-target=CGNAT_23 \
+    src-address=100.64.11.128/25
+add action=jump chain=CGNAT_100_64_12 disabled=yes jump-target=CGNAT_24 \
+    src-address=100.64.12.0/25
+add action=jump chain=CGNAT_100_64_12 disabled=yes jump-target=CGNAT_25 \
+    src-address=100.64.12.128/25
+add action=jump chain=CGNAT_100_64_13 disabled=yes jump-target=CGNAT_26 \
+    src-address=100.64.13.0/25
+add action=jump chain=CGNAT_100_64_13 disabled=yes jump-target=CGNAT_27 \
+    src-address=100.64.13.128/25
+add action=jump chain=CGNAT_100_64_14 disabled=yes jump-target=CGNAT_28 \
+    src-address=100.64.14.0/25
+add action=jump chain=CGNAT_100_64_14 disabled=yes jump-target=CGNAT_29 \
+    src-address=100.64.14.128/25
+add action=jump chain=CGNAT_100_64_15 disabled=yes jump-target=CGNAT_30 \
+    src-address=100.64.15.0/25
+add action=jump chain=CGNAT_100_64_15 disabled=yes jump-target=CGNAT_31 \
+    src-address=100.64.15.128/25
+add action=netmap chain=CGNAT_0 disabled=yes protocol=tcp src-address=\
+    100.64.0.0/25 to-addresses=177.85.251.128/25 to-ports=1024-3039
+add action=netmap chain=CGNAT_0 disabled=yes protocol=udp src-address=\
+    100.64.0.0/25 to-addresses=177.85.251.128/25 to-ports=1024-3039
+add action=netmap chain=CGNAT_0 disabled=yes src-address=100.64.0.0/25 \
+    to-addresses=177.85.251.128/25
+add action=netmap chain=CGNAT_1 disabled=yes protocol=tcp src-address=\
+    100.64.0.128/25 to-addresses=177.85.251.128/25 to-ports=3040-5055
+add action=netmap chain=CGNAT_1 disabled=yes protocol=udp src-address=\
+    100.64.0.128/25 to-addresses=177.85.251.128/25 to-ports=3040-5055
+add action=netmap chain=CGNAT_1 disabled=yes src-address=100.64.0.128/25 \
+    to-addresses=177.85.251.128/25
+add action=netmap chain=CGNAT_2 disabled=yes protocol=tcp src-address=\
+    100.64.1.0/25 to-addresses=177.85.251.128/25 to-ports=5056-7071
+add action=netmap chain=CGNAT_2 disabled=yes protocol=udp src-address=\
+    100.64.1.0/25 to-addresses=177.85.251.128/25 to-ports=5056-7071
+add action=netmap chain=CGNAT_2 disabled=yes src-address=100.64.1.0/25 \
+    to-addresses=177.85.251.128/25
+add action=netmap chain=CGNAT_3 disabled=yes protocol=tcp src-address=\
+    100.64.1.128/25 to-addresses=177.85.251.128/25 to-ports=7072-9087
+add action=netmap chain=CGNAT_3 disabled=yes protocol=udp src-address=\
+    100.64.1.128/25 to-addresses=177.85.251.128/25 to-ports=7072-9087
+add action=netmap chain=CGNAT_3 disabled=yes src-address=100.64.1.128/25 \
+    to-addresses=177.85.251.128/25
+add action=netmap chain=CGNAT_4 disabled=yes protocol=tcp src-address=\
+    100.64.2.0/25 to-addresses=177.85.251.128/25 to-ports=9088-11103
+add action=netmap chain=CGNAT_4 disabled=yes protocol=udp src-address=\
+    100.64.2.0/25 to-addresses=177.85.251.128/25 to-ports=9088-11103
+add action=netmap chain=CGNAT_4 disabled=yes src-address=100.64.2.0/25 \
+    to-addresses=177.85.251.128/25
+add action=netmap chain=CGNAT_5 disabled=yes protocol=tcp src-address=\
+    100.64.2.128/25 to-addresses=177.85.251.128/25 to-ports=11104-13119
+add action=netmap chain=CGNAT_5 disabled=yes protocol=udp src-address=\
+    100.64.2.128/25 to-addresses=177.85.251.128/25 to-ports=11104-13119
+add action=netmap chain=CGNAT_5 disabled=yes src-address=100.64.2.128/25 \
+    to-addresses=177.85.251.128/25
+add action=netmap chain=CGNAT_6 disabled=yes protocol=tcp src-address=\
+    100.64.3.0/25 to-addresses=177.85.251.128/25 to-ports=13120-15135
+add action=netmap chain=CGNAT_6 disabled=yes protocol=udp src-address=\
+    100.64.3.0/25 to-addresses=177.85.251.128/25 to-ports=13120-15135
+add action=netmap chain=CGNAT_6 disabled=yes src-address=100.64.3.0/25 \
+    to-addresses=177.85.251.128/25
+add action=netmap chain=CGNAT_7 disabled=yes protocol=tcp src-address=\
+    100.64.3.128/25 to-addresses=177.85.251.128/25 to-ports=15136-17151
+add action=netmap chain=CGNAT_7 disabled=yes protocol=udp src-address=\
+    100.64.3.128/25 to-addresses=177.85.251.128/25 to-ports=15136-17151
+add action=netmap chain=CGNAT_7 disabled=yes src-address=100.64.3.128/25 \
+    to-addresses=177.85.251.128/25
+add action=netmap chain=CGNAT_8 disabled=yes protocol=tcp src-address=\
+    100.64.4.0/25 to-addresses=177.85.251.128/25 to-ports=17152-19167
+add action=netmap chain=CGNAT_8 disabled=yes protocol=udp src-address=\
+    100.64.4.0/25 to-addresses=177.85.251.128/25 to-ports=17152-19167
+add action=netmap chain=CGNAT_8 disabled=yes src-address=100.64.4.0/25 \
+    to-addresses=177.85.251.128/25
+add action=netmap chain=CGNAT_9 disabled=yes protocol=tcp src-address=\
+    100.64.4.128/25 to-addresses=177.85.251.128/25 to-ports=19168-21183
+add action=netmap chain=CGNAT_9 disabled=yes protocol=udp src-address=\
+    100.64.4.128/25 to-addresses=177.85.251.128/25 to-ports=19168-21183
+add action=netmap chain=CGNAT_9 disabled=yes src-address=100.64.4.128/25 \
+    to-addresses=177.85.251.128/25
+add action=netmap chain=CGNAT_10 disabled=yes protocol=tcp src-address=\
+    100.64.5.0/25 to-addresses=177.85.251.128/25 to-ports=21184-23199
+add action=netmap chain=CGNAT_10 disabled=yes protocol=udp src-address=\
+    100.64.5.0/25 to-addresses=177.85.251.128/25 to-ports=21184-23199
+add action=netmap chain=CGNAT_10 disabled=yes src-address=100.64.5.0/25 \
+    to-addresses=177.85.251.128/25
+add action=netmap chain=CGNAT_11 disabled=yes protocol=tcp src-address=\
+    100.64.5.128/25 to-addresses=177.85.251.128/25 to-ports=23200-25215
+add action=netmap chain=CGNAT_11 disabled=yes protocol=udp src-address=\
+    100.64.5.128/25 to-addresses=177.85.251.128/25 to-ports=23200-25215
+add action=netmap chain=CGNAT_11 disabled=yes src-address=100.64.5.128/25 \
+    to-addresses=177.85.251.128/25
+add action=netmap chain=CGNAT_12 disabled=yes protocol=tcp src-address=\
+    100.64.6.0/25 to-addresses=177.85.251.128/25 to-ports=25216-27231
+add action=netmap chain=CGNAT_12 disabled=yes protocol=udp src-address=\
+    100.64.6.0/25 to-addresses=177.85.251.128/25 to-ports=25216-27231
+add action=netmap chain=CGNAT_12 disabled=yes src-address=100.64.6.0/25 \
+    to-addresses=177.85.251.128/25
+add action=netmap chain=CGNAT_13 disabled=yes protocol=tcp src-address=\
+    100.64.6.128/25 to-addresses=177.85.251.128/25 to-ports=27232-29247
+add action=netmap chain=CGNAT_13 disabled=yes protocol=udp src-address=\
+    100.64.6.128/25 to-addresses=177.85.251.128/25 to-ports=27232-29247
+add action=netmap chain=CGNAT_13 disabled=yes src-address=100.64.6.128/25 \
+    to-addresses=177.85.251.128/25
+add action=netmap chain=CGNAT_14 disabled=yes protocol=tcp src-address=\
+    100.64.7.0/25 to-addresses=177.85.251.128/25 to-ports=29248-31263
+add action=netmap chain=CGNAT_14 disabled=yes protocol=udp src-address=\
+    100.64.7.0/25 to-addresses=177.85.251.128/25 to-ports=29248-31263
+add action=netmap chain=CGNAT_14 disabled=yes src-address=100.64.7.0/25 \
+    to-addresses=177.85.251.128/25
+add action=netmap chain=CGNAT_15 disabled=yes protocol=tcp src-address=\
+    100.64.7.128/25 to-addresses=177.85.251.128/25 to-ports=31264-33279
+add action=netmap chain=CGNAT_15 disabled=yes protocol=udp src-address=\
+    100.64.7.128/25 to-addresses=177.85.251.128/25 to-ports=31264-33279
+add action=netmap chain=CGNAT_15 disabled=yes src-address=100.64.7.128/25 \
+    to-addresses=177.85.251.128/25
+add action=netmap chain=CGNAT_16 disabled=yes protocol=tcp src-address=\
+    100.64.8.0/25 to-addresses=177.85.251.128/25 to-ports=33280-35295
+add action=netmap chain=CGNAT_16 disabled=yes protocol=udp src-address=\
+    100.64.8.0/25 to-addresses=177.85.251.128/25 to-ports=33280-35295
+add action=netmap chain=CGNAT_16 disabled=yes src-address=100.64.8.0/25 \
+    to-addresses=177.85.251.128/25
+add action=netmap chain=CGNAT_17 disabled=yes protocol=tcp src-address=\
+    100.64.8.128/25 to-addresses=177.85.251.128/25 to-ports=35296-37311
+add action=netmap chain=CGNAT_17 disabled=yes protocol=udp src-address=\
+    100.64.8.128/25 to-addresses=177.85.251.128/25 to-ports=35296-37311
+add action=netmap chain=CGNAT_17 disabled=yes src-address=100.64.8.128/25 \
+    to-addresses=177.85.251.128/25
+add action=netmap chain=CGNAT_18 disabled=yes protocol=tcp src-address=\
+    100.64.9.0/25 to-addresses=177.85.251.128/25 to-ports=37312-39327
+add action=netmap chain=CGNAT_18 disabled=yes protocol=udp src-address=\
+    100.64.9.0/25 to-addresses=177.85.251.128/25 to-ports=37312-39327
+add action=netmap chain=CGNAT_18 disabled=yes src-address=100.64.9.0/25 \
+    to-addresses=177.85.251.128/25
+add action=netmap chain=CGNAT_19 disabled=yes protocol=tcp src-address=\
+    100.64.9.128/25 to-addresses=177.85.251.128/25 to-ports=39328-41343
+add action=netmap chain=CGNAT_19 disabled=yes protocol=udp src-address=\
+    100.64.9.128/25 to-addresses=177.85.251.128/25 to-ports=39328-41343
+add action=netmap chain=CGNAT_19 disabled=yes src-address=100.64.9.128/25 \
+    to-addresses=177.85.251.128/25
+add action=netmap chain=CGNAT_20 disabled=yes protocol=tcp src-address=\
+    100.64.10.0/25 to-addresses=177.85.251.128/25 to-ports=41344-43359
+add action=netmap chain=CGNAT_20 disabled=yes protocol=udp src-address=\
+    100.64.10.0/25 to-addresses=177.85.251.128/25 to-ports=41344-43359
+add action=netmap chain=CGNAT_20 disabled=yes src-address=100.64.10.0/25 \
+    to-addresses=177.85.251.128/25
+add action=netmap chain=CGNAT_21 disabled=yes protocol=tcp src-address=\
+    100.64.10.128/25 to-addresses=177.85.251.128/25 to-ports=43360-45375
+add action=netmap chain=CGNAT_21 disabled=yes protocol=udp src-address=\
+    100.64.10.128/25 to-addresses=177.85.251.128/25 to-ports=43360-45375
+add action=netmap chain=CGNAT_21 disabled=yes src-address=100.64.10.128/25 \
+    to-addresses=177.85.251.128/25
+add action=netmap chain=CGNAT_22 disabled=yes protocol=tcp src-address=\
+    100.64.11.0/25 to-addresses=177.85.251.128/25 to-ports=45376-47391
+add action=netmap chain=CGNAT_22 disabled=yes protocol=udp src-address=\
+    100.64.11.0/25 to-addresses=177.85.251.128/25 to-ports=45376-47391
+add action=netmap chain=CGNAT_22 disabled=yes src-address=100.64.11.0/25 \
+    to-addresses=177.85.251.128/25
+add action=netmap chain=CGNAT_23 disabled=yes protocol=tcp src-address=\
+    100.64.11.128/25 to-addresses=177.85.251.128/25 to-ports=47392-49407
+add action=netmap chain=CGNAT_23 disabled=yes protocol=udp src-address=\
+    100.64.11.128/25 to-addresses=177.85.251.128/25 to-ports=47392-49407
+add action=netmap chain=CGNAT_23 disabled=yes src-address=100.64.11.128/25 \
+    to-addresses=177.85.251.128/25
+add action=netmap chain=CGNAT_24 disabled=yes protocol=tcp src-address=\
+    100.64.12.0/25 to-addresses=177.85.251.128/25 to-ports=49408-51423
+add action=netmap chain=CGNAT_24 disabled=yes protocol=udp src-address=\
+    100.64.12.0/25 to-addresses=177.85.251.128/25 to-ports=49408-51423
+add action=netmap chain=CGNAT_24 disabled=yes src-address=100.64.12.0/25 \
+    to-addresses=177.85.251.128/25
+add action=netmap chain=CGNAT_25 disabled=yes protocol=tcp src-address=\
+    100.64.12.128/25 to-addresses=177.85.251.128/25 to-ports=51424-53439
+add action=netmap chain=CGNAT_25 disabled=yes protocol=udp src-address=\
+    100.64.12.128/25 to-addresses=177.85.251.128/25 to-ports=51424-53439
+add action=netmap chain=CGNAT_25 disabled=yes src-address=100.64.12.128/25 \
+    to-addresses=177.85.251.128/25
+add action=netmap chain=CGNAT_26 disabled=yes protocol=tcp src-address=\
+    100.64.13.0/25 to-addresses=177.85.251.128/25 to-ports=53440-55455
+add action=netmap chain=CGNAT_26 disabled=yes protocol=udp src-address=\
+    100.64.13.0/25 to-addresses=177.85.251.128/25 to-ports=53440-55455
+add action=netmap chain=CGNAT_26 disabled=yes src-address=100.64.13.0/25 \
+    to-addresses=177.85.251.128/25
+add action=netmap chain=CGNAT_27 disabled=yes protocol=tcp src-address=\
+    100.64.13.128/25 to-addresses=177.85.251.128/25 to-ports=55456-57471
+add action=netmap chain=CGNAT_27 disabled=yes protocol=udp src-address=\
+    100.64.13.128/25 to-addresses=177.85.251.128/25 to-ports=55456-57471
+add action=netmap chain=CGNAT_27 disabled=yes src-address=100.64.13.128/25 \
+    to-addresses=177.85.251.128/25
+add action=netmap chain=CGNAT_28 disabled=yes protocol=tcp src-address=\
+    100.64.14.0/25 to-addresses=177.85.251.128/25 to-ports=57472-59487
+add action=netmap chain=CGNAT_28 disabled=yes protocol=udp src-address=\
+    100.64.14.0/25 to-addresses=177.85.251.128/25 to-ports=57472-59487
+add action=netmap chain=CGNAT_28 disabled=yes src-address=100.64.14.0/25 \
+    to-addresses=177.85.251.128/25
+add action=netmap chain=CGNAT_29 disabled=yes protocol=tcp src-address=\
+    100.64.14.128/25 to-addresses=177.85.251.128/25 to-ports=59488-61503
+add action=netmap chain=CGNAT_29 disabled=yes protocol=udp src-address=\
+    100.64.14.128/25 to-addresses=177.85.251.128/25 to-ports=59488-61503
+add action=netmap chain=CGNAT_29 disabled=yes src-address=100.64.14.128/25 \
+    to-addresses=177.85.251.128/25
+add action=netmap chain=CGNAT_30 disabled=yes protocol=tcp src-address=\
+    100.64.15.0/25 to-addresses=177.85.251.128/25 to-ports=61504-63519
+add action=netmap chain=CGNAT_30 disabled=yes protocol=udp src-address=\
+    100.64.15.0/25 to-addresses=177.85.251.128/25 to-ports=61504-63519
+add action=netmap chain=CGNAT_30 disabled=yes src-address=100.64.15.0/25 \
+    to-addresses=177.85.251.128/25
+add action=netmap chain=CGNAT_31 disabled=yes protocol=tcp src-address=\
+    100.64.15.128/25 to-addresses=177.85.251.128/25 to-ports=63520-65535
+add action=netmap chain=CGNAT_31 disabled=yes protocol=udp src-address=\
+    100.64.15.128/25 to-addresses=177.85.251.128/25 to-ports=63520-65535
+add action=netmap chain=CGNAT_31 disabled=yes src-address=100.64.15.128/25 \
+    to-addresses=177.85.251.128/25
+/ip firewall raw
+add action=accept chain=prerouting dst-address=186.237.222.200/29 \
+    src-address-list="VIRTUALIZA\C7AO SUPREMA"
+add action=accept chain=prerouting dst-address=186.237.222.202 dst-port=5432 \
+    protocol=tcp src-address-list="VIRTUALIZA\C7AO SUPREMA"
+add action=accept chain=prerouting dst-address=186.237.222.203 dst-port=3000 \
+    protocol=tcp
+add action=accept chain=prerouting disabled=yes dst-address=\
+    186.237.222.200/29 src-address=45.191.205.163
+add action=accept chain=prerouting disabled=yes dst-address=\
+    186.237.222.200/29 src-address=143.255.197.170
+add action=accept chain=prerouting disabled=yes dst-address=\
+    186.237.222.200/29 src-address=179.83.119.179
+add action=accept chain=prerouting disabled=yes dst-address=\
+    186.237.222.200/29 src-address=200.0.40.10
+add action=accept chain=prerouting disabled=yes dst-address=\
+    186.237.222.200/29 src-address=187.72.231.82
+add action=drop chain=prerouting disabled=yes dst-address=186.237.222.200/29 \
+    dst-port=!80,443 protocol=tcp
+/ip ipsec profile
+set [ find default=yes ] dpd-interval=2m dpd-maximum-failures=5
+/ip route
+add disabled=no dst-address=0.0.0.0/0 gateway=143.255.197.61
+add disabled=no dst-address=143.255.196.31/32 gateway=10.34.96.2 \
+    routing-table=main suppress-hw-offload=no
+add disabled=no dst-address=172.17.248.0/24 gateway=172.17.249.13 \
+    routing-table=main suppress-hw-offload=no
+add blackhole comment=CGNAT_BLACKHOLE disabled=no dst-address=\
+    177.85.251.128/25
+add comment=SDWAN-SICREDI-CRISTALINA disabled=no distance=1 dst-address=\
+    186.237.222.92/30 gateway=172.17.255.17 routing-table=main scope=30 \
+    suppress-hw-offload=no target-scope=10
+add comment=CLI-RANCHEIRO-EXPRESS-400MB--GNA-JEMP-19233 disabled=no distance=\
+    1 dst-address=100.127.15.254/32 gateway=172.16.27.2 routing-table=main \
+    scope=30 suppress-hw-offload=no target-scope=10
+add comment=CLI-NESCAFE-100MB-GNA-JEMP-19255 disabled=no distance=1 \
+    dst-address=100.127.15.253/32 gateway=172.16.27.6 routing-table=main \
+    scope=30 suppress-hw-offload=no target-scope=10
+add comment=SDWAN-SICREDI-CATALAO disabled=no distance=1 dst-address=\
+    186.237.222.100/30 gateway=172.17.255.18 routing-table=main scope=30 \
+    suppress-hw-offload=no target-scope=10
+add comment=CLI-CODEMP-MARKETING-GNA-JAB-20173 disabled=no distance=1 \
+    dst-address=100.127.15.252/32 gateway=172.16.27.10 routing-table=main \
+    scope=30 suppress-hw-offload=no target-scope=10
+/ipv6 route
+add disabled=no dst-address=::/0 gateway=2804:ef0::231 routing-table=main
+/ip service
+set telnet disabled=yes
+set www port=82
+set winbox port=1018
+set ftp disabled=yes port=2121
+set ssh address="143.255.196.0/22,186.237.216.0/21,177.85.249.0/24,177.85.250.\
+    0/23,177.85.252.0/24,172.16.0.0/12,10.0.0.0/8,192.168.0.0/16,169.254.0.0/1\
+    6" port=2250
+set api disabled=yes
+set api-ssl disabled=yes
+/ip smb shares
+set [ find default=yes ] directory=/pub
+/ip ssh
+set always-allow-password-login=yes
+/ipv6 address
+add address=2804:ef0::232/126 advertise=no comment=CGNAT interface=UPLINK_CCR
+add from-pool="DHCP PD" interface=BRIDGE-WIFI-GNA
+add address=2804:ef0:0:e::b2/126 advertise=no comment=VPN-WIREGUARD \
+    interface=UPLINK_CCR
+add advertise=no from-pool=VPN-WIREGUARD-PD interface=\
+    VPN-WIREGUARD-jet.israel
+add advertise=no from-pool=VPN-WIREGUARD-PD interface=\
+    VPN-WIREGUARD-jet.douglasgov
+add advertise=no from-pool=VPN-WIREGUARD-PD interface=\
+    VPN-WIREGUARD-jet.rubens
+add advertise=no from-pool=VPN-WIREGUARD-PD interface=\
+    VPN-WIREGUARD-client.julio
+add advertise=no from-pool=VPN-WIREGUARD-PD interface=VPN-WIREGUARD-jet.avner
+add advertise=no from-pool=VPN-WIREGUARD-PD interface=\
+    VPN-WIREGUARD-jet.alencar
+add advertise=no from-pool=VPN-WIREGUARD-PD interface=\
+    VPN-WIREGUARD-jet.diegoddos
+add advertise=no from-pool=VPN-WIREGUARD-PD interface=\
+    VPN-WIREGUARD-jet.thyago
+add advertise=no from-pool=VPN-WIREGUARD-PD interface=\
+    VPN-WIREGUARD-jet.rubens2
+add advertise=no from-pool=VPN-WIREGUARD-PD interface=VPN-WIREGUARD-jet.giba
+add advertise=no from-pool=VPN-WIREGUARD-PD interface=\
+    VPN-WIREGUARD-jet.marciovitor
+add advertise=no from-pool=VPN-WIREGUARD-PD interface=\
+    VPN-WIREGUARD-jet.marcio
+add address=2804:ef0:0:1a0c:: advertise=no interface=\
+    VPN-WIREGUARD-jet.brunoddos
+/lcd
+set time-interval=hour
+/lcd pin
+set pin-number=5785
+/ppp secret
+add disabled=yes local-address=192.168.90.1 name=sicredi.crt remote-address=\
+    192.168.90.10 service=l2tp
+add disabled=yes local-address=192.168.90.1 name=marcusroque remote-address=\
+    192.168.90.5 service=pptp
+add disabled=yes local-address=192.168.90.1 name=erick.programador \
+    remote-address=192.168.90.6 service=l2tp
+add disabled=yes local-address=192.168.90.1 name=mwsolucoes remote-address=\
+    192.168.90.7 service=l2tp
+add disabled=yes local-address=192.168.90.1 name=francisco remote-address=\
+    192.168.90.4 service=l2tp
+add disabled=yes local-address=172.17.2.1 name=cristian remote-address=\
+    172.17.2.3
+add disabled=yes local-address=172.17.255.1 name=bruno remote-address=\
+    172.17.255.102 service=l2tp
+add disabled=yes local-address=172.17.255.1 name=diego remote-address=\
+    172.17.255.103 service=l2tp
+add disabled=yes local-address=192.168.90.1 name=hugo.une remote-address=\
+    192.168.90.11 service=l2tp
+add disabled=yes local-address=192.168.90.1 name=felipe.une remote-address=\
+    192.168.90.12 service=l2tp
+add disabled=yes local-address=192.168.90.1 name=israel remote-address=\
+    192.168.90.13 service=l2tp
+add comment=POP-SICREDI-CRISTSLINA disabled=yes local-address=172.17.2.1 \
+    name=sicredi.cristalina profile=*1 remote-address=172.17.2.2 service=ovpn
+add comment=VPN-JET-ESCRITORIO-SP local-address=177.85.249.17 name=\
+    jet.escritorio-sp remote-address=177.85.249.18 service=l2tp
+/routing bfd configuration
+add disabled=no interfaces=all min-rx=200ms min-tx=200ms multiplier=5
+/routing ospf interface-template
+add area=backbone-v2 disabled=yes interfaces=OSPF-GNA-CPE-CGNAT-DIR-NE8000 \
+    networks=172.16.249.18/30 type=ptp
+add area=backbone-v3 disabled=yes interfaces=OSPF-GNA-CPE-CGNAT-DIR-NE8000 \
+    networks=2804:ef0:0:e:ffff:ffff:ffff:fff2/126 type=ptp
+/snmp
+set enabled=yes trap-community=jetnet@2025 trap-target=0.0.0.0 trap-version=2
+/system clock
+set time-zone-name=America/Sao_Paulo
+/system identity
+set name=CPE-GER-GNA-NOVO-MUNDO-01
+/system logging
+add action=Graylog prefix=critical topics=critical
+add action=Graylog prefix=error topics=error
+add action=Graylog prefix=info topics=info
+add action=Graylog prefix=warning topics=warning
+add topics=info,account,dhcp,interface
+/system ntp server
+set enabled=yes manycast=yes use-local-clock=yes
+/tool romon
+set enabled=yes
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01:~# 
