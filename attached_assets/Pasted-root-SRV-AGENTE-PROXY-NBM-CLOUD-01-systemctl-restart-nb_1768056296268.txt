@@ -1,0 +1,54 @@
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01:~# systemctl restart nbm-agent && sleep 3 && echo "Agente reiniciado, execute backup agora"
+Agente reiniciado, execute backup agora
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01:~# tail -50 /opt/nbm-agent/logs/agent.log
+[2026-01-10 11:42:44] [DEBUG] Received: {"type":"error","message":"Erro ao processar mensagem"}
+[2026-01-10 11:42:44] [DEBUG] Received: {"type":"error","message":"Erro ao processar mensagem"}
+[2026-01-10 11:42:44] [WARN] Server error: Erro ao processar mensagem
+[2026-01-10 11:42:44] [WARN] Server error: Erro ao processar mensagem
+[2026-01-10 11:42:44] [DEBUG] Received: {"type":"error","message":"Erro ao processar mensagem"}
+[2026-01-10 11:42:44] [DEBUG] Received: {"type":"error","message":"Erro ao processar mensagem"}
+[2026-01-10 11:42:44] [WARN] Server error: Erro ao processar mensagem
+[2026-01-10 11:42:44] [WARN] Server error: Erro ao processar mensagem
+[2026-01-10 11:42:44] [DEBUG] Received: {"type":"error","message":"Erro ao processar mensagem"}
+[2026-01-10 11:42:44] [DEBUG] Received: {"type":"error","message":"Erro ao processar mensagem"}
+[2026-01-10 11:42:44] [WARN] Server error: Erro ao processar mensagem
+[2026-01-10 11:42:44] [WARN] Server error: Erro ao processar mensagem
+[2026-01-10 11:42:44] [DEBUG] Received: {"type":"error","message":"Erro ao processar mensagem"}
+[2026-01-10 11:42:44] [DEBUG] Received: {"type":"error","message":"Erro ao processar mensagem"}
+[2026-01-10 11:42:44] [WARN] Server error: Erro ao processar mensagem
+[2026-01-10 11:42:44] [WARN] Server error: Erro ao processar mensagem
+[2026-01-10 11:42:44] [DEBUG] Sent heartbeat
+[2026-01-10 11:42:44] [DEBUG] Sent heartbeat
+[2026-01-10 11:42:44] [DEBUG] Received: {"type":"error","message":"Erro ao processar mensagem"}
+[2026-01-10 11:42:44] [DEBUG] Received: {"type":"error","message":"Erro ao processar mensagem"}
+[2026-01-10 11:42:44] [WARN] Server error: Erro ao processar mensagem
+[2026-01-10 11:42:44] [WARN] Server error: Erro ao processar mensagem
+[2026-01-10 11:42:44] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-10T14:42:44.568Z"}
+[2026-01-10 11:42:44] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-10T14:42:44.568Z"}
+[2026-01-10 11:42:44] [DEBUG] Heartbeat acknowledged
+[2026-01-10 11:42:44] [DEBUG] Heartbeat acknowledged
+[2026-01-10 11:43:14] [DEBUG] Sent heartbeat
+[2026-01-10 11:43:14] [DEBUG] Sent heartbeat
+[2026-01-10 11:43:14] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-10T14:43:14.568Z"}
+[2026-01-10 11:43:14] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-10T14:43:14.568Z"}
+[2026-01-10 11:43:14] [DEBUG] Heartbeat acknowledged
+[2026-01-10 11:43:14] [DEBUG] Heartbeat acknowledged
+[2026-01-10 11:43:44] [DEBUG] Sent heartbeat
+[2026-01-10 11:43:44] [DEBUG] Sent heartbeat
+[2026-01-10 11:43:44] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-10T14:43:44.578Z"}
+[2026-01-10 11:43:44] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-10T14:43:44.578Z"}
+[2026-01-10 11:43:44] [DEBUG] Heartbeat acknowledged
+[2026-01-10 11:43:44] [DEBUG] Heartbeat acknowledged
+[2026-01-10 11:44:14] [DEBUG] Sent heartbeat
+[2026-01-10 11:44:14] [DEBUG] Sent heartbeat
+[2026-01-10 11:44:14] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-10T14:44:14.586Z"}
+[2026-01-10 11:44:14] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-10T14:44:14.586Z"}
+[2026-01-10 11:44:14] [DEBUG] Heartbeat acknowledged
+[2026-01-10 11:44:14] [DEBUG] Heartbeat acknowledged
+[2026-01-10 11:44:44] [DEBUG] Sent heartbeat
+[2026-01-10 11:44:44] [DEBUG] Sent heartbeat
+[2026-01-10 11:44:44] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-10T14:44:44.595Z"}
+[2026-01-10 11:44:44] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-10T14:44:44.595Z"}
+[2026-01-10 11:44:44] [DEBUG] Heartbeat acknowledged
+[2026-01-10 11:44:44] [DEBUG] Heartbeat acknowledged
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01:~# 
