@@ -1,0 +1,85 @@
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01:~# sudo systemctl status nbm-agent
+● nbm-agent.service - NBM CLOUD Agent - Network Backup Proxy
+     Loaded: loaded (/etc/systemd/system/nbm-agent.service; enabled; preset: enabled)
+     Active: activating (auto-restart) (Result: exit-code) since Fri 2026-01-09 22:53:32 -03; 1s ago
+ Invocation: 8cc40d0f5c3645bdaf6187fef1528183
+    Process: 1329 ExecStart=/opt/nbm-agent/nbm-agent.sh start (code=exited, status=1/FAILURE)
+   Main PID: 1329 (code=exited, status=1/FAILURE)
+   Mem peak: 1.9M
+        CPU: 28ms
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01:~# sudo journalctl -u nbm-agent -n 50 --no-pager
+Jan 09 22:51:39 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Main process exited, code=exited, status=1/FAILURE
+Jan 09 22:51:39 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Failed with result 'exit-code'.
+Jan 09 22:51:49 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Scheduled restart job, restart counter is at 7.
+Jan 09 22:51:49 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: Started nbm-agent.service - NBM CLOUD Agent - Network Backup Proxy.
+Jan 09 22:51:49 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Main process exited, code=exited, status=1/FAILURE
+Jan 09 22:51:49 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Failed with result 'exit-code'.
+Jan 09 22:51:59 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Scheduled restart job, restart counter is at 8.
+Jan 09 22:51:59 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: Started nbm-agent.service - NBM CLOUD Agent - Network Backup Proxy.
+Jan 09 22:51:59 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Main process exited, code=exited, status=1/FAILURE
+Jan 09 22:51:59 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Failed with result 'exit-code'.
+Jan 09 22:52:09 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Scheduled restart job, restart counter is at 9.
+Jan 09 22:52:09 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: Started nbm-agent.service - NBM CLOUD Agent - Network Backup Proxy.
+Jan 09 22:52:10 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Main process exited, code=exited, status=1/FAILURE
+Jan 09 22:52:10 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Failed with result 'exit-code'.
+Jan 09 22:52:20 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Scheduled restart job, restart counter is at 10.
+Jan 09 22:52:20 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: Started nbm-agent.service - NBM CLOUD Agent - Network Backup Proxy.
+Jan 09 22:52:20 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Main process exited, code=exited, status=1/FAILURE
+Jan 09 22:52:20 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Failed with result 'exit-code'.
+Jan 09 22:52:30 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Scheduled restart job, restart counter is at 11.
+Jan 09 22:52:30 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: Started nbm-agent.service - NBM CLOUD Agent - Network Backup Proxy.
+Jan 09 22:52:30 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Main process exited, code=exited, status=1/FAILURE
+Jan 09 22:52:30 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Failed with result 'exit-code'.
+Jan 09 22:52:40 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Scheduled restart job, restart counter is at 12.
+Jan 09 22:52:40 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: Started nbm-agent.service - NBM CLOUD Agent - Network Backup Proxy.
+Jan 09 22:52:40 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Main process exited, code=exited, status=1/FAILURE
+Jan 09 22:52:40 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Failed with result 'exit-code'.
+Jan 09 22:52:50 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Scheduled restart job, restart counter is at 13.
+Jan 09 22:52:50 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: Started nbm-agent.service - NBM CLOUD Agent - Network Backup Proxy.
+Jan 09 22:52:51 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Main process exited, code=exited, status=1/FAILURE
+Jan 09 22:52:51 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Failed with result 'exit-code'.
+Jan 09 22:53:01 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Scheduled restart job, restart counter is at 14.
+Jan 09 22:53:01 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: Started nbm-agent.service - NBM CLOUD Agent - Network Backup Proxy.
+Jan 09 22:53:01 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Main process exited, code=exited, status=1/FAILURE
+Jan 09 22:53:01 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Failed with result 'exit-code'.
+Jan 09 22:53:11 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Scheduled restart job, restart counter is at 15.
+Jan 09 22:53:11 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: Started nbm-agent.service - NBM CLOUD Agent - Network Backup Proxy.
+Jan 09 22:53:11 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Main process exited, code=exited, status=1/FAILURE
+Jan 09 22:53:11 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Failed with result 'exit-code'.
+Jan 09 22:53:21 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Scheduled restart job, restart counter is at 16.
+Jan 09 22:53:21 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: Started nbm-agent.service - NBM CLOUD Agent - Network Backup Proxy.
+Jan 09 22:53:21 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Main process exited, code=exited, status=1/FAILURE
+Jan 09 22:53:21 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Failed with result 'exit-code'.
+Jan 09 22:53:31 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Scheduled restart job, restart counter is at 17.
+Jan 09 22:53:31 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: Started nbm-agent.service - NBM CLOUD Agent - Network Backup Proxy.
+Jan 09 22:53:32 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Main process exited, code=exited, status=1/FAILURE
+Jan 09 22:53:32 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Failed with result 'exit-code'.
+Jan 09 22:53:42 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Scheduled restart job, restart counter is at 18.
+Jan 09 22:53:42 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: Started nbm-agent.service - NBM CLOUD Agent - Network Backup Proxy.
+Jan 09 22:53:42 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Main process exited, code=exited, status=1/FAILURE
+Jan 09 22:53:42 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Failed with result 'exit-code'.
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01:~# curl -v http://143.255.197.25:5000/api/agents/verify-token \
+  -H "Content-Type: application/json" \
+  -d '{"token":"38b026c05ea757167c7266b1451db08b2e6064fd4209b77d58bf6ea0439dc953"}'
+*   Trying 143.255.197.25:5000...
+* Connected to 143.255.197.25 (143.255.197.25) port 5000
+* using HTTP/1.x
+> POST /api/agents/verify-token HTTP/1.1
+> Host: 143.255.197.25:5000
+> User-Agent: curl/8.14.1
+> Accept: */*
+> Content-Type: application/json
+> Content-Length: 76
+> 
+* upload completely sent off: 76 bytes
+< HTTP/1.1 200 OK
+< X-Powered-By: Express
+< Content-Type: application/json; charset=utf-8
+< Content-Length: 77
+< ETag: W/"4d-e+T8gOaQjCWRDuEZGRVHrNhOC2g"
+< Date: Sat, 10 Jan 2026 01:54:06 GMT
+< Connection: keep-alive
+< Keep-Alive: timeout=5
+< 
+* Connection #0 to host 143.255.197.25 left intact
+{"valid":true,"agentId":1,"agentName":"proxy-grupojet-01","status":"offline"}root@SRV-AGENTE-PROXY-NBM-CLOUD-01:~# 
