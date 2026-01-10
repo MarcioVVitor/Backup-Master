@@ -61,7 +61,7 @@ export function createServerRoutes(isAuthenticated: any): Router {
         }
       } else if (isStandaloneAuth) {
         userId = standaloneUser.id;
-        const [foundUser] = await db.select().from(users).where(eq(users.id, userId));
+        const [foundUser] = await db.select().from(users).where(eq(users.id, standaloneUser.id));
         if (foundUser) {
           dbUser = foundUser;
         }
