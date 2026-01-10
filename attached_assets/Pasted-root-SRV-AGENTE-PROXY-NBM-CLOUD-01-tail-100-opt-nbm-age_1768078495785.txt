@@ -1,0 +1,102 @@
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01:~# tail -100 /opt/nbm-agent/logs/agent.log
+add address=2804:ef0:0:1a0c:: advertise=no interface=\
+    VPN-WIREGUARD-jet.brunoddos
+/lcd
+set time-interval=hour
+/lcd pin
+set pin-number=5785
+/ppp secret
+add disabled=yes local-address=192.168.90.1 name=sicredi.crt remote-address=\
+    192.168.90.10 service=l2tp
+add disabled=yes local-address=192.168.90.1 name=marcusroque remote-address=\
+    192.168.90.5 service=pptp
+add disabled=yes local-address=192.168.90.1 name=erick.programador \
+    remote-address=192.168.90.6 service=l2tp
+add disabled=yes local-address=192.168.90.1 name=mwsolucoes remote-address=\
+    192.168.90.7 service=l2tp
+add disabled=yes local-address=192.168.90.1 name=francisco remote-address=\
+    192.168.90.4 service=l2tp
+add disabled=yes local-address=172.17.2.1 name=cristian remote-address=\
+    172.17.2.3
+add disabled=yes local-address=172.17.255.1 name=bruno remote-address=\
+    172.17.255.102 service=l2tp
+add disabled=yes local-address=172.17.255.1 name=diego remote-address=\
+    172.17.255.103 service=l2tp
+add disabled=yes local-address=192.168.90.1 name=hugo.une remote-address=\
+    192.168.90.11 service=l2tp
+add disabled=yes local-address=192.168.90.1 name=felipe.une remote-address=\
+    192.168.90.12 service=l2tp
+add disabled=yes local-address=192.168.90.1 name=israel remote-address=\
+    192.168.90.13 service=l2tp
+add comment=POP-SICREDI-CRISTSLINA disabled=yes local-address=172.17.2.1 \
+    name=sicredi.cristalina profile=*1 remote-address=172.17.2.2 service=ovpn
+add comment=VPN-JET-ESCRITORIO-SP local-address=177.85.249.17 name=\
+    jet.escritorio-sp remote-address=177.85.249.18 service=l2tp
+/routing bfd configuration
+add disabled=no interfaces=all min-rx=200ms min-tx=200ms multiplier=5
+/routing ospf interface-template
+add area=backbone-v2 disabled=yes interfaces=OSPF-GNA-CPE-CGNAT-DIR-NE8000 \
+    networks=172.16.249.18/30 type=ptp
+add area=backbone-v3 disabled=yes interfaces=OSPF-GNA-CPE-CGNAT-DIR-NE8000 \
+    networks=2804:ef0:0:e:ffff:ffff:ffff:fff2/126 type=ptp
+/snmp
+set enabled=yes trap-community=jetnet@2025 trap-target=0.0.0.0 trap-version=2
+/system clock
+set time-zone-name=America/Sao_Paulo
+/system identity
+set name=CPE-GER-GNA-NOVO-MUNDO-01
+/system logging
+add action=Graylog prefix=critical topics=critical
+add action=Graylog prefix=error topics=error
+add action=Graylog prefix=info topics=info
+add action=Graylog prefix=warning topics=warning
+add topics=info,account,dhcp,interface
+/system ntp server
+set enabled=yes manycast=yes use-local-clock=yes
+/tool romon
+"}t enabled=yes
+[2026-01-10 17:46:42] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-10T20:46:41.980Z"}
+[2026-01-10 17:46:42] [DEBUG] Heartbeat acknowledged
+[2026-01-10 17:46:42] [DEBUG] Received: [WARN  websocat::line_peer] Splitting too long line of 123553 bytes because of buffer (-B option) is only 65536 bytes
+[2026-01-10 17:46:42] [DEBUG] Unhandled message type: 
+[2026-01-10 17:46:42] [DEBUG] Received: {"type":"backup_job","jobId":"backup-2-1768078002740","equipment":{"id":2,"name":"CONCENTRADOR-BSB-CGNAT-JETELECOM-01","ip":"143.255.198.6","port":2250,"protocol":"ssh","username":"admin","password":"@2Dc9d967","manufacturer":"mikrotik"},"config":{"command":"# Script de Backup Mikrotik
+# Placeholders: {{EQUIPMENT_IP}}
+/export","useShell":true,"timeout":60000}}
+[2026-01-10 17:46:42] [DEBUG] Received message type: backup_job
+[2026-01-10 17:46:42] [INFO] Executing backup job backup-2-1768078002740 for 143.255.198.6:2250 with command: # Script de Backup Mikrotik
+# Placeholders: {{EQUIPMENT_IP}}
+/export
+[2026-01-10 17:46:42] [INFO] Executing SSH backup on 143.255.198.6:2250
+[2026-01-10 17:46:57] [DEBUG] Sent heartbeat
+[2026-01-10 17:47:12] [DEBUG] Sent heartbeat
+[2026-01-10 17:47:27] [DEBUG] Sent heartbeat
+[2026-01-10 17:47:42] [DEBUG] Sent heartbeat
+[2026-01-10 17:47:57] [DEBUG] Sent heartbeat
+[2026-01-10 17:48:12] [DEBUG] Sent heartbeat
+[2026-01-10 17:48:27] [DEBUG] Sent heartbeat
+[2026-01-10 17:48:42] [DEBUG] Sent heartbeat
+[2026-01-10 17:48:57] [DEBUG] Sent heartbeat
+[2026-01-10 17:49:12] [DEBUG] Sent heartbeat
+[2026-01-10 17:49:27] [DEBUG] Sent heartbeat
+[2026-01-10 17:49:42] [DEBUG] Sent heartbeat
+[2026-01-10 17:49:57] [DEBUG] Sent heartbeat
+[2026-01-10 17:50:12] [DEBUG] Sent heartbeat
+[2026-01-10 17:50:27] [DEBUG] Sent heartbeat
+[2026-01-10 17:50:42] [DEBUG] Sent heartbeat
+[2026-01-10 17:50:57] [DEBUG] Sent heartbeat
+[2026-01-10 17:51:12] [DEBUG] Sent heartbeat
+[2026-01-10 17:51:27] [DEBUG] Sent heartbeat
+[2026-01-10 17:51:42] [DEBUG] Sent heartbeat
+[2026-01-10 17:51:57] [DEBUG] Sent heartbeat
+[2026-01-10 17:52:12] [DEBUG] Sent heartbeat
+[2026-01-10 17:52:27] [DEBUG] Sent heartbeat
+[2026-01-10 17:52:42] [DEBUG] Sent heartbeat
+[2026-01-10 17:52:57] [DEBUG] Sent heartbeat
+[2026-01-10 17:53:12] [DEBUG] Sent heartbeat
+[2026-01-10 17:53:27] [DEBUG] Sent heartbeat
+[2026-01-10 17:53:42] [DEBUG] Sent heartbeat
+[2026-01-10 17:53:57] [DEBUG] Sent heartbeat
+[2026-01-10 17:54:12] [DEBUG] Sent heartbeat
+[2026-01-10 17:54:27] [DEBUG] Sent heartbeat
+[2026-01-10 17:54:42] [DEBUG] Sent heartbeat
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01:~# 

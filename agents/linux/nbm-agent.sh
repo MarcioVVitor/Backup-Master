@@ -406,7 +406,8 @@ connect_websocket() {
         
         # Use coproc for bidirectional communication with websocat
         # Ping interval of 10s helps detect disconnections faster
-        coproc WSCAT { websocat -t --ping-interval 10 "$ws_url" 2>&1; }
+        # Buffer size of 512KB to handle large backup outputs
+        coproc WSCAT { websocat -t --ping-interval 10 -B 524288 "$ws_url" 2>&1; }
         
         if [[ -z "${WSCAT_PID:-}" ]]; then
             log_error "Failed to start websocat"
