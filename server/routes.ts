@@ -3381,6 +3381,17 @@ function getDefaultScriptInfo(manufacturer: string): VendorDefaultScript | null 
   return DEFAULT_VENDOR_SCRIPTS[manufacturer.toLowerCase()] || null;
 }
 
+// Remove ANSI escape codes from output
+function cleanAnsiCodes(str: string): string {
+  return str
+    .replace(/\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])/g, '') // ANSI escape sequences
+    .replace(/\[\d+[A-Z]/g, '') // Cursor movement codes like [9999B
+    .replace(/\[\d*[A-Za-z]/g, '') // Other escape sequences
+    .replace(/\[[\d;]*[A-Za-z]/g, '') // Color codes
+    .replace(/\r\n/g, '\n') // Normalize line endings
+    .replace(/\r/g, '\n'); // Remove carriage returns
+}
+
 // Execução SSH com suporte a shell interativo
 async function executeSSHBackup(equip: any, config: BackupConfig): Promise<string> {
   const { Client } = await import("ssh2");
@@ -3405,7 +3416,7 @@ async function executeSSHBackup(equip: any, config: BackupConfig): Promise<strin
 
           timer = setTimeout(() => {
             cleanup();
-            resolve(output);
+            resolve(cleanAnsiCodes(output));
           }, config.timeout || 30000);
 
           stream.on('data', (data: Buffer) => {
@@ -3414,13 +3425,13 @@ async function executeSSHBackup(equip: any, config: BackupConfig): Promise<strin
             if (timer) clearTimeout(timer);
             timer = setTimeout(() => {
               cleanup();
-              resolve(output);
+              resolve(cleanAnsiCodes(output));
             }, 5000);
           });
 
           stream.on('close', () => {
             cleanup();
-            resolve(output);
+            resolve(cleanAnsiCodes(output));
           });
 
           stream.stderr.on('data', (data: Buffer) => {
