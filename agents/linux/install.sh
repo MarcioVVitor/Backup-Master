@@ -6,7 +6,7 @@ set -e
 
 AGENT_DIR="/opt/nbm-agent"
 SERVICE_NAME="nbm-agent"
-GITHUB_REPO="${GITHUB_REPO:-https://github.com/YOUR_USERNAME/nbm-agent.git}"
+GITHUB_RAW_BASE="https://raw.githubusercontent.com/MarcioVVitor/Backup-Master/main/agents/linux"
 
 # Colors
 RED='\033[0;31m'
@@ -17,13 +17,10 @@ NC='\033[0m'
 
 echo -e "${BLUE}"
 cat << 'EOF'
-  _   _ ____  __  __    ____ _     ___  _   _ ____  
- | \ | | __ )|  \/  |  / ___| |   / _ \| | | |  _ \ 
- |  \| |  _ \| |\/| | | |   | |  | | | | | | | | | |
- | |\  | |_) | |  | | | |___| |__| |_| | |_| | |_| |
- |_| \_|____/|_|  |_|  \____|_____\___/ \___/|____/ 
-                                                     
- Agent Installer v1.0
+==========================================
+  NBM CLOUD Agent - Network Backup Management
+  Installation Script for Debian 13
+==========================================
 EOF
 echo -e "${NC}"
 
@@ -34,78 +31,98 @@ if [[ $EUID -ne 0 ]]; then
     exit 1
 fi
 
-echo -e "${GREEN}[1/6] Installing dependencies...${NC}"
+echo "Installing dependencies..."
 
-# Detect package manager
+# Detect package manager and install dependencies
 if command -v apt-get &> /dev/null; then
-    apt-get update
-    apt-get install -y jq curl sshpass openssh-client git
-    
-    # Install websocat
-    if ! command -v websocat &> /dev/null; then
-        echo "Installing websocat..."
-        WEBSOCAT_VERSION="1.11.0"
-        wget -q "https://github.com/vi/websocat/releases/download/v${WEBSOCAT_VERSION}/websocat.x86_64-unknown-linux-musl" \
-            -O /usr/local/bin/websocat
-        chmod +x /usr/local/bin/websocat
-    fi
-    
+    apt-get update -qq
+    apt-get install -y curl gnupg jq sshpass openssh-client
 elif command -v yum &> /dev/null; then
-    yum install -y jq curl sshpass openssh-clients git
-    
-    if ! command -v websocat &> /dev/null; then
-        WEBSOCAT_VERSION="1.11.0"
-        wget -q "https://github.com/vi/websocat/releases/download/v${WEBSOCAT_VERSION}/websocat.x86_64-unknown-linux-musl" \
-            -O /usr/local/bin/websocat
-        chmod +x /usr/local/bin/websocat
-    fi
-    
+    yum install -y curl jq sshpass openssh-clients
 elif command -v dnf &> /dev/null; then
-    dnf install -y jq curl sshpass openssh-clients git
-    
-    if ! command -v websocat &> /dev/null; then
-        WEBSOCAT_VERSION="1.11.0"
-        wget -q "https://github.com/vi/websocat/releases/download/v${WEBSOCAT_VERSION}/websocat.x86_64-unknown-linux-musl" \
-            -O /usr/local/bin/websocat
-        chmod +x /usr/local/bin/websocat
-    fi
+    dnf install -y curl jq sshpass openssh-clients
 else
-    echo -e "${RED}Unsupported package manager. Please install manually: jq curl sshpass ssh git websocat${NC}"
+    echo -e "${RED}Unsupported package manager. Please install manually: curl jq sshpass ssh${NC}"
     exit 1
 fi
 
-echo -e "${GREEN}[2/6] Creating directory structure...${NC}"
-
-mkdir -p "$AGENT_DIR"/{logs,releases,repo}
-mkdir -p /etc/nbm-agent
-
-echo -e "${GREEN}[3/6] Cloning agent from GitHub...${NC}"
-
-if [[ -d "$AGENT_DIR/repo/.git" ]]; then
-    echo "Updating existing repository..."
-    cd "$AGENT_DIR/repo"
-    git pull origin main
-else
-    echo "Cloning repository..."
-    git clone "$GITHUB_REPO" "$AGENT_DIR/repo"
+# Install Node.js 20.x if not present
+if ! command -v node &> /dev/null; then
+    echo "Installing Node.js 20.x..."
+    mkdir -p /etc/apt/keyrings
+    curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
+    echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_20.x nodistro main" > /etc/apt/sources.list.d/nodesource.list
+    apt-get update -qq
+    apt-get install -y nodejs
 fi
 
-# Copy agent files
-cp -r "$AGENT_DIR/repo/agents/linux/"* "$AGENT_DIR/"
-chmod +x "$AGENT_DIR/"*.sh
+echo "Node.js version: $(node -v)"
+echo "npm version: $(npm -v)"
 
-# Create current symlink
-ln -sf "$AGENT_DIR" "$AGENT_DIR/current"
+# Create service user
+echo "Creating service user..."
+if ! id -u nbm-agent &>/dev/null; then
+    useradd -r -s /bin/bash -d "$AGENT_DIR" -m nbm-agent 2>/dev/null || true
+    echo "Created user: nbm-agent"
+else
+    echo "User nbm-agent already exists"
+fi
 
-echo -e "${GREEN}[4/6] Configuring agent...${NC}"
+# Create directory structure
+echo "Creating directories..."
+mkdir -p "$AGENT_DIR"/{logs,config}
+
+# Download agent files directly from GitHub
+echo "Installing NBM Agent..."
+echo "Downloading agent from GitHub..."
+
+# Download main agent script
+curl -fsSL "${GITHUB_RAW_BASE}/nbm-agent.sh" -o "$AGENT_DIR/nbm-agent.sh"
+if [[ ! -f "$AGENT_DIR/nbm-agent.sh" ]]; then
+    echo -e "${RED}Failed to download nbm-agent.sh${NC}"
+    exit 1
+fi
+chmod +x "$AGENT_DIR/nbm-agent.sh"
+
+# Download uninstall script
+curl -fsSL "${GITHUB_RAW_BASE}/uninstall.sh" -o "$AGENT_DIR/uninstall.sh" 2>/dev/null || true
+chmod +x "$AGENT_DIR/uninstall.sh" 2>/dev/null || true
+
+echo -e "${GREEN}Agent files downloaded successfully${NC}"
+
+# Set ownership
+chown -R nbm-agent:nbm-agent "$AGENT_DIR"
 
 # Prompt for configuration
 echo ""
-read -p "Enter NBM CLOUD Server URL (e.g., https://your-app.replit.app): " SERVER_URL
-read -p "Enter Agent Name: " AGENT_NAME
-read -p "Enter Agent ID (from NBM CLOUD): " AGENT_ID
-read -sp "Enter Agent Token (from NBM CLOUD): " AGENT_TOKEN
+echo -e "${YELLOW}=== Agent Configuration ===${NC}"
 echo ""
+
+read -p "Enter NBM CLOUD Server URL (e.g., https://nbm.example.com): " SERVER_URL
+while [[ -z "$SERVER_URL" ]]; do
+    echo -e "${RED}Server URL is required${NC}"
+    read -p "Enter NBM CLOUD Server URL: " SERVER_URL
+done
+
+read -p "Enter Agent Name (descriptive name for this agent): " AGENT_NAME
+while [[ -z "$AGENT_NAME" ]]; do
+    echo -e "${RED}Agent name is required${NC}"
+    read -p "Enter Agent Name: " AGENT_NAME
+done
+
+read -p "Enter Agent ID (from NBM CLOUD dashboard): " AGENT_ID
+while [[ -z "$AGENT_ID" ]] || ! [[ "$AGENT_ID" =~ ^[0-9]+$ ]]; do
+    echo -e "${RED}Valid numeric Agent ID is required${NC}"
+    read -p "Enter Agent ID: " AGENT_ID
+done
+
+read -sp "Enter Agent Token (from NBM CLOUD dashboard): " AGENT_TOKEN
+echo ""
+while [[ -z "$AGENT_TOKEN" ]]; do
+    echo -e "${RED}Agent token is required${NC}"
+    read -sp "Enter Agent Token: " AGENT_TOKEN
+    echo ""
+done
 
 # Create config file
 cat > "$AGENT_DIR/config.json" << EOF
@@ -118,22 +135,27 @@ cat > "$AGENT_DIR/config.json" << EOF
 EOF
 
 chmod 600 "$AGENT_DIR/config.json"
+chown nbm-agent:nbm-agent "$AGENT_DIR/config.json"
 
-echo -e "${GREEN}[5/6] Creating systemd service...${NC}"
+echo ""
+echo "Creating systemd service..."
 
+# Create systemd service
 cat > /etc/systemd/system/${SERVICE_NAME}.service << EOF
 [Unit]
-Description=NBM CLOUD Agent
+Description=NBM CLOUD Agent - Network Backup Proxy
 After=network.target
 
 [Service]
 Type=simple
 User=root
 WorkingDirectory=$AGENT_DIR
-ExecStart=$AGENT_DIR/current/nbm-agent.sh start
-ExecStop=$AGENT_DIR/current/nbm-agent.sh stop
+ExecStart=$AGENT_DIR/nbm-agent.sh start
+ExecStop=$AGENT_DIR/nbm-agent.sh stop
 Restart=always
 RestartSec=10
+StandardOutput=append:$AGENT_DIR/logs/agent.log
+StandardError=append:$AGENT_DIR/logs/agent.log
 
 [Install]
 WantedBy=multi-user.target
@@ -142,13 +164,15 @@ EOF
 systemctl daemon-reload
 systemctl enable $SERVICE_NAME
 
-echo -e "${GREEN}[6/6] Starting agent...${NC}"
-
+echo "Starting agent..."
 systemctl start $SERVICE_NAME
+
+# Wait and check status
+sleep 3
 
 echo ""
 echo -e "${GREEN}========================================${NC}"
-echo -e "${GREEN}  NBM CLOUD Agent installed successfully!${NC}"
+echo -e "${GREEN}  NBM CLOUD Agent Installed!${NC}"
 echo -e "${GREEN}========================================${NC}"
 echo ""
 echo -e "Agent Directory: ${BLUE}$AGENT_DIR${NC}"
@@ -159,6 +183,12 @@ echo -e "Commands:"
 echo -e "  ${YELLOW}systemctl status nbm-agent${NC}   - Check agent status"
 echo -e "  ${YELLOW}systemctl restart nbm-agent${NC}  - Restart agent"
 echo -e "  ${YELLOW}journalctl -u nbm-agent -f${NC}   - View agent logs"
-echo -e "  ${YELLOW}$AGENT_DIR/nbm-agent.sh update${NC} - Update agent from GitHub"
+echo -e "  ${YELLOW}tail -f $AGENT_DIR/logs/agent.log${NC} - View agent log file"
 echo ""
-echo -e "${GREEN}The agent is now running and connected to NBM CLOUD!${NC}"
+
+if systemctl is-active --quiet $SERVICE_NAME; then
+    echo -e "${GREEN}Agent is running and connecting to NBM CLOUD!${NC}"
+else
+    echo -e "${YELLOW}Agent service created but may need manual start.${NC}"
+    echo -e "Check logs: ${BLUE}journalctl -u nbm-agent -f${NC}"
+fi
