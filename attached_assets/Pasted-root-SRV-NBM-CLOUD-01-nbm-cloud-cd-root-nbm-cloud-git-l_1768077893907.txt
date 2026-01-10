@@ -1,0 +1,45 @@
+root@SRV-NBM-CLOUD-01[~/nbm-cloud]# cd /root/nbm-cloud && git log --oneline -1
+7e13f92 (HEAD -> main, origin/main, origin/HEAD) Improve backup reliability by speeding up agent reconnections
+root@SRV-NBM-CLOUD-01[~/nbm-cloud]# cd /root/nbm-cloud && git pull && cp -r * /opt/nbm/ && chown -R nbm:nbm /opt/nbm && cd /opt/nbm && sudo -u nbm npx tsx script/build.ts && systemctl restart nbm
+remote: Enumerating objects: 6, done.
+remote: Counting objects: 100% (6/6), done.
+remote: Compressing objects: 100% (2/2), done.
+remote: Total 4 (delta 2), reused 4 (delta 2), pack-reused 0 (from 0)
+Unpacking objects: 100% (4/4), 1.35 MiB | 6.18 MiB/s, done.
+From https://github.com/MarcioVVitor/Backup-Master
+   7e13f92..76cdde2  main       -> origin/main
+Updating 7e13f92..76cdde2
+Fast-forward
+ attached_assets/image_1768077402686.png | Bin 0 -> 1523380 bytes
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+ create mode 100644 attached_assets/image_1768077402686.png
+sudo: unable to resolve host SRV-NBM-CLOUD-01: Name or service not known
+building client...
+vite v7.3.0 building client environment for production...
+✓ 3312 modules transformed.
+../dist/public/index.html                     2.87 kB │ gzip:   1.04 kB
+../dist/public/assets/index-BzezBBps.css     80.70 kB │ gzip:  13.49 kB
+../dist/public/assets/index-C_FR7112.js   1,296.99 kB │ gzip: 357.27 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 11.76s
+building server...
+
+  dist/index.cjs  1.3mb ⚠️
+
+⚡ Done in 268ms
+root@SRV-NBM-CLOUD-01[/opt/nbm]# journalctl -u nbm -f
+Jan 10 17:43:56 SRV-NBM-CLOUD-01 nbm[3524]: [ws-agents] Auth success for agent: 1 proxy-grupojet-01
+Jan 10 17:44:11 SRV-NBM-CLOUD-01 nbm[3524]: [ws-agents] Received message, size: 21 bytes
+Jan 10 17:44:11 SRV-NBM-CLOUD-01 nbm[3524]: [ws-agents] Received message type: heartbeat
+Jan 10 17:44:26 SRV-NBM-CLOUD-01 nbm[3524]: [ws-agents] Received message, size: 21 bytes
+Jan 10 17:44:26 SRV-NBM-CLOUD-01 nbm[3524]: [ws-agents] Received message type: heartbeat
+Jan 10 17:44:31 SRV-NBM-CLOUD-01 nbm[3524]: [equipment:create] companyId: undefined isServerAdmin: true body: {"name":"CONCENTRADOR-BSB-CGNAT-JETELECOM-01","ip":"143.255.198.6","manufacturer":"mikrotik","model":" CCR1036-8G-2S+","username":"admin","password":"@2Dc9d967","port":2250,"protocol":"ssh","enabled":true}
+Jan 10 17:44:31 SRV-NBM-CLOUD-01 nbm[3524]: [equipment:create] REJECTED - no companyId available
+Jan 10 17:44:31 SRV-NBM-CLOUD-01 nbm[3524]: 5:44:31 PM [express] POST /api/equipment 400 in 21ms :: {"message":"Company ID required"}
+Jan 10 17:44:41 SRV-NBM-CLOUD-01 nbm[3524]: [ws-agents] Received message, size: 21 bytes
+Jan 10 17:44:41 SRV-NBM-CLOUD-01 nbm[3524]: [ws-agents] Received message type: heartbeat
+
