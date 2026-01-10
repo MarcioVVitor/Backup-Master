@@ -1,0 +1,804 @@
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01:~# sshpass -p '@2Dc9d967' ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 -p 2250 admin@143.255.198.6 "/export"
+# 2026-01-10 17:52:32 by RouterOS 7.20
+# software id = XCDR-RSQW
+#
+# model = CCR1036-8G-2S+
+# serial number = 9F1D0A4E9E7A
+/interface bridge
+add name=BRIDGE-GERENCIA_DWDM_BSA port-cost-mode=short protocol-mode=none
+add name=BRIDGE-NOKIA
+add name=LoopBack protocol-mode=none
+add name=MICROSET protocol-mode=none
+add name=loopback port-cost-mode=short
+/interface ethernet
+set [ find default-name=ether1 ] name=ether1-DWDM_HUAWEI
+set [ find default-name=ether2 ] name=ether2-DWDM_NOKIA
+set [ find default-name=ether3 ] name=ether3-DWDM_PADTEC
+set [ find default-name=ether4 ] name=ether4-CLI-NOVA-CASA
+set [ find default-name=ether5 ] name=ether5-CROSS-BRB
+set [ find default-name=ether6 ] name=ether6-DCI
+set [ find default-name=ether7 ] name=ether7-GERENCIA-JUNIPER
+set [ find default-name=ether8 ] name=ether8-WIFI-BSB-ELEA
+set [ find default-name=sfp-sfpplus1 ] mac-address=8C:E5:EF:00:45:50 mtu=1580 \
+    name=sfp-sfpplus1-SW-ADE_MPLS
+/interface wireguard
+add listen-port=13230 mtu=1420 name=VPN-WIREGUARD-jet.marcio
+add listen-port=13231 mtu=1420 name=VPN-WIREGUARD-jet.marciovitor
+/interface vlan
+add interface=sfp-sfpplus1-SW-ADE_MPLS name=778 vlan-id=778
+add interface=sfp-sfpplus1-SW-ADE_MPLS name=994 vlan-id=994
+add interface=sfp-sfpplus1-SW-ADE_MPLS name=1590 vlan-id=1590
+add interface=1590 name=1608 vlan-id=1608
+add interface=sfp-sfpplus1-SW-ADE_MPLS name=CGNAT-NE8000 vlan-id=431
+add interface=sfp-sfpplus1-SW-ADE_MPLS name=CLI-EVENTOS-JETELECOM-ALDEIA-VALE \
+    vlan-id=684
+add interface=sfp-sfpplus1-SW-ADE_MPLS name=GERENCIA-DWDM_BSA vlan-id=993
+add interface=sfp-sfpplus1-SW-ADE_MPLS name=NE40_BSA vlan-id=2222
+add interface=sfp-sfpplus1-SW-ADE_MPLS name=POP-NOVO-MUNDO vlan-id=100
+add interface=sfp-sfpplus1-SW-ADE_MPLS mtu=1576 name=TESTE-QINQ vlan-id=1684
+add interface=TESTE-QINQ name=TESTE-QINQ-3069 vlan-id=3069
+add interface=sfp-sfpplus1-SW-ADE_MPLS name=V512-DHCP-JK vlan-id=512
+add interface=sfp-sfpplus1-SW-ADE_MPLS name=V1682-BSA-POP-CRECI vlan-id=1682
+/interface lte apn
+set [ find default=yes ] ip-type=ipv4 use-network-apn=no
+/interface wireless security-profiles
+set [ find default=yes ] supplicant-identity=MikroTik
+/ip pool
+add name="wm-cgnat [62825-65535]" ranges=100.87.196.0/24
+add name=dhcp_pool25 ranges=192.168.1.2-192.168.1.254
+add name=dhcp_pool26 ranges=192.168.2.2-192.168.2.254
+add name=dhcp_pool27 ranges=192.168.50.2-192.168.50.254
+add name=dhcp_pool28 ranges=192.168.150.2-192.168.150.254
+/ip dhcp-server
+add address-pool=dhcp_pool25 interface=POP-NOVO-MUNDO lease-time=10m name=\
+    dhcp1
+# Interface not running
+add address-pool=dhcp_pool26 interface=ether5-CROSS-BRB name=dhcp2
+add address-pool=dhcp_pool27 interface=V1682-BSA-POP-CRECI name=dhcp3
+add address-pool=dhcp_pool28 interface=V512-DHCP-JK name=dhcp4
+/ip pool
+add name="wm-cgnat [60138-62824]" next-pool="wm-cgnat [62825-65535]" ranges=\
+    100.86.196.0/24
+add name="wm-cgnat [57451-60137]" next-pool="wm-cgnat [60138-62824]" ranges=\
+    100.85.196.0/24
+add name="wm-cgnat [54764-57450]" next-pool="wm-cgnat [57451-60137]" ranges=\
+    100.84.196.0/24
+add name="wm-cgnat [52077-54763]" next-pool="wm-cgnat [54764-57450]" ranges=\
+    100.83.196.0/24
+add name="wm-cgnat [49390-52076]" next-pool="wm-cgnat [52077-54763]" ranges=\
+    100.82.196.0/24
+add name="wm-cgnat [46703-49389]" next-pool="wm-cgnat [49390-52076]" ranges=\
+    100.81.196.0/24
+add name="wm-cgnat [44016-46702]" next-pool="wm-cgnat [46703-49389]" ranges=\
+    100.80.196.0/24
+add name="wm-cgnat [41329-44015]" next-pool="wm-cgnat [44016-46702]" ranges=\
+    100.79.196.0/24
+add name="wm-cgnat [38642-41328]" next-pool="wm-cgnat [41329-44015]" ranges=\
+    100.78.196.0/24
+add name="wm-cgnat [35955-38641]" next-pool="wm-cgnat [38642-41328]" ranges=\
+    100.77.196.0/24
+add name="wm-cgnat [33268-35954]" next-pool="wm-cgnat [35955-38641]" ranges=\
+    100.76.196.0/24
+add name="wm-cgnat [30581-33267]" next-pool="wm-cgnat [33268-35954]" ranges=\
+    100.75.196.0/24
+add name="wm-cgnat [27894-30580]" next-pool="wm-cgnat [30581-33267]" ranges=\
+    100.74.196.0/24
+add name="wm-cgnat [25207-27893]" next-pool="wm-cgnat [27894-30580]" ranges=\
+    100.73.196.0/24
+add name="wm-cgnat [22520-25206]" next-pool="wm-cgnat [25207-27893]" ranges=\
+    100.72.196.0/24
+add name="wm-cgnat [19833-22519]" next-pool="wm-cgnat [22520-25206]" ranges=\
+    100.71.196.0/24
+add name="wm-cgnat [17146-19832]" next-pool="wm-cgnat [19833-22519]" ranges=\
+    100.70.196.0/24
+add name="wm-cgnat [14459-17145]" next-pool="wm-cgnat [17146-19832]" ranges=\
+    100.69.196.0/24
+add name="wm-cgnat [11772-14458]" next-pool="wm-cgnat [14459-17145]" ranges=\
+    100.68.196.0/24
+add name="wm-cgnat [9085-11771]" next-pool="wm-cgnat [11772-14458]" ranges=\
+    100.67.196.0/24
+add name="wm-cgnat [6398-9084]" next-pool="wm-cgnat [9085-11771]" ranges=\
+    100.66.196.0/24
+add name="wm-cgnat [3711-6397]" next-pool="wm-cgnat [6398-9084]" ranges=\
+    100.65.196.0/24
+add name="wm-cgnat [1024-3710]" next-pool="wm-cgnat [3711-6397]" ranges=\
+    100.64.196.0/24
+/ip smb users
+set [ find default=yes ] disabled=yes
+/port
+set 0 baud-rate=9600 name=serial0
+set 1 name=serial1
+/routing bgp instance
+add as=263558 name=bgp-instance-1 router-id=143.255.198.6
+/routing bgp template
+set default as=263558 disabled=no output.network=bgp-networks
+/routing ospf instance
+add disabled=no name=default-v2 originate-default=always redistribute=\
+    connected,static,vpn,dhcp,modem router-id=143.255.198.6
+add disabled=no name=default-v3 version=3
+/routing ospf area
+add disabled=no instance=default-v2 name=backbone-v2
+add disabled=yes instance=default-v3 name=backbone-v3
+/snmp community
+set [ find default=yes ] name=jetnet@2025
+/system logging action
+add name=Graylog remote=172.17.255.20 remote-port=1543 target=remote
+/interface vlan
+add disabled=yes interface=*22 name=V198-DWDM-PROJETO-FENIX vlan-id=198
+add disabled=yes interface=*22 mtu=1572 name=V1687-IBGP-MICROSET-IN vlan-id=\
+    1687
+/interface bridge port
+add bridge=BRIDGE-GERENCIA_DWDM_BSA ingress-filtering=no interface=\
+    ether1-DWDM_HUAWEI internal-path-cost=10 path-cost=10
+add bridge=BRIDGE-NOKIA ingress-filtering=no interface=ether2-DWDM_NOKIA \
+    internal-path-cost=10 path-cost=10
+add bridge=BRIDGE-GERENCIA_DWDM_BSA ingress-filtering=no interface=\
+    ether3-DWDM_PADTEC internal-path-cost=10 path-cost=10
+add bridge=BRIDGE-GERENCIA_DWDM_BSA ingress-filtering=no interface=\
+    GERENCIA-DWDM_BSA internal-path-cost=10 path-cost=10
+add bridge=BRIDGE-NOKIA interface=994
+add bridge=MICROSET interface=V1687-IBGP-MICROSET-IN
+add bridge=MICROSET interface=*29
+/ip firewall connection tracking
+set tcp-established-timeout=5h tcp-max-retrans-timeout=1m udp-stream-timeout=\
+    1m udp-timeout=10s
+/ip neighbor discovery-settings
+set discover-interface-list=all
+/ip settings
+set max-neighbor-entries=8192
+/ipv6 settings
+set max-neighbor-entries=8192 soft-max-neighbor-entries=8191
+/interface l2tp-server server
+set enabled=yes use-ipsec=yes
+/interface ovpn-server server
+add auth=sha1,md5 mac-address=FE:9D:F1:AA:97:D4 name=ovpn-server1
+/interface pptp-server server
+# PPTP connections are considered unsafe, it is suggested to use a more modern VPN protocol instead
+set enabled=yes
+/interface wireguard peers
+add allowed-address=0.0.0.0/0,::/0 client-address=172.31.252.2/30 client-dns=\
+    186.237.223.117,186.237.223.118,2804:ef0:0:5::117,2804:ef0:0:5::118 \
+    client-endpoint=143.255.198.6 client-keepalive=10s client-listen-port=\
+    13230 interface=VPN-WIREGUARD-jet.marcio name=jet.bsa-marcio \
+    preshared-key="OGDbIbCLMuZt91M8/sEjCVHu1WfkPSa8cAaEoHFXDEo=" private-key=\
+    "oK2SQUoxucUXtA2dX8KQXMGfyHJ3BTEImHs28wGESkE=" public-key=\
+    "CnKaFXTWq0ZplUE27NEtqhcz/H0JvxHrem8pPAHP9Uc="
+add allowed-address=0.0.0.0/0,::/0 client-address=172.31.252.6/30 client-dns=\
+    186.237.223.117,186.237.223.118,2804:ef0:0:5::117,2804:ef0:0:5::118 \
+    client-endpoint=143.255.198.6 client-keepalive=10s client-listen-port=\
+    13231 interface=VPN-WIREGUARD-jet.marciovitor name=jet.bsa-marciovitor \
+    preshared-key="QDUF2uZnZXKpnu372d28w7dZV0k6WibE1968VNPeiFo=" private-key=\
+    "sH5AzJzi874wg7HAtsEONadVOYrFZu7UcQOYVkKZqmo=" public-key=\
+    "fceFUF/c/i19V6MOX0bkgIA+0oaXuvMd3ryIkNi+gm0="
+/ip address
+add address=143.255.198.6/30 interface=NE40_BSA network=143.255.198.4
+add address=172.29.4.5/30 interface=CGNAT-NE8000 network=172.29.4.4
+add address=186.237.218.246/30 interface=NE40_BSA network=186.237.218.244
+add address=172.22.22.77/30 interface=POP-NOVO-MUNDO network=172.22.22.76
+add address=192.168.1.1/24 interface=POP-NOVO-MUNDO network=192.168.1.0
+add address=192.168.126.1/24 interface=ether6-DCI network=192.168.126.0
+add address=10.0.41.21/30 interface=ether6-DCI network=10.0.41.20
+add address=30.30.30.5/30 interface=CLI-EVENTOS-JETELECOM-ALDEIA-VALE \
+    network=30.30.30.4
+add address=186.237.219.0/27 interface=loopback network=186.237.219.0
+add address=192.168.2.1/24 interface=ether5-CROSS-BRB network=192.168.2.0
+add address=192.168.100.1/24 comment=DHCP-WIFI interface=ether8-WIFI-BSB-ELEA \
+    network=192.168.100.0
+add address=192.168.200.2/29 comment=VLAN-199-MICROSET interface=\
+    V198-DWDM-PROJETO-FENIX network=192.168.200.0
+add address=10.0.41.221/30 comment=DWDM-RPO-CRO-H1023-OSN9800 disabled=yes \
+    interface=*22 network=10.0.41.220
+add address=10.0.41.225/30 comment=DWDM-RPO-CRO-H1024-OSN9800 disabled=yes \
+    interface=*22 network=10.0.41.224
+add address=10.0.41.229/30 comment=DWDM-GTA-CRO-H1025-OSN9800 disabled=yes \
+    interface=*22 network=10.0.41.228
+add address=10.0.41.233/30 comment=DWDM-GTA-CRO-H1026-OSN9800 disabled=yes \
+    interface=*22 network=10.0.41.232
+add address=10.0.41.237/30 comment=DWDM-ARQ-CEN-H1027-OSN9800 disabled=yes \
+    interface=*22 network=10.0.41.236
+add address=10.0.253.21/30 comment=DWDM-CLS-CLIENT-H1030 disabled=yes \
+    interface=*22 network=10.0.253.20
+add address=10.0.253.25/30 comment=DWDM-GIR-CLIENT-H1031 disabled=yes \
+    interface=*22 network=10.0.253.24
+add address=10.0.253.29/30 comment=DWDM-BRS-CLIENT-H1032-SH-0 disabled=yes \
+    interface=*22 network=10.0.253.28
+add address=10.0.253.33/30 comment=DWDM-BRS-CLIENT-H1032-SH-1 disabled=yes \
+    interface=*22 network=10.0.253.32
+add address=10.0.253.37/30 comment=DWDM-BDO-CLIENT-H1033 disabled=yes \
+    interface=*22 network=10.0.253.36
+add address=172.31.252.1/30 comment=VPN-WIREGUARD interface=\
+    VPN-WIREGUARD-jet.marcio network=172.31.252.0
+add address=192.168.50.1/24 comment=DHCP-V1682-BSA-POP-CRECI interface=\
+    V1682-BSA-POP-CRECI network=192.168.50.0
+add address=192.168.150.1/24 interface=V512-DHCP-JK network=192.168.150.0
+add address=10.18.100.249/30 interface=778 network=10.18.100.248
+add address=192.168.254.2/27 interface=ether5-CROSS-BRB network=192.168.254.0
+add address=10.0.253.41/30 comment=DOCUMENTAR-PROJETO-FENIX disabled=yes \
+    interface=*22 network=10.0.253.40
+add address=10.30.69.1/30 interface=TESTE-QINQ-3069 network=10.30.69.0
+add address=10.0.253.45/30 comment=10.0.253.45/30 disabled=yes interface=*22 \
+    network=10.0.253.44
+add address=172.31.252.5/30 interface=VPN-WIREGUARD-jet.marciovitor network=\
+    172.31.252.4
+/ip dhcp-server lease
+add address=192.168.1.243 comment=COMPEL mac-address=D8:36:5F:55:5E:68 \
+    server=dhcp1
+/ip dhcp-server network
+add address=192.168.1.0/24 gateway=192.168.1.1
+add address=192.168.2.0/24 gateway=192.168.2.1
+add address=192.168.50.0/24 dns-server=186.237.223.117,186.237.223.118 \
+    gateway=192.168.50.1
+add address=192.168.150.0/24 dns-server=186.237.223.117,186.237.223.118 \
+    gateway=192.168.150.1
+/ip dns
+set servers=1.1.1.1,1.0.0.1
+/ip firewall address-list
+add address=186.237.216.0/24 disabled=yes list=bgp-networks
+add address=172.16.0.0/12 list=no-wm-cgnat
+add address=192.168.0.0/16 list=no-wm-cgnat
+add address=dns.adguard.com disabled=yes list=adguard
+add address=sso.cidadania.gov.br list="SITES QUE NAOA BREM"
+add address=economia.go.gov.br list="SITES QUE NAOA BREM"
+add address=bemweb.bempromotora.com.br list="SITES QUE NAOA BREM"
+add address=greenbets.io list="SITES QUE NAOA BREM"
+add address=realsbet.com list="SITES QUE NAOA BREM"
+add address=sistema.telepacs.com.br list="SITES QUE NAOA BREM"
+add address=tricard.com.br list="SITES QUE NAOA BREM"
+add address=login2.caixa.gov.br list="SITES QUE NAOA BREM"
+add address=Tricard.com.br list="SITES QUE NAOA BREM"
+add address=webmail.educacao.luziania.go.gov.br list="SITES QUE NAOA BREM"
+add address=telefonia.megasoft.com.br list="SITES QUE NAOA BREM"
+add address=www.detran.go.gov.br list="SITES QUE NAOA BREM"
+add address=92.38.150.0/24 list="SITES QUE NAOA BREM"
+add address=138.199.4.0/23 list="SITES QUE NAOA BREM"
+add address=suporte.certisign.com.br list=SITES-QUE-NAO-ABREM
+add address=gestaoar.certisign.com.br list=SITES-QUE-NAO-ABREM
+add address=camaranet.camara.leg.br list=SITES-QUE-NAO-ABREM
+add address=camaranet.camara.leg.br comment=camaranet.camara.leg.br list=\
+    SITES-QUE-NAOABREM-CAMARA
+add address=camara.leg.br comment=camara.leg.br list=\
+    SITES-QUE-NAOABREM-CAMARA
+/ip firewall filter
+add action=drop chain=input disabled=yes dst-address=143.255.198.6 protocol=\
+    icmp
+add action=fasttrack-connection chain=forward disabled=yes hw-offload=yes
+add action=accept chain=forward dst-address=10.0.36.0/24 src-address=\
+    172.17.255.6
+add action=accept chain=forward dst-address=172.17.255.6 src-address=\
+    10.0.36.0/24
+add action=accept chain=forward dst-address=172.17.255.6 src-address=\
+    172.18.255.0/24
+add action=accept chain=forward dst-address=172.18.255.0/24 src-address=\
+    172.17.255.6
+add action=fasttrack-connection chain=forward connection-state=\
+    established,related hw-offload=yes
+add action=accept chain=forward connection-state=established,related
+add action=accept chain=input comment=VPN-WIREGUARD dst-port=13230 protocol=\
+    udp
+add action=accept chain=input comment=VPN-WIREGUARD dst-port=13231 protocol=\
+    udp
+/ip firewall mangle
+add action=add-dst-to-address-list address-list=DNS address-list-timeout=\
+    none-dynamic chain=prerouting disabled=yes dst-address=!186.237.216.0/21 \
+    dst-port=53 protocol=udp
+add action=add-dst-to-address-list address-list=DNS address-list-timeout=\
+    none-dynamic chain=prerouting disabled=yes dst-address=!143.255.196.0/22 \
+    dst-port=53 protocol=udp
+/ip firewall nat
+add action=same chain=srcnat comment=SITES-QUE-NAOABREM-1 dst-address-list=\
+    SITES-QUE-NAO-ABREM dst-port=80,443 protocol=tcp same-not-by-dst=no \
+    to-addresses=143.255.198.6
+add action=same chain=srcnat comment=SITES-QUE-NAOABREM-CAMARA \
+    dst-address-list=SITES-QUE-NAOABREM-CAMARA dst-port=80,443 protocol=tcp \
+    same-not-by-dst=no to-addresses=143.255.198.6
+add action=same chain=srcnat comment=SITES-QUE-NAOABREM disabled=yes \
+    dst-address-list="SITES QUE NAOA BREM" dst-port=80,443 protocol=tcp \
+    same-not-by-dst=no to-addresses=143.255.198.6
+add action=same chain=srcnat comment=VPN-WIREGUARD same-not-by-dst=no \
+    src-address=172.31.252.0/30 to-addresses=186.237.218.246
+add action=same chain=srcnat comment=VPN-WIREGUARD same-not-by-dst=no \
+    src-address=172.31.252.4/30 to-addresses=186.237.218.246
+add action=masquerade chain=srcnat comment=CLI-EVENTO-ALDEIA-VALE \
+    src-address=30.30.30.4/30
+add action=same chain=srcnat comment=NAT-REDE-NEUTRA-EXPLORER \
+    same-not-by-dst=no src-address=100.66.87.0/24 to-addresses=\
+    143.255.197.184/29
+add action=same chain=srcnat comment=DHCP-V1682-BSA-POP-CRECI \
+    same-not-by-dst=no src-address=192.168.50.0/24 to-addresses=\
+    143.255.197.184/29
+add action=masquerade chain=srcnat comment=WIFI-BSB-POP-ELEA src-address=\
+    192.168.100.0/24
+add action=dst-nat chain=dstnat comment=DIRECIONAMENTO-DNS disabled=yes \
+    dst-address-list=DNS dst-port=53 protocol=udp src-address=100.80.0.0/18 \
+    to-addresses=186.237.223.117 to-ports=53
+add action=dst-nat chain=dstnat comment=DIRECIONAMENTO-DNS disabled=yes \
+    dst-address-list=DNS dst-port=53 protocol=udp src-address=100.64.0.0/22 \
+    to-addresses=186.237.223.118 to-ports=53
+add action=dst-nat chain=dstnat comment=DIRECIONAMENTO-DNS disabled=yes \
+    dst-address-list=DNS dst-port=53 protocol=udp src-address=\
+    186.237.219.0/24 to-addresses=186.237.223.117 to-ports=53
+add action=dst-nat chain=dstnat comment=DIRECIONAMENTO-DNS disabled=yes \
+    dst-address-list=DNS dst-port=53 protocol=udp src-address=172.16.245.0/24 \
+    to-addresses=186.237.223.117 to-ports=53
+add action=dst-nat chain=dstnat comment=DCI disabled=yes dst-address=\
+    186.237.218.246 dst-port=25080 protocol=tcp to-addresses=10.0.41.22 \
+    to-ports=25080
+add action=src-nat chain=srcnat comment="SALVA\C7\C3O" disabled=yes \
+    dst-address=10.0.41.22 to-addresses=10.0.41.21
+add action=src-nat chain=srcnat comment=MONITORAMENTO_ENERGIA_POPS \
+    src-address=172.16.245.0/24 to-addresses=186.237.218.246
+add action=src-nat chain=srcnat comment=MONITORAMENTO_ENERGIA_POPS-JK \
+    src-address=192.168.150.0/24 to-addresses=186.237.218.246
+add action=same chain=srcnat dst-address=45.178.140.35 same-not-by-dst=no \
+    src-address=172.29.4.6 to-addresses=143.255.198.6
+add action=src-nat chain=srcnat src-address=100.80.0.212 to-addresses=\
+    143.255.198.6
+add action=accept chain=srcnat dst-address=172.18.255.0/24 src-address=\
+    172.17.255.6
+add action=accept chain=srcnat dst-address=172.17.255.6 src-address=\
+    172.18.255.0/24
+add action=accept chain=srcnat dst-address=10.0.36.0/24 src-address=\
+    172.17.255.6
+add action=accept chain=srcnat dst-address=172.17.255.6 src-address=\
+    10.0.36.0/24
+add action=accept chain=dstnat dst-port=10000 protocol=tcp to-addresses=\
+    8.8.4.4 to-ports=53
+add action=accept chain=dstnat dst-port=10000 protocol=udp to-addresses=\
+    8.8.4.4 to-ports=53
+add action=accept chain=dstnat protocol=tcp src-port=10000 to-addresses=\
+    8.8.4.4 to-ports=53
+add action=accept chain=dstnat protocol=udp src-port=10000 to-addresses=\
+    8.8.4.4 to-ports=53
+add action=masquerade chain=srcnat dst-address=209.99.64.76
+add action=masquerade chain=srcnat dst-address=108.179.193.128
+add action=src-nat chain=srcnat comment=MONITORAMENTO_ENERGIA_POPS \
+    src-address=172.16.244.0/24 to-addresses=186.237.218.246
+add action=src-nat chain=srcnat comment=BYD src-address=192.168.1.0/24 \
+    to-addresses=186.237.218.246
+add action=masquerade chain=srcnat comment=TEMPORARIO src-address=\
+    192.168.2.0/24
+add action=netmap chain=srcnat comment=MONITORAMENTO_ENERGIA_POPS \
+    src-address=172.16.245.0/24 to-addresses=186.237.218.246
+add action=jump chain=srcnat jump-target=CGNAT_100_64_0 src-address=\
+    100.64.0.0/24
+add action=jump chain=srcnat jump-target=CGNAT_100_64_1 src-address=\
+    100.64.1.0/24
+add action=jump chain=srcnat jump-target=CGNAT_100_64_2 src-address=\
+    100.64.2.0/24
+add action=jump chain=srcnat jump-target=CGNAT_100_64_3 src-address=\
+    100.64.3.0/24
+add action=jump chain=CGNAT_100_64_0 jump-target=CGNAT_0 src-address=\
+    100.64.0.0/27
+add action=jump chain=CGNAT_100_64_0 jump-target=CGNAT_1 src-address=\
+    100.64.0.32/27
+add action=jump chain=CGNAT_100_64_0 jump-target=CGNAT_2 src-address=\
+    100.64.0.64/27
+add action=jump chain=CGNAT_100_64_0 jump-target=CGNAT_3 src-address=\
+    100.64.0.96/27
+add action=jump chain=CGNAT_100_64_0 jump-target=CGNAT_4 src-address=\
+    100.64.0.128/27
+add action=jump chain=CGNAT_100_64_0 jump-target=CGNAT_5 src-address=\
+    100.64.0.160/27
+add action=jump chain=CGNAT_100_64_0 jump-target=CGNAT_6 src-address=\
+    100.64.0.192/27
+add action=jump chain=CGNAT_100_64_0 jump-target=CGNAT_7 src-address=\
+    100.64.0.224/27
+add action=jump chain=CGNAT_100_64_1 jump-target=CGNAT_8 src-address=\
+    100.64.1.0/27
+add action=jump chain=CGNAT_100_64_1 jump-target=CGNAT_9 src-address=\
+    100.64.1.32/27
+add action=jump chain=CGNAT_100_64_1 jump-target=CGNAT_10 src-address=\
+    100.64.1.64/27
+add action=jump chain=CGNAT_100_64_1 jump-target=CGNAT_11 src-address=\
+    100.64.1.96/27
+add action=jump chain=CGNAT_100_64_1 jump-target=CGNAT_12 src-address=\
+    100.64.1.128/27
+add action=jump chain=CGNAT_100_64_1 jump-target=CGNAT_13 src-address=\
+    100.64.1.160/27
+add action=jump chain=CGNAT_100_64_1 jump-target=CGNAT_14 src-address=\
+    100.64.1.192/27
+add action=jump chain=CGNAT_100_64_1 jump-target=CGNAT_15 src-address=\
+    100.64.1.224/27
+add action=jump chain=CGNAT_100_64_2 jump-target=CGNAT_16 src-address=\
+    100.64.2.0/27
+add action=jump chain=CGNAT_100_64_2 jump-target=CGNAT_17 src-address=\
+    100.64.2.32/27
+add action=jump chain=CGNAT_100_64_2 jump-target=CGNAT_18 src-address=\
+    100.64.2.64/27
+add action=jump chain=CGNAT_100_64_2 jump-target=CGNAT_19 src-address=\
+    100.64.2.96/27
+add action=jump chain=CGNAT_100_64_2 jump-target=CGNAT_20 src-address=\
+    100.64.2.128/27
+add action=jump chain=CGNAT_100_64_2 jump-target=CGNAT_21 src-address=\
+    100.64.2.160/27
+add action=jump chain=CGNAT_100_64_2 jump-target=CGNAT_22 src-address=\
+    100.64.2.192/27
+add action=jump chain=CGNAT_100_64_2 jump-target=CGNAT_23 src-address=\
+    100.64.2.224/27
+add action=jump chain=CGNAT_100_64_3 jump-target=CGNAT_24 src-address=\
+    100.64.3.0/27
+add action=jump chain=CGNAT_100_64_3 jump-target=CGNAT_25 src-address=\
+    100.64.3.32/27
+add action=jump chain=CGNAT_100_64_3 jump-target=CGNAT_26 src-address=\
+    100.64.3.64/27
+add action=jump chain=CGNAT_100_64_3 jump-target=CGNAT_27 src-address=\
+    100.64.3.96/27
+add action=jump chain=CGNAT_100_64_3 jump-target=CGNAT_28 src-address=\
+    100.64.3.128/27
+add action=jump chain=CGNAT_100_64_3 jump-target=CGNAT_29 src-address=\
+    100.64.3.160/27
+add action=jump chain=CGNAT_100_64_3 jump-target=CGNAT_30 src-address=\
+    100.64.3.192/27
+add action=jump chain=CGNAT_100_64_3 jump-target=CGNAT_31 src-address=\
+    100.64.3.224/27
+add action=netmap chain=CGNAT_0 protocol=tcp src-address=100.64.0.0/27 \
+    to-addresses=186.237.219.0/27 to-ports=1024-3039
+add action=netmap chain=CGNAT_0 protocol=udp src-address=100.64.0.0/27 \
+    to-addresses=186.237.219.0/27 to-ports=1024-3039
+add action=netmap chain=CGNAT_0 src-address=100.64.0.0/27 to-addresses=\
+    186.237.219.0/27
+add action=netmap chain=CGNAT_1 protocol=tcp src-address=100.64.0.32/27 \
+    to-addresses=186.237.219.0/27 to-ports=3040-5055
+add action=netmap chain=CGNAT_1 protocol=udp src-address=100.64.0.32/27 \
+    to-addresses=186.237.219.0/27 to-ports=3040-5055
+add action=netmap chain=CGNAT_1 src-address=100.64.0.32/27 to-addresses=\
+    186.237.219.0/27
+add action=netmap chain=CGNAT_2 protocol=tcp src-address=100.64.0.64/27 \
+    to-addresses=186.237.219.0/27 to-ports=5056-7071
+add action=netmap chain=CGNAT_2 protocol=udp src-address=100.64.0.64/27 \
+    to-addresses=186.237.219.0/27 to-ports=5056-7071
+add action=netmap chain=CGNAT_2 src-address=100.64.0.64/27 to-addresses=\
+    186.237.219.0/27
+add action=netmap chain=CGNAT_3 protocol=tcp src-address=100.64.0.96/27 \
+    to-addresses=186.237.219.0/27 to-ports=7072-9087
+add action=netmap chain=CGNAT_3 protocol=udp src-address=100.64.0.96/27 \
+    to-addresses=186.237.219.0/27 to-ports=7072-9087
+add action=netmap chain=CGNAT_3 src-address=100.64.0.96/27 to-addresses=\
+    186.237.219.0/27
+add action=netmap chain=CGNAT_4 protocol=tcp src-address=100.64.0.128/27 \
+    to-addresses=186.237.219.0/27 to-ports=9088-11103
+add action=netmap chain=CGNAT_4 protocol=udp src-address=100.64.0.128/27 \
+    to-addresses=186.237.219.0/27 to-ports=9088-11103
+add action=netmap chain=CGNAT_4 src-address=100.64.0.128/27 to-addresses=\
+    186.237.219.0/27
+add action=netmap chain=CGNAT_5 protocol=tcp src-address=100.64.0.160/27 \
+    to-addresses=186.237.219.0/27 to-ports=11104-13119
+add action=netmap chain=CGNAT_5 protocol=udp src-address=100.64.0.160/27 \
+    to-addresses=186.237.219.0/27 to-ports=11104-13119
+add action=netmap chain=CGNAT_5 src-address=100.64.0.160/27 to-addresses=\
+    186.237.219.0/27
+add action=netmap chain=CGNAT_6 protocol=tcp src-address=100.64.0.192/27 \
+    to-addresses=186.237.219.0/27 to-ports=13120-15135
+add action=netmap chain=CGNAT_6 protocol=udp src-address=100.64.0.192/27 \
+    to-addresses=186.237.219.0/27 to-ports=13120-15135
+add action=netmap chain=CGNAT_6 src-address=100.64.0.192/27 to-addresses=\
+    186.237.219.0/27
+add action=netmap chain=CGNAT_7 protocol=tcp src-address=100.64.0.224/27 \
+    to-addresses=186.237.219.0/27 to-ports=15136-17151
+add action=netmap chain=CGNAT_7 protocol=udp src-address=100.64.0.224/27 \
+    to-addresses=186.237.219.0/27 to-ports=15136-17151
+add action=netmap chain=CGNAT_7 src-address=100.64.0.224/27 to-addresses=\
+    186.237.219.0/27
+add action=netmap chain=CGNAT_8 protocol=tcp src-address=100.64.1.0/27 \
+    to-addresses=186.237.219.0/27 to-ports=17152-19167
+add action=netmap chain=CGNAT_8 protocol=udp src-address=100.64.1.0/27 \
+    to-addresses=186.237.219.0/27 to-ports=17152-19167
+add action=netmap chain=CGNAT_8 src-address=100.64.1.0/27 to-addresses=\
+    186.237.219.0/27
+add action=netmap chain=CGNAT_9 protocol=tcp src-address=100.64.1.32/27 \
+    to-addresses=186.237.219.0/27 to-ports=19168-21183
+add action=netmap chain=CGNAT_9 protocol=udp src-address=100.64.1.32/27 \
+    to-addresses=186.237.219.0/27 to-ports=19168-21183
+add action=netmap chain=CGNAT_9 src-address=100.64.1.32/27 to-addresses=\
+    186.237.219.0/27
+add action=netmap chain=CGNAT_10 protocol=tcp src-address=100.64.1.64/27 \
+    to-addresses=186.237.219.0/27 to-ports=21184-23199
+add action=netmap chain=CGNAT_10 protocol=udp src-address=100.64.1.64/27 \
+    to-addresses=186.237.219.0/27 to-ports=21184-23199
+add action=netmap chain=CGNAT_10 src-address=100.64.1.64/27 to-addresses=\
+    186.237.219.0/27
+add action=netmap chain=CGNAT_11 protocol=tcp src-address=100.64.1.96/27 \
+    to-addresses=186.237.219.0/27 to-ports=23200-25215
+add action=netmap chain=CGNAT_11 protocol=udp src-address=100.64.1.96/27 \
+    to-addresses=186.237.219.0/27 to-ports=23200-25215
+add action=netmap chain=CGNAT_11 src-address=100.64.1.96/27 to-addresses=\
+    186.237.219.0/27
+add action=netmap chain=CGNAT_12 protocol=tcp src-address=100.64.1.128/27 \
+    to-addresses=186.237.219.0/27 to-ports=25216-27231
+add action=netmap chain=CGNAT_12 protocol=udp src-address=100.64.1.128/27 \
+    to-addresses=186.237.219.0/27 to-ports=25216-27231
+add action=netmap chain=CGNAT_12 src-address=100.64.1.128/27 to-addresses=\
+    186.237.219.0/27
+add action=netmap chain=CGNAT_13 protocol=tcp src-address=100.64.1.160/27 \
+    to-addresses=186.237.219.0/27 to-ports=27232-29247
+add action=netmap chain=CGNAT_13 protocol=udp src-address=100.64.1.160/27 \
+    to-addresses=186.237.219.0/27 to-ports=27232-29247
+add action=netmap chain=CGNAT_13 src-address=100.64.1.160/27 to-addresses=\
+    186.237.219.0/27
+add action=netmap chain=CGNAT_14 protocol=tcp src-address=100.64.1.192/27 \
+    to-addresses=186.237.219.0/27 to-ports=29248-31263
+add action=netmap chain=CGNAT_14 protocol=udp src-address=100.64.1.192/27 \
+    to-addresses=186.237.219.0/27 to-ports=29248-31263
+add action=netmap chain=CGNAT_14 src-address=100.64.1.192/27 to-addresses=\
+    186.237.219.0/27
+add action=netmap chain=CGNAT_15 protocol=tcp src-address=100.64.1.224/27 \
+    to-addresses=186.237.219.0/27 to-ports=31264-33279
+add action=netmap chain=CGNAT_15 protocol=udp src-address=100.64.1.224/27 \
+    to-addresses=186.237.219.0/27 to-ports=31264-33279
+add action=netmap chain=CGNAT_15 src-address=100.64.1.224/27 to-addresses=\
+    186.237.219.0/27
+add action=netmap chain=CGNAT_16 protocol=tcp src-address=100.64.2.0/27 \
+    to-addresses=186.237.219.0/27 to-ports=33280-35295
+add action=netmap chain=CGNAT_16 protocol=udp src-address=100.64.2.0/27 \
+    to-addresses=186.237.219.0/27 to-ports=33280-35295
+add action=netmap chain=CGNAT_16 src-address=100.64.2.0/27 to-addresses=\
+    186.237.219.0/27
+add action=netmap chain=CGNAT_17 protocol=tcp src-address=100.64.2.32/27 \
+    to-addresses=186.237.219.0/27 to-ports=35296-37311
+add action=netmap chain=CGNAT_17 protocol=udp src-address=100.64.2.32/27 \
+    to-addresses=186.237.219.0/27 to-ports=35296-37311
+add action=netmap chain=CGNAT_17 src-address=100.64.2.32/27 to-addresses=\
+    186.237.219.0/27
+add action=netmap chain=CGNAT_18 protocol=tcp src-address=100.64.2.64/27 \
+    to-addresses=186.237.219.0/27 to-ports=37312-39327
+add action=netmap chain=CGNAT_18 protocol=udp src-address=100.64.2.64/27 \
+    to-addresses=186.237.219.0/27 to-ports=37312-39327
+add action=netmap chain=CGNAT_18 src-address=100.64.2.64/27 to-addresses=\
+    186.237.219.0/27
+add action=netmap chain=CGNAT_19 protocol=tcp src-address=100.64.2.96/27 \
+    to-addresses=186.237.219.0/27 to-ports=39328-41343
+add action=netmap chain=CGNAT_19 protocol=udp src-address=100.64.2.96/27 \
+    to-addresses=186.237.219.0/27 to-ports=39328-41343
+add action=netmap chain=CGNAT_19 src-address=100.64.2.96/27 to-addresses=\
+    186.237.219.0/27
+add action=netmap chain=CGNAT_20 protocol=tcp src-address=100.64.2.128/27 \
+    to-addresses=186.237.219.0/27 to-ports=41344-43359
+add action=netmap chain=CGNAT_20 protocol=udp src-address=100.64.2.128/27 \
+    to-addresses=186.237.219.0/27 to-ports=41344-43359
+add action=netmap chain=CGNAT_20 src-address=100.64.2.128/27 to-addresses=\
+    186.237.219.0/27
+add action=netmap chain=CGNAT_21 protocol=tcp src-address=100.64.2.160/27 \
+    to-addresses=186.237.219.0/27 to-ports=43360-45375
+add action=netmap chain=CGNAT_21 protocol=udp src-address=100.64.2.160/27 \
+    to-addresses=186.237.219.0/27 to-ports=43360-45375
+add action=netmap chain=CGNAT_21 src-address=100.64.2.160/27 to-addresses=\
+    186.237.219.0/27
+add action=netmap chain=CGNAT_22 protocol=tcp src-address=100.64.2.192/27 \
+    to-addresses=186.237.219.0/27 to-ports=45376-47391
+add action=netmap chain=CGNAT_22 protocol=udp src-address=100.64.2.192/27 \
+    to-addresses=186.237.219.0/27 to-ports=45376-47391
+add action=netmap chain=CGNAT_22 src-address=100.64.2.192/27 to-addresses=\
+    186.237.219.0/27
+add action=netmap chain=CGNAT_23 protocol=tcp src-address=100.64.2.224/27 \
+    to-addresses=186.237.219.0/27 to-ports=47392-49407
+add action=netmap chain=CGNAT_23 protocol=udp src-address=100.64.2.224/27 \
+    to-addresses=186.237.219.0/27 to-ports=47392-49407
+add action=netmap chain=CGNAT_23 src-address=100.64.2.224/27 to-addresses=\
+    186.237.219.0/27
+add action=netmap chain=CGNAT_24 protocol=tcp src-address=100.64.3.0/27 \
+    to-addresses=186.237.219.0/27 to-ports=49408-51423
+add action=netmap chain=CGNAT_24 protocol=udp src-address=100.64.3.0/27 \
+    to-addresses=186.237.219.0/27 to-ports=49408-51423
+add action=netmap chain=CGNAT_24 src-address=100.64.3.0/27 to-addresses=\
+    186.237.219.0/27
+add action=netmap chain=CGNAT_25 protocol=tcp src-address=100.64.3.32/27 \
+    to-addresses=186.237.219.0/27 to-ports=51424-53439
+add action=netmap chain=CGNAT_25 protocol=udp src-address=100.64.3.32/27 \
+    to-addresses=186.237.219.0/27 to-ports=51424-53439
+add action=netmap chain=CGNAT_25 src-address=100.64.3.32/27 to-addresses=\
+    186.237.219.0/27
+add action=netmap chain=CGNAT_26 protocol=tcp src-address=100.64.3.64/27 \
+    to-addresses=186.237.219.0/27 to-ports=53440-55455
+add action=netmap chain=CGNAT_26 protocol=udp src-address=100.64.3.64/27 \
+    to-addresses=186.237.219.0/27 to-ports=53440-55455
+add action=netmap chain=CGNAT_26 src-address=100.64.3.64/27 to-addresses=\
+    186.237.219.0/27
+add action=netmap chain=CGNAT_27 protocol=tcp src-address=100.64.3.96/27 \
+    to-addresses=186.237.219.0/27 to-ports=55456-57471
+add action=netmap chain=CGNAT_27 protocol=udp src-address=100.64.3.96/27 \
+    to-addresses=186.237.219.0/27 to-ports=55456-57471
+add action=netmap chain=CGNAT_27 src-address=100.64.3.96/27 to-addresses=\
+    186.237.219.0/27
+add action=netmap chain=CGNAT_28 protocol=tcp src-address=100.64.3.128/27 \
+    to-addresses=186.237.219.0/27 to-ports=57472-59487
+add action=netmap chain=CGNAT_28 protocol=udp src-address=100.64.3.128/27 \
+    to-addresses=186.237.219.0/27 to-ports=57472-59487
+add action=netmap chain=CGNAT_28 src-address=100.64.3.128/27 to-addresses=\
+    186.237.219.0/27
+add action=netmap chain=CGNAT_29 protocol=tcp src-address=100.64.3.160/27 \
+    to-addresses=186.237.219.0/27 to-ports=59488-61503
+add action=netmap chain=CGNAT_29 protocol=udp src-address=100.64.3.160/27 \
+    to-addresses=186.237.219.0/27 to-ports=59488-61503
+add action=netmap chain=CGNAT_29 src-address=100.64.3.160/27 to-addresses=\
+    186.237.219.0/27
+add action=netmap chain=CGNAT_30 protocol=tcp src-address=100.64.3.192/27 \
+    to-addresses=186.237.219.0/27 to-ports=61504-63519
+add action=netmap chain=CGNAT_30 protocol=udp src-address=100.64.3.192/27 \
+    to-addresses=186.237.219.0/27 to-ports=61504-63519
+add action=netmap chain=CGNAT_30 src-address=100.64.3.192/27 to-addresses=\
+    186.237.219.0/27
+add action=netmap chain=CGNAT_31 protocol=tcp src-address=100.64.3.224/27 \
+    to-addresses=186.237.219.0/27 to-ports=63520-65535
+add action=netmap chain=CGNAT_31 protocol=udp src-address=100.64.3.224/27 \
+    to-addresses=186.237.219.0/27 to-ports=63520-65535
+add action=netmap chain=CGNAT_31 src-address=100.64.3.224/27 to-addresses=\
+    186.237.219.0/27
+/ip ipsec profile
+set [ find default=yes ] dpd-interval=2m dpd-maximum-failures=5
+/ip route
+add disabled=no dst-address=0.0.0.0/0 gateway=143.255.198.5
+add blackhole comment=CGNAT_BLACKHOLE disabled=no dst-address=\
+    177.85.251.128/25
+add blackhole comment=CGNAT_BLACKHOLE disabled=no dst-address=\
+    186.237.219.0/27
+/ip service
+set ftp disabled=yes
+set telnet disabled=yes
+set www disabled=yes port=1017
+set winbox address=143.255.196.0/22,186.237.216.0/21,100.64.0.0/10 port=1018
+set ssh address="143.255.196.0/22,186.237.216.0/21,177.85.249.0/24,177.85.250.\
+    0/23,177.85.252.0/24,172.16.0.0/12,10.0.0.0/8,192.168.0.0/16,169.254.0.0/1\
+    6,100.64.0.0/10" port=2250
+set api disabled=yes
+set api-ssl disabled=yes
+/ip smb shares
+set [ find default=yes ] directory=/pub
+/ipv6 address
+add address=2001:12f8::212:81 advertise=no disabled=yes interface=\
+    BRIDGE-GERENCIA_DWDM_BSA
+/ipv6 firewall address-list
+add address=2804:ef0::/48 disabled=yes list=bgp-networks
+/ipv6 nd
+set [ find default=yes ] advertise-dns=no
+/lcd
+set default-screen=interfaces
+/lcd pin
+set pin-number=5785
+/ppp secret
+add disabled=yes local-address=192.168.1.1 name=huawei remote-address=\
+    192.168.1.11
+add disabled=yes local-address=192.168.1.1 name=rubens remote-address=\
+    192.168.1.12
+add disabled=yes local-address=192.168.1.1 name=Marcio remote-address=\
+    192.168.1.13 service=l2tp
+/radius
+add address=186.237.223.115 require-message-auth=no service=ppp src-address=\
+    143.255.198.6 timeout=300ms
+/routing bfd configuration
+add disabled=no interfaces=all min-rx=200ms min-tx=200ms multiplier=5
+/routing bgp connection
+add cisco-vpls-nlri-len-fmt=auto-bits connect=yes disabled=yes input.filter=\
+    IN-PTT instance=*0 listen=yes local.role=ebgp name=lg-v4 \
+    output.filter-chain=OUT-PTT remote.address=187.16.216.252 .as=20121 \
+    .port=179 templates=default
+add cisco-vpls-nlri-len-fmt=auto-bits connect=yes disabled=yes input.filter=\
+    IN-PTT instance=*0 listen=yes local.role=ebgp name=rs1-v4 \
+    output.filter-chain=OUT-PTT remote.address=187.16.216.253 .as=26162 \
+    .port=179 templates=default
+add cisco-vpls-nlri-len-fmt=auto-bits connect=yes disabled=yes input.filter=\
+    IN-PTT instance=*0 listen=yes local.role=ebgp name=rs2-v4 \
+    output.filter-chain=OUT-PTT remote.address=187.16.216.254 .as=26162 \
+    .port=179 templates=default
+add cisco-vpls-nlri-len-fmt=auto-bits connect=yes disabled=yes input.filter=\
+    IN-PTT instance=*0 listen=yes local.role=ebgp name=rs3-v4 \
+    output.filter-chain=OUT-PTT remote.address=187.16.223.253 .as=26162 \
+    .port=179 templates=default
+add cisco-vpls-nlri-len-fmt=auto-bits connect=yes disabled=yes input.filter=\
+    IN-PTT instance=*0 listen=yes local.role=ebgp name=rs4-v4 \
+    output.filter-chain=OUT-PTT remote.address=187.16.223.254 .as=26162 \
+    .port=179 templates=default
+add afi=ipv6 cisco-vpls-nlri-len-fmt=auto-bits connect=yes disabled=yes \
+    input.filter=IN-PTT instance=*0 listen=yes local.role=ebgp name=lg-v6 \
+    output.filter-chain=OUT-PTT remote.address=2001:12f8::252 .as=20121 \
+    .port=179 templates=default
+add afi=ipv6 cisco-vpls-nlri-len-fmt=auto-bits connect=yes disabled=yes \
+    input.filter=IN-PTT instance=*0 listen=yes local.role=ebgp name=rs1-v6 \
+    output.filter-chain=OUT-PTT remote.address=2001:12f8::253 .as=26162 \
+    .port=179 templates=default
+add afi=ipv6 cisco-vpls-nlri-len-fmt=auto-bits connect=yes disabled=yes \
+    input.filter=IN-PTT instance=*0 listen=yes local.role=ebgp name=rs3-v6 \
+    output.filter-chain=OUT-PTT remote.address=2001:12f8::223:253 .as=26162 \
+    .port=179 templates=default
+add afi=ipv6 cisco-vpls-nlri-len-fmt=auto-bits connect=yes disabled=yes \
+    input.filter=IN-PTT instance=*0 listen=yes local.role=ebgp name=rs4-v6 \
+    output.filter-chain=OUT-PTT remote.address=2001:12f8::223:254 .as=26162 \
+    .port=179 templates=default
+/routing filter rule
+add chain=IN-PTT disabled=no rule="reject;"
+add chain=OUT-PTT disabled=no rule="if (dst == 186.237.216.0/24) { accept; }"
+add chain=OUT-PTT disabled=no rule="if (dst == 2804:ef0::/48) { accept; }"
+add chain=OUT-PTT disabled=no rule="reject;"
+/routing ospf interface-template
+add area=backbone-v2 auth-id=1 cost=10 disabled=no interfaces=CGNAT-NE8000 \
+    networks=172.29.4.4/30 priority=1 type=ptp use-bfd=no
+/snmp
+set enabled=yes trap-version=2
+/system clock
+set time-zone-name=America/Sao_Paulo
+/system console
+set [ find ] disabled=yes
+/system identity
+set name=CONCENTRADOR-BSB-CGNAT-JETELECOM-01
+/system logging
+add action=Graylog prefix=critica topics=critical
+add action=Graylog prefix=error topics=error
+add action=Graylog prefix=info topics=info
+add action=Graylog prefix=warning topics=warning
+add action=Graylog prefix=CONEXAO-CGNAT-BSB topics=\
+    ppp,pppoe,pptp,l2tp,info,account
+/system ntp client
+set enabled=yes
+/system ntp client servers
+add address=172.17.255.1
+/system resource irq rps
+set sfp-sfpplus1-SW-ADE_MPLS disabled=no
+set sfp-sfpplus2 disabled=no
+set ether1-DWDM_HUAWEI disabled=no
+set ether2-DWDM_NOKIA disabled=no
+set ether3-DWDM_PADTEC disabled=no
+set ether4-CLI-NOVA-CASA disabled=no
+set ether5-CROSS-BRB disabled=no
+set ether6-DCI disabled=no
+set ether7-GERENCIA-JUNIPER disabled=no
+set ether8-WIFI-BSB-ELEA disabled=no
+/system scheduler
+add disabled=yes interval=5s name=wm-cgnat on-event=":local g 0;:local ip;:loc\
+    al d;:if ([:tostr [/ip pool find name~\"^wm-cgnat/\"]] != \"\") do={:set i\
+    p [:pick [/ip pool get [find name~\"^wm-cgnat/\"] ranges] 0];:if ([:tostr \
+    [:find (ip) \"/\"]] != \"\") do={:set d [/ip pool get [find name~\"^wm-cgn\
+    at/\"] name];:if ([:tostr [:find (d) \"/\"]] != \"\") do={:set d [:tonum [\
+    :pick (d) ([:find (d) \"/\"]+1) [:len (d)]]];:if ((d) > 1 && (d) < 65) do=\
+    {:if ([:tostr (d)] = \"\" || [:tonum (d)] > 64) do={:set d 64;\t};:if ([:t\
+    ostr (g)] = \"\") do={:set g 0;\t};/ip firewall address-list remove [find \
+    list=no-wm-cgnat];/ip firewall nat remove [find comment~\"^wm-cgnat\"];/ip\
+    \_pool remove [find name~\"^wm-cgnat\"];:foreach i in=[:toarray \"10.0.0.0\
+    /8,172.16.0.0/12,192.168.0.0/16\"] do={/ip firewall address-list add list=\
+    no-wm-cgnat address=(i);/};:local p1 0;:local p2 1023;:local ac netmap;:lo\
+    cal ipa;:for i from=0 to=([:len (ip)]-1) do={:local c [:pick (ip) (i)];:if\
+    \_((c) = \".\") do={:set ipa ((ipa).\",\");} else={:if ((c) = \"/\" || (c)\
+    \_= \"-\") do={:set ipa ((ipa).\",\");};:set ipa ((ipa).(c));:if ((c) = \"\
+    -\") do={:set ac src-nat;:set ipa ((ipa).\",\");};};};:set ipa [:toarray (\
+    ipa)];:local r;:local t;:local u;:local a;:local pl \"\";:local n none;:fo\
+    r i from=0 to=((d)-1) do={:set p1 (p2+1);:set p2 ((64511 /(d))+(p2));:if (\
+    (i) = ((d)-1)) do={:set p2 65535;};:local p (\"\\\"wm-cgnat [\".(p1).\"-\"\
+    .(p2).\"]\\\"\");:local cg;:for ii from=0 to=([:len (ipa)]-1) do={:local c\
+    \_[:pick (ipa) (ii)];:if ((ii) = 0 || (ii) = 5 && [:pick (ipa) (4)] = \"-\
+    \") do={:set cg ((cg).\"100\");} else={:if ((ii) != 4) do={:set cg ((cg).\
+    \".\");};:if ((ii) = 1 || (ii) = 6) do={:set cg ((cg).((i)+64));} else={:s\
+    et cg ((cg).(c));};};};:foreach ii in=[:toarray \"tcp,udp,all\"] do={:loca\
+    l h (\"\\\"wm-cgnat (jump --> \".(ii).\")\\\"\");:local j;:if ((i) = 0) do\
+    ={:set j (\"/ip firewall nat add chain=srcnat action=jump jump-target=\".(\
+    h).\" dst-address-list=!no-wm-cgnat comment=\".(h));};:local f (\"/ip fire\
+    wall nat add chain=\".(h).\" src-address=\".(cg).\" dst-address-list=!no-w\
+    m-cgnat action=\".(ac).\" to-address=\\\"\".(ip).\"\\\" comment=\".(p));:i\
+    f ((ii) != \"all\") do={:if ((i) = 0) do={:set j ((j).\" protocol=\".(ii).\
+    \";\\n\\r\");};:set f ((f).\" to-ports=\".((p1).\"-\".(p2)).\" protocol=\"\
+    .(ii));:if ((ii) = \"tcp\") do={:set t ((t).(j).(f).\";\\n\\r\");} else={:\
+    set u ((u).(j).(f).\";\\n\\r\");};} else={:if ((i) = 0) do={:set j ((j).\"\
+    ;\\n\\r\");};:set a ((a).(j).(f).\";\\n\\r\");};};:if ((g) = 0) do={:set r\
+    \_((r).\"/ip pool add name=\".(p).\" range=\".(cg).\";\\n\\r\");:if ((i) !\
+    = 0 && (i) != (d)) do={:set r ((r).\"/ip pool set [find name=\".(n).\"] ne\
+    xt-pool=\".(p).\";\\n\\r\");};} else={:set pl ((pl).(cg).\",\");};:set n (\
+    p);};:if ((g) = 1) do={:set r ((r).\"/ip pool add name=wm-cgnat range=\\\"\
+    \".(pl).\"\\\";\\n\\r\");};:set r ((r).(t).(u).(a));:put (r);[:parse (r)];\
+    };};};};" policy=\
+    ftp,reboot,read,write,policy,test,password,sniff,sensitive,romon \
+    start-time=startup
+add interval=5w5d name=reboot on-event=reboot policy=\
+    ftp,reboot,read,write,policy,test,password,sniff,sensitive,romon \
+    start-date=2020-08-25 start-time=04:00:00
+/system script
+add dont-require-permissions=yes name=reboot owner=Cristian policy=\
+    ftp,reboot,read,write,policy,test,password,sniff,sensitive,romon source=\
+    "system reboot"
+add dont-require-permissions=no name=BACKUP owner=Marcio policy=\
+    ftp,reboot,read,write,policy,test,password,sniff,sensitive,romon source="/\
+    export file=(\"BACKUP\" .\"-\" . . [/system identity get name] . \"-\" . \
+    \\\r\
+    \n[: pick [/ system clock get date] 4 6]. [: pick [/ system clock get date\
+    ] 0 3]. [: pick [/ system clock get date] 7 11]);"
+/tool graphing interface
+add
+/tool graphing resource
+add
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01:~# 
