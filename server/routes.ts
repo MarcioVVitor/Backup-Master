@@ -524,6 +524,21 @@ export async function registerRoutes(
             break;
           } catch (agentErr: any) {
             console.warn(`[backup] Agent ${mapping.agentId} failed:`, agentErr.message);
+            // If timeout, wait for agent to reconnect and retry once
+            if (agentErr.message.includes('Timeout')) {
+              console.log(`[backup] Waiting 5s for agent reconnection, then retrying...`);
+              await new Promise(r => setTimeout(r, 5000));
+              if (getConnectedAgentRef && getConnectedAgentRef(mapping.agentId)) {
+                try {
+                  console.log(`[backup] Retry with agent ${mapping.agentId}`);
+                  result = await executeBackupViaAgentRef!(mapping.agentId, equip, config);
+                  usedAgent = true;
+                  break;
+                } catch (retryErr: any) {
+                  console.warn(`[backup] Agent ${mapping.agentId} retry failed:`, retryErr.message);
+                }
+              }
+            }
           }
         }
       }

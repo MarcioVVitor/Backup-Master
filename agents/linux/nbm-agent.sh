@@ -405,7 +405,8 @@ connect_websocket() {
         log_info "Establishing WebSocket connection..."
         
         # Use coproc for bidirectional communication with websocat
-        coproc WSCAT { websocat -t --ping-interval 25 "$ws_url" 2>&1; }
+        # Ping interval of 10s helps detect disconnections faster
+        coproc WSCAT { websocat -t --ping-interval 10 "$ws_url" 2>&1; }
         
         if [[ -z "${WSCAT_PID:-}" ]]; then
             log_error "Failed to start websocat"
@@ -424,9 +425,10 @@ connect_websocket() {
         exec 5>&"${WSCAT[1]}"
         
         # Start heartbeat sender in background using duplicated fd
+        # 15 second interval ensures faster reconnection when server restarts
         {
             while kill -0 $WSCAT_PID 2>/dev/null; do
-                sleep 30
+                sleep 15
                 echo '{"type":"heartbeat"}' >&5 2>/dev/null || break
                 log_debug "Sent heartbeat"
             done
