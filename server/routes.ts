@@ -3384,12 +3384,19 @@ function getDefaultScriptInfo(manufacturer: string): VendorDefaultScript | null 
 // Remove ANSI escape codes from output
 function cleanAnsiCodes(str: string): string {
   return str
-    .replace(/\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])/g, '') // ANSI escape sequences
-    .replace(/\[\d+[A-Z]/g, '') // Cursor movement codes like [9999B
-    .replace(/\[\d*[A-Za-z]/g, '') // Other escape sequences
-    .replace(/\[[\d;]*[A-Za-z]/g, '') // Color codes
-    .replace(/\r\n/g, '\n') // Normalize line endings
-    .replace(/\r/g, '\n'); // Remove carriage returns
+    // Remove ESC sequences (starts with \x1B or \033)
+    .replace(/\x1B\[[0-9;]*[A-Za-z]/g, '')  // CSI sequences like ESC[1m, ESC[0;32m
+    .replace(/\x1B\][^\x07]*\x07/g, '')      // OSC sequences
+    .replace(/\x1B[PX^_][^\x1B]*\x1B\\/g, '') // DCS, SOS, PM, APC sequences
+    .replace(/\x1B[@-Z\\^_]/g, '')           // Single character sequences
+    // Remove raw escape codes that appear as text
+    .replace(/\[\??\d+[hlKJnm]/g, '')        // Terminal control codes as text
+    .replace(/\[[\d;]*[HfABCDsu]/g, '')      // Cursor position/movement codes
+    // Normalize line endings
+    .replace(/\r\n/g, '\n')
+    .replace(/\r/g, '')
+    // Remove null bytes
+    .replace(/\x00/g, '');
 }
 
 // Execução SSH com suporte a shell interativo
