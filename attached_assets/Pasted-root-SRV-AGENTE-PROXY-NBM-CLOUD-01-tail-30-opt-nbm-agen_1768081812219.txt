@@ -1,0 +1,32 @@
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[~]# tail -30 /opt/nbm-agent/logs/agent.log
+[2026-01-10 18:47:57] [DEBUG] Sent heartbeat
+[2026-01-10 18:47:57] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-10T21:47:57.640Z"}
+[2026-01-10 18:47:57] [DEBUG] Heartbeat acknowledged
+[2026-01-10 18:48:12] [DEBUG] Sent heartbeat
+[2026-01-10 18:48:12] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-10T21:48:12.631Z"}
+[2026-01-10 18:48:12] [DEBUG] Heartbeat acknowledged
+[2026-01-10 18:48:25] [DEBUG] Received: {"type":"backup_job","jobId":"backup-3-1768081705511","equipment":{"id":3,"name":"CONCENTRADOR-BSB-PPPOE-JETELECOM-01","ip":"172.16.247.236","port":2250,"protocol":"ssh","username":"admin","password":"@2Dc9d967","manufacturer":"mikrotik"},"config":{"command":"/export","useShell":true,"timeout":60000}}
+[2026-01-10 18:48:25] [DEBUG] Received message type: backup_job
+[2026-01-10 18:48:25] [INFO] Executing backup job backup-3-1768081705511 for 172.16.247.236:2250 with command: /export
+[2026-01-10 18:48:25] [INFO] Executing SSH backup on 172.16.247.236:2250
+/opt/nbm-agent/nbm-agent.sh: line 379: /usr/bin/jq: Argument list too long
+[2026-01-10 18:48:26] [INFO] Backup successful, output length: 245050 bytes
+[2026-01-10 18:48:27] [DEBUG] Sent heartbeat
+[2026-01-10 18:48:27] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-10T21:48:27.638Z"}
+[2026-01-10 18:48:27] [DEBUG] Heartbeat acknowledged
+[2026-01-10 18:48:42] [DEBUG] Sent heartbeat
+[2026-01-10 18:48:42] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-10T21:48:42.645Z"}
+[2026-01-10 18:48:42] [DEBUG] Heartbeat acknowledged
+[2026-01-10 18:48:57] [DEBUG] Sent heartbeat
+[2026-01-10 18:48:57] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-10T21:48:57.652Z"}
+[2026-01-10 18:48:57] [DEBUG] Heartbeat acknowledged
+[2026-01-10 18:49:12] [DEBUG] Sent heartbeat
+[2026-01-10 18:49:12] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-10T21:49:12.668Z"}
+[2026-01-10 18:49:12] [DEBUG] Heartbeat acknowledged
+[2026-01-10 18:49:27] [DEBUG] Sent heartbeat
+[2026-01-10 18:49:27] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-10T21:49:27.676Z"}
+[2026-01-10 18:49:27] [DEBUG] Heartbeat acknowledged
+[2026-01-10 18:49:42] [DEBUG] Sent heartbeat
+[2026-01-10 18:49:42] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-10T21:49:42.668Z"}
+[2026-01-10 18:49:42] [DEBUG] Heartbeat acknowledged
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[~]# 

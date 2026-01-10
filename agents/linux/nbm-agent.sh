@@ -373,11 +373,15 @@ handle_message() {
             
             local output
             local json_response
+            local tmp_file="/tmp/backup_output_$$"
             if output=$(execute_ssh_backup "$host" "$port" "$username" "$password" "$command" 120); then
-                # Use jq to build a proper JSON response (handles all escaping)
-                json_response=$(jq -n --arg type "backup_result" --arg jobId "$job_id" --arg output "$output" \
-                    '{type: $type, jobId: $jobId, success: true, output: $output}')
                 log_info "Backup successful, output length: ${#output} bytes"
+                # Write output to temp file to avoid argument list too long error
+                printf '%s' "$output" > "$tmp_file"
+                # Use jq with rawfile to read large text content from file
+                json_response=$(jq -n --arg type "backup_result" --arg jobId "$job_id" --rawfile output "$tmp_file" \
+                    '{type: $type, jobId: $jobId, success: true, output: $output}')
+                rm -f "$tmp_file"
             else
                 json_response=$(jq -n --arg type "backup_result" --arg jobId "$job_id" --arg error "Backup execution failed" \
                     '{type: $type, jobId: $jobId, success: false, error: $error}')
