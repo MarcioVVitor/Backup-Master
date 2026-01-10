@@ -643,27 +643,23 @@ export const translations: Translations = {
       downloadAgent: "Download do Agente",
       downloadDescription: "Baixe e instale o agente proxy em servidores Debian 13 para executar backups em redes remotas",
       installInstructions: "Instruções de Instalação",
-      step1: "Baixe o pacote do agente",
-      step2: "Extraia e execute o script de instalação",
-      step3: "Configure o arquivo /etc/nbm-agent/config.json",
-      step4: "Inicie o serviço com systemctl start nbm-agent",
+      step1: "Execute o comando de instalação rápida abaixo",
+      step2: "Informe a URL do servidor NBM CLOUD",
+      step3: "Informe o ID e Token do agente (disponíveis nesta página)",
+      step4: "O serviço será iniciado automaticamente",
       downloadPackage: "Baixar Pacote (.tar.gz)",
       downloadScript: "Baixar Script de Instalação",
-      quickInstall: "Instalação Rápida",
-      quickInstallCode: `# Baixar e instalar (com firewall UFW)
-tar -xzf nbm-agent.tar.gz
-cd agent
-sudo ./scripts/install.sh --with-ufw
+      quickInstall: "Instalação Rápida (copie e execute no servidor)",
+      quickInstallCode: `# Instalação com um comando (requer root)
+curl -fsSL https://raw.githubusercontent.com/MarcioVVitor/Backup-Master/main/agents/linux/install.sh | sudo bash
 
-# Configurar
-sudo nano /etc/nbm-agent/config.json
+# Ou baixar e executar manualmente:
+curl -fsSL https://raw.githubusercontent.com/MarcioVVitor/Backup-Master/main/agents/linux/install.sh -o install.sh
+chmod +x install.sh
+sudo ./install.sh
 
-# Iniciar serviço
-sudo systemctl start nbm-agent
-sudo systemctl enable nbm-agent
-
-# Verificar firewall
-sudo ufw status verbose`,
+# Verificar status após instalação:
+sudo systemctl status nbm-agent`,
     },
     dashboard: {
       title: "Dashboard",
@@ -1222,27 +1218,23 @@ sudo ufw status verbose`,
       downloadAgent: "Download Agent",
       downloadDescription: "Download and install the proxy agent on Debian 13 servers to run backups on remote networks",
       installInstructions: "Installation Instructions",
-      step1: "Download the agent package",
-      step2: "Extract and run the installation script",
-      step3: "Configure /etc/nbm-agent/config.json",
-      step4: "Start the service with systemctl start nbm-agent",
+      step1: "Run the quick install command below",
+      step2: "Enter the NBM CLOUD server URL",
+      step3: "Enter the agent ID and Token (available on this page)",
+      step4: "The service will start automatically",
       downloadPackage: "Download Package (.tar.gz)",
       downloadScript: "Download Install Script",
-      quickInstall: "Quick Install",
-      quickInstallCode: `# Download and install (with UFW firewall)
-tar -xzf nbm-agent.tar.gz
-cd agent
-sudo ./scripts/install.sh --with-ufw
+      quickInstall: "Quick Install (copy and run on server)",
+      quickInstallCode: `# One-command installation (requires root)
+curl -fsSL https://raw.githubusercontent.com/MarcioVVitor/Backup-Master/main/agents/linux/install.sh | sudo bash
 
-# Configure
-sudo nano /etc/nbm-agent/config.json
+# Or download and run manually:
+curl -fsSL https://raw.githubusercontent.com/MarcioVVitor/Backup-Master/main/agents/linux/install.sh -o install.sh
+chmod +x install.sh
+sudo ./install.sh
 
-# Start service
-sudo systemctl start nbm-agent
-sudo systemctl enable nbm-agent
-
-# Check firewall status
-sudo ufw status verbose`,
+# Check status after installation:
+sudo systemctl status nbm-agent`,
     },
     dashboard: {
       title: "Dashboard",
@@ -1801,27 +1793,23 @@ sudo ufw status verbose`,
       downloadAgent: "Descargar Agente",
       downloadDescription: "Descargue e instale el agente proxy en servidores Debian 13 para ejecutar backups en redes remotas",
       installInstructions: "Instrucciones de Instalación",
-      step1: "Descargue el paquete del agente",
-      step2: "Extraiga y ejecute el script de instalación",
-      step3: "Configure el archivo /etc/nbm-agent/config.json",
-      step4: "Inicie el servicio con systemctl start nbm-agent",
+      step1: "Ejecute el comando de instalación rápida abajo",
+      step2: "Ingrese la URL del servidor NBM CLOUD",
+      step3: "Ingrese el ID y Token del agente (disponibles en esta página)",
+      step4: "El servicio se iniciará automáticamente",
       downloadPackage: "Descargar Paquete (.tar.gz)",
       downloadScript: "Descargar Script de Instalación",
-      quickInstall: "Instalación Rápida",
-      quickInstallCode: `# Descargar e instalar (con firewall UFW)
-tar -xzf nbm-agent.tar.gz
-cd agent
-sudo ./scripts/install.sh --with-ufw
+      quickInstall: "Instalación Rápida (copie y ejecute en el servidor)",
+      quickInstallCode: `# Instalación con un comando (requiere root)
+curl -fsSL https://raw.githubusercontent.com/MarcioVVitor/Backup-Master/main/agents/linux/install.sh | sudo bash
 
-# Configurar
-sudo nano /etc/nbm-agent/config.json
+# O descargar y ejecutar manualmente:
+curl -fsSL https://raw.githubusercontent.com/MarcioVVitor/Backup-Master/main/agents/linux/install.sh -o install.sh
+chmod +x install.sh
+sudo ./install.sh
 
-# Iniciar servicio
-sudo systemctl start nbm-agent
-sudo systemctl enable nbm-agent
-
-# Verificar estado del firewall
-sudo ufw status verbose`,
+# Verificar estado después de instalación:
+sudo systemctl status nbm-agent`,
     },
     dashboard: {
       title: "Panel",
@@ -2380,27 +2368,23 @@ sudo ufw status verbose`,
       downloadAgent: "Télécharger l'Agent",
       downloadDescription: "Téléchargez et installez l'agent proxy sur les serveurs Debian 13 pour exécuter des sauvegardes sur les réseaux distants",
       installInstructions: "Instructions d'Installation",
-      step1: "Téléchargez le package de l'agent",
-      step2: "Extrayez et exécutez le script d'installation",
-      step3: "Configurez le fichier /etc/nbm-agent/config.json",
-      step4: "Démarrez le service avec systemctl start nbm-agent",
+      step1: "Exécutez la commande d'installation rapide ci-dessous",
+      step2: "Entrez l'URL du serveur NBM CLOUD",
+      step3: "Entrez l'ID et le Token de l'agent (disponibles sur cette page)",
+      step4: "Le service démarrera automatiquement",
       downloadPackage: "Télécharger le Package (.tar.gz)",
       downloadScript: "Télécharger le Script d'Installation",
-      quickInstall: "Installation Rapide",
-      quickInstallCode: `# Télécharger et installer (avec pare-feu UFW)
-tar -xzf nbm-agent.tar.gz
-cd agent
-sudo ./scripts/install.sh --with-ufw
+      quickInstall: "Installation Rapide (copier et exécuter sur le serveur)",
+      quickInstallCode: `# Installation en une commande (nécessite root)
+curl -fsSL https://raw.githubusercontent.com/MarcioVVitor/Backup-Master/main/agents/linux/install.sh | sudo bash
 
-# Configurer
-sudo nano /etc/nbm-agent/config.json
+# Ou télécharger et exécuter manuellement:
+curl -fsSL https://raw.githubusercontent.com/MarcioVVitor/Backup-Master/main/agents/linux/install.sh -o install.sh
+chmod +x install.sh
+sudo ./install.sh
 
-# Démarrer le service
-sudo systemctl start nbm-agent
-sudo systemctl enable nbm-agent
-
-# Vérifier l'état du pare-feu
-sudo ufw status verbose`,
+# Vérifier l'état après installation:
+sudo systemctl status nbm-agent`,
     },
     dashboard: {
       title: "Tableau de bord",
@@ -2959,27 +2943,23 @@ sudo ufw status verbose`,
       downloadAgent: "Agent Herunterladen",
       downloadDescription: "Laden Sie den Proxy-Agenten herunter und installieren Sie ihn auf Debian 13 Servern, um Backups in entfernten Netzwerken auszuführen",
       installInstructions: "Installationsanleitung",
-      step1: "Laden Sie das Agentenpaket herunter",
-      step2: "Entpacken und führen Sie das Installationsskript aus",
-      step3: "Konfigurieren Sie /etc/nbm-agent/config.json",
-      step4: "Starten Sie den Dienst mit systemctl start nbm-agent",
+      step1: "Führen Sie den Schnellinstallationsbefehl unten aus",
+      step2: "Geben Sie die NBM CLOUD Server-URL ein",
+      step3: "Geben Sie die Agenten-ID und das Token ein (auf dieser Seite verfügbar)",
+      step4: "Der Dienst wird automatisch gestartet",
       downloadPackage: "Paket Herunterladen (.tar.gz)",
       downloadScript: "Installationsskript Herunterladen",
-      quickInstall: "Schnellinstallation",
-      quickInstallCode: `# Herunterladen und installieren (mit UFW-Firewall)
-tar -xzf nbm-agent.tar.gz
-cd agent
-sudo ./scripts/install.sh --with-ufw
+      quickInstall: "Schnellinstallation (kopieren und auf Server ausführen)",
+      quickInstallCode: `# Ein-Befehl-Installation (erfordert root)
+curl -fsSL https://raw.githubusercontent.com/MarcioVVitor/Backup-Master/main/agents/linux/install.sh | sudo bash
 
-# Konfigurieren
-sudo nano /etc/nbm-agent/config.json
+# Oder manuell herunterladen und ausführen:
+curl -fsSL https://raw.githubusercontent.com/MarcioVVitor/Backup-Master/main/agents/linux/install.sh -o install.sh
+chmod +x install.sh
+sudo ./install.sh
 
-# Dienst starten
-sudo systemctl start nbm-agent
-sudo systemctl enable nbm-agent
-
-# Firewall-Status prüfen
-sudo ufw status verbose`,
+# Status nach Installation prüfen:
+sudo systemctl status nbm-agent`,
     },
     dashboard: {
       title: "Dashboard",

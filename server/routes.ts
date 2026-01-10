@@ -2438,14 +2438,14 @@ export async function registerRoutes(
       const path = await import('path');
       const fs = await import('fs');
       
-      const agentDir = path.join(process.cwd(), 'agent');
+      const agentDir = path.join(process.cwd(), 'agents', 'linux');
       const tarballPath = path.join('/tmp', 'nbm-agent.tar.gz');
       
       if (!fs.existsSync(agentDir)) {
         return res.status(404).json({ message: "Pacote do agente não encontrado" });
       }
       
-      execSync(`tar -czf ${tarballPath} -C ${process.cwd()} agent`, { stdio: 'pipe' });
+      execSync(`tar -czf ${tarballPath} -C ${process.cwd()}/agents linux`, { stdio: 'pipe' });
       
       res.setHeader('Content-Type', 'application/gzip');
       res.setHeader('Content-Disposition', 'attachment; filename=nbm-agent.tar.gz');
@@ -2468,7 +2468,7 @@ export async function registerRoutes(
       const fs = await import('fs');
       const path = await import('path');
       
-      const scriptPath = path.join(process.cwd(), 'agent', 'scripts', 'install.sh');
+      const scriptPath = path.join(process.cwd(), 'agents', 'linux', 'install.sh');
       
       if (!fs.existsSync(scriptPath)) {
         return res.status(404).json({ message: "Script não encontrado" });
