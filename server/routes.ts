@@ -533,6 +533,8 @@ export async function registerRoutes(
         result = await executeSSHBackup(equip, config);
       }
 
+      console.log(`[backup] Result length: ${result.length} bytes, first 100 chars: ${result.substring(0, 100)}`);
+      
       const now = new Date();
       const dateStr = now.toISOString().slice(0,10).replace(/-/g,'') + '_' + now.toTimeString().slice(0,8).replace(/:/g,'');
       const filename = `${equip.name}_${dateStr}${config.extension}`;
