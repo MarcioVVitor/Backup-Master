@@ -1,0 +1,35 @@
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01:~# tail -30 /opt/nbm-agent/logs/agent.log
+[2026-01-10 17:56:39] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-10T20:56:39.663Z"}
+[2026-01-10 17:56:39] [DEBUG] Heartbeat acknowledged
+[2026-01-10 17:56:54] [DEBUG] Sent heartbeat
+[2026-01-10 17:56:54] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-10T20:56:54.668Z"}
+[2026-01-10 17:56:54] [DEBUG] Heartbeat acknowledged
+[2026-01-10 17:57:01] [DEBUG] Received: {"type":"backup_job","jobId":"backup-2-1768078621745","equipment":{"id":2,"name":"CONCENTRADOR-BSB-CGNAT-JETELECOM-01","ip":"143.255.198.6","port":2250,"protocol":"ssh","username":"admin","password":"@2Dc9d967","manufacturer":"mikrotik"},"config":{"command":"# Script de Backup Mikrotik
+# Placeholders: {{EQUIPMENT_IP}}
+/export","useShell":true,"timeout":60000}}
+[2026-01-10 17:57:01] [DEBUG] Received message type: backup_job
+[2026-01-10 17:57:01] [INFO] Executing backup job backup-2-1768078621745 for 143.255.198.6:2250 with command: # Script de Backup Mikrotik
+# Placeholders: {{EQUIPMENT_IP}}
+/export
+[2026-01-10 17:57:01] [INFO] Executing SSH backup on 143.255.198.6:2250
+[2026-01-10 17:57:09] [DEBUG] Sent heartbeat
+[2026-01-10 17:57:24] [DEBUG] Sent heartbeat
+[2026-01-10 17:57:39] [DEBUG] Sent heartbeat
+[2026-01-10 17:57:54] [DEBUG] Sent heartbeat
+[2026-01-10 17:58:09] [DEBUG] Sent heartbeat
+[2026-01-10 17:58:24] [DEBUG] Sent heartbeat
+[2026-01-10 17:58:39] [DEBUG] Sent heartbeat
+[2026-01-10 17:58:54] [DEBUG] Sent heartbeat
+[2026-01-10 17:59:09] [DEBUG] Sent heartbeat
+[2026-01-10 17:59:24] [DEBUG] Sent heartbeat
+[2026-01-10 17:59:39] [DEBUG] Sent heartbeat
+[2026-01-10 17:59:54] [DEBUG] Sent heartbeat
+[2026-01-10 18:00:09] [DEBUG] Sent heartbeat
+[2026-01-10 18:00:24] [DEBUG] Sent heartbeat
+[2026-01-10 18:00:39] [DEBUG] Sent heartbeat
+[2026-01-10 18:00:54] [DEBUG] Sent heartbeat
+[2026-01-10 18:01:09] [DEBUG] Sent heartbeat
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01:~# grep -i "Buffer\|524288" /opt/nbm-agent/nbm-agent.sh
+        # Buffer size of 512KB to handle large backup outputs
+        coproc WSCAT { websocat -t --ping-interval 10 -B 524288 "$ws_url" 2>&1; }
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01:~# 
