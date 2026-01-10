@@ -459,14 +459,21 @@ connect_websocket() {
                 execute_backup|backup_job|test_connection|request_diagnostics|terminal_command|update_agent)
                     response=$(handle_message "$msg")
                     if [[ -n "$response" ]]; then
-                        echo "$response" >&"${WSCAT[1]}"
-                        log_debug "Sent response: $response"
+                        local resp_len=${#response}
+                        log_info "Sending response, length: $resp_len bytes"
+                        if printf '%s\n' "$response" >&"${WSCAT[1]}" 2>/dev/null; then
+                            log_info "Response sent successfully ($resp_len bytes)"
+                        else
+                            log_error "Failed to send response ($resp_len bytes)"
+                        fi
                     fi
                     ;;
                 job)
                     response=$(handle_message "$msg")
                     if [[ -n "$response" ]]; then
-                        echo "$response" >&"${WSCAT[1]}"
+                        local resp_len=${#response}
+                        log_info "Sending job response, length: $resp_len bytes"
+                        printf '%s\n' "$response" >&"${WSCAT[1]}" 2>/dev/null || log_error "Failed to send job response"
                     fi
                     ;;
                 error)
