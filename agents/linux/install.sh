@@ -36,14 +36,30 @@ echo "Installing dependencies..."
 # Detect package manager and install dependencies
 if command -v apt-get &> /dev/null; then
     apt-get update -qq
-    apt-get install -y curl gnupg jq sshpass openssh-client
+    apt-get install -y curl gnupg jq sshpass openssh-client wget
 elif command -v yum &> /dev/null; then
-    yum install -y curl jq sshpass openssh-clients
+    yum install -y curl jq sshpass openssh-clients wget
 elif command -v dnf &> /dev/null; then
-    dnf install -y curl jq sshpass openssh-clients
+    dnf install -y curl jq sshpass openssh-clients wget
 else
-    echo -e "${RED}Unsupported package manager. Please install manually: curl jq sshpass ssh${NC}"
+    echo -e "${RED}Unsupported package manager. Please install manually: curl jq sshpass ssh wget${NC}"
     exit 1
+fi
+
+# Install websocat (required for WebSocket connection)
+if ! command -v websocat &> /dev/null; then
+    echo "Installing websocat..."
+    WEBSOCAT_URL="https://github.com/vi/websocat/releases/download/v1.13.0/websocat.x86_64-unknown-linux-musl"
+    curl -fsSL "$WEBSOCAT_URL" -o /usr/local/bin/websocat
+    chmod +x /usr/local/bin/websocat
+    if command -v websocat &> /dev/null; then
+        echo -e "${GREEN}websocat installed successfully${NC}"
+    else
+        echo -e "${RED}Failed to install websocat${NC}"
+        exit 1
+    fi
+else
+    echo "websocat already installed: $(websocat --version)"
 fi
 
 # Install Node.js 20.x if not present
