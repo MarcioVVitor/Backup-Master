@@ -319,18 +319,19 @@ export async function registerRoutes(
     const userSub = user?.claims?.sub;
     const userId = userSub ? await storage.getUserIdByReplitId(userSub) : null;
 
-    const { objectStorageClient } = await import("./replit_integrations/object_storage/objectStorage");
-    const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID;
-    if (!bucketId) return res.status(500).json({ message: "Bucket não configurado" });
-
     const objectName = `backups/${Date.now()}-${req.file.originalname}`;
-    const bucket = objectStorageClient.bucket(bucketId);
-    const file = bucket.file(objectName);
+    const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID;
 
     try {
-      await file.save(req.file.buffer, {
-        contentType: req.file.mimetype,
-      });
+      if (bucketId) {
+        const { objectStorageClient } = await import("./replit_integrations/object_storage/objectStorage");
+        const bucket = objectStorageClient.bucket(bucketId);
+        const file = bucket.file(objectName);
+        await file.save(req.file.buffer, { contentType: req.file.mimetype });
+      } else {
+        const { localStorageClient } = await import("./local-storage");
+        await localStorageClient.saveFile(objectName, req.file.buffer, companyId || undefined);
+      }
 
       const fileRecord = await storage.createBackup({
         userId: userId || 1,
