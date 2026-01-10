@@ -266,10 +266,16 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteBackup(id: number): Promise<void> {
+    // First, remove file reference from backup_history to avoid foreign key constraint
+    await db.update(backupHistory).set({ fileId: null }).where(eq(backupHistory.fileId, id));
+    // Then delete the file
     await db.delete(files).where(eq(files.id, id));
   }
   
   async deleteBackupScoped(id: number, companyId: number): Promise<void> {
+    // First, remove file reference from backup_history to avoid foreign key constraint
+    await db.update(backupHistory).set({ fileId: null }).where(eq(backupHistory.fileId, id));
+    // Then delete the file
     await db.delete(files).where(and(eq(files.id, id), eq(files.companyId, companyId)));
   }
 
