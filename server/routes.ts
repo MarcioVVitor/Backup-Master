@@ -2795,12 +2795,36 @@ export async function registerRoutes(
   agentWss.on('connection', async (ws, request) => {
     console.log('[ws-agents] New connection from:', request.socket.remoteAddress);
     let authenticatedAgent: any = null;
+    let messageBuffer = ''; // Buffer for fragmented messages
     
     ws.on('message', async (data) => {
       try {
         const dataStr = data.toString();
         console.log('[ws-agents] Received message, size:', dataStr.length, 'bytes');
-        const message = JSON.parse(dataStr);
+        
+        // Try to parse as complete JSON first
+        let message: any;
+        try {
+          message = JSON.parse(dataStr);
+          // Clear buffer on successful parse of fresh message
+          messageBuffer = '';
+        } catch (parseErr) {
+          // Message is fragmented, add to buffer
+          messageBuffer += dataStr;
+          console.log('[ws-agents] Message fragment, buffer size:', messageBuffer.length, 'bytes');
+          
+          // Try to parse the buffer
+          try {
+            message = JSON.parse(messageBuffer);
+            console.log('[ws-agents] Buffer assembled successfully, type:', message.type);
+            messageBuffer = ''; // Clear buffer on success
+          } catch (bufferErr) {
+            // Still incomplete, wait for more data
+            console.log('[ws-agents] Waiting for more fragments...');
+            return;
+          }
+        }
+        
         console.log('[ws-agents] Received message type:', message.type);
         
         if (message.type === 'auth') {
