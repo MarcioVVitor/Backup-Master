@@ -3,7 +3,8 @@
 # Agente proxy para backup de equipamentos de rede
 # Suporta: Mikrotik, Huawei, Cisco, Nokia, ZTE, Datacom, Datacom-DMOS, Juniper
 
-set -e
+# Don't exit on error - we handle errors ourselves
+set +e
 
 AGENT_VERSION="1.0.0"
 AGENT_DIR="/opt/nbm-agent"
@@ -540,16 +541,18 @@ start() {
     
     log_info "Starting NBM CLOUD Agent v$AGENT_VERSION"
     
+    # Save PID before starting (this is the main process for systemd)
+    echo $$ > "$PID_FILE"
+    log_info "Agent started with PID: $$"
+    
     # Check if websocat is available for WebSocket mode
+    # Run in foreground for systemd
     if command -v websocat &> /dev/null; then
-        connect_websocket &
+        connect_websocket
     else
         log_warn "websocat not found, using polling mode"
-        polling_mode &
+        polling_mode
     fi
-    
-    echo $! > "$PID_FILE"
-    log_info "Agent started with PID: $(cat $PID_FILE)"
 }
 
 # Stop agent

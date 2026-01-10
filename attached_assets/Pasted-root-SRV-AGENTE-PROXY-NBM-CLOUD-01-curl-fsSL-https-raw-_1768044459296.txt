@@ -1,0 +1,63 @@
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01:~# curl -fsSL https://raw.githubusercontent.com/MarcioVVitor/Backup-Master/main/agents/linux/nbm-agent.sh -o /opt/nbm-agent/nbm-agent.sh && chmod +x /opt/nbm-agent/nbm-agent.sh && systemctl restart nbm-agent
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01:~# systemctl status nbm-agent
+● nbm-agent.service - NBM CLOUD Agent - Network Backup Proxy
+     Loaded: loaded (/etc/systemd/system/nbm-agent.service; enabled; preset: enabled)
+     Active: activating (auto-restart) since Sat 2026-01-10 08:27:17 -03; 9s ago
+ Invocation: 5e88d70c221d4e4197b55699ecbb0f13
+    Process: 6357 ExecStart=/opt/nbm-agent/nbm-agent.sh start (code=exited, status=0/SUCCESS)
+    Process: 6379 ExecStop=/opt/nbm-agent/nbm-agent.sh stop (code=exited, status=0/SUCCESS)
+   Main PID: 6357 (code=exited, status=0/SUCCESS)
+   Mem peak: 5.7M
+        CPU: 171ms
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01:~# tail -50 /opt/nbm-agent/logs/agent.log
+[2026-01-10 08:26:57] [INFO] Agent stopped
+[2026-01-10 08:26:57] [INFO] Agent stopped
+[2026-01-10 08:27:07] [INFO] Configuration loaded: Agent=proxy-grupojet-01, Server=http://143.255.197.25:5000
+[2026-01-10 08:27:07] [INFO] Configuration loaded: Agent=proxy-grupojet-01, Server=http://143.255.197.25:5000
+[2026-01-10 08:27:07] [INFO] Starting NBM CLOUD Agent v1.0.0
+[2026-01-10 08:27:07] [INFO] Starting NBM CLOUD Agent v1.0.0
+[2026-01-10 08:27:07] [INFO] Connecting to WebSocket: ws://143.255.197.25:5000/ws/agents
+[2026-01-10 08:27:07] [INFO] Connecting to WebSocket: ws://143.255.197.25:5000/ws/agents
+[2026-01-10 08:27:07] [INFO] Agent started with PID: 6328
+[2026-01-10 08:27:07] [INFO] Agent started with PID: 6328
+[2026-01-10 08:27:07] [INFO] Establishing WebSocket connection...
+[2026-01-10 08:27:07] [INFO] Establishing WebSocket connection...
+[2026-01-10 08:27:07] [DEBUG] Sent auth message
+[2026-01-10 08:27:07] [DEBUG] Sent auth message
+[2026-01-10 08:27:07] [INFO] Stopping agent (PID: 6328)...
+[2026-01-10 08:27:07] [INFO] Stopping agent (PID: 6328)...
+[2026-01-10 08:27:07] [INFO] Agent stopped
+[2026-01-10 08:27:07] [INFO] Agent stopped
+[2026-01-10 08:27:17] [INFO] Configuration loaded: Agent=proxy-grupojet-01, Server=http://143.255.197.25:5000
+[2026-01-10 08:27:17] [INFO] Configuration loaded: Agent=proxy-grupojet-01, Server=http://143.255.197.25:5000
+[2026-01-10 08:27:17] [INFO] Starting NBM CLOUD Agent v1.0.0
+[2026-01-10 08:27:17] [INFO] Starting NBM CLOUD Agent v1.0.0
+[2026-01-10 08:27:17] [INFO] Connecting to WebSocket: ws://143.255.197.25:5000/ws/agents
+[2026-01-10 08:27:17] [INFO] Connecting to WebSocket: ws://143.255.197.25:5000/ws/agents
+[2026-01-10 08:27:17] [INFO] Agent started with PID: 6369
+[2026-01-10 08:27:17] [INFO] Agent started with PID: 6369
+[2026-01-10 08:27:17] [INFO] Establishing WebSocket connection...
+[2026-01-10 08:27:17] [INFO] Establishing WebSocket connection...
+[2026-01-10 08:27:17] [DEBUG] Sent auth message
+[2026-01-10 08:27:17] [DEBUG] Sent auth message
+[2026-01-10 08:27:17] [INFO] Stopping agent (PID: 6369)...
+[2026-01-10 08:27:17] [INFO] Stopping agent (PID: 6369)...
+[2026-01-10 08:27:17] [INFO] Agent stopped
+[2026-01-10 08:27:17] [INFO] Agent stopped
+[2026-01-10 08:27:28] [INFO] Configuration loaded: Agent=proxy-grupojet-01, Server=http://143.255.197.25:5000
+[2026-01-10 08:27:28] [INFO] Configuration loaded: Agent=proxy-grupojet-01, Server=http://143.255.197.25:5000
+[2026-01-10 08:27:28] [INFO] Starting NBM CLOUD Agent v1.0.0
+[2026-01-10 08:27:28] [INFO] Starting NBM CLOUD Agent v1.0.0
+[2026-01-10 08:27:28] [INFO] Connecting to WebSocket: ws://143.255.197.25:5000/ws/agents
+[2026-01-10 08:27:28] [INFO] Connecting to WebSocket: ws://143.255.197.25:5000/ws/agents
+[2026-01-10 08:27:28] [INFO] Agent started with PID: 6415
+[2026-01-10 08:27:28] [INFO] Agent started with PID: 6415
+[2026-01-10 08:27:28] [INFO] Establishing WebSocket connection...
+[2026-01-10 08:27:28] [INFO] Establishing WebSocket connection...
+[2026-01-10 08:27:28] [DEBUG] Sent auth message
+[2026-01-10 08:27:28] [DEBUG] Sent auth message
+[2026-01-10 08:27:28] [INFO] Stopping agent (PID: 6415)...
+[2026-01-10 08:27:28] [INFO] Stopping agent (PID: 6415)...
+[2026-01-10 08:27:28] [INFO] Agent stopped
+[2026-01-10 08:27:28] [INFO] Agent stopped
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01:~# 
