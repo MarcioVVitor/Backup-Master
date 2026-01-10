@@ -2747,7 +2747,7 @@ export async function registerRoutes(
       
       pendingBackupJobs.set(jobId, { resolve, reject, timeout });
       
-      ws.send(JSON.stringify({
+      const backupMsg = {
         type: 'backup_job',
         jobId,
         equipment: {
@@ -2765,7 +2765,9 @@ export async function registerRoutes(
           useShell: config.useShell,
           timeout: config.timeout,
         }
-      }));
+      };
+      console.log(`[backup] Sending backup_job to agent ${agentId}:`, JSON.stringify(backupMsg).substring(0, 200) + '...');
+      ws.send(JSON.stringify(backupMsg));
     });
   }
   
