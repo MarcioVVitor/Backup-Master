@@ -415,14 +415,17 @@ connect_websocket() {
         echo "$auth_msg" >&"${WSCAT[1]}"
         log_debug "Sent auth message"
         
-        # Start heartbeat sender in background
-        (
+        # Copy file descriptor for heartbeat subprocess
+        local ws_write_fd=${WSCAT[1]}
+        
+        # Start heartbeat sender in background using eval to preserve fd
+        {
             while kill -0 $WSCAT_PID 2>/dev/null; do
                 sleep 30
-                echo '{"type":"heartbeat"}' >&"${WSCAT[1]}" 2>/dev/null || break
+                echo '{"type":"heartbeat"}' >&$ws_write_fd 2>/dev/null || break
                 log_debug "Sent heartbeat"
             done
-        ) &
+        } &
         local heartbeat_pid=$!
         
         # Read responses and handle messages

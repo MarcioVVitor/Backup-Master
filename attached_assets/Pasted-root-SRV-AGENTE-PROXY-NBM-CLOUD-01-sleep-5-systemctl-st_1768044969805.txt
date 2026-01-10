@@ -1,0 +1,46 @@
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01:~# sleep 5 && systemctl status nbm-agent && tail -30 /opt/nbm-agent/logs/agent.log
+● nbm-agent.service - NBM CLOUD Agent - Network Backup Proxy
+     Loaded: loaded (/etc/systemd/system/nbm-agent.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-01-10 08:32:38 -03; 3min 23s ago
+ Invocation: b39429dbdcb34d6eb2e178d341229742
+   Main PID: 7761 (nbm-agent.sh)
+      Tasks: 3 (limit: 9470)
+     Memory: 2.1M (peak: 4.7M)
+        CPU: 157ms
+     CGroup: /system.slice/nbm-agent.service
+             ├─7761 /bin/bash /opt/nbm-agent/nbm-agent.sh start
+             ├─7782 /bin/bash /opt/nbm-agent/nbm-agent.sh start
+             └─7783 websocat -t --ping-interval 25 ws://143.255.197.25:5000/ws/agents
+
+Jan 10 08:32:38 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: Started nbm-agent.service - NBM CLOUD Agent - Network Backup Proxy.
+[2026-01-10 08:32:30] [INFO] Connecting to WebSocket: ws://143.255.197.25:5000/ws/agents
+[2026-01-10 08:32:30] [INFO] Agent started with PID: 7725
+[2026-01-10 08:32:30] [INFO] Agent started with PID: 7725
+[2026-01-10 08:32:30] [INFO] Establishing WebSocket connection...
+[2026-01-10 08:32:30] [INFO] Establishing WebSocket connection...
+[2026-01-10 08:32:30] [DEBUG] Sent auth message
+[2026-01-10 08:32:30] [DEBUG] Sent auth message
+[2026-01-10 08:32:30] [INFO] Stopping agent (PID: 7725)...
+[2026-01-10 08:32:30] [INFO] Stopping agent (PID: 7725)...
+[2026-01-10 08:32:30] [INFO] Agent stopped
+[2026-01-10 08:32:30] [INFO] Agent stopped
+[2026-01-10 08:32:38] [INFO] Configuration loaded: Agent=proxy-grupojet-01, Server=http://143.255.197.25:5000
+[2026-01-10 08:32:38] [INFO] Configuration loaded: Agent=proxy-grupojet-01, Server=http://143.255.197.25:5000
+[2026-01-10 08:32:38] [INFO] Starting NBM CLOUD Agent v1.0.0
+[2026-01-10 08:32:38] [INFO] Starting NBM CLOUD Agent v1.0.0
+[2026-01-10 08:32:38] [INFO] Agent started with PID: 7761
+[2026-01-10 08:32:38] [INFO] Agent started with PID: 7761
+[2026-01-10 08:32:38] [INFO] Connecting to WebSocket: ws://143.255.197.25:5000/ws/agents
+[2026-01-10 08:32:38] [INFO] Connecting to WebSocket: ws://143.255.197.25:5000/ws/agents
+[2026-01-10 08:32:38] [INFO] Establishing WebSocket connection...
+[2026-01-10 08:32:38] [INFO] Establishing WebSocket connection...
+[2026-01-10 08:32:38] [DEBUG] WebSocket process started with PID: 7782
+[2026-01-10 08:32:38] [DEBUG] WebSocket process started with PID: 7782
+[2026-01-10 08:32:38] [DEBUG] Sent auth message
+[2026-01-10 08:32:38] [DEBUG] Sent auth message
+[2026-01-10 08:32:38] [DEBUG] Received: {"type":"auth_success","agentId":1,"config":null}
+[2026-01-10 08:32:38] [DEBUG] Received: {"type":"auth_success","agentId":1,"config":null}
+[2026-01-10 08:32:38] [INFO] Authentication successful
+[2026-01-10 08:32:38] [INFO] Authentication successful
+/opt/nbm-agent/nbm-agent.sh: line 422: "${WSCAT[1]}": Bad file descriptor
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01:~# 
