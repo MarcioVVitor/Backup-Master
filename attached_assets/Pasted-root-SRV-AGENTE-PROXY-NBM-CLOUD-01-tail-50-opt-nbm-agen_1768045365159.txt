@@ -1,0 +1,52 @@
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01:~# tail -50 /opt/nbm-agent/logs/agent.log
+[2026-01-10 08:32:30] [INFO] Establishing WebSocket connection...
+[2026-01-10 08:32:30] [INFO] Establishing WebSocket connection...
+[2026-01-10 08:32:30] [DEBUG] Sent auth message
+[2026-01-10 08:32:30] [DEBUG] Sent auth message
+[2026-01-10 08:32:30] [INFO] Stopping agent (PID: 7725)...
+[2026-01-10 08:32:30] [INFO] Stopping agent (PID: 7725)...
+[2026-01-10 08:32:30] [INFO] Agent stopped
+[2026-01-10 08:32:30] [INFO] Agent stopped
+[2026-01-10 08:32:38] [INFO] Configuration loaded: Agent=proxy-grupojet-01, Server=http://143.255.197.25:5000
+[2026-01-10 08:32:38] [INFO] Configuration loaded: Agent=proxy-grupojet-01, Server=http://143.255.197.25:5000
+[2026-01-10 08:32:38] [INFO] Starting NBM CLOUD Agent v1.0.0
+[2026-01-10 08:32:38] [INFO] Starting NBM CLOUD Agent v1.0.0
+[2026-01-10 08:32:38] [INFO] Agent started with PID: 7761
+[2026-01-10 08:32:38] [INFO] Agent started with PID: 7761
+[2026-01-10 08:32:38] [INFO] Connecting to WebSocket: ws://143.255.197.25:5000/ws/agents
+[2026-01-10 08:32:38] [INFO] Connecting to WebSocket: ws://143.255.197.25:5000/ws/agents
+[2026-01-10 08:32:38] [INFO] Establishing WebSocket connection...
+[2026-01-10 08:32:38] [INFO] Establishing WebSocket connection...
+[2026-01-10 08:32:38] [DEBUG] WebSocket process started with PID: 7782
+[2026-01-10 08:32:38] [DEBUG] WebSocket process started with PID: 7782
+[2026-01-10 08:32:38] [DEBUG] Sent auth message
+[2026-01-10 08:32:38] [DEBUG] Sent auth message
+[2026-01-10 08:32:38] [DEBUG] Received: {"type":"auth_success","agentId":1,"config":null}
+[2026-01-10 08:32:38] [DEBUG] Received: {"type":"auth_success","agentId":1,"config":null}
+[2026-01-10 08:32:38] [INFO] Authentication successful
+[2026-01-10 08:32:38] [INFO] Authentication successful
+/opt/nbm-agent/nbm-agent.sh: line 422: "${WSCAT[1]}": Bad file descriptor
+[2026-01-10 08:36:49] [INFO] Stopping agent (PID: 7761)...
+[2026-01-10 08:36:49] [INFO] Stopping agent (PID: 7761)...
+[2026-01-10 08:36:49] [INFO] Agent stopped
+[2026-01-10 08:36:49] [INFO] Agent stopped
+[2026-01-10 08:36:49] [INFO] Configuration loaded: Agent=proxy-grupojet-01, Server=http://143.255.197.25:5000
+[2026-01-10 08:36:49] [INFO] Configuration loaded: Agent=proxy-grupojet-01, Server=http://143.255.197.25:5000
+[2026-01-10 08:36:49] [INFO] Starting NBM CLOUD Agent v1.0.0
+[2026-01-10 08:36:49] [INFO] Starting NBM CLOUD Agent v1.0.0
+[2026-01-10 08:36:49] [INFO] Agent started with PID: 7826
+[2026-01-10 08:36:49] [INFO] Agent started with PID: 7826
+[2026-01-10 08:36:50] [INFO] Connecting to WebSocket: ws://143.255.197.25:5000/ws/agents
+[2026-01-10 08:36:50] [INFO] Connecting to WebSocket: ws://143.255.197.25:5000/ws/agents
+[2026-01-10 08:36:50] [INFO] Establishing WebSocket connection...
+[2026-01-10 08:36:50] [INFO] Establishing WebSocket connection...
+[2026-01-10 08:36:50] [DEBUG] WebSocket process started with PID: 7849
+[2026-01-10 08:36:50] [DEBUG] WebSocket process started with PID: 7849
+[2026-01-10 08:36:50] [DEBUG] Sent auth message
+[2026-01-10 08:36:50] [DEBUG] Sent auth message
+[2026-01-10 08:36:50] [DEBUG] Received: {"type":"auth_success","agentId":1,"config":null}
+[2026-01-10 08:36:50] [DEBUG] Received: {"type":"auth_success","agentId":1,"config":null}
+[2026-01-10 08:36:50] [INFO] Authentication successful
+[2026-01-10 08:36:50] [INFO] Authentication successful
+/opt/nbm-agent/nbm-agent.sh: line 422: "${WSCAT[1]}": Bad file descriptor
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01:~# 
