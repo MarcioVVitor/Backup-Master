@@ -2743,7 +2743,7 @@ export async function registerRoutes(
       const timeout = setTimeout(() => {
         pendingBackupJobs.delete(jobId);
         reject(new Error('Timeout aguardando resposta do agente'));
-      }, (config.timeout || 60000) + 10000);
+      }, (config.timeout || 60000) + 60000);
       
       pendingBackupJobs.set(jobId, { resolve, reject, timeout });
       
