@@ -392,9 +392,9 @@ connect_websocket() {
     
     log_info "Connecting to WebSocket: $ws_url"
     
-    # Send registration message first
+    # Send authentication message first
     local register_msg=$(cat <<EOF
-{"type":"register","agentId":$AGENT_ID,"token":"$AGENT_TOKEN","name":"$AGENT_NAME","version":"$AGENT_VERSION"}
+{"type":"auth","token":"$AGENT_TOKEN","agentId":$AGENT_ID,"name":"$AGENT_NAME","version":"$AGENT_VERSION"}
 EOF
 )
     
