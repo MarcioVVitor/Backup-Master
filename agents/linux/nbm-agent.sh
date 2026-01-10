@@ -389,48 +389,44 @@ handle_message() {
     esac
 }
 
-# Main WebSocket connection loop
+# Main WebSocket connection loop using coproc
 connect_websocket() {
     local ws_url="${SERVER_URL/https:/wss:}/ws/agents"
     ws_url="${ws_url/http:/ws:}"
     
     log_info "Connecting to WebSocket: $ws_url"
     
-    # Create named pipe for bidirectional communication
-    local fifo_in="/tmp/nbm-agent-in-$$"
-    local fifo_out="/tmp/nbm-agent-out-$$"
-    mkfifo "$fifo_in" 2>/dev/null || true
-    mkfifo "$fifo_out" 2>/dev/null || true
-    
-    trap "rm -f $fifo_in $fifo_out" EXIT
-    
     while true; do
         log_info "Establishing WebSocket connection..."
         
-        # Start websocat in background with bidirectional pipes
-        websocat -t "$ws_url" < "$fifo_in" > "$fifo_out" 2>&1 &
-        local ws_pid=$!
+        # Use coproc for bidirectional communication with websocat
+        coproc WSCAT { websocat -t --ping-interval 25 "$ws_url" 2>&1; }
         
-        # Open fifo_in for writing (keeps pipe open)
-        exec 3>"$fifo_in"
+        if [[ -z "${WSCAT_PID:-}" ]]; then
+            log_error "Failed to start websocat"
+            sleep 10
+            continue
+        fi
+        
+        log_debug "WebSocket process started with PID: $WSCAT_PID"
         
         # Send authentication message
         local auth_msg="{\"type\":\"auth\",\"token\":\"$AGENT_TOKEN\",\"agentId\":$AGENT_ID,\"name\":\"$AGENT_NAME\",\"version\":\"$AGENT_VERSION\"}"
-        echo "$auth_msg" >&3
+        echo "$auth_msg" >&"${WSCAT[1]}"
         log_debug "Sent auth message"
         
         # Start heartbeat sender in background
         (
-            while kill -0 $ws_pid 2>/dev/null; do
+            while kill -0 $WSCAT_PID 2>/dev/null; do
                 sleep 30
-                echo '{"type":"heartbeat"}' >&3 2>/dev/null || break
+                echo '{"type":"heartbeat"}' >&"${WSCAT[1]}" 2>/dev/null || break
                 log_debug "Sent heartbeat"
             done
         ) &
         local heartbeat_pid=$!
         
         # Read responses and handle messages
-        while read -r msg <"$fifo_out"; do
+        while IFS= read -r msg <&"${WSCAT[0]}"; do
             if [[ -z "$msg" ]]; then
                 continue
             fi
@@ -452,14 +448,14 @@ connect_websocket() {
                 execute_backup|backup_job|test_connection|request_diagnostics|terminal_command|update_agent)
                     response=$(handle_message "$msg")
                     if [[ -n "$response" ]]; then
-                        echo "$response" >&3
+                        echo "$response" >&"${WSCAT[1]}"
                         log_debug "Sent response: $response"
                     fi
                     ;;
                 job)
                     response=$(handle_message "$msg")
                     if [[ -n "$response" ]]; then
-                        echo "$response" >&3
+                        echo "$response" >&"${WSCAT[1]}"
                     fi
                     ;;
                 error)
@@ -473,8 +469,7 @@ connect_websocket() {
         
         # Cleanup
         kill $heartbeat_pid 2>/dev/null || true
-        kill $ws_pid 2>/dev/null || true
-        exec 3>&-
+        kill $WSCAT_PID 2>/dev/null || true
         
         log_warn "WebSocket disconnected, reconnecting in 10 seconds..."
         sleep 10
