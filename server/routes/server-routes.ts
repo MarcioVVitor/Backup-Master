@@ -26,42 +26,62 @@ export function createServerRoutes(isAuthenticated: any): Router {
 
   router.get("/check-admin", async (req, res) => {
     try {
-      // Log session state for debugging
-      const user = req.user as any;
-      console.log("[check-admin] Session state:", {
-        isAuthenticated: req.isAuthenticated?.() || false,
-        hasUser: !!user,
-        userSub: user?.claims?.sub,
-        expiresAt: user?.expires_at,
-      });
-
-      // Manual auth check instead of middleware
-      if (!req.isAuthenticated?.() || !user?.expires_at) {
-        return res.json({ isServerAdmin: false, serverRole: null, notAuthenticated: true });
-      }
-
       const { loadTenantUser } = await import("../middleware/tenant");
       const { db } = await import("../db");
       const { users, serverAdmins } = await import("@shared/schema");
       const { eq } = await import("drizzle-orm");
       
-      // Debug: Check user and server_admins directly
-      const [dbUser] = await db.select().from(users).where(eq(users.replitId, user.claims.sub));
+      // Check both Replit Auth and Standalone Auth
+      const replitUser = req.user as any;
+      const standaloneUser = (req.session as any)?.user;
+      const isReplitAuth = req.isAuthenticated?.() && replitUser?.expires_at;
+      const isStandaloneAuth = !!standaloneUser?.id;
       
-      let debugServerAdmin = null;
-      if (dbUser) {
-        const [serverAdmin] = await db.select().from(serverAdmins).where(eq(serverAdmins.userId, dbUser.id));
-        debugServerAdmin = serverAdmin;
+      console.log("[check-admin] Session state:", {
+        isReplitAuth,
+        isStandaloneAuth,
+        replitUserSub: replitUser?.claims?.sub,
+        standaloneUserId: standaloneUser?.id,
+      });
+
+      // Check if user is authenticated via either method
+      if (!isReplitAuth && !isStandaloneAuth) {
+        return res.json({ isServerAdmin: false, serverRole: null, notAuthenticated: true });
+      }
+
+      let userId: number | null = null;
+      let dbUser = null;
+      
+      // Get user ID from appropriate auth method
+      if (isReplitAuth && replitUser?.claims?.sub) {
+        const [foundUser] = await db.select().from(users).where(eq(users.replitId, replitUser.claims.sub));
+        if (foundUser) {
+          userId = foundUser.id;
+          dbUser = foundUser;
+        }
+      } else if (isStandaloneAuth) {
+        userId = standaloneUser.id;
+        const [foundUser] = await db.select().from(users).where(eq(users.id, userId));
+        if (foundUser) {
+          dbUser = foundUser;
+        }
       }
       
-      // Return debug info temporarily
+      if (!userId || !dbUser) {
+        console.log("[check-admin] User not found in database");
+        return res.json({ isServerAdmin: false, serverRole: null, notAuthenticated: true });
+      }
+      
+      // Check if user is a server admin
+      const [serverAdmin] = await db.select().from(serverAdmins).where(eq(serverAdmins.userId, userId));
+      
+      // Return debug info if requested
       if (req.query.debug === 'true') {
-        // Also get all server_admins for debugging
         const allServerAdmins = await db.select().from(serverAdmins);
         return res.json({
-          userSub: user.claims.sub,
-          dbUser: dbUser ? { id: dbUser.id, username: dbUser.username, replitId: dbUser.replitId } : null,
-          serverAdmin: debugServerAdmin,
+          userId,
+          dbUser: { id: dbUser.id, username: dbUser.username, replitId: dbUser.replitId },
+          serverAdmin: serverAdmin || null,
           allServerAdmins: allServerAdmins,
         });
       }
@@ -69,48 +89,22 @@ export function createServerRoutes(isAuthenticated: any): Router {
       // Bootstrap: If no server_admins exist and this is the first user, make them admin
       const allServerAdmins = await db.select().from(serverAdmins);
       if (allServerAdmins.length === 0 && dbUser) {
-        // No admins exist - make this user the first server admin
         const [newAdmin] = await db.insert(serverAdmins).values({
           userId: dbUser.id,
-          role: 'super_admin',
+          role: 'server_admin',
           permissions: { all: true } as any,
         }).returning();
         console.log(`[BOOTSTRAP] Created first server admin: ${dbUser.username} (id: ${dbUser.id})`);
-        debugServerAdmin = newAdmin;
       }
       
+      // Load tenant user data
       let tenantUser = req.tenantUser;
-      
-      // If tenantUser not loaded by global middleware, load it now
       if (!tenantUser) {
-        const user = req.user as any;
-        let userId: number | null = null;
-        
-        // Check Replit Auth
-        if (user?.claims?.sub) {
-          const [dbUser] = await db.select().from(users).where(eq(users.replitId, user.claims.sub));
-          if (dbUser) userId = dbUser.id;
-        }
-        // Check standalone auth
-        else if ((req.session as any)?.user?.id) {
-          userId = (req.session as any).user.id;
-        }
-        
-        if (userId) {
-          tenantUser = await loadTenantUser(userId) ?? undefined;
-        }
+        tenantUser = await loadTenantUser(userId) ?? undefined;
       }
       
       if (!tenantUser) {
-        const user = req.user as any;
-        console.log("[check-admin] No tenantUser found");
-        console.log("[check-admin] req.user:", JSON.stringify(user));
-        console.log("[check-admin] claims.sub:", user?.claims?.sub);
-        
-        // Try to find the user in DB
-        const allUsers = await db.select().from(users);
-        console.log("[check-admin] Users in DB:", allUsers.map(u => ({ id: u.id, username: u.username, replitId: u.replitId })));
-        
+        console.log("[check-admin] Could not load tenant user");
         return res.status(401).json({ isServerAdmin: false, serverRole: null, message: "User not authenticated" });
       }
       

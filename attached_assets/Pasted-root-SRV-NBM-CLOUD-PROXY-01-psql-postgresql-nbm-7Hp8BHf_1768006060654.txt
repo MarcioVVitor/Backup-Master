@@ -1,0 +1,28 @@
+root@SRV-NBM-CLOUD-PROXY-01[~]# psql "postgresql://nbm:7Hp8BHf5FMBbtaeEqitCguxe@localhost:5432/nbm" -c "SELECT * FROM server_admins;"
+ id | user_id |     role     | permissions |         created_at         
+----+---------+--------------+-------------+----------------------------
+  1 |       1 | server_admin |             | 2026-01-09 18:35:32.435652
+(1 row)
+
+root@SRV-NBM-CLOUD-PROXY-01[~]# journalctl -u nbm -n 50 --no-pager | grep -i "check-admin\|session\|auth"
+Jan 09 21:44:27 SRV-NBM-CLOUD-PROXY-01 nbm[11476]: 9:44:27 PM [express] GET /api/server/check-admin 200 in 2ms :: {"isServerAdmin":false,"serverRole":null,"notAuthenticated":true}
+Jan 09 21:44:27 SRV-NBM-CLOUD-PROXY-01 nbm[11476]: 9:44:27 PM [express] GET /api/auth/mode 200 in 1ms :: {"standalone":true}
+Jan 09 21:44:30 SRV-NBM-CLOUD-PROXY-01 nbm[11476]: 9:44:30 PM [express] POST /api/auth/login 200 in 43ms :: {"message":"Login successful","user":{"id":1,"username":"Marcio","name":"Marcio Vitor","isAdmin":true}}
+Jan 09 21:44:30 SRV-NBM-CLOUD-PROXY-01 nbm[11476]: 9:44:30 PM [express] GET /api/auth/user 200 in 4ms :: {"id":1,"name":"Marcio Vitor","email":"marcio.vitor@grupojet.com.br","isAdmin":true,"username":"Marcio"}
+Jan 09 21:46:07 SRV-NBM-CLOUD-PROXY-01 nbm[11476]: 9:46:07 PM [express] POST /api/auth/logout 200 in 21ms :: {"message":"Logged out"}
+Jan 09 21:46:07 SRV-NBM-CLOUD-PROXY-01 nbm[11476]: 9:46:07 PM [express] GET /api/auth/user 401 in 2ms :: {"message":"Not authenticated"}
+Jan 09 21:46:07 SRV-NBM-CLOUD-PROXY-01 nbm[11476]: [check-admin] Session state: {
+Jan 09 21:46:07 SRV-NBM-CLOUD-PROXY-01 nbm[11476]:   isAuthenticated: false,
+Jan 09 21:46:07 SRV-NBM-CLOUD-PROXY-01 nbm[11476]: 9:46:07 PM [express] GET /api/server/check-admin 304 in 16ms :: {"isServerAdmin":false,"serverRole":null,"noAuthenticated":true}
+Jan 09 21:46:07 SRV-NBM-CLOUD-PROXY-01 nbm[11476]: 9:46:07 PM [express] GET /api/auth/mode 304 in 2ms :: {"standalone":true}
+Jan 09 21:46:12 SRV-NBM-CLOUD-PROXY-01 nbm[11476]: 9:46:12 PM [express] POST /api/auth/login 200 in 30ms :: {"message":"Login successful","user":{"id":1,"username":"Marcio","name":"Marcio Vitor","isAdmin":true}}
+Jan 09 21:46:12 SRV-NBM-CLOUD-PROXY-01 nbm[11476]: 9:46:12 PM [express] GET /api/auth/user 200 in 7ms :: {"id":1,"name":"Marcio Vitor","email":"marcio.vitor@grupojet.com.br","isAdmin":true,"username":"Marcio"}
+Jan 09 21:46:17 SRV-NBM-CLOUD-PROXY-01 nbm[11476]: 9:46:17 PM [express] GET /api/auth/user 304 in 4ms :: {"id":1,"name":"Marcio Vitor","email":"marcio.vitor@grupojet.com.br","isAdmin":true,"username":"Marcio"}
+Jan 09 21:46:17 SRV-NBM-CLOUD-PROXY-01 nbm[11476]: [check-admin] Session state: {
+Jan 09 21:46:17 SRV-NBM-CLOUD-PROXY-01 nbm[11476]:   isAuthenticated: false,
+Jan 09 21:46:17 SRV-NBM-CLOUD-PROXY-01 nbm[11476]: 9:46:17 PM [express] GET /api/server/check-admin 304 in 6ms :: {"isServerAdmin":false,"serverRole":null,"notAuthenticated":true}
+Jan 09 21:46:27 SRV-NBM-CLOUD-PROXY-01 nbm[11476]: 9:46:27 PM [express] GET /api/auth/user 304 in 3ms :: {"id":1,"name":"Marcio Vitor","email":"marcio.vitor@grupojet.com.br","isAdmin":true,"username":"Marcio"}
+Jan 09 21:46:27 SRV-NBM-CLOUD-PROXY-01 nbm[11476]: [check-admin] Session state: {
+Jan 09 21:46:27 SRV-NBM-CLOUD-PROXY-01 nbm[11476]:   isAuthenticated: false,
+Jan 09 21:46:27 SRV-NBM-CLOUD-PROXY-01 nbm[11476]: 9:46:27 PM [express] GET /api/server/check-admin 304 in 8ms :: {"isServerAdmin":false,"serverRole":null,"notAuthenticated":true}
+root@SRV-NBM-CLOUD-PROXY-01[~]# 
