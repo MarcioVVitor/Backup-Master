@@ -1,0 +1,53 @@
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01:~# # Execute no servidor do agente imediatamente após clicar em backup:
+tail -f /opt/nbm-agent/logs/agent.log 2>&1 | head -50
+# Placeholders: {{EQUIPMENT_IP}}
+/export","useShell":true,"timeout":60000}}
+[2026-01-10 11:45:50] [DEBUG] Received: {"type":"backup_job","jobId":"backup-1-1768056350888","equipment":{"id":1,"name":"CPE-GER-GNA-NOVO-MUNDO-01","ip":"143.255.196.2","port":2250,"protocol":"ssh","username":"admin","password":"@2Dc9d967","manufacturer":"mikrotik"},"config":{"command":"# Script de Backup Mikrotik
+# Placeholders: {{EQUIPMENT_IP}}
+/export","useShell":true,"timeout":60000}}
+[2026-01-10 11:45:50] [DEBUG] Received message type: backup_job
+[2026-01-10 11:45:51] [INFO] Executing backup job backup-1-1768056350888 for 143.255.196.2:2250 with command: # Script de Backup Mikrotik
+# Placeholders: {{EQUIPMENT_IP}}
+/export
+[2026-01-10 11:45:51] [INFO] Executing SSH backup on 143.255.196.2:2250
+[2026-01-10 11:45:55] [INFO] Backup successful, output length: 117992 bytes
+[2026-01-10 11:45:55] [DEBUG] Sent response: [2026-01-10 11:45:50] [DEBUG] Received message type: backup_job
+[2026-01-10 11:45:51] [INFO] Executing backup job backup-1-1768056350888 for 143.255.196.2:2250 with command: # Script de Backup Mikrotik
+# Placeholders: {{EQUIPMENT_IP}}
+/export
+[2026-01-10 11:45:55] [INFO] Backup successful, output length: 117992 bytes
+{"type":"backup_result","jobId":"backup-1-1768056350888","success":true,"output":"[2026-01-10 11:45:51] [INFO] Executing SSH backup on 143.255.196.2:2250
+# 2026-01-10 11:45:43 by RouterOS 7.20.5
+# software id = D95X-YDCH
+#
+# model = CCR1036-8G-2S+
+# serial number = D83A0DDFF341
+[2026-01-10 11:45:55] [DEBUG] Sent response: [2026-01-10 11:45:50] [DEBUG] Received message type: backup_job
+[2026-01-10 11:45:51] [INFO] Executing backup job backup-1-1768056350888 for 143.255.196.2:2250 with command: # Script de Backup Mikrotik
+# Placeholders: {{EQUIPMENT_IP}}
+/export
+[2026-01-10 11:45:55] [INFO] Backup successful, output length: 117992 bytes
+{"type":"backup_result","jobId":"backup-1-1768056350888","success":true,"output":"[2026-01-10 11:45:51] [INFO] Executing SSH backup on 143.255.196.2:2250
+# 2026-01-10 11:45:43 by RouterOS 7.20.5
+# software id = D95X-YDCH
+#
+# model = CCR1036-8G-2S+
+# serial number = D83A0DDFF341
+/interface bridge
+add name=BRIDGE-CFE-CATALAO_SAA_AG_CONGADAS-CGC-3732-PRIMARY port-cost-mode=\
+    short protocol-mode=none
+add name=BRIDGE-CFE-CATALAO_SAA_AG_CONGADAS-CGC-3732-SECUNDARY \
+    port-cost-mode=short protocol-mode=none
+add name=\"BRIDGE-CFE-SAA_AG_GOIANESIA-0792-(JETGO079201001)-PRIMARY\" \
+    port-cost-mode=short protocol-mode=none
+# MTU > L2MTU
+add mtu=1998 name=\
+    \"BRIDGE-CFE-SAA_AG_GOIANESIA-0792-(JETGO079201001)-SECUDARY\" \
+    port-cost-mode=short protocol-mode=none
+add name=BRIDGE-CFE-SAA_AG_MINEIROS-CGC-0871-PRIMARY port-cost-mode=short \
+    protocol-mode=none
+add name=BRIDGE-CFE-SAA_AG_MINEIROS-CGC-0871-SEGUNDARY port-cost-mode=short \
+    protocol-mode=none
+add name=BRIDGE-CFE-SAA_PAB_JUSTICA_ESTADUAL_ITUBIARA-CGC-3213-PRIMARY \
+    port-cost-mode=short protocol-mode=none
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01:~# 

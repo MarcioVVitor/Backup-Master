@@ -24,7 +24,8 @@ log() {
     shift
     local message="$@"
     local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
-    echo -e "[$timestamp] [$level] $message" | tee -a "$LOG_FILE"
+    # Write only to log file, not stdout (to avoid mixing with WebSocket messages)
+    echo -e "[$timestamp] [$level] $message" >> "$LOG_FILE"
 }
 
 log_info() { log "INFO" "$@"; }
