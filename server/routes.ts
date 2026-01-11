@@ -9,6 +9,7 @@ import { Client as SSHClient } from "ssh2";
 import net from "net";
 import { createServerRoutes } from "./routes/server-routes";
 import { withTenantContext } from "./middleware/tenant";
+import { startScheduler, setBackupExecutor } from "./scheduler";
 
 const isStandalone = !process.env.REPL_ID;
 
@@ -1697,6 +1698,18 @@ export async function registerRoutes(
     }
   });
 
+  // API - Scheduler Status
+  app.get('/api/scheduler/status', isAuthenticated, async (req, res) => {
+    try {
+      const { getSchedulerStatus } = await import("./scheduler");
+      const status = await getSchedulerStatus();
+      res.json(status);
+    } catch (e) {
+      console.error("Error getting scheduler status:", e);
+      res.status(500).json({ message: "Erro ao obter status do scheduler" });
+    }
+  });
+
   // API - Scheduler (Políticas de Backup Automático)
   app.get('/api/scheduler/policies', isAuthenticated, async (req, res) => {
     try {
@@ -3329,6 +3342,85 @@ export async function registerRoutes(
       res.status(500).json({ message: "Erro ao remover usuário" });
     }
   });
+
+  // Initialize backup scheduler
+  const scheduledBackupExecutor = async (equipmentId: number, companyId: number): Promise<void> => {
+    const equip = await storage.getEquipmentById(equipmentId);
+    if (!equip || !equip.enabled) {
+      console.log(`[scheduler] Equipment ${equipmentId} not found or disabled`);
+      return;
+    }
+
+    const startTime = Date.now();
+    const historyRecord = await storage.createBackupHistory({
+      equipmentId: equip.id,
+      equipmentName: equip.name,
+      manufacturer: equip.manufacturer,
+      ip: equip.ip,
+      status: "running",
+      executedBy: null,
+      companyId: equip.companyId,
+    });
+
+    try {
+      const config = await getBackupConfig(equip.manufacturer);
+      let result: string = "";
+      const equipmentAgents = await storage.getEquipmentAgents(equipmentId);
+      let usedAgent = false;
+
+      for (const mapping of equipmentAgents) {
+        if (getConnectedAgentRef && getConnectedAgentRef(mapping.agentId)) {
+          console.log(`[scheduler] Using agent ${mapping.agentId} for ${equip.name}`);
+          try {
+            result = await executeBackupViaAgentRef!(mapping.agentId, equip, config);
+            usedAgent = true;
+            break;
+          } catch (agentErr: any) {
+            console.warn(`[scheduler] Agent ${mapping.agentId} failed:`, agentErr.message);
+          }
+        }
+      }
+
+      if (!usedAgent) {
+        console.log(`[scheduler] No agent available, trying direct SSH for ${equip.name}`);
+        result = await executeSSHBackup(equip, config);
+      }
+
+      const now = new Date();
+      const dateStr = now.toISOString().slice(0,10).replace(/-/g,'') + '_' + now.toTimeString().slice(0,8).replace(/:/g,'');
+      const filename = `${equip.name}_${dateStr}${config.extension}`;
+      const duration = (Date.now() - startTime) / 1000;
+
+      await storage.createBackup({
+        equipmentId: equip.id,
+        filename,
+        objectName: `backups/${filename}`,
+        size: result.length,
+        status: "success",
+        companyId: equip.companyId,
+        userId: 1, // System user for scheduled backups
+      });
+
+      await storage.updateBackupHistory(historyRecord.id, {
+        status: "success",
+        duration,
+      });
+
+      console.log(`[scheduler] Backup completed for ${equip.name} in ${duration}s`);
+    } catch (err: any) {
+      const duration = (Date.now() - startTime) / 1000;
+      await storage.updateBackupHistory(historyRecord.id, {
+        status: "error",
+        errorMessage: err.message,
+        duration,
+      });
+      console.error(`[scheduler] Backup failed for ${equip.name}:`, err.message);
+      throw err;
+    }
+  };
+
+  setBackupExecutor(scheduledBackupExecutor);
+  startScheduler();
 
   return httpServer;
 }
