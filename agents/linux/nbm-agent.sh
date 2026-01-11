@@ -213,15 +213,29 @@ execute_ssh_backup() {
     log_info "Executing SSH backup on $host:$port"
     
     local output
-    output=$(sshpass -p "$password" ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 \
-        -p "$port" "$username@$host" "$command" 2>&1)
-    local exit_code=$?
+    local exit_code
+    
+    # Check if command has multiple lines (needs stdin mode)
+    if [[ "$command" == *$'\n'* ]] || [[ "$command" == *"\\n"* ]]; then
+        log_debug "Using stdin mode for multi-line command"
+        # Convert literal \n to actual newlines and send via stdin
+        local cmd_formatted=$(echo -e "$command")
+        output=$(echo "$cmd_formatted" | timeout "$timeout" sshpass -p "$password" ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 -o ServerAliveInterval=5 -o ServerAliveCountMax=3 -T -p "$port" "$username@$host" 2>&1)
+        exit_code=$?
+    else
+        log_debug "Using direct command mode"
+        output=$(timeout "$timeout" sshpass -p "$password" ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 -o ServerAliveInterval=5 -o ServerAliveCountMax=3 -p "$port" "$username@$host" "$command" 2>&1)
+        exit_code=$?
+    fi
     
     if [[ $exit_code -eq 0 ]]; then
         echo "$output"
         return 0
+    elif [[ $exit_code -eq 124 ]]; then
+        log_error "SSH backup timed out after ${timeout}s"
+        return 1
     else
-        log_error "SSH backup failed: $output"
+        log_error "SSH backup failed (exit code $exit_code): $output"
         return 1
     fi
 }
