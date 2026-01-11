@@ -1767,9 +1767,13 @@ export async function registerRoutes(
   const sessionParser = getSession();
   
   httpServer.on('upgrade', (request: any, socket: any, head: any) => {
+    console.log('[ws-upgrade] Request to:', request.url, 'from:', request.socket?.remoteAddress);
+    
     if (request.url !== '/ws/terminal') {
       return;
     }
+    
+    console.log('[ws-terminal] Terminal WebSocket upgrade request');
     
     sessionParser(request, {} as any, async () => {
       try {
@@ -1779,9 +1783,14 @@ export async function registerRoutes(
         
         let dbUser: any = null;
         
+        console.log('[ws-terminal] isStandalone:', isStandalone);
+        console.log('[ws-terminal] session:', JSON.stringify(request.session, null, 2));
+        
         if (isStandalone) {
           const sessionUser = request.session?.user;
+          console.log('[ws-terminal] Standalone sessionUser:', sessionUser);
           if (!sessionUser?.id) {
+            console.log('[ws-terminal] 401 - No standalone session user');
             socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
             socket.destroy();
             return;
@@ -1790,7 +1799,9 @@ export async function registerRoutes(
           dbUser = user;
         } else {
           const passport = request.session?.passport;
+          console.log('[ws-terminal] Replit passport:', passport);
           if (!passport?.user?.claims?.sub) {
+            console.log('[ws-terminal] 401 - No Replit passport session');
             socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
             socket.destroy();
             return;
@@ -1799,11 +1810,16 @@ export async function registerRoutes(
           dbUser = user;
         }
         
+        console.log('[ws-terminal] dbUser:', dbUser?.email, 'role:', dbUser?.role, 'isAdmin:', dbUser?.isAdmin);
+        
         if (!dbUser || (dbUser.role !== 'admin' && dbUser.role !== 'operator' && !dbUser.isAdmin)) {
+          console.log('[ws-terminal] 403 - User not authorized');
           socket.write('HTTP/1.1 403 Forbidden\r\n\r\n');
           socket.destroy();
           return;
         }
+        
+        console.log('[ws-terminal] User authorized, upgrading connection');
         
         wss.handleUpgrade(request, socket, head, (ws) => {
           (ws as any).userId = dbUser.id;
