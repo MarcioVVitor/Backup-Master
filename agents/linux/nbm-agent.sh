@@ -560,17 +560,18 @@ EXPECT_EOF
     fi
 }
 
-# Execute SSH backup command for ZTE with expect
+# Execute SSH backup command for ZTE with expect (supports enable password)
 execute_zte_backup_expect() {
     local host="$1"
     local port="$2"
     local username="$3"
     local password="$4"
-    local timeout="${5:-180}"
+    local enable_password="$5"
+    local timeout="${6:-180}"
     
     log_info "Executing ZTE backup with expect on $host:$port"
     
-    # Create expect script for ZTE ZXR10 series
+    # Create expect script for ZTE ZXR10/TITAN series
     local expect_script=$(cat <<'EXPECT_EOF'
 #!/usr/bin/expect -f
 set timeout [lindex $argv 0]
@@ -578,6 +579,7 @@ set host [lindex $argv 1]
 set port [lindex $argv 2]
 set username [lindex $argv 3]
 set password [lindex $argv 4]
+set enable_pass [lindex $argv 5]
 
 log_user 1
 
@@ -597,10 +599,12 @@ expect {
 
 # Wait for ZTE prompt (ends with # or >)
 # ZTE prompts look like: ZXR10# or hostname# or hostname>
+set prompt_type ""
 expect {
-    -re {[a-zA-Z0-9_-]+[#>]\s*$} { }
-    "#" { }
-    ">" { }
+    -re {[a-zA-Z0-9_-]+#\s*$} { set prompt_type "privileged" }
+    -re {[a-zA-Z0-9_-]+>\s*$} { set prompt_type "user" }
+    "#" { set prompt_type "privileged" }
+    ">" { set prompt_type "user" }
     "Login incorrect" { puts "EXPECT_ERROR: Authentication failed"; exit 1 }
     "Access denied" { puts "EXPECT_ERROR: Access denied"; exit 1 }
     "Password:" { puts "EXPECT_ERROR: Authentication failed"; exit 1 }
@@ -611,12 +615,49 @@ expect {
 # Small delay to ensure connection is stable
 sleep 1
 
-# Disable pagination (ZTE uses terminal length similar to Cisco)
+# If in user mode (>), enter enable mode
+if {$prompt_type eq "user"} {
+    send "enable\r"
+    expect {
+        -re {[Pp]assword:} {
+            # Use enable password if provided, otherwise use login password
+            if {$enable_pass ne "" && $enable_pass ne "null"} {
+                send "$enable_pass\r"
+            } else {
+                send "$password\r"
+            }
+        }
+        "#" { }
+        timeout { puts "EXPECT_ERROR: Timeout entering enable mode"; exit 1 }
+    }
+    
+    # Wait for privileged prompt
+    expect {
+        -re {[a-zA-Z0-9_-]+#} { }
+        "#" { }
+        -re {[Aa]ccess [Dd]enied} { puts "EXPECT_ERROR: Enable password rejected"; exit 1 }
+        -re {[Bb]ad [Pp]assword} { puts "EXPECT_ERROR: Enable password rejected"; exit 1 }
+        ">" { puts "EXPECT_ERROR: Failed to enter enable mode"; exit 1 }
+        timeout { puts "EXPECT_ERROR: Timeout waiting for enable prompt"; exit 1 }
+    }
+}
+
+# Disable pagination (ZTE TITAN series uses screen-length disable)
 send "terminal length 0\r"
 expect {
-    -re {[a-zA-Z0-9_-]+[#>]} { }
+    -re {[a-zA-Z0-9_-]+#} { }
     "#" { }
-    ">" { }
+    "%" { }
+    timeout { }
+}
+
+# Also try screen-length disable for ZTE OLT
+sleep 0.3
+send "screen-length disable\r"
+expect {
+    -re {[a-zA-Z0-9_-]+#} { }
+    "#" { }
+    "%" { }
     timeout { }
 }
 
@@ -629,7 +670,7 @@ send "show running-config\r"
 
 # Wait for the prompt to return after full output
 expect {
-    -re {\r\n[a-zA-Z0-9_-]+[#>]\s*$} { }
+    -re {\r\n[a-zA-Z0-9_-]+#\s*$} { }
     timeout { puts "EXPECT_ERROR: Timeout waiting for configuration output"; exit 1 }
     eof { puts "EXPECT_ERROR: Connection closed during backup"; exit 1 }
 }
@@ -651,7 +692,7 @@ EXPECT_EOF
     # Execute expect script
     local output
     local exit_code
-    output=$(timeout "$timeout" expect "$expect_file" "$timeout" "$host" "$port" "$username" "$password" 2>&1)
+    output=$(timeout "$timeout" expect "$expect_file" "$timeout" "$host" "$port" "$username" "$password" "$enable_password" 2>&1)
     exit_code=$?
     
     # Clean up
@@ -910,9 +951,9 @@ handle_message() {
                     backup_success=true
                 fi
             elif [[ "${manufacturer,,}" == "zte" ]]; then
-                # ZTE ZXR10 - use expect with terminal length 0 + show running-config
+                # ZTE ZXR10/TITAN - use expect with enable mode + show running-config
                 log_debug "ZTE device - using expect session"
-                if output=$(execute_zte_backup_expect "$host" "$port" "$username" "$password" 180); then
+                if output=$(execute_zte_backup_expect "$host" "$port" "$username" "$password" "$enable_password" 180); then
                     backup_success=true
                 fi
             else
