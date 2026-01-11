@@ -1,0 +1,47 @@
+root@SRV-NBM-CLOUD-01[~]# # Ver a estrutura do diretório de deploy
+ls -la /opt/nbm/
+
+# Verificar se public está no lugar certo
+ls -la /opt/nbm/public/
+total 1904
+drwxrwxr-x  19 nbm  nbm     4096 Jan 11 15:32 .
+drwxr-xr-x   6 root root    4096 Jan 11 15:32 ..
+drwxrwxr-x   4 nbm  nbm     4096 Jan  9 21:39 agent
+drwxrwxr-x   3 nbm  nbm     4096 Jan  9 21:39 agents
+drwxrwxr-x   2 nbm  nbm    20480 Jan 10 23:15 attached_assets
+drwxr-xr-x   3 nbm  nbm     4096 Jan  9 23:09 backups
+drwxrwxr-x   3 nbm  nbm     4096 Jan  9 18:00 .cache
+drwxrwxr-x   4 nbm  nbm     4096 Jan  9 18:00 client
+-rw-rw-r--   1 nbm  nbm      459 Jan 11 09:02 components.json
+drwxrwxr-x   2 nbm  nbm     4096 Jan  9 21:39 deploy
+drwxrwxr-x   3 nbm  nbm     4096 Jan 11 09:03 dist
+-rw-rw-r--   1 nbm  nbm     4247 Jan 11 09:02 docker-compose.yml
+-rw-rw-r--   1 nbm  nbm     1834 Jan 11 09:02 Dockerfile
+drwxrwxr-x   2 nbm  nbm     4096 Jan  9 18:00 docs
+-rw-rw-r--   1 nbm  nbm      325 Jan 11 09:02 drizzle.config.ts
+-rw-------   1 nbm  nbm      198 Jan 11 15:16 .env
+-rw-rw-r--   1 nbm  nbm     3757 Jan  9 18:14 .env.example
+-rw-rw-r--   1 nbm  nbm  1388764 Jan 11 15:32 index.cjs
+drwxrwxr-x   4 nbm  nbm     4096 Jan  9 21:39 install
+drwxrwxr-x 430 nbm  nbm    20480 Jan  9 18:19 node_modules
+drwxrwxr-x   5 nbm  nbm     4096 Jan  9 18:43 .npm
+-rw-rw-r--   1 nbm  nbm     4063 Jan 11 09:02 package.json
+-rw-rw-r--   1 nbm  nbm   379812 Jan 11 09:02 package-lock.json
+-rw-rw-r--   1 nbm  nbm       80 Jan 11 09:02 postcss.config.js
+drwxrwxr-x   3 nbm  nbm     4096 Jan 11 15:32 public
+-rw-rw-r--   1 nbm  nbm     5590 Jan 11 09:02 README.md
+-rw-rw-r--   1 nbm  nbm     6473 Jan 11 09:02 replit.md
+drwxrwxr-x   2 nbm  nbm     4096 Jan  9 18:18 script
+drwxrwxr-x   2 nbm  nbm     4096 Jan  9 21:39 scripts
+drwxrwxr-x   5 nbm  nbm     4096 Jan  9 23:08 server
+drwxrwxr-x   3 nbm  nbm     4096 Jan  9 18:00 shared
+-rw-rw-r--   1 nbm  nbm     4050 Jan 11 09:02 tailwind.config.ts
+-rw-rw-r--   1 nbm  nbm      657 Jan 11 09:02 tsconfig.json
+-rw-rw-r--   1 nbm  nbm     1080 Jan 11 09:02 vite.config.ts
+total 20
+drwxrwxr-x  3 nbm nbm 4096 Jan 11 15:32 .
+drwxrwxr-x 19 nbm nbm 4096 Jan 11 15:32 ..
+drwxrwxr-x  2 nbm nbm 4096 Jan 11 15:32 assets
+-rw-rw-r--  1 nbm nbm 1145 Jan 11 15:32 favicon.png
+-rw-rw-r--  1 nbm nbm 2865 Jan 11 15:32 index.html
+root@SRV-NBM-CLOUD-01[~]# 
