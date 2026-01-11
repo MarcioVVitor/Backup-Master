@@ -560,6 +560,125 @@ EXPECT_EOF
     fi
 }
 
+# Execute SSH backup command for ZTE with expect
+execute_zte_backup_expect() {
+    local host="$1"
+    local port="$2"
+    local username="$3"
+    local password="$4"
+    local timeout="${5:-180}"
+    
+    log_info "Executing ZTE backup with expect on $host:$port"
+    
+    # Create expect script for ZTE ZXR10 series
+    local expect_script=$(cat <<'EXPECT_EOF'
+#!/usr/bin/expect -f
+set timeout [lindex $argv 0]
+set host [lindex $argv 1]
+set port [lindex $argv 2]
+set username [lindex $argv 3]
+set password [lindex $argv 4]
+
+log_user 1
+
+# SSH connection with legacy algorithm support
+spawn ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 \
+    -o ServerAliveInterval=10 -o ServerAliveCountMax=6 \
+    -o HostKeyAlgorithms=+ssh-rsa,+ssh-dss -o PubkeyAcceptedAlgorithms=+ssh-rsa \
+    -o KexAlgorithms=+diffie-hellman-group14-sha1,diffie-hellman-group1-sha1,diffie-hellman-group-exchange-sha1 \
+    -p $port $username@$host
+
+# Wait for password prompt
+expect {
+    -re {[Pp]assword:} { send "$password\r" }
+    timeout { puts "EXPECT_ERROR: Timeout waiting for password prompt"; exit 1 }
+    eof { puts "EXPECT_ERROR: Connection closed"; exit 1 }
+}
+
+# Wait for ZTE prompt (ends with # or >)
+# ZTE prompts look like: ZXR10# or hostname# or hostname>
+expect {
+    -re {[a-zA-Z0-9_-]+[#>]\s*$} { }
+    "#" { }
+    ">" { }
+    "Login incorrect" { puts "EXPECT_ERROR: Authentication failed"; exit 1 }
+    "Access denied" { puts "EXPECT_ERROR: Access denied"; exit 1 }
+    "Password:" { puts "EXPECT_ERROR: Authentication failed"; exit 1 }
+    timeout { puts "EXPECT_ERROR: Timeout waiting for prompt"; exit 1 }
+    eof { puts "EXPECT_ERROR: Connection closed during login"; exit 1 }
+}
+
+# Small delay to ensure connection is stable
+sleep 1
+
+# Disable pagination (ZTE uses terminal length similar to Cisco)
+send "terminal length 0\r"
+expect {
+    -re {[a-zA-Z0-9_-]+[#>]} { }
+    "#" { }
+    ">" { }
+    timeout { }
+}
+
+# Small delay before main command
+sleep 0.5
+
+# Execute backup command with long timeout for large configs
+set timeout 300
+send "show running-config\r"
+
+# Wait for the prompt to return after full output
+expect {
+    -re {\r\n[a-zA-Z0-9_-]+[#>]\s*$} { }
+    timeout { puts "EXPECT_ERROR: Timeout waiting for configuration output"; exit 1 }
+    eof { puts "EXPECT_ERROR: Connection closed during backup"; exit 1 }
+}
+
+# Exit gracefully
+send "exit\r"
+expect {
+    eof { }
+    timeout { }
+}
+EXPECT_EOF
+)
+    
+    # Write expect script to temp file
+    local expect_file="/tmp/zte_backup_$$.exp"
+    echo "$expect_script" > "$expect_file"
+    chmod +x "$expect_file"
+    
+    # Execute expect script
+    local output
+    local exit_code
+    output=$(timeout "$timeout" expect "$expect_file" "$timeout" "$host" "$port" "$username" "$password" 2>&1)
+    exit_code=$?
+    
+    # Clean up
+    rm -f "$expect_file"
+    
+    # Check results
+    if [[ $exit_code -eq 124 ]]; then
+        log_error "ZTE backup timed out after ${timeout}s"
+        return 1
+    fi
+    
+    # Check for expect errors
+    if [[ "$output" == *"EXPECT_ERROR:"* ]]; then
+        log_error "ZTE expect error: $output"
+        return 1
+    fi
+    
+    local output_length=${#output}
+    if [[ $output_length -gt 100 ]]; then
+        echo "$output"
+        return 0
+    else
+        log_error "ZTE backup failed - insufficient output"
+        return 1
+    fi
+}
+
 # Execute SSH backup command
 execute_ssh_backup() {
     local host="$1"
@@ -788,6 +907,12 @@ handle_message() {
                 # Nokia SR OS - use expect with environment no more + admin display-config
                 log_debug "Nokia device - using expect session"
                 if output=$(execute_nokia_backup_expect "$host" "$port" "$username" "$password" 180); then
+                    backup_success=true
+                fi
+            elif [[ "${manufacturer,,}" == "zte" ]]; then
+                # ZTE ZXR10 - use expect with terminal length 0 + show running-config
+                log_debug "ZTE device - using expect session"
+                if output=$(execute_zte_backup_expect "$host" "$port" "$username" "$password" 180); then
                     backup_success=true
                 fi
             else
