@@ -435,6 +435,120 @@ EXPECT_EOF
     fi
 }
 
+# Execute SSH backup command for Nokia SR OS with expect
+execute_nokia_backup_expect() {
+    local host="$1"
+    local port="$2"
+    local username="$3"
+    local password="$4"
+    local timeout="${5:-180}"
+    
+    log_info "Executing Nokia backup with expect on $host:$port"
+    
+    # Create expect script for Nokia SR OS
+    local expect_script=$(cat <<'EXPECT_EOF'
+#!/usr/bin/expect -f
+set timeout [lindex $argv 0]
+set host [lindex $argv 1]
+set port [lindex $argv 2]
+set username [lindex $argv 3]
+set password [lindex $argv 4]
+
+log_user 1
+
+# Use sshpass for reliable password handling
+spawn sshpass -p $password ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 \
+    -o ServerAliveInterval=10 -o ServerAliveCountMax=6 \
+    -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa \
+    -o KexAlgorithms=+diffie-hellman-group14-sha1,diffie-hellman-group1-sha1 \
+    -tt -p $port $username@$host
+
+# Wait for Nokia prompt (ends with # or >)
+# Nokia prompts look like: A:hostname# or *A:hostname#
+expect {
+    -re {[*]?[AB]:[^\r\n]+[#>]} { }
+    "#" { }
+    ">" { }
+    "Password:" { puts "EXPECT_ERROR: Authentication failed"; exit 1 }
+    "password:" { puts "EXPECT_ERROR: Authentication failed"; exit 1 }
+    timeout { puts "EXPECT_ERROR: Timeout waiting for prompt"; exit 1 }
+    eof { puts "EXPECT_ERROR: Connection closed during login"; exit 1 }
+}
+
+# Small delay to ensure connection is stable
+sleep 1
+
+# Disable pagination (Nokia SR OS)
+send "environment no more\r"
+expect {
+    -re {[*]?[AB]:[^\r\n]+[#>]} { }
+    "#" { }
+    ">" { }
+    timeout { puts "EXPECT_ERROR: Timeout after environment no more"; exit 1 }
+}
+
+# Small delay before main command
+sleep 0.5
+
+# Execute backup command with longer timeout
+set timeout 300
+send "admin display-config\r"
+
+# Wait for the prompt to return after full output
+# Nokia config ends with prompt like A:hostname#
+expect {
+    -re {\r\n[*]?[AB]:[^\r\n]+#} { }
+    -re {\r\n#} { }
+    timeout { puts "EXPECT_ERROR: Timeout waiting for configuration output"; exit 1 }
+    eof { puts "EXPECT_ERROR: Connection closed during backup"; exit 1 }
+}
+
+# Exit gracefully
+send "logout\r"
+expect {
+    "Are you sure" { send "y\r"; exp_continue }
+    eof { }
+    timeout { }
+}
+EXPECT_EOF
+)
+    
+    # Write expect script to temp file
+    local expect_file="/tmp/nokia_backup_$$.exp"
+    echo "$expect_script" > "$expect_file"
+    chmod +x "$expect_file"
+    
+    # Execute expect script
+    local output
+    local exit_code
+    output=$(timeout "$timeout" expect "$expect_file" "$timeout" "$host" "$port" "$username" "$password" 2>&1)
+    exit_code=$?
+    
+    # Clean up
+    rm -f "$expect_file"
+    
+    # Check results
+    if [[ $exit_code -eq 124 ]]; then
+        log_error "Nokia backup timed out after ${timeout}s"
+        return 1
+    fi
+    
+    # Check for expect errors
+    if [[ "$output" == *"EXPECT_ERROR:"* ]]; then
+        log_error "Nokia expect error: $output"
+        return 1
+    fi
+    
+    local output_length=${#output}
+    if [[ $output_length -gt 100 ]]; then
+        echo "$output"
+        return 0
+    else
+        log_error "Nokia backup failed - insufficient output"
+        return 1
+    fi
+}
+
 # Execute SSH backup command
 execute_ssh_backup() {
     local host="$1"
@@ -657,6 +771,12 @@ handle_message() {
                 # Huawei - use expect to properly wait for full config before quit
                 log_debug "Huawei device - using expect session"
                 if output=$(execute_huawei_backup_expect "$host" "$port" "$username" "$password" 180); then
+                    backup_success=true
+                fi
+            elif [[ "${manufacturer,,}" == "nokia" ]]; then
+                # Nokia SR OS - use expect with environment no more + admin display-config
+                log_debug "Nokia device - using expect session"
+                if output=$(execute_nokia_backup_expect "$host" "$port" "$username" "$password" 180); then
                     backup_success=true
                 fi
             else
