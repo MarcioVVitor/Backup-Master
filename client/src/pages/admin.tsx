@@ -635,7 +635,7 @@ export default function AdminPage() {
 
   const saveCustomization = useMutation({
     mutationFn: async (data: Partial<Customization>) => {
-      return apiRequest("/api/admin/customization", "POST", data);
+      return apiRequest("POST", "/api/admin/customization", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/customization"] });
