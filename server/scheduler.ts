@@ -3,7 +3,6 @@ import type { BackupPolicy, Equipment } from "@shared/schema";
 import { workerPool } from "./backup-worker-pool";
 
 const SCHEDULER_INTERVAL = 60000; // Check every minute
-const TIMEZONE = "America/Sao_Paulo"; // Brazil timezone
 
 const DEFAULT_CONCURRENCY = 50;
 const MAX_CONCURRENCY = 100;
@@ -12,40 +11,22 @@ let schedulerInterval: NodeJS.Timeout | null = null;
 let executeBackupFn: ((equipmentId: number, companyId: number) => Promise<void>) | null = null;
 
 function log(message: string, ...args: any[]) {
-  const now = new Date().toLocaleString("pt-BR", { timeZone: TIMEZONE });
+  const now = new Date().toLocaleString("pt-BR");
   console.log(`[scheduler] ${now} - ${message}`, ...args);
 }
 
-function getCurrentTimeInTimezone(): { hour: number; minute: number; dayOfWeek: number; dayOfMonth: number } {
+function getCurrentTimeFromSystem(): { hour: number; minute: number; dayOfWeek: number; dayOfMonth: number } {
   const now = new Date();
-  const formatter = new Intl.DateTimeFormat("en-US", {
-    timeZone: TIMEZONE,
-    hour: "numeric",
-    minute: "numeric",
-    hour12: false,
-    weekday: "short",
-    day: "numeric"
-  });
-  
-  const parts = formatter.formatToParts(now);
-  const hour = parseInt(parts.find(p => p.type === "hour")?.value || "0");
-  const minute = parseInt(parts.find(p => p.type === "minute")?.value || "0");
-  const day = parseInt(parts.find(p => p.type === "day")?.value || "1");
-  const weekday = parts.find(p => p.type === "weekday")?.value || "Mon";
-  
-  const weekdayMap: Record<string, number> = {
-    "Sun": 0, "Mon": 1, "Tue": 2, "Wed": 3, "Thu": 4, "Fri": 5, "Sat": 6
-  };
   
   return {
-    hour,
-    minute,
-    dayOfWeek: weekdayMap[weekday] ?? 1,
-    dayOfMonth: day
+    hour: now.getHours(),
+    minute: now.getMinutes(),
+    dayOfWeek: now.getDay(),
+    dayOfMonth: now.getDate()
   };
 }
 
-function shouldRunPolicy(policy: BackupPolicy, currentTime: ReturnType<typeof getCurrentTimeInTimezone>): boolean {
+function shouldRunPolicy(policy: BackupPolicy, currentTime: ReturnType<typeof getCurrentTimeFromSystem>): boolean {
   if (!policy.enabled) return false;
   
   const policyTime = policy.time || "02:00";
@@ -222,7 +203,7 @@ function calculateNextRun(policy: BackupPolicy): Date {
 
 async function checkAndRunPolicies(): Promise<void> {
   try {
-    const currentTime = getCurrentTimeInTimezone();
+    const currentTime = getCurrentTimeFromSystem();
     const currentTimeStr = `${currentTime.hour.toString().padStart(2, "0")}:${currentTime.minute.toString().padStart(2, "0")}`;
     const policies = await storage.getBackupPolicies();
     const enabledPolicies = policies.filter(p => p.enabled);
@@ -291,11 +272,11 @@ export function startScheduler(): void {
   }
   
   log("Starting backup scheduler...");
-  log(`Timezone: ${TIMEZONE}`);
+  log("Timezone: System (Linux)");
   log(`Check interval: ${SCHEDULER_INTERVAL / 1000} seconds`);
   log(`Worker pool concurrency: ${workerPool.getConfig().maxConcurrency}`);
   
-  const currentTime = getCurrentTimeInTimezone();
+  const currentTime = getCurrentTimeFromSystem();
   log(`Current time: ${currentTime.hour}:${currentTime.minute.toString().padStart(2, "0")}, Day of week: ${currentTime.dayOfWeek}, Day of month: ${currentTime.dayOfMonth}`);
   
   checkAndRunPolicies();
@@ -330,14 +311,14 @@ export async function getSchedulerStatus(): Promise<{
   };
   nextChecks: Array<{ policyName: string; nextRunAt: string | null }>;
 }> {
-  const currentTime = getCurrentTimeInTimezone();
+  const currentTime = getCurrentTimeFromSystem();
   const policies = await storage.getBackupPolicies();
   const poolStatus = workerPool.getQueueStatus();
   const poolMetrics = workerPool.getMetrics();
   
   return {
     running: schedulerInterval !== null,
-    timezone: TIMEZONE,
+    timezone: "System",
     currentTime: `${currentTime.hour}:${currentTime.minute.toString().padStart(2, "0")}`,
     concurrency: workerPool.getConfig().maxConcurrency,
     workerPool: poolStatus,

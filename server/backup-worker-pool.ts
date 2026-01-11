@@ -1,8 +1,6 @@
 import { storage } from "./storage";
 import type { Equipment } from "@shared/schema";
 
-const TIMEZONE = "America/Sao_Paulo";
-
 export interface BackupJob {
   id: string;
   equipmentId: number;
@@ -71,7 +69,7 @@ class BackupWorkerPool {
   }
 
   private log(message: string, ...args: any[]) {
-    const now = new Date().toLocaleString("pt-BR", { timeZone: TIMEZONE });
+    const now = new Date().toLocaleString("pt-BR");
     console.log(`[worker-pool] ${now} - ${message}`, ...args);
   }
 
