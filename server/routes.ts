@@ -30,11 +30,15 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 const isAdmin = async (req: any, res: any, next: any) => {
   try {
+    console.log("[isAdmin] Checking admin access, isStandalone:", isStandalone);
     if (isStandalone) {
       const sessionUser = (req.session as any)?.user;
+      console.log("[isAdmin] Session user:", sessionUser?.username, "isAdmin:", sessionUser?.isAdmin);
       if (!sessionUser?.isAdmin) {
+        console.log("[isAdmin] REJECTED - user is not admin");
         return res.status(403).json({ message: "Apenas administradores podem acessar este recurso" });
       }
+      console.log("[isAdmin] ALLOWED - user is admin");
       return next();
     }
     
