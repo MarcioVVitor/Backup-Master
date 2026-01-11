@@ -221,12 +221,13 @@ execute_ssh_backup() {
     ssh_opts="$ssh_opts -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa"
     ssh_opts="$ssh_opts -o KexAlgorithms=+diffie-hellman-group14-sha1,diffie-hellman-group1-sha1"
     
-    # Check if command has multiple lines (needs stdin mode)
+    # Check if command has multiple lines (needs stdin mode with PTY)
     if [[ "$command" == *$'\n'* ]] || [[ "$command" == *"\\n"* ]]; then
-        log_debug "Using stdin mode for multi-line command"
+        log_debug "Using stdin mode with PTY for multi-line command"
         # Convert literal \n to actual newlines and send via stdin
+        # Use -tt to force PTY allocation - required for Huawei and some other devices
         local cmd_formatted=$(echo -e "$command")
-        output=$(echo "$cmd_formatted" | timeout "$timeout" sshpass -p "$password" ssh $ssh_opts -T -p "$port" "$username@$host" 2>&1)
+        output=$(echo "$cmd_formatted" | timeout "$timeout" sshpass -p "$password" ssh $ssh_opts -tt -p "$port" "$username@$host" 2>&1)
         exit_code=$?
     else
         log_debug "Using direct command mode"
