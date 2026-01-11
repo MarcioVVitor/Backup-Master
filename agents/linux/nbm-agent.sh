@@ -6,7 +6,7 @@
 # Don't exit on error - we handle errors ourselves
 set +e
 
-AGENT_VERSION="1.0.40"
+AGENT_VERSION="1.0.41"
 AGENT_DIR="/opt/nbm-agent"
 CONFIG_FILE="$AGENT_DIR/config.json"
 LOG_FILE="$AGENT_DIR/logs/agent.log"
@@ -325,13 +325,17 @@ execute_cisco_backup_expect() {
     local password="$4"
     local enable_password="$5"
     local backup_command="$6"
-    local timeout="${7:-120}"
+    local timeout="${7:-300}"
     
-    log_info "Executing Cisco backup with expect on $host:$port"
+    log_info "Executing Cisco backup with expect on $host:$port (Agent v1.0.41)"
     
     # Create expect script for proper interactive session
     local expect_script=$(cat <<'EXPECT_EOF'
 #!/usr/bin/expect -f
+
+# Large buffer for configurations
+match_max 50000000
+
 set timeout [lindex $argv 0]
 set host [lindex $argv 1]
 set port [lindex $argv 2]
@@ -342,62 +346,128 @@ set backup_cmd [lindex $argv 6]
 
 log_user 1
 
+puts "CISCO_DEBUG: Starting Cisco SSH backup v1.0.41"
+puts "CISCO_DEBUG: Host=$host Port=$port User=$username"
+
 # SSH options for legacy devices
-# UserKnownHostsFile=/dev/null avoids host key verification errors
 spawn ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
-    -o ConnectTimeout=10 -o ServerAliveInterval=5 -o ServerAliveCountMax=12 \
+    -o ConnectTimeout=30 -o ServerAliveInterval=5 -o ServerAliveCountMax=60 \
     -o TCPKeepAlive=yes \
+    -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa \
+    -o KexAlgorithms=+diffie-hellman-group1-sha1,diffie-hellman-group14-sha1 \
     -p $port $username@$host
 
 # Wait for password prompt
 expect {
-    "password:" { send "$password\r" }
-    "Password:" { send "$password\r" }
+    -re {[Pp]assword:} { 
+        puts "CISCO_DEBUG: Got password prompt"
+        send "$password\r" 
+    }
     timeout { puts "EXPECT_ERROR: Timeout waiting for password prompt"; exit 1 }
     eof { puts "EXPECT_ERROR: Connection closed"; exit 1 }
 }
 
+puts "CISCO_DEBUG: Waiting for initial prompt..."
+
 # Wait for initial prompt (> or #)
 expect {
-    -re {[>#]} { }
-    "Password:" { puts "EXPECT_ERROR: Authentication failed"; exit 1 }
+    "#" { puts "CISCO_DEBUG: Got # prompt (privileged mode)" }
+    ">" { puts "CISCO_DEBUG: Got > prompt (user mode)" }
+    -re {[Pp]assword:} { puts "EXPECT_ERROR: Authentication failed"; exit 1 }
     timeout { puts "EXPECT_ERROR: Timeout after login"; exit 1 }
+    eof { puts "EXPECT_ERROR: Connection closed after login"; exit 1 }
 }
 
 # Enter enable mode if enable password provided
 if { $enable_pass ne "" && $enable_pass ne "null" } {
+    puts "CISCO_DEBUG: Entering enable mode..."
     send "enable\r"
     expect {
-        -re {[Pp]assword:} { send "$enable_pass\r" }
-        "#" { }
+        -re {[Pp]assword:} { 
+            puts "CISCO_DEBUG: Got enable password prompt"
+            send "$enable_pass\r" 
+        }
+        "#" { puts "CISCO_DEBUG: Already in privileged mode" }
         timeout { puts "EXPECT_ERROR: Timeout waiting for enable password prompt"; exit 1 }
     }
     expect {
-        "#" { }
+        "#" { puts "CISCO_DEBUG: Enable mode successful" }
         -re {[Aa]ccess [Dd]enied} { puts "EXPECT_ERROR: Enable password rejected"; exit 1 }
+        -re {[Bb]ad [Pp]assword} { puts "EXPECT_ERROR: Enable password rejected"; exit 1 }
         timeout { puts "EXPECT_ERROR: Timeout entering enable mode"; exit 1 }
     }
 }
 
+sleep 0.3
+
 # Disable pagination - try both commands
+puts "CISCO_DEBUG: Disabling pagination..."
 send "terminal length 0\r"
-expect "#"
-send "terminal pager 0\r"
-expect "#"
-
-# Execute backup command
-send "$backup_cmd\r"
-
-# Wait for full output with longer timeout
-set timeout 90
 expect {
-    -re {[>#]} { }
-    timeout { puts "EXPECT_ERROR: Timeout waiting for command output"; exit 1 }
+    "#" { }
+    ">" { }
+    timeout { }
+}
+send "terminal pager 0\r"
+expect {
+    "#" { }
+    ">" { }
+    timeout { }
 }
 
+sleep 0.3
+
+# Execute backup command
+puts "CISCO_DEBUG: Executing command: $backup_cmd"
+send "$backup_cmd\r"
+
+# Handle pagination with --More-- prompts if they appear
+set page_count 0
+set max_pages 500
+set timeout 10
+
+while {$page_count < $max_pages} {
+    expect {
+        -exact "--More--" {
+            incr page_count
+            send " "
+        }
+        -exact "-- More --" {
+            incr page_count
+            send " "
+        }
+        -exact " --More-- " {
+            incr page_count
+            send " "
+        }
+        timeout {
+            puts "CISCO_DEBUG: Config capture complete after $page_count pages"
+            break
+        }
+        eof {
+            puts "CISCO_DEBUG: Connection closed after $page_count pages"
+            break
+        }
+    }
+}
+
+# Wait a moment before exit
+sleep 0.5
+
 # Exit gracefully
+send "\r"
+expect {
+    "#" { }
+    ">" { }
+    timeout { }
+}
 send "exit\r"
-expect eof
+expect {
+    eof { }
+    timeout { }
+}
+
+puts "CISCO_DEBUG: Backup completed successfully"
 EXPECT_EOF
 )
     
