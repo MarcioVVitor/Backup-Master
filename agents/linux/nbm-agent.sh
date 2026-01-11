@@ -6,7 +6,7 @@
 # Don't exit on error - we handle errors ourselves
 set +e
 
-AGENT_VERSION="1.0.21"
+AGENT_VERSION="1.0.22"
 AGENT_DIR="/opt/nbm-agent"
 CONFIG_FILE="$AGENT_DIR/config.json"
 LOG_FILE="$AGENT_DIR/logs/agent.log"
@@ -225,8 +225,10 @@ log_user 1
 
 # Use sshpass for more reliable password handling
 # UserKnownHostsFile=/dev/null avoids host key verification errors
+# TCPKeepAlive and ServerAlive keep connection alive during large config transfers
 spawn sshpass -p $password ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
-    -o ConnectTimeout=30 -o ServerAliveInterval=10 -o ServerAliveCountMax=6 \
+    -o ConnectTimeout=30 -o ServerAliveInterval=5 -o ServerAliveCountMax=12 \
+    -o TCPKeepAlive=yes \
     -tt -p $port $username@$host
 
 # Wait for initial prompt (> or <hostname>)
@@ -255,8 +257,8 @@ expect {
 # Small delay before main command
 sleep 0.5
 
-# Execute backup command with longer timeout
-set timeout 300
+# Execute backup command with longer timeout for large configs
+set timeout 600
 send "display current-configuration\r"
 
 # Wait for the prompt to return after full output
@@ -341,9 +343,10 @@ set backup_cmd [lindex $argv 6]
 log_user 1
 
 # SSH options for legacy devices
-spawn ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 \
-    -o HostKeyAlgorithms=ssh-rsa -o PubkeyAcceptedKeyTypes=ssh-rsa \
-    -o KexAlgorithms=diffie-hellman-group14-sha1,diffie-hellman-group1-sha1 \
+# UserKnownHostsFile=/dev/null avoids host key verification errors
+spawn ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+    -o ConnectTimeout=10 -o ServerAliveInterval=5 -o ServerAliveCountMax=12 \
+    -o TCPKeepAlive=yes \
     -p $port $username@$host
 
 # Wait for password prompt
@@ -567,7 +570,7 @@ execute_zte_backup_expect() {
     local enable_password="$5"
     local timeout="${6:-180}"
     
-    log_info "Executing ZTE OLT backup with expect on $host:$port (Agent v1.0.21)"
+    log_info "Executing ZTE OLT backup with expect on $host:$port (Agent v1.0.22)"
     log_info "ZTE enable_password provided: ${enable_password:+(yes)}"
     
     # Create expect script for ZTE TITAN OLT (C300/C320/C600)
@@ -583,7 +586,7 @@ set enable_pass [lindex $argv 5]
 
 log_user 1
 
-puts "ZTE_DEBUG: Starting ZTE backup (agent v1.0.21)"
+puts "ZTE_DEBUG: Starting ZTE backup (agent v1.0.22)"
 puts "ZTE_DEBUG: Enable password provided: [expr {$enable_pass ne "" && $enable_pass ne "null" ? "yes" : "no (using default zxr10)"}]"
 
 # SSH connection - simplified for Debian 13 compatibility
