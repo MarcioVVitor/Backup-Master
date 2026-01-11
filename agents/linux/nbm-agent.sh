@@ -6,7 +6,7 @@
 # Don't exit on error - we handle errors ourselves
 set +e
 
-AGENT_VERSION="1.0.30"
+AGENT_VERSION="1.0.31"
 AGENT_DIR="/opt/nbm-agent"
 CONFIG_FILE="$AGENT_DIR/config.json"
 LOG_FILE="$AGENT_DIR/logs/agent.log"
@@ -449,7 +449,7 @@ execute_datacom_edd_backup_expect() {
     local protocol="${6:-ssh}"
     local timeout="${7:-300}"
     
-    log_info "Executing Datacom EDD backup with expect on $host:$port protocol=$protocol (Agent v1.0.30)"
+    log_info "Executing Datacom EDD backup with expect on $host:$port protocol=$protocol (Agent v1.0.31)"
     
     # Determine if using Telnet or SSH based on port or protocol
     local use_telnet="false"
@@ -475,17 +475,21 @@ set enable_pass [lindex $argv 5]
 
 log_user 1
 
-puts "DATACOM_DEBUG: Starting Datacom EDD TELNET backup v1.0.30"
+puts "DATACOM_DEBUG: Starting Datacom EDD TELNET backup v1.0.31"
 
 # Telnet connection
 spawn telnet $host $port
 
-# Wait for login prompt - Datacom may use different prompts
+# Wait for login prompt - Datacom shows banner then "hostname login:" prompt
+# The prompt format is: "HOSTNAME login:" (note the space before login)
 expect {
-    -re {[Uu]sername:} { send "$username\r" }
-    -re {[Ll]ogin:} { send "$username\r" }
-    -re {[Uu]ser:} { send "$username\r" }
-    -re {[Uu]suario:} { send "$username\r" }
+    "login:" { 
+        puts "DATACOM_DEBUG: Got login prompt"
+        send "$username\r" 
+    }
+    "Login:" { send "$username\r" }
+    "Username:" { send "$username\r" }
+    "username:" { send "$username\r" }
     "#" { puts "DATACOM_DEBUG: Already logged in with privileged prompt"; }
     ">" { puts "DATACOM_DEBUG: Already logged in with user prompt"; }
     timeout { puts "EXPECT_ERROR: Timeout waiting for login prompt (30s)"; exit 1 }
