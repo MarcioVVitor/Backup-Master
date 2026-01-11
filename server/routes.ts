@@ -1835,6 +1835,11 @@ export async function registerRoutes(
   });
   
   wss.on('connection', (ws: WebSocket) => {
+    let currentSessionId: string | null = null;
+    let currentAgentId: number | null = null;
+    let currentEquipmentId: number | null = null;
+    
+    // Legacy variables for execute_recovery (direct connections)
     let sshClient: SSHClient | null = null;
     let telnetSocket: net.Socket | null = null;
     let stream: any = null;
@@ -1857,103 +1862,91 @@ export async function registerRoutes(
             return;
           }
           
-          ws.send(JSON.stringify({ type: 'status', message: `Conectando a ${equip.name} (${equip.ip})...` }));
+          // Find agent for this equipment
+          const equipmentAgentsList = await storage.getEquipmentAgents(equipmentId);
+          if (!equipmentAgentsList || equipmentAgentsList.length === 0) {
+            ws.send(JSON.stringify({ type: 'error', message: 'Nenhum agente configurado para este equipamento. Configure um agente primeiro.' }));
+            return;
+          }
           
-          if (equip.protocol === 'telnet') {
-            // Telnet connection
-            telnetSocket = new net.Socket();
-            
-            telnetSocket.connect(equip.port || 23, equip.ip, () => {
-              ws.send(JSON.stringify({ type: 'connected', protocol: 'telnet' }));
-            });
-            
-            telnetSocket.on('data', (data) => {
-              ws.send(JSON.stringify({ type: 'output', data: data.toString() }));
-            });
-            
-            telnetSocket.on('error', (err) => {
-              ws.send(JSON.stringify({ type: 'error', message: `Erro Telnet: ${err.message}` }));
-            });
-            
-            telnetSocket.on('close', () => {
-              ws.send(JSON.stringify({ type: 'disconnected' }));
-            });
-            
-            // Send credentials after connection
-            setTimeout(() => {
-              if (telnetSocket && equip.username) {
-                telnetSocket.write(equip.username + '\n');
-                setTimeout(() => {
-                  if (telnetSocket && equip.password) {
-                    telnetSocket.write(equip.password + '\n');
-                  }
-                }, 1000);
-              }
-            }, 500);
-            
-          } else {
-            // SSH connection
-            sshClient = new SSHClient();
-            
-            sshClient.on('ready', () => {
-              sshClient!.shell((err, shellStream) => {
-                if (err) {
-                  ws.send(JSON.stringify({ type: 'error', message: `Erro ao abrir shell: ${err.message}` }));
-                  return;
-                }
-                
-                stream = shellStream;
-                ws.send(JSON.stringify({ type: 'connected', protocol: 'ssh' }));
-                
-                shellStream.on('data', (data: Buffer) => {
-                  ws.send(JSON.stringify({ type: 'output', data: data.toString() }));
-                });
-                
-                shellStream.on('close', () => {
-                  ws.send(JSON.stringify({ type: 'disconnected' }));
-                  sshClient?.end();
-                });
-              });
-            });
-            
-            sshClient.on('error', (err) => {
-              ws.send(JSON.stringify({ type: 'error', message: `Erro SSH: ${err.message}` }));
-            });
-            
-            sshClient.connect({
-              host: equip.ip,
+          // Find first connected agent
+          let agentWs: WebSocket | null = null;
+          let selectedAgent: any = null;
+          for (const ea of equipmentAgentsList) {
+            const agentCheck = connectedAgents.get(ea.agentId);
+            if (agentCheck && agentCheck.readyState === 1) {
+              agentWs = agentCheck;
+              selectedAgent = await storage.getAgentById(ea.agentId);
+              break;
+            }
+          }
+          
+          if (!agentWs || !selectedAgent) {
+            ws.send(JSON.stringify({ type: 'error', message: 'Nenhum agente online disponivel para este equipamento' }));
+            return;
+          }
+          
+          ws.send(JSON.stringify({ type: 'status', message: `Conectando via agente ${selectedAgent.name} a ${equip.name} (${equip.ip})...` }));
+          
+          // Create terminal session via agent
+          const sessionId = `term-interactive-${equipmentId}-${Date.now()}`;
+          currentSessionId = sessionId;
+          currentAgentId = selectedAgent.id;
+          currentEquipmentId = equipmentId;
+          
+          // Register session handler
+          pendingTerminalSessions.set(sessionId, {
+            onOutput: (output: string, isComplete: boolean) => {
+              ws.send(JSON.stringify({ type: 'output', data: output }));
+            }
+          });
+          
+          // Send terminal_connect command to agent
+          agentWs.send(JSON.stringify({
+            type: 'terminal_connect',
+            sessionId,
+            equipment: {
+              id: equip.id,
+              ip: equip.ip,
               port: equip.port || 22,
               username: equip.username,
               password: equip.password,
-              readyTimeout: 10000,
-              algorithms: {
-                kex: ['diffie-hellman-group14-sha1', 'diffie-hellman-group-exchange-sha256', 'ecdh-sha2-nistp256', 'ecdh-sha2-nistp384', 'ecdh-sha2-nistp521'],
-                cipher: ['aes128-ctr', 'aes192-ctr', 'aes256-ctr', 'aes128-cbc', 'aes256-cbc', '3des-cbc'],
-                hmac: ['hmac-sha2-256', 'hmac-sha2-512', 'hmac-sha1'],
-              },
-            });
-          }
+              protocol: equip.protocol || 'ssh',
+              manufacturer: equip.manufacturer,
+              enablePassword: equip.enablePassword
+            }
+          }));
+          
+          // Mark as connected after a brief delay
+          setTimeout(() => {
+            ws.send(JSON.stringify({ type: 'connected', protocol: equip.protocol || 'ssh', agent: selectedAgent.name }));
+          }, 1000);
           
         } else if (data.type === 'input') {
-          // Send command to connected device
-          if (stream) {
-            stream.write(data.command);
-          } else if (telnetSocket) {
-            telnetSocket.write(data.command);
+          // Send command to agent terminal session
+          if (currentSessionId && currentAgentId) {
+            const agentWs = connectedAgents.get(currentAgentId);
+            if (agentWs && agentWs.readyState === 1) {
+              agentWs.send(JSON.stringify({
+                type: 'terminal_input',
+                sessionId: currentSessionId,
+                data: data.data
+              }));
+            }
           }
           
         } else if (data.type === 'disconnect') {
-          if (stream) {
-            stream.end();
-            stream = null;
-          }
-          if (sshClient) {
-            sshClient.end();
-            sshClient = null;
-          }
-          if (telnetSocket) {
-            telnetSocket.destroy();
-            telnetSocket = null;
+          if (currentSessionId && currentAgentId) {
+            const agentWs = connectedAgents.get(currentAgentId);
+            if (agentWs && agentWs.readyState === 1) {
+              agentWs.send(JSON.stringify({
+                type: 'terminal_disconnect',
+                sessionId: currentSessionId
+              }));
+            }
+            pendingTerminalSessions.delete(currentSessionId);
+            currentSessionId = null;
+            currentAgentId = null;
           }
           
         } else if (data.type === 'execute_recovery') {

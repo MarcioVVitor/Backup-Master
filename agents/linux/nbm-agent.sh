@@ -6,7 +6,7 @@
 # Don't exit on error - we handle errors ourselves
 set +e
 
-AGENT_VERSION="1.0.41"
+AGENT_VERSION="1.0.42"
 AGENT_DIR="/opt/nbm-agent"
 CONFIG_FILE="$AGENT_DIR/config.json"
 LOG_FILE="$AGENT_DIR/logs/agent.log"
@@ -1568,6 +1568,52 @@ rollback() {
     fi
 }
 
+# Execute terminal command on equipment (single command mode)
+execute_terminal_command() {
+    local session_id="$1"
+    local host="$2"
+    local port="$3"
+    local username="$4"
+    local password="$5"
+    local protocol="$6"
+    local command="$7"
+    local enable_password="$8"
+    
+    log_info "Executing terminal command for session $session_id: $command"
+    
+    local output=""
+    local timeout=30
+    
+    if [[ "$protocol" == "telnet" ]]; then
+        # Use expect for telnet
+        output=$(timeout $timeout expect -c "
+            log_user 1
+            spawn telnet $host $port
+            expect {
+                -re {[Uu]sername:|[Ll]ogin:} { send \"$username\r\"; exp_continue }
+                -re {[Pp]assword:} { send \"$password\r\"; exp_continue }
+                -re {[>#\$%]} { }
+                timeout { puts \"Connection timeout\"; exit 1 }
+            }
+            send \"$command\r\"
+            expect {
+                -re {[>#\$%]} { }
+                timeout { }
+            }
+            send \"exit\r\"
+            expect eof
+        " 2>&1)
+    else
+        # Use sshpass for SSH
+        output=$(timeout $timeout sshpass -p "$password" ssh \
+            -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+            -o ConnectTimeout=10 -o HostKeyAlgorithms=+ssh-rsa \
+            -p "$port" "$username@$host" "$command" 2>&1)
+    fi
+    
+    echo "$output"
+}
+
 # WebSocket message handler
 handle_message() {
     local message="$1"
@@ -1592,6 +1638,84 @@ handle_message() {
             local result=$(execute_command "$command")
             local output=$(echo "$result" | jq -r '.output // empty')
             echo "{\"type\": \"terminal_output\", \"sessionId\": \"$session_id\", \"output\": $output, \"isComplete\": true}"
+            ;;
+            
+        terminal_connect)
+            local session_id=$(echo "$message" | jq -r '.sessionId')
+            local equipment=$(echo "$message" | jq -r '.equipment')
+            local ip=$(echo "$equipment" | jq -r '.ip')
+            local port=$(echo "$equipment" | jq -r '.port // 22')
+            local username=$(echo "$equipment" | jq -r '.username')
+            local password=$(echo "$equipment" | jq -r '.password')
+            local protocol=$(echo "$equipment" | jq -r '.protocol // "ssh"')
+            local enable_password=$(echo "$equipment" | jq -r '.enablePassword // empty')
+            
+            log_info "Terminal connect request: $session_id to $ip:$port ($protocol)"
+            
+            # Store session info for later commands
+            mkdir -p /tmp/nbm-terminal-sessions
+            echo "{\"ip\":\"$ip\",\"port\":$port,\"username\":\"$username\",\"password\":\"$password\",\"protocol\":\"$protocol\",\"enablePassword\":\"$enable_password\"}" > "/tmp/nbm-terminal-sessions/$session_id.json"
+            
+            # Test connection by trying to connect
+            local test_output
+            if [[ "$protocol" == "telnet" ]]; then
+                test_output=$(timeout 10 bash -c "echo quit | telnet $ip $port 2>&1" || echo "Connection failed")
+            else
+                test_output=$(timeout 10 sshpass -p "$password" ssh \
+                    -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+                    -o ConnectTimeout=5 -o HostKeyAlgorithms=+ssh-rsa \
+                    -p "$port" "$username@$ip" "echo connected" 2>&1 || echo "Connection failed")
+            fi
+            
+            if [[ "$test_output" == *"connected"* ]] || [[ "$test_output" == *"Connected"* ]] || [[ "$test_output" == *"Escape"* ]]; then
+                echo "{\"type\": \"terminal_connected\", \"sessionId\": \"$session_id\"}"
+            else
+                echo "{\"type\": \"terminal_output\", \"sessionId\": \"$session_id\", \"output\": \"Conectado a $ip:$port via $protocol\", \"isComplete\": false}"
+                echo "{\"type\": \"terminal_connected\", \"sessionId\": \"$session_id\"}"
+            fi
+            ;;
+            
+        terminal_input)
+            local session_id=$(echo "$message" | jq -r '.sessionId')
+            local input_data=$(echo "$message" | jq -r '.data')
+            local session_file="/tmp/nbm-terminal-sessions/${session_id}.json"
+            
+            if [[ -f "$session_file" ]]; then
+                local session_info=$(cat "$session_file")
+                local ip=$(echo "$session_info" | jq -r '.ip')
+                local port=$(echo "$session_info" | jq -r '.port')
+                local username=$(echo "$session_info" | jq -r '.username')
+                local password=$(echo "$session_info" | jq -r '.password')
+                local protocol=$(echo "$session_info" | jq -r '.protocol')
+                
+                # Execute command and return output
+                local output
+                if [[ "$protocol" == "telnet" ]]; then
+                    output=$(execute_terminal_command "$session_id" "$ip" "$port" "$username" "$password" "$protocol" "$input_data" "")
+                else
+                    output=$(timeout 30 sshpass -p "$password" ssh \
+                        -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+                        -o ConnectTimeout=10 -o HostKeyAlgorithms=+ssh-rsa \
+                        -o KexAlgorithms=+diffie-hellman-group1-sha1,diffie-hellman-group14-sha1 \
+                        -p "$port" "$username@$ip" "$input_data" 2>&1 || echo "Command failed")
+                fi
+                
+                # Escape output for JSON
+                local escaped_output=$(echo "$output" | jq -Rs '.')
+                echo "{\"type\": \"terminal_output\", \"sessionId\": \"$session_id\", \"output\": $escaped_output, \"isComplete\": true}"
+            else
+                echo "{\"type\": \"terminal_output\", \"sessionId\": \"$session_id\", \"output\": \"Sessao nao encontrada\", \"isComplete\": true}"
+            fi
+            ;;
+            
+        terminal_disconnect)
+            local session_id=$(echo "$message" | jq -r '.sessionId')
+            log_info "Terminal disconnect request: $session_id"
+            
+            # Clean up session files
+            rm -f "/tmp/nbm-terminal-sessions/${session_id}.json"
+            
+            echo "{\"type\": \"terminal_disconnected\", \"sessionId\": \"$session_id\"}"
             ;;
             
         test_connection)
@@ -1772,7 +1896,7 @@ connect_websocket() {
                 heartbeat_ack)
                     log_debug "Heartbeat acknowledged"
                     ;;
-                execute_backup|backup_job|test_connection|request_diagnostics|terminal_command|update_agent)
+                execute_backup|backup_job|test_connection|request_diagnostics|terminal_command|terminal_connect|terminal_input|terminal_disconnect|update_agent)
                     response=$(handle_message "$msg")
                     if [[ -n "$response" ]]; then
                         local resp_len=${#response}
