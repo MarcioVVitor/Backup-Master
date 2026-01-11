@@ -119,7 +119,7 @@ export interface IStorage {
   getBackupPolicies(): Promise<BackupPolicy[]>;
   getBackupPolicyById(id: number): Promise<BackupPolicy | undefined>;
   createBackupPolicy(data: InsertBackupPolicy): Promise<BackupPolicy>;
-  updateBackupPolicy(id: number, data: Partial<InsertBackupPolicy>): Promise<BackupPolicy | undefined>;
+  updateBackupPolicy(id: number, data: Partial<InsertBackupPolicy> & { lastRunAt?: Date; nextRunAt?: Date; lastStatus?: string }): Promise<BackupPolicy | undefined>;
   deleteBackupPolicy(id: number): Promise<void>;
 
   importData(data: any): Promise<void>;
@@ -563,7 +563,7 @@ export class DatabaseStorage implements IStorage {
     return policy;
   }
 
-  async updateBackupPolicy(id: number, data: Partial<InsertBackupPolicy>): Promise<BackupPolicy | undefined> {
+  async updateBackupPolicy(id: number, data: Partial<InsertBackupPolicy> & { lastRunAt?: Date; nextRunAt?: Date; lastStatus?: string }): Promise<BackupPolicy | undefined> {
     const [updated] = await db.update(backupPolicies)
       .set({ ...data, updatedAt: new Date() })
       .where(eq(backupPolicies.id, id))
