@@ -234,14 +234,27 @@ execute_ssh_backup() {
         exit_code=$?
     fi
     
+    # Check for timeout first
+    if [[ $exit_code -eq 124 ]]; then
+        log_error "SSH backup timed out after ${timeout}s"
+        return 1
+    fi
+    
+    # Check if we got valid configuration output (even if exit code is non-zero)
+    # Network devices often close connection after 'quit' with non-zero exit code
+    # but the backup data is still valid
+    local output_length=${#output}
+    
     if [[ $exit_code -eq 0 ]]; then
         echo "$output"
         return 0
-    elif [[ $exit_code -eq 124 ]]; then
-        log_error "SSH backup timed out after ${timeout}s"
-        return 1
+    elif [[ $output_length -gt 100 ]] && [[ "$output" != *"Permission denied"* ]] && [[ "$output" != *"Connection refused"* ]] && [[ "$output" != *"No route to host"* ]] && [[ "$output" != *"Connection timed out"* ]] && [[ "$output" != *"Host key verification failed"* ]] && [[ "$output" != *"authentication methods failed"* ]]; then
+        # Got substantial output without error indicators - consider it success
+        log_debug "SSH exited with code $exit_code but output looks valid ($output_length bytes)"
+        echo "$output"
+        return 0
     else
-        log_error "SSH backup failed (exit code $exit_code): $output"
+        log_error "SSH backup failed (exit code $exit_code)"
         return 1
     fi
 }

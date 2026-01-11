@@ -1,0 +1,53 @@
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[~]# # No servidor do AGENTE (143.255.197.26):
+tail -100 /opt/nbm-agent/logs/agent.log | cat -v | tail -50
+#^M
+snmp-agent sys-info contact noc@unetelecom.com.br^M
+snmp-agent sys-info location UneTelecom^M
+snmp-agent sys-info version all^M
+#^M
+snmp-agent trap enable^M
+#^M
+lldp enable^M
+#^M
+ssh ipv4 server port 12622^M
+stelnet ipv4 server enable^M
+ssh ipv6 server port 12622^M
+stelnet ipv6 server enable^M
+ssh user mvsolutions^M
+ssh user mvsolutions authentication-type password^M
+ssh user mvsolutions service-type stelnet^M
+ssh user root^M
+ssh user root authentication-type password^M
+ssh user root service-type stelnet^M
+ssh authorization-type default aaa^M
+#^M
+ssh server cipher aes256_ctr aes128_ctr aes256_cbc aes128_cbc 3des_cbc^M
+ssh server hmac sha2_256 sha1^M
+ssh server key-exchange dh_group_exchange_sha256 dh_group_exchange_sha1 dh_group14_sha1 ecdh_sha2_nistp256 ecdh_sha2_nistp384 ecdh_sha2_nistp521 sm2_kep^M
+#^M
+TFTP client-source -i Vlanif99^M
+#^M
+user-interface con 0^M
+#^M
+user-interface vty 0 4^M
+ authentication-mode aaa^M
+ protocol inbound ssh^M
+#^M
+return^M
+<SW2-ACE-BSB-JKSHP-01>quit^M
+[2026-01-10 22:48:23] [ERROR] Backup failed for 10.15.160.130
+[2026-01-10 22:48:23] [INFO] Sending response, length: 108 bytes
+[2026-01-10 22:48:23] [INFO] Response sent successfully (108 bytes)
+[2026-01-10 22:48:23] [DEBUG] Sent heartbeat
+[2026-01-10 22:48:23] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-11T01:48:23.638Z"}
+[2026-01-10 22:48:23] [DEBUG] Heartbeat acknowledged
+[2026-01-10 22:48:38] [DEBUG] Sent heartbeat
+[2026-01-10 22:48:38] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-11T01:48:38.660Z"}
+[2026-01-10 22:48:38] [DEBUG] Heartbeat acknowledged
+[2026-01-10 22:48:53] [DEBUG] Sent heartbeat
+[2026-01-10 22:48:53] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-11T01:48:53.665Z"}
+[2026-01-10 22:48:53] [DEBUG] Heartbeat acknowledged
+[2026-01-10 22:49:08] [DEBUG] Sent heartbeat
+[2026-01-10 22:49:08] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-11T01:49:08.669Z"}
+[2026-01-10 22:49:08] [DEBUG] Heartbeat acknowledged
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[~]# 
