@@ -1,0 +1,54 @@
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[~]# grep "AGENT_VERSION" /opt/nbm-agent/nbm-agent.sh | head -1
+AGENT_VERSION="1.0.27"
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[~]# sudo tail -50 /opt/nbm-agent/logs/agent.log
+[2026-01-11 11:50:33] [INFO] Stopping agent (PID: 54789)...
+[2026-01-11 11:50:33] [INFO] Agent stopped
+[2026-01-11 11:50:33] [INFO] Configuration loaded: Agent=proxy-grupojet-01, Server=http://143.255.197.25:5000
+[2026-01-11 11:50:33] [INFO] Starting NBM CLOUD Agent v1.0.28
+[2026-01-11 11:50:33] [INFO] Agent started with PID: 55302
+[2026-01-11 11:50:33] [INFO] Connecting to WebSocket: ws://143.255.197.25:5000/ws/agents
+[2026-01-11 11:50:33] [INFO] Establishing WebSocket connection...
+[2026-01-11 11:50:33] [DEBUG] WebSocket process started with PID: 55313
+[2026-01-11 11:50:33] [DEBUG] Sent auth message
+[2026-01-11 11:50:33] [DEBUG] Received: {"type":"auth_success","agentId":1,"config":null}
+[2026-01-11 11:50:33] [INFO] Authentication successful
+[2026-01-11 11:50:48] [DEBUG] Sent heartbeat
+[2026-01-11 11:50:48] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-11T14:50:48.295Z"}
+[2026-01-11 11:50:48] [DEBUG] Heartbeat acknowledged
+[2026-01-11 11:51:03] [DEBUG] Sent heartbeat
+[2026-01-11 11:51:03] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-11T14:51:03.307Z"}
+[2026-01-11 11:51:03] [DEBUG] Heartbeat acknowledged
+[2026-01-11 11:51:09] [DEBUG] Received: {"type":"backup_job","jobId":"backup-17-1768143069482","equipment":{"id":17,"name":"SW2-ACE-GNA-CREER-JCP-GNA-19755 ","ip":"10.0.65.4","port":23,"protocol":"telnet","username":"admin","password":"2dc9d967","enablePassword":"","manufacturer":"datacom"},"config":{"command":"show running-config","useShell":true,"timeout":60000}}
+[2026-01-11 11:51:09] [DEBUG] Received message type: backup_job
+[2026-01-11 11:51:09] [INFO] Executing backup job backup-17-1768143069482 for 10.0.65.4:23 with command: show running-config
+[2026-01-11 11:51:09] [DEBUG] Datacom EDD device - using expect session
+[2026-01-11 11:51:09] [INFO] Executing Datacom EDD backup with expect on 10.0.65.4:23 (Agent v1.0.28)
+[2026-01-11 11:51:09] [ERROR] Datacom EDD expect error: DATACOM_DEBUG: Starting Datacom EDD backup v1.0.28
+spawn ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=30 -o ServerAliveInterval=5 -o ServerAliveCountMax=60 -o TCPKeepAlive=yes -o HostKeyAlgorithms=+ssh-rsa,+ssh-dss -o PubkeyAcceptedAlgorithms=+ssh-rsa -o KexAlgorithms=+diffie-hellman-group1-sha1,+diffie-hellman-group14-sha1 -p 23 admin@10.0.65.4
+command-line line 0: Bad key types '+ssh-rsa,+ssh-dss'.
+EXPECT_ERROR: Connection closed
+[2026-01-11 11:51:09] [ERROR] Backup failed for 10.0.65.4
+[2026-01-11 11:51:09] [INFO] Sending response, length: 108 bytes
+[2026-01-11 11:51:09] [INFO] Response sent successfully (108 bytes)
+[2026-01-11 11:51:09] [DEBUG] Received: {"type":"backup_job","jobId":"backup-18-1768143069747","equipment":{"id":18,"name":"SW2-ACE-SVA-TORRE-ANDRE-01I ","ip":"10.0.11.2","port":23,"protocol":"telnet","username":"admin","password":"2dc9d967","enablePassword":"","manufacturer":"datacom"},"config":{"command":"show running-config","useShell":true,"timeout":60000}}
+[2026-01-11 11:51:09] [DEBUG] Received message type: backup_job
+[2026-01-11 11:51:09] [INFO] Executing backup job backup-18-1768143069747 for 10.0.11.2:23 with command: show running-config
+[2026-01-11 11:51:09] [DEBUG] Datacom EDD device - using expect session
+[2026-01-11 11:51:09] [INFO] Executing Datacom EDD backup with expect on 10.0.11.2:23 (Agent v1.0.28)
+[2026-01-11 11:51:09] [ERROR] Datacom EDD expect error: DATACOM_DEBUG: Starting Datacom EDD backup v1.0.28
+spawn ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=30 -o ServerAliveInterval=5 -o ServerAliveCountMax=60 -o TCPKeepAlive=yes -o HostKeyAlgorithms=+ssh-rsa,+ssh-dss -o PubkeyAcceptedAlgorithms=+ssh-rsa -o KexAlgorithms=+diffie-hellman-group1-sha1,+diffie-hellman-group14-sha1 -p 23 admin@10.0.11.2
+command-line line 0: Bad key types '+ssh-rsa,+ssh-dss'.
+EXPECT_ERROR: Connection closed
+[2026-01-11 11:51:09] [ERROR] Backup failed for 10.0.11.2
+[2026-01-11 11:51:09] [INFO] Sending response, length: 108 bytes
+[2026-01-11 11:51:09] [INFO] Response sent successfully (108 bytes)
+[2026-01-11 11:51:18] [DEBUG] Sent heartbeat
+[2026-01-11 11:51:18] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-11T14:51:18.296Z"}
+[2026-01-11 11:51:18] [DEBUG] Heartbeat acknowledged
+[2026-01-11 11:51:33] [DEBUG] Sent heartbeat
+[2026-01-11 11:51:33] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-11T14:51:33.318Z"}
+[2026-01-11 11:51:33] [DEBUG] Heartbeat acknowledged
+[2026-01-11 11:51:48] [DEBUG] Sent heartbeat
+[2026-01-11 11:51:48] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-11T14:51:48.308Z"}
+[2026-01-11 11:51:48] [DEBUG] Heartbeat acknowledged
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[~]#  
