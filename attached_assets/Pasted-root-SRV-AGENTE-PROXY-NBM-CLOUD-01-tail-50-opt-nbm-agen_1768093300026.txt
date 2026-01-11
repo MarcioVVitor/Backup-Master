@@ -1,0 +1,35 @@
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[~]# tail -50 /opt/nbm-agent/logs/agent.log | grep -A5 "172.16.249.250"
+[2026-01-10 21:57:53] [ERROR] Backup failed for 172.16.249.250
+[2026-01-10 21:57:53] [INFO] Sending response, length: 107 bytes
+[2026-01-10 21:57:53] [INFO] Response sent successfully (107 bytes)
+[2026-01-10 21:57:53] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-11T00:55:53.342Z"}
+[2026-01-10 21:57:53] [DEBUG] Heartbeat acknowledged
+[2026-01-10 21:57:53] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-11T00:56:08.365Z"}
+--
+[2026-01-10 21:57:53] [DEBUG] Received: {"type":"backup_job","jobId":"backup-9-1768092995914","equipment":{"id":9,"name":"SW3-P2-BSA-SIA-01","ip":"172.16.249.250","port":12622,"protocol":"ssh","username":"marcio@jet","password":"@#2Dc9d967","manufacturer":"huawei"},"config":{"command":"display current-configuration","useShell":true,"timeout":60000}}
+[2026-01-10 21:57:53] [DEBUG] Received message type: backup_job
+[2026-01-10 21:57:53] [INFO] Executing backup job backup-9-1768092995914 for 172.16.249.250:12622 with command: display current-configuration
+[2026-01-10 21:57:53] [INFO] Executing SSH backup on 172.16.249.250:12622
+[2026-01-10 21:57:53] [DEBUG] Using direct command mode
+[2026-01-10 21:58:08] [DEBUG] Sent heartbeat
+[2026-01-10 21:58:23] [DEBUG] Sent heartbeat
+[2026-01-10 21:58:38] [DEBUG] Sent heartbeat
+[2026-01-10 21:58:53] [DEBUG] Sent heartbeat
+--
+[2026-01-10 21:59:53] [ERROR] Backup failed for 172.16.249.250
+[2026-01-10 21:59:53] [INFO] Sending response, length: 107 bytes
+[2026-01-10 21:59:53] [INFO] Response sent successfully (107 bytes)
+[2026-01-10 21:59:53] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-11T00:56:38.371Z"}
+[2026-01-10 21:59:53] [DEBUG] Heartbeat acknowledged
+[2026-01-10 21:59:53] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-11T00:56:53.377Z"}
+--
+[2026-01-10 21:59:53] [DEBUG] Received: {"type":"backup_job","jobId":"backup-9-1768093078304","equipment":{"id":9,"name":"SW3-P2-BSA-SIA-01","ip":"172.16.249.250","port":12622,"protocol":"ssh","username":"marcio@jet","password":"@#2Dc9d967","manufacturer":"huawei"},"config":{"command":"display current-configuration","useShell":true,"timeout":60000}}
+[2026-01-10 21:59:53] [DEBUG] Received message type: backup_job
+[2026-01-10 21:59:53] [INFO] Executing backup job backup-9-1768093078304 for 172.16.249.250:12622 with command: display current-configuration
+[2026-01-10 21:59:53] [INFO] Executing SSH backup on 172.16.249.250:12622
+[2026-01-10 21:59:53] [DEBUG] Using direct command mode
+[2026-01-10 22:00:08] [DEBUG] Sent heartbeat
+[2026-01-10 22:00:23] [DEBUG] Sent heartbeat
+[2026-01-10 22:00:38] [DEBUG] Sent heartbeat
+[2026-01-10 22:00:53] [DEBUG] Sent heartbeat
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[~]# 
