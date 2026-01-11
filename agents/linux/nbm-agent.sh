@@ -6,7 +6,7 @@
 # Don't exit on error - we handle errors ourselves
 set +e
 
-AGENT_VERSION="1.0.36"
+AGENT_VERSION="1.0.37"
 AGENT_DIR="/opt/nbm-agent"
 CONFIG_FILE="$AGENT_DIR/config.json"
 LOG_FILE="$AGENT_DIR/logs/agent.log"
@@ -449,7 +449,7 @@ execute_datacom_edd_backup_expect() {
     local protocol="${6:-ssh}"
     local timeout="${7:-300}"
     
-    log_info "Executing Datacom EDD backup with expect on $host:$port protocol=$protocol (Agent v1.0.36)"
+    log_info "Executing Datacom EDD backup with expect on $host:$port protocol=$protocol (Agent v1.0.37)"
     
     # Determine if using Telnet or SSH based on port or protocol
     local use_telnet="false"
@@ -476,7 +476,7 @@ set enable_pass [lindex $argv 5]
 log_user 1
 exp_internal 0
 
-puts "DATACOM_DEBUG: Starting Datacom EDD TELNET backup v1.0.36"
+puts "DATACOM_DEBUG: Starting Datacom EDD TELNET backup v1.0.37"
 puts "DATACOM_DEBUG: Host=$host Port=$port User=$username"
 
 # Telnet connection
@@ -537,33 +537,28 @@ sleep 0.3
 
 # Execute show running-config
 puts "DATACOM_DEBUG: Executing show running-config"
-set timeout 600
 send "show running-config\r"
 
-# Wait for prompt or --More-- and handle pagination
-set config_complete 0
-while {$config_complete == 0} {
+# Handle pagination with --More-- prompts
+# Use short timeout between pages - when no more --More-- appears, config is done
+set page_count 0
+set max_pages 500
+set timeout 10
+
+while {$page_count < $max_pages} {
     expect {
         -exact "--More--" {
-            # Send space to continue pagination
+            incr page_count
             send " "
         }
-        -re {\r\n[a-zA-Z0-9_-]+#\s*$} {
-            puts "DATACOM_DEBUG: Config capture complete"
-            set config_complete 1
+        timeout {
+            # No more --More-- means config output is complete
+            puts "DATACOM_DEBUG: Config capture complete after $page_count pages"
+            break
         }
-        "#" {
-            # Check if this is the final prompt (not mid-config)
-            set config_complete 1
-            puts "DATACOM_DEBUG: Got final prompt"
-        }
-        timeout { 
-            puts "EXPECT_ERROR: Timeout waiting for configuration output"
-            exit 1 
-        }
-        eof { 
-            puts "EXPECT_ERROR: Connection closed during backup"
-            exit 1 
+        eof {
+            puts "DATACOM_DEBUG: Connection closed after $page_count pages"
+            break
         }
     }
 }
