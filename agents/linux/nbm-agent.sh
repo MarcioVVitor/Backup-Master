@@ -560,7 +560,7 @@ EXPECT_EOF
     fi
 }
 
-# Execute SSH backup command for ZTE with expect (supports enable password)
+# Execute SSH backup command for ZTE TITAN OLT with expect
 execute_zte_backup_expect() {
     local host="$1"
     local port="$2"
@@ -569,9 +569,10 @@ execute_zte_backup_expect() {
     local enable_password="$5"
     local timeout="${6:-180}"
     
-    log_info "Executing ZTE backup with expect on $host:$port"
+    log_info "Executing ZTE OLT backup with expect on $host:$port"
     
-    # Create expect script for ZTE ZXR10/TITAN series
+    # Create expect script for ZTE TITAN OLT (C300/C320/C600)
+    # Note: ZTE OLT doesn't use "enable" command - privilege is set per user
     local expect_script=$(cat <<'EXPECT_EOF'
 #!/usr/bin/expect -f
 set timeout [lindex $argv 0]
@@ -579,7 +580,6 @@ set host [lindex $argv 1]
 set port [lindex $argv 2]
 set username [lindex $argv 3]
 set password [lindex $argv 4]
-set enable_pass [lindex $argv 5]
 
 log_user 1
 
@@ -597,14 +597,12 @@ expect {
     eof { puts "EXPECT_ERROR: Connection closed"; exit 1 }
 }
 
-# Wait for ZTE prompt (ends with # or >)
-# ZTE prompts look like: ZXR10# or hostname# or hostname>
-set prompt_type ""
+# Wait for ZTE OLT prompt (ends with # or >)
+# ZTE OLT prompts look like: ZXAN# or OLT-NAME> or hostname#
 expect {
-    -re {[a-zA-Z0-9_-]+#\s*$} { set prompt_type "privileged" }
-    -re {[a-zA-Z0-9_-]+>\s*$} { set prompt_type "user" }
-    "#" { set prompt_type "privileged" }
-    ">" { set prompt_type "user" }
+    -re {[a-zA-Z0-9_-]+[#>]\s*$} { }
+    "#" { }
+    ">" { }
     "Login incorrect" { puts "EXPECT_ERROR: Authentication failed"; exit 1 }
     "Access denied" { puts "EXPECT_ERROR: Access denied"; exit 1 }
     "Password:" { puts "EXPECT_ERROR: Authentication failed"; exit 1 }
@@ -615,49 +613,31 @@ expect {
 # Small delay to ensure connection is stable
 sleep 1
 
-# If in user mode (>), enter enable mode
-if {$prompt_type eq "user"} {
-    send "enable\r"
-    expect {
-        -re {[Pp]assword:} {
-            # Use enable password if provided, otherwise use login password
-            if {$enable_pass ne "" && $enable_pass ne "null"} {
-                send "$enable_pass\r"
-            } else {
-                send "$password\r"
-            }
-        }
-        "#" { }
-        timeout { puts "EXPECT_ERROR: Timeout entering enable mode"; exit 1 }
-    }
-    
-    # Wait for privileged prompt
-    expect {
-        -re {[a-zA-Z0-9_-]+#} { }
-        "#" { }
-        -re {[Aa]ccess [Dd]enied} { puts "EXPECT_ERROR: Enable password rejected"; exit 1 }
-        -re {[Bb]ad [Pp]assword} { puts "EXPECT_ERROR: Enable password rejected"; exit 1 }
-        ">" { puts "EXPECT_ERROR: Failed to enter enable mode"; exit 1 }
-        timeout { puts "EXPECT_ERROR: Timeout waiting for enable prompt"; exit 1 }
-    }
-}
-
-# Disable pagination (ZTE TITAN series uses screen-length disable)
-send "terminal length 0\r"
+# Enter config terminal mode to get privileged access
+send "configure terminal\r"
 expect {
+    -re {[a-zA-Z0-9_-]+\(config\)#} { }
     -re {[a-zA-Z0-9_-]+#} { }
     "#" { }
     "%" { }
     timeout { }
 }
 
-# Also try screen-length disable for ZTE OLT
-sleep 0.3
-send "screen-length disable\r"
+# Exit config mode
+send "exit\r"
 expect {
     -re {[a-zA-Z0-9_-]+#} { }
     "#" { }
-    "%" { }
+    ">" { }
+    timeout { }
+}
+
+# Disable pagination - ZTE OLT uses scroll
+send "scroll\r"
+expect {
+    -re {[a-zA-Z0-9_-]+[#>]} { }
+    "#" { }
+    ">" { }
     timeout { }
 }
 
@@ -665,12 +645,13 @@ expect {
 sleep 0.5
 
 # Execute backup command with long timeout for large configs
-set timeout 300
+set timeout 600
 send "show running-config\r"
 
 # Wait for the prompt to return after full output
+# ZTE OLT config can be very large, use longer timeout
 expect {
-    -re {\r\n[a-zA-Z0-9_-]+#\s*$} { }
+    -re {\r\n[a-zA-Z0-9_-]+[#>]\s*$} { }
     timeout { puts "EXPECT_ERROR: Timeout waiting for configuration output"; exit 1 }
     eof { puts "EXPECT_ERROR: Connection closed during backup"; exit 1 }
 }
