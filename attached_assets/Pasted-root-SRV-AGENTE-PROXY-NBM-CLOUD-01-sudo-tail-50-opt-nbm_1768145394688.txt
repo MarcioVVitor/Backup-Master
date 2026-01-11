@@ -1,0 +1,52 @@
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[~]# sudo tail -50 /opt/nbm-agent/logs/agent.log
+[2026-01-11 12:25:07] [DEBUG] Sent heartbeat
+[2026-01-11 12:25:07] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-11T15:25:07.477Z"}
+[2026-01-11 12:25:07] [DEBUG] Heartbeat acknowledged
+[2026-01-11 12:25:22] [DEBUG] Sent heartbeat
+[2026-01-11 12:25:22] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-11T15:25:22.486Z"}
+[2026-01-11 12:25:22] [DEBUG] Heartbeat acknowledged
+[2026-01-11 12:25:37] [DEBUG] Sent heartbeat
+[2026-01-11 12:25:37] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-11T15:25:37.496Z"}
+[2026-01-11 12:25:37] [DEBUG] Heartbeat acknowledged
+[2026-01-11 12:25:52] [DEBUG] Sent heartbeat
+[2026-01-11 12:25:52] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-11T15:25:52.493Z"}
+[2026-01-11 12:25:52] [DEBUG] Heartbeat acknowledged
+[2026-01-11 12:26:07] [DEBUG] Sent heartbeat
+[2026-01-11 12:26:07] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-11T15:26:07.507Z"}
+[2026-01-11 12:26:07] [DEBUG] Heartbeat acknowledged
+[2026-01-11 12:26:22] [DEBUG] Sent heartbeat
+[2026-01-11 12:26:22] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-11T15:26:22.507Z"}
+[2026-01-11 12:26:22] [DEBUG] Heartbeat acknowledged
+[2026-01-11 12:26:37] [DEBUG] Sent heartbeat
+[2026-01-11 12:26:37] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-11T15:26:37.512Z"}
+[2026-01-11 12:26:37] [DEBUG] Heartbeat acknowledged
+[2026-01-11 12:26:42] [INFO] Stopping agent (PID: 57430)...
+[2026-01-11 12:26:42] [INFO] Agent stopped
+[2026-01-11 12:26:42] [INFO] Configuration loaded: Agent=proxy-grupojet-01, Server=http://143.255.197.25:5000
+[2026-01-11 12:26:42] [INFO] Starting NBM CLOUD Agent v1.0.36
+[2026-01-11 12:26:42] [INFO] Agent started with PID: 57738
+[2026-01-11 12:26:42] [INFO] Connecting to WebSocket: ws://143.255.197.25:5000/ws/agents
+[2026-01-11 12:26:42] [INFO] Establishing WebSocket connection...
+[2026-01-11 12:26:42] [DEBUG] WebSocket process started with PID: 57749
+[2026-01-11 12:26:42] [DEBUG] Sent auth message
+[2026-01-11 12:26:43] [DEBUG] Received: {"type":"auth_success","agentId":1,"config":null}
+[2026-01-11 12:26:43] [INFO] Authentication successful
+[2026-01-11 12:26:57] [DEBUG] Received: {"type":"backup_job","jobId":"backup-17-1768145217834","equipment":{"id":17,"name":"SW2-ACE-GNA-CREER-JCP-GNA-19755 ","ip":"10.0.65.4","port":23,"protocol":"telnet","username":"admin","password":"2dc9d967","enablePassword":"","manufacturer":"datacom"},"config":{"command":"show running-config","useShell":true,"timeout":60000}}
+[2026-01-11 12:26:57] [DEBUG] Received message type: backup_job
+[2026-01-11 12:26:57] [INFO] Executing backup job backup-17-1768145217834 for 10.0.65.4:23 with command: show running-config
+[2026-01-11 12:26:57] [DEBUG] Datacom EDD device - using expect session (protocol: telnet)
+[2026-01-11 12:26:57] [DEBUG] Sent heartbeat
+[2026-01-11 12:26:57] [INFO] Executing Datacom EDD backup with expect on 10.0.65.4:23 protocol=telnet (Agent v1.0.36)
+[2026-01-11 12:26:57] [INFO] Using Telnet for Datacom EDD on port 23
+[2026-01-11 12:27:12] [DEBUG] Sent heartbeat
+[2026-01-11 12:27:27] [DEBUG] Sent heartbeat
+[2026-01-11 12:27:42] [DEBUG] Sent heartbeat
+[2026-01-11 12:27:57] [DEBUG] Sent heartbeat
+[2026-01-11 12:28:12] [DEBUG] Sent heartbeat
+[2026-01-11 12:28:27] [DEBUG] Sent heartbeat
+[2026-01-11 12:28:42] [DEBUG] Sent heartbeat
+[2026-01-11 12:28:57] [DEBUG] Sent heartbeat
+[2026-01-11 12:29:13] [DEBUG] Sent heartbeat
+[2026-01-11 12:29:28] [DEBUG] Sent heartbeat
+[2026-01-11 12:29:43] [DEBUG] Sent heartbeat
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[~]# 
