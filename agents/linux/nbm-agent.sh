@@ -55,7 +55,7 @@ load_config() {
 
 # Check dependencies
 check_dependencies() {
-    local deps=("jq" "curl" "sshpass" "ssh" "websocat" "git")
+    local deps=("jq" "curl" "sshpass" "ssh" "websocat" "git" "expect")
     local missing=()
     
     for dep in "${deps[@]}"; do
@@ -199,6 +199,125 @@ test_connection() {
     esac
     
     echo "$result"
+}
+
+# Execute SSH backup command for Cisco with expect (handles enable mode properly)
+execute_cisco_backup_expect() {
+    local host="$1"
+    local port="$2"
+    local username="$3"
+    local password="$4"
+    local enable_password="$5"
+    local backup_command="$6"
+    local timeout="${7:-120}"
+    
+    log_info "Executing Cisco backup with expect on $host:$port"
+    
+    # Create expect script for proper interactive session
+    local expect_script=$(cat <<'EXPECT_EOF'
+#!/usr/bin/expect -f
+set timeout [lindex $argv 0]
+set host [lindex $argv 1]
+set port [lindex $argv 2]
+set username [lindex $argv 3]
+set password [lindex $argv 4]
+set enable_pass [lindex $argv 5]
+set backup_cmd [lindex $argv 6]
+
+log_user 1
+
+# SSH options for legacy devices
+spawn ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 \
+    -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa \
+    -o KexAlgorithms=+diffie-hellman-group14-sha1,diffie-hellman-group1-sha1 \
+    -p $port $username@$host
+
+# Wait for password prompt
+expect {
+    "password:" { send "$password\r" }
+    "Password:" { send "$password\r" }
+    timeout { puts "EXPECT_ERROR: Timeout waiting for password prompt"; exit 1 }
+    eof { puts "EXPECT_ERROR: Connection closed"; exit 1 }
+}
+
+# Wait for initial prompt (> or #)
+expect {
+    -re {[>#]} { }
+    "Password:" { puts "EXPECT_ERROR: Authentication failed"; exit 1 }
+    timeout { puts "EXPECT_ERROR: Timeout after login"; exit 1 }
+}
+
+# Enter enable mode if enable password provided
+if { $enable_pass ne "" && $enable_pass ne "null" } {
+    send "enable\r"
+    expect {
+        -re {[Pp]assword:} { send "$enable_pass\r" }
+        "#" { }
+        timeout { puts "EXPECT_ERROR: Timeout waiting for enable password prompt"; exit 1 }
+    }
+    expect {
+        "#" { }
+        -re {[Aa]ccess [Dd]enied} { puts "EXPECT_ERROR: Enable password rejected"; exit 1 }
+        timeout { puts "EXPECT_ERROR: Timeout entering enable mode"; exit 1 }
+    }
+}
+
+# Disable pagination - try both commands
+send "terminal length 0\r"
+expect "#"
+send "terminal pager 0\r"
+expect "#"
+
+# Execute backup command
+send "$backup_cmd\r"
+
+# Wait for full output with longer timeout
+set timeout 90
+expect {
+    -re {[>#]} { }
+    timeout { puts "EXPECT_ERROR: Timeout waiting for command output"; exit 1 }
+}
+
+# Exit gracefully
+send "exit\r"
+expect eof
+EXPECT_EOF
+)
+    
+    # Write expect script to temp file
+    local expect_file="/tmp/cisco_backup_$$.exp"
+    echo "$expect_script" > "$expect_file"
+    chmod +x "$expect_file"
+    
+    # Execute expect script
+    local output
+    local exit_code
+    output=$(timeout "$timeout" expect "$expect_file" "$timeout" "$host" "$port" "$username" "$password" "$enable_password" "$backup_command" 2>&1)
+    exit_code=$?
+    
+    # Clean up
+    rm -f "$expect_file"
+    
+    # Check results
+    if [[ $exit_code -eq 124 ]]; then
+        log_error "Cisco backup timed out after ${timeout}s"
+        return 1
+    fi
+    
+    # Check for expect errors
+    if [[ "$output" == *"EXPECT_ERROR:"* ]]; then
+        log_error "Cisco expect error: $output"
+        return 1
+    fi
+    
+    local output_length=${#output}
+    if [[ $output_length -gt 100 ]]; then
+        echo "$output"
+        return 0
+    else
+        log_error "Cisco backup failed - insufficient output"
+        return 1
+    fi
 }
 
 # Execute SSH backup command
@@ -405,20 +524,27 @@ handle_message() {
             local manufacturer=$(echo "$equipment" | jq -r '.manufacturer // empty')
             local command=$(echo "$config" | jq -r '.command // .backupCommand')
             
-            # For Cisco devices with enable password, prepend enable command (case-insensitive check)
-            if [[ "${manufacturer,,}" == "cisco" ]] && [[ -n "$enable_password" ]] && [[ "$enable_password" != "null" ]]; then
-                log_debug "Cisco device with enable password - adding enable command"
-                command="enable
-$enable_password
-$command"
-            fi
-            
             log_info "Executing backup job $job_id for $host:$port with command: $command"
             
             local output
             local json_response
             local tmp_file="/tmp/backup_output_$$"
-            if output=$(execute_ssh_backup "$host" "$port" "$username" "$password" "$command" 120); then
+            local backup_success=false
+            
+            # For Cisco devices with enable password, use expect-based interactive session
+            if [[ "${manufacturer,,}" == "cisco" ]] && [[ -n "$enable_password" ]] && [[ "$enable_password" != "null" ]]; then
+                log_debug "Cisco device with enable password - using expect session"
+                if output=$(execute_cisco_backup_expect "$host" "$port" "$username" "$password" "$enable_password" "$command" 120); then
+                    backup_success=true
+                fi
+            else
+                # Standard SSH backup for non-Cisco or Cisco without enable password
+                if output=$(execute_ssh_backup "$host" "$port" "$username" "$password" "$command" 120); then
+                    backup_success=true
+                fi
+            fi
+            
+            if [[ "$backup_success" == "true" ]]; then
                 log_info "Backup successful, output length: ${#output} bytes"
                 # Write output to temp file to avoid argument list too long error
                 printf '%s' "$output" > "$tmp_file"
