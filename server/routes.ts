@@ -11,6 +11,13 @@ import { createServerRoutes } from "./routes/server-routes";
 import { withTenantContext } from "./middleware/tenant";
 import { startScheduler, setBackupExecutor, runPolicyNow, setWorkerPoolConcurrency, getWorkerPoolMetrics, clearWorkerQueue } from "./scheduler";
 
+function getBrazilTime(): Date {
+  const now = new Date();
+  const brazilOffset = -3 * 60;
+  const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000);
+  return new Date(utcTime + (brazilOffset * 60000));
+}
+
 const isStandalone = !process.env.REPL_ID;
 
 const updateUserSchema = z.object({
@@ -347,6 +354,7 @@ export async function registerRoutes(
         mimeType: req.file.mimetype,
         status: "success",
         companyId: companyId || null,
+        createdAt: getBrazilTime(),
       });
 
       res.status(201).json(fileRecord);
@@ -555,7 +563,7 @@ export async function registerRoutes(
 
       console.log(`[backup] Result length: ${result.length} bytes, first 100 chars: ${result.substring(0, 100)}`);
       
-      const now = new Date();
+      const now = getBrazilTime();
       const dateStr = now.toISOString().slice(0,10).replace(/-/g,'') + '_' + now.toTimeString().slice(0,8).replace(/:/g,'');
       const filename = `${equip.name}_${dateStr}${config.extension}`;
       const objectName = `backups/${equip.manufacturer}/${equip.name}/${filename}`;
@@ -580,6 +588,7 @@ export async function registerRoutes(
         mimeType: 'text/plain',
         status: "success",
         companyId: equip.companyId,
+        createdAt: now,
       });
 
       const duration = (Date.now() - startTime) / 1000;
@@ -781,7 +790,7 @@ export async function registerRoutes(
             result = await executeSSHBackup(equip, config);
           }
 
-          const now = new Date();
+          const now = getBrazilTime();
           const dateStr = now.toISOString().slice(0,10).replace(/-/g,'') + '_' + now.toTimeString().slice(0,8).replace(/:/g,'');
           const filename = `${equip.name}_${dateStr}${config.extension}`;
           const objectName = `backups/${equip.manufacturer}/${equip.name}/${filename}`;
@@ -806,6 +815,7 @@ export async function registerRoutes(
             mimeType: 'text/plain',
             status: "success",
             companyId: equip.companyId,
+            createdAt: now,
           });
 
           const duration = (Date.now() - startTime) / 1000;
@@ -2938,7 +2948,7 @@ export async function registerRoutes(
         result = await executeSSHBackup(equip, config);
       }
 
-      const now = new Date();
+      const now = getBrazilTime();
       const dateStr = now.toISOString().slice(0,10).replace(/-/g,'') + '_' + now.toTimeString().slice(0,8).replace(/:/g,'');
       const filename = `${equip.name}_${dateStr}${config.extension}`;
       const objectName = `backups/${filename}`;
@@ -2965,6 +2975,7 @@ export async function registerRoutes(
         status: "success",
         companyId: equip.companyId,
         userId: 1,
+        createdAt: now,
       });
 
       await storage.updateBackupHistory(historyRecord.id, {

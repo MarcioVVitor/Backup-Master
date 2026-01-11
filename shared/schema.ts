@@ -389,7 +389,7 @@ export const insertUserCompanySchema = createInsertSchema(userCompanies).omit({ 
 // Schemas de inserção
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true, replitId: true, isAdmin: true });
 export const insertEquipmentSchema = createInsertSchema(equipment).omit({ id: true, createdAt: true });
-export const insertFileSchema = createInsertSchema(files).omit({ id: true, createdAt: true });
+export const insertFileSchema = createInsertSchema(files).omit({ id: true });
 export const insertBackupHistorySchema = createInsertSchema(backupHistory).omit({ id: true, executedAt: true });
 export const insertSettingSchema = createInsertSchema(settings).omit({ updatedAt: true });
 export const insertVendorScriptSchema = createInsertSchema(vendorScripts).omit({ id: true, updatedAt: true });
