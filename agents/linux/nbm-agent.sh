@@ -215,16 +215,22 @@ execute_ssh_backup() {
     local output
     local exit_code
     
+    # SSH options for compatibility with legacy devices (Huawei, Cisco, etc.)
+    local ssh_opts="-o StrictHostKeyChecking=no -o ConnectTimeout=10 -o ServerAliveInterval=5 -o ServerAliveCountMax=3"
+    # Add legacy algorithm support for older network equipment
+    ssh_opts="$ssh_opts -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa"
+    ssh_opts="$ssh_opts -o KexAlgorithms=+diffie-hellman-group14-sha1,diffie-hellman-group1-sha1"
+    
     # Check if command has multiple lines (needs stdin mode)
     if [[ "$command" == *$'\n'* ]] || [[ "$command" == *"\\n"* ]]; then
         log_debug "Using stdin mode for multi-line command"
         # Convert literal \n to actual newlines and send via stdin
         local cmd_formatted=$(echo -e "$command")
-        output=$(echo "$cmd_formatted" | timeout "$timeout" sshpass -p "$password" ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 -o ServerAliveInterval=5 -o ServerAliveCountMax=3 -T -p "$port" "$username@$host" 2>&1)
+        output=$(echo "$cmd_formatted" | timeout "$timeout" sshpass -p "$password" ssh $ssh_opts -T -p "$port" "$username@$host" 2>&1)
         exit_code=$?
     else
         log_debug "Using direct command mode"
-        output=$(timeout "$timeout" sshpass -p "$password" ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 -o ServerAliveInterval=5 -o ServerAliveCountMax=3 -p "$port" "$username@$host" "$command" 2>&1)
+        output=$(timeout "$timeout" sshpass -p "$password" ssh $ssh_opts -p "$port" "$username@$host" "$command" 2>&1)
         exit_code=$?
     fi
     
