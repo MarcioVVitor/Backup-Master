@@ -6,7 +6,7 @@
 # Don't exit on error - we handle errors ourselves
 set +e
 
-AGENT_VERSION="1.0.39"
+AGENT_VERSION="1.0.40"
 AGENT_DIR="/opt/nbm-agent"
 CONFIG_FILE="$AGENT_DIR/config.json"
 LOG_FILE="$AGENT_DIR/logs/agent.log"
@@ -854,6 +854,170 @@ EXPECT_EOF
     fi
 }
 
+# Execute SSH backup command for Juniper with expect
+execute_juniper_backup_expect() {
+    local host="$1"
+    local port="$2"
+    local username="$3"
+    local password="$4"
+    local timeout="${5:-300}"
+    
+    log_info "Executing Juniper backup with expect on $host:$port (Agent v1.0.40)"
+    
+    # Create expect script for Juniper
+    # Juniper uses SSH, prompt ends with > or #
+    # Command: show configuration | display set
+    local expect_script=$(cat <<'EXPECT_EOF'
+#!/usr/bin/expect -f
+
+# Large buffer for configurations
+match_max 50000000
+
+set timeout [lindex $argv 0]
+set host [lindex $argv 1]
+set port [lindex $argv 2]
+set username [lindex $argv 3]
+set password [lindex $argv 4]
+
+log_user 1
+
+puts "JUNIPER_DEBUG: Starting Juniper SSH backup v1.0.40"
+puts "JUNIPER_DEBUG: Host=$host Port=$port User=$username"
+
+# SSH connection
+spawn ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+    -o ConnectTimeout=30 -o ServerAliveInterval=5 -o ServerAliveCountMax=60 \
+    -o TCPKeepAlive=yes \
+    -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa \
+    -p $port $username@$host
+
+# Wait for password prompt
+expect {
+    -re {[Pp]assword:} { 
+        puts "JUNIPER_DEBUG: Got password prompt"
+        send "$password\r" 
+    }
+    timeout { puts "EXPECT_ERROR: Timeout waiting for password prompt"; exit 1 }
+    eof { puts "EXPECT_ERROR: Connection closed"; exit 1 }
+}
+
+puts "JUNIPER_DEBUG: Waiting for command prompt..."
+
+# Wait for Juniper prompt (user@hostname> or user@hostname#)
+expect {
+    ">" { puts "JUNIPER_DEBUG: Got > prompt" }
+    "#" { puts "JUNIPER_DEBUG: Got # prompt" }
+    "Login incorrect" { puts "EXPECT_ERROR: Authentication failed"; exit 1 }
+    "Permission denied" { puts "EXPECT_ERROR: Permission denied"; exit 1 }
+    timeout { puts "EXPECT_ERROR: Timeout after password"; exit 1 }
+    eof { puts "EXPECT_ERROR: Connection closed after login"; exit 1 }
+}
+
+sleep 0.3
+
+# Disable pagination for Juniper
+puts "JUNIPER_DEBUG: Disabling pagination"
+send "set cli screen-length 0\r"
+expect {
+    ">" { }
+    "#" { }
+    timeout { puts "JUNIPER_DEBUG: Timeout after screen-length, continuing" }
+}
+
+sleep 0.3
+
+# Execute show configuration | display set
+puts "JUNIPER_DEBUG: Executing show configuration | display set"
+send "show configuration | display set\r"
+
+# Handle pagination with --More-- prompts if they appear
+# Use short timeout between pages - when no more --More-- appears, config is done
+set page_count 0
+set max_pages 500
+set timeout 10
+
+while {$page_count < $max_pages} {
+    expect {
+        -exact "--More--" {
+            incr page_count
+            send " "
+        }
+        -exact "-- More --" {
+            incr page_count
+            send " "
+        }
+        -exact "---more---" {
+            incr page_count
+            send " "
+        }
+        timeout {
+            # No more --More-- means config output is complete
+            puts "JUNIPER_DEBUG: Config capture complete after $page_count pages"
+            break
+        }
+        eof {
+            puts "JUNIPER_DEBUG: Connection closed after $page_count pages"
+            break
+        }
+    }
+}
+
+# Wait a moment before exit to ensure clean separation
+sleep 0.5
+
+# Exit gracefully
+send "\r"
+expect {
+    ">" { }
+    "#" { }
+    timeout { }
+}
+send "exit\r"
+expect {
+    eof { }
+    timeout { }
+}
+
+puts "JUNIPER_DEBUG: Backup completed successfully"
+EXPECT_EOF
+)
+    
+    # Write expect script to temp file
+    local expect_file="/tmp/juniper_backup_$$.exp"
+    echo "$expect_script" > "$expect_file"
+    chmod +x "$expect_file"
+    
+    # Execute expect script
+    local output
+    local exit_code
+    output=$(timeout "$timeout" expect "$expect_file" "$timeout" "$host" "$port" "$username" "$password" 2>&1)
+    exit_code=$?
+    
+    # Clean up
+    rm -f "$expect_file"
+    
+    # Check results
+    if [[ $exit_code -eq 124 ]]; then
+        log_error "Juniper backup timed out after ${timeout}s"
+        return 1
+    fi
+    
+    # Check for expect errors
+    if [[ "$output" == *"EXPECT_ERROR:"* ]]; then
+        log_error "Juniper expect error: $output"
+        return 1
+    fi
+    
+    local output_length=${#output}
+    if [[ $output_length -gt 100 ]]; then
+        echo "$output"
+        return 0
+    else
+        log_error "Juniper backup failed - insufficient output"
+        return 1
+    fi
+}
+
 # Execute SSH backup command for Nokia SR OS with expect
 execute_nokia_backup_expect() {
     local host="$1"
@@ -1437,6 +1601,12 @@ handle_message() {
                 # Datacom DMOS (DmOS) - switches and OLTs, SSH only
                 log_debug "Datacom DMOS device - using expect session"
                 if output=$(execute_datacom_dmos_backup_expect "$host" "$port" "$username" "$password" 300); then
+                    backup_success=true
+                fi
+            elif [[ "${manufacturer,,}" == "juniper" ]]; then
+                # Juniper - SSH, uses 'show configuration | display set'
+                log_debug "Juniper device - using expect session"
+                if output=$(execute_juniper_backup_expect "$host" "$port" "$username" "$password" 300); then
                     backup_success=true
                 fi
             else
