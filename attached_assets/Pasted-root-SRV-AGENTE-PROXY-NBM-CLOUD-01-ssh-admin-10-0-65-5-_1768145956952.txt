@@ -1,0 +1,219 @@
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[~]# ssh admin@10.0.65.5 -p 22
+The authenticity of host '10.0.65.5 (10.0.65.5)' can't be established.
+ED25519 key fingerprint is SHA256:VMzhTndKM0X/FQbHEkbIYByUES/mgLhN6TS8KtBJkMI.
+This key is not known by any other names.
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Warning: Permanently added '10.0.65.5' (ED25519) to the list of known hosts.
+(admin@10.0.65.5) Password: 
+(admin@10.0.65.5) Password: 
+Welcome to the DmOS CLI
+admin connected from 143.255.197.26 using ssh on SW2-ACE-GNA-PREFEITURA-01-GNA-JCP-20215
+SW2-ACE-GNA-PREFEITURA-01-GNA-JCP-20215# show running-config
+aaa authentication-order [ local ]
+aaa user admin
+ password $1$ilsJRR2G$waG5BmwBp2WGYhTbJWhS1/
+ group admin
+!
+dot1q
+ vlan 65,254
+  name GERENCIA
+  interface lag-1
+  !
+ !
+ vlan 3010
+  name PREFEITURA-01-GNA-JCP-20215
+  interface lag-1
+  !
+  interface lag-2
+  !
+ !
+!
+link-aggregation
+ interface lag 1
+  mode passive
+  description TRUNK-P2P-SW2ACEGNAPREFEITURA01-DIR-RTRPEBGPGNANOVOMUNDO01
+  interface ten-gigabit-ethernet-1/1/1
+  !
+  interface ten-gigabit-ethernet-1/1/2
+  !
+ !
+ interface lag 2
+  mode passive
+  description ACESSO-PREFEITURA-01-GNA-JCP-20215
+  interface ten-gigabit-ethernet-1/1/3
+  !
+  interface ten-gigabit-ethernet-1/1/4
+  !
+ !
+!
+router static
+ address-family ipv4
+  0.0.0.0/0 next-hop 10.0.65.1
+  !
+ !
+!
+snmp system contact JETELECOM
+snmp agent enabled
+snmp agent ip 10.0.65.5
+snmp agent version v2c
+snmp agent version v3
+snmp agent engine-id from-ip 10.0.65.5
+snmp agent extra-listen 10.0.65.5 161
+!
+snmp agent extra-listen 10.0.65.5 162
+!
+snmp community NMPPMG01
+ sec-name NMPPMG01
+!
+snmp community jetnet@2025
+ sec-name jetnet@2025
+!
+snmp notify std_v1_trap
+ tag std_v1_trap
+!
+snmp notify std_v2_inform
+ tag std_v2_inform
+ type inform
+!
+snmp notify std_v2_trap
+ tag std_v2_trap
+!
+snmp notify std_v3_inform
+ tag std_v3_inform
+ type inform
+!
+snmp notify std_v3_trap
+ tag std_v3_trap
+!
+snmp vacm group NMPPMG01
+ member NMPPMG01
+  sec-model [ v2c ]
+ !
+!
+snmp vacm group jetnet@2025
+ member jetnet@2025
+  sec-model [ v2c ]
+ !
+!
+snmp vacm view root
+ subtree 1.3
+  included
+ !
+!
+vrf global
+!
+vrf mgmt
+!
+interface gigabit-ethernet 1/1/1
+ no shutdown
+ negotiation
+ duplex full
+ speed 100M
+ advertising-abilities 10Mfull 100Mfull 1Gfull
+ mdix auto
+!
+interface gigabit-ethernet 1/1/2
+ no shutdown
+ negotiation
+ duplex full
+ speed 100M
+ advertising-abilities 10Mfull 100Mfull 1Gfull
+ mdix auto
+!
+interface gigabit-ethernet 1/1/3
+ no shutdown
+ negotiation
+ duplex full
+ speed 100M
+ advertising-abilities 10Mfull 100Mfull 1Gfull
+ mdix auto
+!
+interface gigabit-ethernet 1/1/4
+ no shutdown
+ negotiation
+ duplex full
+ speed 100M
+ advertising-abilities 10Mfull 100Mfull 1Gfull
+ mdix auto
+!
+interface gigabit-ethernet 1/1/5
+ no shutdown
+ negotiation
+ duplex full
+ speed 1G
+ advertising-abilities 10Mfull 100Mfull 1Gfull
+ mdix normal
+!
+interface gigabit-ethernet 1/1/6
+ no shutdown
+ negotiation
+ duplex full
+ speed 1G
+ advertising-abilities 10Mfull 100Mfull 1Gfull
+ mdix normal
+!
+interface gigabit-ethernet 1/1/7
+ no shutdown
+ negotiation
+ duplex full
+ speed 1G
+ advertising-abilities 10Mfull 100Mfull 1Gfull
+ mdix normal
+!
+interface gigabit-ethernet 1/1/8
+ no shutdown
+ negotiation
+ duplex full
+ speed 1G
+ advertising-abilities 10Mfull 100Mfull 1Gfull
+ mdix normal
+!
+interface ten-gigabit-ethernet 1/1/1
+ description TRUNK-LACP1-P2P-SW2ACEGNAPREFEITURA01-DIR-RTRPEBGPGNANOVOMUNDO01
+ no shutdown
+ no negotiation
+ duplex full
+ speed 10G
+ mdix normal
+!
+interface ten-gigabit-ethernet 1/1/2
+ description TRUNK-LACP2-P2P-SW2ACEGNAPREFEITURA01-DIR-RTRPEBGPGNANOVOMUNDO01
+ no shutdown
+ no negotiation
+ duplex full
+ speed 10G
+ mdix normal
+!
+interface ten-gigabit-ethernet 1/1/3
+ description LACP1-ACESSO-PREFEITURA-01-GNA-JCP-20215
+ no shutdown
+ no negotiation
+ duplex full
+ speed 10G
+ mdix normal
+!
+interface ten-gigabit-ethernet 1/1/4
+ description LACP2-ACESSO-PREFEITURA-01-GNA-JCP-20215
+ no shutdown
+ no negotiation
+ duplex full
+ speed 10G
+ mdix normal
+!
+interface l3 GERENCIA
+ lower-layer-if vlan 65
+ ipv4 address 10.0.65.5/24
+!
+interface mgmt 1/1/1
+ ipv4 address 192.168.0.25/24
+!
+hostname SW2-ACE-GNA-PREFEITURA-01-GNA-JCP-20215
+telnet-server disabled
+mac-address-table
+ aging-time 600
+!
+layer2-control-protocol
+ tunnel-priority 7
+!
+license mpls disabled
+SW2-ACE-GNA-PREFEITURA-01-GNA-JCP-20215#      
