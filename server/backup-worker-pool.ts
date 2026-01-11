@@ -62,7 +62,7 @@ class BackupWorkerPool {
 
   constructor(config: Partial<WorkerPoolConfig> = {}) {
     this.config = {
-      maxConcurrency: config.maxConcurrency || 50,
+      maxConcurrency: config.maxConcurrency || 10,
       batchSize: config.batchSize || 100,
       retryDelay: config.retryDelay || 5000,
       maxRetries: config.maxRetries || 3,
@@ -324,7 +324,7 @@ class BackupWorkerPool {
 }
 
 export const workerPool = new BackupWorkerPool({
-  maxConcurrency: 50,
+  maxConcurrency: 10,
   batchSize: 100,
   retryDelay: 5000,
   maxRetries: 3,
