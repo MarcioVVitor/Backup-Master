@@ -1,0 +1,77 @@
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[~]# expect -c '
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[~]# expect -c '
+set timeout 300.0.65.4 23
+spawn telnet 10.0.65.4 23et"
+puts "DEBUG: Spawned telnet"
+expect {in:" { puts "DEBUG: Found login"; send "admin\r" }
+    "login:" { puts "DEBUG: Found login"; send "admin\r" }t 1 }
+    timeout { puts "DEBUG: Timeout waiting for login"; exit 1 }
+}xpect {
+expect {sword:" { puts "DEBUG: Found password"; send "2dc9d967\r" }
+    "Password:" { puts "DEBUG: Found password"; send "2dc9d967\r" }
+    timeout { puts "DEBUG: Timeout waiting for password"; exit 1 }
+}xpect {
+expect {{ puts "DEBUG: Got prompt"; send "terminal length 0\r" }
+    "#" { puts "DEBUG: Got prompt"; send "terminal length 0\r" }
+    ">" { puts "DEBUG: Got prompt"; send "terminal length 0\r" }
+    timeout { puts "DEBUG: Timeout waiting for prompt"; exit 1 }
+}xpect "#"
+expect "#" running-config\r"
+send "show running-config\r"
+expect {{[a-zA-Z0-9_-]+#} { puts "DEBUG: Config done" }
+    -re {[a-zA-Z0-9_-]+#} { puts "DEBUG: Config done" }
+    timeout { puts "DEBUG: Timeout on config" }
+}end "exit\r"
+send "exit\r"
+'
+spawn telnet 10.0.65.4 23
+DEBUG: Spawned telnet
+Trying 10.0.65.4...
+Connected to 10.0.65.4.
+Escape character is '^]'.
+
+     # ####### ####### ####### #       #######  #####  ####### #     #
+      # #          #    #       #       #       #     # #     # ##   ##
+      # #          #    #       #       #       #       #     # # # # #
+      # #####      #    #####   #       #####   #       #     # #  #  #
+#     # #          #    #       #       #       #       #     # #     #
+#     # #          #    #       #       #       #     # #     # #     #
+ #####  #######    #    ####### ####### #######  #####  ####### #     #
+                  EQUIPAMENTO DE PROPRIEDADE JETELECOM
+
+SW2-ACE-GNA-CREER-JCP-GNA-19755 login: DEBUG: Found login
+admin
+Password: DEBUG: Found password
+
+SW2-ACE-GNA-CREER-JCP-GN#DEBUG: Got prompt
+terminal length 0
+                         ^
+% 25: Invalid input detected at '^' marker.
+SW2-ACE-GNA-CREER-JCP-GN#show running-config
+Building configuration...
+!
+hostname SW2-ACE-GNA-CREER-JCP-GNA-19755
+!
+username admin access-level 15
+username admin password 7 4abf434fa8468eab08f6dcd1cbd5d1344f2d8c37
+!
+clock timezone Brasil -3
+!
+banner login 
+~     # ####### ####### ####### #       #######  #####  ####### #     #
+      # #          #    #       #       #       #     # #     # ##   ##
+      # #          #    #       #       #       #       #     # # # # #
+      # #####      #    #####   #       #####   #       #     # #  #  #
+#     # #          #    #       #       #       #       #     # #     #
+#     # #          #    #       #       #       #     # #     # #     #
+ #####  #######    #    ####### ####### #######  #####  ####### #     #
+                  EQUIPAMENTO DE PROPRIEDADE JETELECOM
+~
+!
+interface vlan 1
+ name DefaultVlan
+ set-member untagged ethernet range 1/1 1/4
+ set-member untagged ethernet range 1/6 1/7
+--More-- 
+
+
