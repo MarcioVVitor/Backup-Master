@@ -6,7 +6,7 @@
 # Don't exit on error - we handle errors ourselves
 set +e
 
-AGENT_VERSION="1.0.23"
+AGENT_VERSION="1.0.24"
 AGENT_DIR="/opt/nbm-agent"
 CONFIG_FILE="$AGENT_DIR/config.json"
 LOG_FILE="$AGENT_DIR/logs/agent.log"
@@ -508,13 +508,21 @@ set timeout 1800
 send "admin display-config\r"
 
 # Wait for the prompt to return after full output
-# Nokia config ends with prompt like A:hostname# after "# Finished"
-# The config can be very large (100k+ lines), so we wait for the special end marker
+# Nokia config ends with "# Finished DAY MON DD HH:MM:SS YYYY TZ" then prompt
+# The config can be very large (100k+ lines), wait for "# Finished" marker
+# Use match_max to increase buffer size for large outputs
+match_max 100000000
+
 expect {
-    -re {# Finished [^\r\n]+\r\n[*]?[AB]:[^\r\n]+#\s*$} { }
-    -re {# Finished [^\r\n]+\r\n[a-zA-Z0-9_-]+#\s*$} { }
-    -re {exit all\r\n[*]?[AB]:[^\r\n]+#\s*$} { }
-    -re {exit all\r\n[a-zA-Z0-9_-]+#\s*$} { }
+    -re {# Finished [A-Z][a-z][a-z] [A-Z][a-z][a-z] [0-9]+ [0-9]+:[0-9]+:[0-9]+ [0-9]+ [A-Z]+} { 
+        # Found the Finished marker, now wait for prompt
+        expect {
+            -re {[*]?[AB]:[^\r\n]+#\s*$} { }
+            -re {[a-zA-Z0-9_-]+#\s*$} { }
+            "#" { }
+            timeout { }
+        }
+    }
     timeout { puts "EXPECT_ERROR: Timeout waiting for configuration output (30 min exceeded)"; exit 1 }
     eof { puts "EXPECT_ERROR: Connection closed during backup"; exit 1 }
 }
@@ -574,7 +582,7 @@ execute_zte_backup_expect() {
     local enable_password="$5"
     local timeout="${6:-180}"
     
-    log_info "Executing ZTE OLT backup with expect on $host:$port (Agent v1.0.23)"
+    log_info "Executing ZTE OLT backup with expect on $host:$port (Agent v1.0.24)"
     log_info "ZTE enable_password provided: ${enable_password:+(yes)}"
     
     # Create expect script for ZTE TITAN OLT (C300/C320/C600)
@@ -590,7 +598,7 @@ set enable_pass [lindex $argv 5]
 
 log_user 1
 
-puts "ZTE_DEBUG: Starting ZTE backup (agent v1.0.23)"
+puts "ZTE_DEBUG: Starting ZTE backup (agent v1.0.24)"
 puts "ZTE_DEBUG: Enable password provided: [expr {$enable_pass ne "" && $enable_pass ne "null" ? "yes" : "no (using default zxr10)"}]"
 
 # SSH connection - simplified for Debian 13 compatibility
