@@ -6,7 +6,7 @@
 # Don't exit on error - we handle errors ourselves
 set +e
 
-AGENT_VERSION="1.0.29"
+AGENT_VERSION="1.0.30"
 AGENT_DIR="/opt/nbm-agent"
 CONFIG_FILE="$AGENT_DIR/config.json"
 LOG_FILE="$AGENT_DIR/logs/agent.log"
@@ -449,7 +449,7 @@ execute_datacom_edd_backup_expect() {
     local protocol="${6:-ssh}"
     local timeout="${7:-300}"
     
-    log_info "Executing Datacom EDD backup with expect on $host:$port protocol=$protocol (Agent v1.0.29)"
+    log_info "Executing Datacom EDD backup with expect on $host:$port protocol=$protocol (Agent v1.0.30)"
     
     # Determine if using Telnet or SSH based on port or protocol
     local use_telnet="false"
@@ -475,21 +475,29 @@ set enable_pass [lindex $argv 5]
 
 log_user 1
 
-puts "DATACOM_DEBUG: Starting Datacom EDD TELNET backup v1.0.29"
+puts "DATACOM_DEBUG: Starting Datacom EDD TELNET backup v1.0.30"
 
 # Telnet connection
 spawn telnet $host $port
 
-# Wait for login prompt
+# Wait for login prompt - Datacom may use different prompts
 expect {
-    -re {[Uu]sername:|[Ll]ogin:} { send "$username\r" }
-    timeout { puts "EXPECT_ERROR: Timeout waiting for login prompt"; exit 1 }
+    -re {[Uu]sername:} { send "$username\r" }
+    -re {[Ll]ogin:} { send "$username\r" }
+    -re {[Uu]ser:} { send "$username\r" }
+    -re {[Uu]suario:} { send "$username\r" }
+    "#" { puts "DATACOM_DEBUG: Already logged in with privileged prompt"; }
+    ">" { puts "DATACOM_DEBUG: Already logged in with user prompt"; }
+    timeout { puts "EXPECT_ERROR: Timeout waiting for login prompt (30s)"; exit 1 }
     eof { puts "EXPECT_ERROR: Connection closed"; exit 1 }
 }
 
-# Wait for password prompt
+# Wait for password prompt (if not already logged in)
 expect {
     -re {[Pp]assword:} { send "$password\r" }
+    -re {[Ss]enha:} { send "$password\r" }
+    "#" { puts "DATACOM_DEBUG: Got privileged prompt after username" }
+    ">" { puts "DATACOM_DEBUG: Got user prompt after username" }
     timeout { puts "EXPECT_ERROR: Timeout waiting for password prompt"; exit 1 }
     eof { puts "EXPECT_ERROR: Connection closed"; exit 1 }
 }
@@ -577,7 +585,7 @@ set enable_pass [lindex $argv 5]
 
 log_user 1
 
-puts "DATACOM_DEBUG: Starting Datacom EDD SSH backup v1.0.29"
+puts "DATACOM_DEBUG: Starting Datacom EDD SSH backup v1.0.30"
 
 # SSH options - Datacom may use older SSH algorithms
 spawn ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
