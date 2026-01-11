@@ -1,0 +1,501 @@
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[~]# # No servidor do AGENTE (143.255.197.26):
+sshpass -p '@#2Dc9d967' ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 -T -p 12622 'marcio@jet@172.16.249.250'
+
+Info: The max number of VTY users is 5, the number of current VTY users online is 1, and total number of terminal users online is 1.
+      The current login time is 2026-01-10 22:23:19-03:00.
+<SW3-PE-BSA-SIA-01>screen-length 0 temporary
+screen-length 0 temporary
+Info: The configuration takes effect on the current user terminal interface only.
+<SW3-PE-BSA-SIA-01>display current-configuration
+display current-configuration
+!Software Version V600R024C00SPC500
+!Last configuration was updated at 2025-12-11 18:05:34-03:00 by marcio@jet
+!Last configuration was saved at 2025-12-11 18:11:51-03:00 by marcio@jet
+#
+pki realm default
+#
+clock timezone UTC minus 03:00:00
+#
+sysname SW3-PE-BSA-SIA-01
+#
+undo ftp server source all-interface
+undo ftp ipv6 server source all-interface
+#
+ssl policy default
+ pki-domain default
+ ssl minimum version tls1.2
+ cipher-suite exclude key-exchange rsa
+ cipher-suite exclude cipher mode cbc
+ cipher-suite exclude hmac sha1
+ diffie-hellman modulus 3072
+ ecdh group nist curve brainpool
+ signature algorithm-list ed25519 ed448 rsa-pss-pss-sha256 rsa-pss-pss-sha384 rsa-pss-pss-sha512 rsa-pss-rsae-sha256 rsa-pss-rsae-sha384 rsa-pss-rsae-sha512
+#
+device board 1 board-type S6750-H36C
+#
+wlan
+ traffic-profile name default
+ security-profile name default
+ ssid-profile name default
+ vap-profile name default
+ regulatory-domain-profile name default
+ air-scan-profile name default
+ rrm-profile name default
+ radio-2g-profile name default
+ radio-5g-profile name default
+ ap-system-profile name default
+ port-link-profile name default
+ wired-port-profile name default
+ ap-group name default
+ provision-ap
+#
+authentication-profile name default_authen_profile
+authentication-profile name dot1x_authen_profile
+authentication-profile name dot1xmac_authen_profile
+authentication-profile name mac_authen_profile
+authentication-profile name multi_authen_profile
+authentication-profile name portal_authen_profile
+#
+drop-profile default
+#
+ntp server source-interface all disable
+ntp ipv6 server source-interface all disable
+#
+vlan batch 65 67 411 to 412 441 1294 1663
+#
+load-balance profile PADRAO
+ ip src-ip dst-ip protocol l4-src-port l4-dst-port  
+ l2 src-mac dst-mac  
+ mpls l4-src-port 3rd-label src-ip dst-ip top-label  
+#
+stp disable
+#
+lnp disable
+#
+error-down auto-recovery cause link-flap interval 60
+#
+telnet server enable
+undo telnet server-source all-interface
+undo telnet ipv6 server-source all-interface
+#
+as-auth
+#
+diffserv domain default
+#
+ip vpn-instance _management_vpn_
+ ipv4-family
+#
+bfd
+#
+vlan 65
+ description V64-GER-POP-BSA-SIA-01
+#
+vlan 67
+ description V67-BSA-GER-POP-SIA
+#
+vlan 411
+ description V411-P2P-SW3PEBSASIA01-DIR-SW2ACEBSASIA02
+#
+vlan 412
+ description V412-P2P-SW3PEBSASIA01-DIR-SW3PEBSASIA02
+#
+vlan 441
+ description V441-P2P-SW3PEBSASIA01-DIR-SW3PEBSAAERO01
+#
+vlan 1294
+ description V1294-BSA-CLI-JETELECOM
+#
+vlan 1663
+ description V1663-SESI-T17-GURX-JCP-19195
+#
+mpls lsr-id 172.16.249.250
+#
+mpls
+ label advertise non-null
+ mpls te
+ mpls te auto-frr self-adapting
+ mpls te tie-breaking least-fill
+ mpls te srlg path-calculation preferred
+ mpls te auto-frr reoptimization frequency 7200
+ mpls te reoptimization link-up disable
+ mpls rsvp-te
+ mpls rsvp-te hello
+ mpls rsvp-te srefresh
+ mpls rsvp-te reliable-delivery
+ mpls te cspf
+ lsp-trigger all
+#
+mpls l2vpn
+ mpls l2vpn default martini
+#
+mpls ldp
+ #
+ ipv4-family
+#
+mpls ldp remote-peer sw3-pe-gna-aquarios-01
+ remote-ip 172.16.247.235
+#
+mpls ldp remote-peer SW3-PE-BSA-ELEA-01
+ remote-ip 172.16.247.240
+#
+mpls ldp remote-peer SW3-PE-OCO-ASCENTY-SP4-01
+ remote-ip 172.16.249.252
+#
+mpls ldp remote-peer SW3-PE-GNA-JDGO-ANDR-02
+ remote-ip 10.15.43.1
+#
+mpls ldp remote-peer SW3-PE-BSB-ELEA-02
+ remote-ip 172.16.247.253
+#
+mpls ldp remote-peer SW3-PE-NOVO-MUNDO-01
+ remote-ip 172.16.249.253
+#
+mpls ldp remote-peer SW3-PE-BSA-AERO-01
+ remote-ip 172.16.247.228
+#
+traffic classifier CLASS-BESTEFFORT type or
+ if-match any
+#
+traffic classifier CLASS-BUSINESS type or
+ if-match dscp cs3 af31 af32 cs4 af41 
+#
+traffic classifier CLASS-REALTIME type or
+ if-match any
+#
+traffic classifier CLASS-SUPPORT type or
+ if-match dscp af21 
+#
+traffic behavior BEHAV-BESTEFFORT
+ statistics enable
+ remark dscp default
+#
+traffic behavior BEHAV-BUSINESS
+#
+traffic behavior BEHAV-REALTIME
+ statistics enable
+ remark dscp ef
+#
+traffic behavior BEHAV-SUPPORT
+ statistics enable
+ remark dscp af21
+#
+traffic policy POLICY-QOS-INBOUND 
+ classifier CLASS-REALTIME behavior BEHAV-REALTIME precedence 5
+ classifier CLASS-BUSINESS behavior BEHAV-BUSINESS precedence 10
+ classifier CLASS-SUPPORT behavior BEHAV-SUPPORT precedence 15
+ classifier CLASS-BESTEFFORT behavior BEHAV-BESTEFFORT precedence 20
+#
+aaa
+ authentication-scheme default
+  authentication-mode local
+ authentication-scheme radius
+  authentication-mode radius
+ authorization-scheme default
+  authorization-mode local
+ accounting-scheme default
+  accounting-mode none
+ local-aaa-user password policy administrator
+  password history record number 0
+  password expire 0
+ domain default
+  authentication-scheme default
+  accounting-scheme default
+ domain default_admin
+  authentication-scheme default
+  accounting-scheme default
+ local-user admin@jet password irreversible-cipher $1d$6-pCU-R\7"c^Cg/O$<,tIU+OZzQ/ck@<V$yzYkVl_@}Wv8ZtE=i0.3qH>$
+ local-user admin@jet privilege level 3
+ local-user admin@jet service-type telnet ssh ftp http
+ local-user marcio@jet password irreversible-cipher $1d$bu`x"#bcS3zX9mHV$/[E@6cY0pI!a+1Yj'.<PQc:.,yP`SUBw}W%!F52H$
+ local-user marcio@jet privilege level 3
+ local-user marcio@jet service-type telnet ssh ftp http
+ local-user monitoramento password irreversible-cipher $1d$gh9^S6aL,8$xRR+u$E9^lBFw[5Yji^+0k"!:I+S3w,e)9-.S^"_!76D_6$
+ local-user monitoramento privilege level 1
+ local-user monitoramento service-type none
+#
+radius-server template default
+#
+free-rule-template name default_free_rule
+#
+portal-access-profile name portal_access_profile
+#
+dot1x-access-profile name dot1x_access_profile
+#
+mac-access-profile name mac_access_profile
+#
+remote-unit
+#
+stack
+#
+license
+#
+warranty
+#
+isis purge-source-trace disable
+#
+interface Vlanif1
+ shutdown
+#
+interface Vlanif65
+ mtu 9198
+ description V65-GER-POP-BSA-SIA-01
+ mpls l2vc 172.16.247.240 65
+ mpls l2vpn flow-label both
+#
+interface Vlanif67
+ mtu 9198
+ description V67-BSA-GER-POP-SIA
+ mpls l2vc 172.16.247.240 67
+ mpls l2vpn flow-label both
+#
+interface Vlanif411
+ mtu 9192
+ description V411-P2P-SW3PEBSASIA01-DIR-SW2ACEBSASIA02
+ ipv6 enable
+ ip address 172.16.249.125 255.255.255.252
+ ospf network-type p2p
+ mpls
+ mpls ldp
+#
+interface Vlanif412
+ mtu 9192
+ description V412-P2P-SW3PEBSASIA01-DIR-SW2PEBSASIA02
+ ipv6 enable
+ ip address 172.16.249.121 255.255.255.252
+ ospf network-type p2p
+ mpls
+ mpls ldp
+#
+interface Vlanif441
+ mtu 9192
+ description V441-P2P-SW3PEBSASIA01-DIR-SW3PEBSAAERO01
+ ip address 172.16.247.178 255.255.255.252
+ ospf network-type p2p
+ mpls
+ mpls ldp
+#
+interface Vlanif1294
+ mtu 9198
+ description V1294-BSA-CLI-JETELECOM
+ mpls l2vc 172.16.247.240 1294
+ mpls l2vpn flow-label both
+#
+interface Vlanif1663
+ mtu 9198
+ description V1663-SESI-T17-GURX-JCP-19195
+ mpls l2vc 172.16.247.240 1663
+ mpls l2vpn flow-label both
+#
+interface MEth0/0/0
+ ip address 192.168.1.253 255.255.255.0
+#
+interface Eth-Trunk0
+ description TRUNK-P2P-SW3PEBSASIA01-DIR-SW2ACEBSASIA01
+ port link-type trunk
+ undo port trunk allow-pass vlan 1
+ port trunk allow-pass vlan 412
+ mode lacp-static
+ trust upstream none
+ trust dscp
+ traffic-policy POLICY-QOS-INBOUND outbound 
+ jumboframe enable 9192
+#
+interface Eth-Trunk1
+ description SW2-ACE-BSA-SIA-01
+ port link-type trunk
+ undo port trunk allow-pass vlan 1
+ port trunk allow-pass vlan 67 411 417 1294 1663
+ mode lacp-dynamic
+ trust upstream none
+ trust dscp
+ traffic-policy POLICY-QOS-INBOUND outbound 
+ jumboframe enable 9192
+#
+interface Eth-Trunk2
+ description TRUNK-P2P-SW3PEBSASIA01-DIR-SW3PEBSAAERO01
+ port link-type trunk
+ undo port trunk allow-pass vlan 1
+ port trunk allow-pass vlan 441
+ mode lacp-dynamic
+#
+interface 100GE1/0/1
+ description TRUNK-LACP1-P2P-SW3PEBSASIA01-DIR-SW3PEBSAELEA01
+ eth-trunk 0
+ lacp priority 100
+ device transceiver 100GBASE-FIBER
+ fec mode rs
+#
+interface 100GE1/0/2
+ description TRUNK-LACP1-P2P-SW3PEBSASIA01-DIR-SW3-PE-BSA-AERO-01
+ eth-trunk 2
+ device transceiver 100GBASE-FIBER
+#
+interface 100GE1/0/3
+ device transceiver 40GBASE-FIBER
+#
+interface 100GE1/0/4
+#
+interface 100GE1/0/5
+#
+interface 100GE1/0/6
+#
+interface 100GE1/0/7
+#
+interface 100GE1/0/8
+#
+interface 100GE1/0/9
+#
+interface 100GE1/0/10
+#
+interface 100GE1/0/11
+#
+interface 100GE1/0/12
+#
+interface 100GE1/0/13
+#
+interface 100GE1/0/14
+#
+interface 100GE1/0/15
+#
+interface 100GE1/0/16
+#
+interface 100GE1/0/17
+#
+interface 100GE1/0/18
+#
+interface 100GE1/0/19
+#
+interface 100GE1/0/20
+#
+interface 100GE1/0/21
+#
+interface 100GE1/0/22
+#
+interface 100GE1/0/23
+#
+interface 100GE1/0/24
+#
+interface 100GE1/0/25
+#
+interface 100GE1/0/26
+#
+interface 100GE1/0/27
+#
+interface 100GE1/0/28
+#
+interface 100GE1/0/29
+#
+interface 100GE1/0/30
+#
+interface 100GE1/0/31
+#
+interface 100GE1/0/32
+#
+interface 100GE1/0/33
+#
+interface 100GE1/0/34
+#
+interface 100GE1/0/35
+ description TRUNK-LACP1-P2P-SW3PEGNANOVOMUNDO01-DIR-SW3PEGNANOVOMUNDO02
+#
+interface 100GE1/0/36
+ description TRUNK-P2P-LACP1-SW3PEBSASIA01-DIR-SW3PEBSASIA02
+ eth-trunk 1
+ lacp priority 100
+ device transceiver 40GBASE-FIBER
+#
+interface LoopBack0
+ description GER-MPLS
+ ip address 172.16.249.250 255.255.255.255
+#
+interface NULL0
+#
+ospf 1 router-id 172.16.249.250
+ silent-interface LoopBack0
+ opaque-capability enable
+ area 0.0.0.0
+  network 172.16.247.176 0.0.0.3
+  network 172.16.249.120 0.0.0.3
+  network 172.16.249.124 0.0.0.3
+  network 172.16.249.250 0.0.0.0
+  mpls-te enable
+#
+snmp-agent
+snmp-agent local-engineid 800007DB03E8F9D483B601
+snmp-agent community read cipher %@%##!!!!!!!!!"!!!!"!!!!*!!!!7LTnVOK_g:;ZRo;HY^wPfr7xTa$'wRNM;>@!!!!!2jp5!!!!!!U!!!!=HP~!LBMy0m8zd&l1h%AN'UI5,QL]P7qiYU`yu.X"i!pPRU"r6V(0'%SXr_Ao-=>S!!!!!!!!!!!!!!!%@%# alias __CommunityAliasName_01_20041
+#
+snmp-agent sys-info contact GRUPOJET 0800-648-3496
+snmp-agent sys-info location POP-BSA-SIA
+snmp-agent sys-info version v2c v3
+snmp-agent group v3 v3group privacy read-view v3view write-view v3view notify-view v3view
+#
+snmp-agent mib-view included v3view iso
+#
+snmp-agent trap source LoopBack0
+#
+snmp-agent protocol source-interface LoopBack0
+undo snmp-agent protocol source-status all-interface
+undo snmp-agent protocol source-status ipv6 all-interface
+#
+undo snmp-agent proxy protocol source-status all-interface
+undo snmp-agent proxy protocol source-status ipv6 all-interface
+#
+snmp-agent trap enable
+#
+#
+stelnet server enable
+ssh server rsa-key min-length 3072
+ssh ipv4 server port 12622
+ssh ipv6 server port 12622
+ssh user admin@jet
+ssh user admin@jet authentication-type password
+ssh user admin@jet service-type all
+ssh user admin@jet sftp-directory flash:
+ssh user marcio@jet
+ssh user marcio@jet authentication-type password
+ssh user marcio@jet service-type all
+ssh user marcio@jet sftp-directory flash:
+ssh user monitoramento
+ssh user monitoramento authentication-type password
+ssh user monitoramento service-type all
+ssh user monitoramento sftp-directory flash:
+ssh server-source all-interface
+undo ssh ipv6 server-source all-interface
+ssh authorization-type default aaa
+#
+ssh server cipher aes256_gcm aes128_gcm aes256_ctr aes192_ctr aes128_ctr
+ssh server hmac sha2_512 sha2_256
+ssh server key-exchange dh_group_exchange_sha256 dh_group16_sha512 curve25519_sha256
+#
+ssh server publickey ecc rsa_sha2_256 rsa_sha2_512
+#
+ssh server dh-exchange min-len 3072
+#
+ssh client publickey ecc rsa_sha2_256 rsa_sha2_512
+#
+ssh client cipher aes256_gcm aes128_gcm aes256_ctr aes192_ctr aes128_ctr
+ssh client hmac sha2_512 sha2_256
+ssh client key-exchange dh_group_exchange_sha256 dh_group16_sha512 curve25519_sha256
+#
+user-interface maximum-vty 5
+#
+user-interface con 0
+ authentication-mode password
+ set authentication password cipher $1d$C(Cf(Ov2dJ)/v[({$mu2i3pkZEH-4Fo.t7j3XQ$.8HE"uW"+m+;6:rB#9$
+#
+user-interface vty 0 4
+ authentication-mode aaa
+ user privilege level 3
+ idle-timeout 5 0
+ protocol inbound ssh
+#
+ztp domain-type registration-center domain register.naas.huawei.com port 10020
+#
+http
+#
+web-manager enable port 8443
+web-manager http forward enable
+web-manager server-source all-interface
+#
+return
+<SW3-PE-BSA-SIA-01>
