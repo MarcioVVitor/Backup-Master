@@ -1,0 +1,98 @@
+root@SRV-NBM-CLOUD-01[~]# #!/bin/bash
+echo "=== NBM Deploy Completo ==="
+
+# 1. Verificar commit atual
+cd /root/nbm-cloud
+echo "Commit local atual:"
+git rev-parse --short HEAD
+
+# 2. Forçar atualização do código
+echo ""
+echo "Atualizando código..."
+git fetch origin main
+git reset --hard origin/main
+echo "Novo commit:"
+git rev-parse --short HEAD
+
+# 3. Verificar se terminal.tsx tem Popover
+echo ""
+echo "Verificando código do terminal..."
+grep -c "Popover" client/src/pages/terminal.tsx && echo "OK: Popover encontrado" || echo "ERRO: Popover não encontrado"
+
+# 4. Limpar e rebuildar
+echo ""
+echo "Limpando dist antigo..."
+echo "=== Deploy completo! ==="| grep -oP 'index-[A-Za-z0-9]+\.js'
+=== NBM Deploy Completo ===
+Commit local atual:
+c0e9268
+
+Atualizando código...
+remote: Enumerating objects: 6, done.
+remote: Counting objects: 100% (6/6), done.
+remote: Compressing objects: 100% (2/2), done.
+remote: Total 4 (delta 2), reused 4 (delta 2), pack-reused 0 (from 0)
+Unpacking objects: 100% (4/4), 121.37 KiB | 2.53 MiB/s, done.
+From https://github.com/MarcioVVitor/Backup-Master
+ * branch            main       -> FETCH_HEAD
+   c0e9268..2d87c1c  main       -> origin/main
+HEAD is now at 2d87c1c Update production deployment script with detailed steps
+Novo commit:
+2d87c1c
+
+Verificando código do terminal...
+9
+OK: Popover encontrado
+
+Limpando dist antigo...
+Instalando dependências...
+
+up to date, audited 652 packages in 2s
+
+91 packages are looking for funding
+  run `npm fund` for details
+
+4 high severity vulnerabilities
+
+To address all issues, run:
+  npm audit fix
+
+Run `npm audit` for details.
+Fazendo build...
+
+> rest-express@1.0.0 build
+> tsx script/build.ts
+
+building client...
+vite v7.3.0 building client environment for production...
+✓ 3317 modules transformed.
+../dist/public/index.html                     2.87 kB │ gzip:   1.04 kB
+../dist/public/assets/index-DJm-zcOy.css     80.73 kB │ gzip:  13.50 kB
+../dist/public/assets/index-BMZtdVQP.js   1,317.91 kB │ gzip: 365.40 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 11.47s
+building server...
+
+  dist/index.cjs  1.3mb ⚠️
+
+⚡ Done in 154ms
+
+Bundle gerado:
+-rw-rw-r-- 1 root root 1317908 Jan 11 17:28 dist/public/assets/index-BMZtdVQP.js
+
+Copiando para /opt/nbm/dist...
+
+Reiniciando serviço...
+
+Bundle em produção:
+index-BMZtdVQP.js
+
+Status do serviço:
+active
+
+=== Deploy completo! ===
+root@SRV-NBM-CLOUD-01[~/nbm-cloud]# 
