@@ -1,0 +1,53 @@
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[/tmp]# # No servidor do AGENTE (143.255.197.26):
+tail -50 /opt/nbm-agent/logs/agent.log
+[2026-01-10 22:17:48] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-11T01:17:48.424Z"}
+[2026-01-10 22:17:48] [DEBUG] Heartbeat acknowledged
+[2026-01-10 22:18:03] [DEBUG] Sent heartbeat
+[2026-01-10 22:18:03] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-11T01:18:03.440Z"}
+[2026-01-10 22:18:03] [DEBUG] Heartbeat acknowledged
+[2026-01-10 22:18:18] [DEBUG] Sent heartbeat
+[2026-01-10 22:18:18] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-11T01:18:18.438Z"}
+[2026-01-10 22:18:18] [DEBUG] Heartbeat acknowledged
+[2026-01-10 22:18:33] [DEBUG] Sent heartbeat
+[2026-01-10 22:18:33] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-11T01:18:33.446Z"}
+[2026-01-10 22:18:33] [DEBUG] Heartbeat acknowledged
+[2026-01-10 22:18:48] [DEBUG] Sent heartbeat
+[2026-01-10 22:18:48] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-11T01:18:48.445Z"}
+[2026-01-10 22:18:48] [DEBUG] Heartbeat acknowledged
+[2026-01-10 22:18:55] [DEBUG] Received: {"type":"backup_job","jobId":"backup-9-1768094335186","equipment":{"id":9,"name":"SW3-P2-BSA-SIA-01","ip":"172.16.249.250","port":12622,"protocol":"ssh","username":"marcio@jet","password":"@#2Dc9d967","manufacturer":"huawei"},"config":{"command":"screen-length 0 temporary
+display current-configuration","useShell":true,"timeout":60000}}
+[2026-01-10 22:18:55] [DEBUG] Received message type: backup_job
+[2026-01-10 22:18:55] [INFO] Executing backup job backup-9-1768094335186 for 172.16.249.250:12622 with command: screen-length 0 temporary
+display current-configuration
+[2026-01-10 22:18:55] [INFO] Executing SSH backup on 172.16.249.250:12622
+[2026-01-10 22:18:55] [DEBUG] Using stdin mode for multi-line command
+[2026-01-10 22:19:03] [DEBUG] Sent heartbeat
+[2026-01-10 22:19:18] [DEBUG] Sent heartbeat
+[2026-01-10 22:19:33] [DEBUG] Sent heartbeat
+[2026-01-10 22:19:48] [DEBUG] Sent heartbeat
+[2026-01-10 22:20:03] [DEBUG] Sent heartbeat
+[2026-01-10 22:20:18] [DEBUG] Sent heartbeat
+[2026-01-10 22:20:33] [DEBUG] Sent heartbeat
+[2026-01-10 22:20:48] [DEBUG] Sent heartbeat
+[2026-01-10 22:20:55] [ERROR] SSH backup timed out after 120s
+[2026-01-10 22:20:55] [ERROR] Backup failed for 172.16.249.250
+[2026-01-10 22:20:55] [INFO] Sending response, length: 107 bytes
+[2026-01-10 22:20:55] [INFO] Response sent successfully (107 bytes)
+[2026-01-10 22:20:55] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-11T01:19:03.440Z"}
+[2026-01-10 22:20:55] [DEBUG] Heartbeat acknowledged
+[2026-01-10 22:20:55] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-11T01:19:18.457Z"}
+[2026-01-10 22:20:55] [DEBUG] Heartbeat acknowledged
+[2026-01-10 22:20:55] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-11T01:19:33.453Z"}
+[2026-01-10 22:20:55] [DEBUG] Heartbeat acknowledged
+[2026-01-10 22:20:55] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-11T01:19:48.457Z"}
+[2026-01-10 22:20:55] [DEBUG] Heartbeat acknowledged
+[2026-01-10 22:20:55] [DEBUG] Received: {"type":"backup_job","jobId":"backup-12-1768094402340","equipment":{"id":12,"name":"SW2-ACE-BSA-JKSHP-01","ip":"10.15.160.130","port":12622,"protocol":"ssh","username":"root","password":"@2Dc9d967","manufacturer":"huawei"},"config":{"command":"screen-length 0 temporary
+display current-configuration","useShell":true,"timeout":60000}}
+[2026-01-10 22:20:55] [DEBUG] Received message type: backup_job
+[2026-01-10 22:20:55] [INFO] Executing backup job backup-12-1768094402340 for 10.15.160.130:12622 with command: screen-length 0 temporary
+display current-configuration
+[2026-01-10 22:20:55] [INFO] Executing SSH backup on 10.15.160.130:12622
+[2026-01-10 22:20:55] [DEBUG] Using stdin mode for multi-line command
+[2026-01-10 22:21:03] [DEBUG] Sent heartbeat
+[2026-01-10 22:21:18] [DEBUG] Sent heartbeat
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[/tmp]# 
