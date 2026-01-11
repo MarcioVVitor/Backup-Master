@@ -307,24 +307,40 @@ export default function TerminalPage() {
 
     try {
       const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const wsUrl = `${protocol}//${window.location.host}/api/terminal/ws/${eq.id}`;
+      const wsUrl = `${protocol}//${window.location.host}/ws/terminal`;
       
       const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
 
       ws.onopen = () => {
-        setIsConnected(true);
-        setIsConnecting(false);
-        addLine('system', `${t.terminal.connectedTo} ${eq.name} (${eq.ip})`);
-        inputRef.current?.focus();
+        // Send connect request with equipment ID
+        ws.send(JSON.stringify({ type: 'connect', equipmentId: eq.id }));
       };
 
       ws.onmessage = (event) => {
-        const data = event.data;
-        if (data.startsWith('ERROR:')) {
-          addLine('error', data.substring(6));
-        } else {
-          addLine('output', data);
+        try {
+          const data = JSON.parse(event.data);
+          
+          if (data.type === 'connected') {
+            setIsConnected(true);
+            setIsConnecting(false);
+            addLine('system', `${t.terminal.connectedTo} ${eq.name} (${eq.ip})`);
+            inputRef.current?.focus();
+          } else if (data.type === 'status') {
+            addLine('system', data.message);
+          } else if (data.type === 'output') {
+            addLine('output', data.data);
+          } else if (data.type === 'error') {
+            addLine('error', data.message);
+            setIsConnecting(false);
+          } else if (data.type === 'disconnected') {
+            addLine('system', t.terminal.connectionClosed);
+            setIsConnected(false);
+            setIsConnecting(false);
+          }
+        } catch {
+          // Plain text fallback
+          addLine('output', event.data);
         }
       };
 
@@ -367,7 +383,7 @@ export default function TerminalPage() {
     const command = commandInput.trim();
     addLine('input', `> ${command}`);
     
-    wsRef.current.send(command);
+    wsRef.current.send(JSON.stringify({ type: 'input', data: command }));
     
     setCommandHistory(prev => [...prev, command]);
     setHistoryIndex(-1);
