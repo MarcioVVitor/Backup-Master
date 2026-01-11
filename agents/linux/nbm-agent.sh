@@ -6,7 +6,7 @@
 # Don't exit on error - we handle errors ourselves
 set +e
 
-AGENT_VERSION="1.0.38"
+AGENT_VERSION="1.0.39"
 AGENT_DIR="/opt/nbm-agent"
 CONFIG_FILE="$AGENT_DIR/config.json"
 LOG_FILE="$AGENT_DIR/logs/agent.log"
@@ -802,7 +802,12 @@ while {$page_count < $max_pages} {
     }
 }
 
+# Wait a moment before exit to ensure clean separation
+sleep 0.5
+
 # Exit gracefully
+send "\r"
+expect "#"
 send "exit\r"
 expect {
     eof { }
