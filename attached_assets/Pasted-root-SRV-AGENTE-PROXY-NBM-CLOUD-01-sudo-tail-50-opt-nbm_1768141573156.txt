@@ -1,0 +1,52 @@
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[~]# sudo tail -50 /opt/nbm-agent/logs/agent.log
+[2026-01-11 11:21:01] [DEBUG] Sent heartbeat
+[2026-01-11 11:21:01] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-11T14:21:01.208Z"}
+[2026-01-11 11:21:01] [DEBUG] Heartbeat acknowledged
+[2026-01-11 11:21:16] [DEBUG] Sent heartbeat
+[2026-01-11 11:21:16] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-11T14:21:16.208Z"}
+[2026-01-11 11:21:16] [DEBUG] Heartbeat acknowledged
+[2026-01-11 11:21:31] [DEBUG] Sent heartbeat
+[2026-01-11 11:21:31] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-11T14:21:31.221Z"}
+[2026-01-11 11:21:31] [DEBUG] Heartbeat acknowledged
+[2026-01-11 11:21:46] [DEBUG] Sent heartbeat
+[2026-01-11 11:21:46] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-11T14:21:46.223Z"}
+[2026-01-11 11:21:46] [DEBUG] Heartbeat acknowledged
+[2026-01-11 11:22:01] [DEBUG] Sent heartbeat
+[2026-01-11 11:22:01] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-11T14:22:01.235Z"}
+[2026-01-11 11:22:01] [DEBUG] Heartbeat acknowledged
+[2026-01-11 11:22:14] [INFO] Stopping agent (PID: 53934)...
+[2026-01-11 11:22:14] [INFO] Agent stopped
+[2026-01-11 11:22:15] [INFO] Configuration loaded: Agent=proxy-grupojet-01, Server=http://143.255.197.25:5000
+[2026-01-11 11:22:15] [INFO] Starting NBM CLOUD Agent v1.0.25
+[2026-01-11 11:22:15] [INFO] Agent started with PID: 54184
+[2026-01-11 11:22:15] [INFO] Connecting to WebSocket: ws://143.255.197.25:5000/ws/agents
+[2026-01-11 11:22:15] [INFO] Establishing WebSocket connection...
+[2026-01-11 11:22:15] [DEBUG] WebSocket process started with PID: 54195
+[2026-01-11 11:22:15] [DEBUG] Sent auth message
+[2026-01-11 11:22:15] [DEBUG] Received: {"type":"auth_success","agentId":1,"config":null}
+[2026-01-11 11:22:15] [INFO] Authentication successful
+[2026-01-11 11:22:30] [DEBUG] Sent heartbeat
+[2026-01-11 11:22:30] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-11T14:22:30.051Z"}
+[2026-01-11 11:22:30] [DEBUG] Heartbeat acknowledged
+[2026-01-11 11:22:45] [DEBUG] Sent heartbeat
+[2026-01-11 11:22:45] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-11T14:22:45.056Z"}
+[2026-01-11 11:22:45] [DEBUG] Heartbeat acknowledged
+[2026-01-11 11:22:53] [DEBUG] Received: {"type":"backup_job","jobId":"backup-15-1768141373370","equipment":{"id":15,"name":"OLT-ACE-GNA-NOKIA-ANDRADE-01","ip":"172.16.31.18","port":22,"protocol":"ssh","username":"isadmin","password":"@2Dc9d967","enablePassword":"","manufacturer":"nokia"},"config":{"command":"admin display-config","useShell":true,"timeout":60000}}
+[2026-01-11 11:22:53] [DEBUG] Received message type: backup_job
+[2026-01-11 11:22:53] [INFO] Executing backup job backup-15-1768141373370 for 172.16.31.18:22 with command: admin display-config
+[2026-01-11 11:22:53] [DEBUG] Nokia device - using expect session
+[2026-01-11 11:22:53] [INFO] Executing Nokia backup with expect on 172.16.31.18:22
+[2026-01-11 11:23:00] [DEBUG] Sent heartbeat
+[2026-01-11 11:23:15] [DEBUG] Sent heartbeat
+[2026-01-11 11:23:30] [DEBUG] Sent heartbeat
+[2026-01-11 11:23:45] [DEBUG] Sent heartbeat
+[2026-01-11 11:24:00] [DEBUG] Sent heartbeat
+[2026-01-11 11:24:15] [DEBUG] Sent heartbeat
+[2026-01-11 11:24:30] [DEBUG] Sent heartbeat
+[2026-01-11 11:24:45] [DEBUG] Sent heartbeat
+[2026-01-11 11:25:00] [DEBUG] Sent heartbeat
+[2026-01-11 11:25:15] [DEBUG] Sent heartbeat
+[2026-01-11 11:25:30] [DEBUG] Sent heartbeat
+[2026-01-11 11:25:45] [DEBUG] Sent heartbeat
+[2026-01-11 11:26:00] [DEBUG] Sent heartbeat
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[~]# 

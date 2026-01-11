@@ -6,7 +6,7 @@
 # Don't exit on error - we handle errors ourselves
 set +e
 
-AGENT_VERSION="1.0.25"
+AGENT_VERSION="1.0.26"
 AGENT_DIR="/opt/nbm-agent"
 CONFIG_FILE="$AGENT_DIR/config.json"
 LOG_FILE="$AGENT_DIR/logs/agent.log"
@@ -443,14 +443,20 @@ execute_nokia_backup_expect() {
     local port="$2"
     local username="$3"
     local password="$4"
-    local timeout="${5:-180}"
+    local timeout="${5:-1800}"
     
-    log_info "Executing Nokia backup with expect on $host:$port"
+    log_info "Executing Nokia backup with expect on $host:$port (Agent v1.0.26 - configure/info method)"
     
     # Create expect script for Nokia SR OS
     # Nokia requires pure interactive SSH - no sshpass, no exec
+    # Uses: configure -> info to get full configuration
     local expect_script=$(cat <<'EXPECT_EOF'
 #!/usr/bin/expect -f
+
+# CRITICAL: Set match_max FIRST before any spawn to allocate large buffer
+# 200MB buffer for very large Nokia configurations (6000+ lines)
+match_max 200000000
+
 set timeout [lindex $argv 0]
 set host [lindex $argv 1]
 set port [lindex $argv 2]
@@ -459,12 +465,13 @@ set password [lindex $argv 4]
 
 log_user 1
 
+puts "NOKIA_DEBUG: Starting Nokia backup v1.0.26 (configure/info method)"
+puts "NOKIA_DEBUG: Buffer size: 200MB, Timeout: ${timeout}s"
+
 # Pure SSH connection - Nokia doesn't accept exec requests
-# UserKnownHostsFile=/dev/null avoids host key verification errors
-# Very aggressive keepalives for large configs that take a long time
 # HostKeyAlgorithms and PubkeyAcceptedAlgorithms enable legacy ssh-rsa for Nokia
 spawn ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
-    -o ConnectTimeout=30 -o ServerAliveInterval=5 -o ServerAliveCountMax=60 \
+    -o ConnectTimeout=30 -o ServerAliveInterval=3 -o ServerAliveCountMax=200 \
     -o TCPKeepAlive=yes \
     -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa \
     -p $port $username@$host
@@ -479,18 +486,17 @@ expect {
 # Wait for Nokia prompt (ends with # or >)
 # Nokia prompts look like: A:hostname# or *A:hostname# or just hostname#
 expect {
-    -re {[*]?[AB]:[^\r\n]+[#>]} { }
-    -re {[a-zA-Z0-9_-]+[#>]\s*$} { }
-    "#" { }
-    ">" { }
+    -re {[*]?[AB]:[^\r\n]+[#>]} { puts "NOKIA_DEBUG: Got prompt type 1" }
+    -re {[a-zA-Z0-9_-]+[#>]\s*$} { puts "NOKIA_DEBUG: Got prompt type 2" }
+    "#" { puts "NOKIA_DEBUG: Got # prompt" }
+    ">" { puts "NOKIA_DEBUG: Got > prompt" }
     "Login incorrect" { puts "EXPECT_ERROR: Authentication failed"; exit 1 }
     "Access denied" { puts "EXPECT_ERROR: Access denied"; exit 1 }
     timeout { puts "EXPECT_ERROR: Timeout waiting for prompt"; exit 1 }
     eof { puts "EXPECT_ERROR: Connection closed during login"; exit 1 }
 }
 
-# Small delay to ensure connection is stable
-sleep 1
+puts "NOKIA_DEBUG: Login successful, disabling pagination"
 
 # Disable pagination (Nokia SR OS)
 send "environment no more\r"
@@ -502,31 +508,50 @@ expect {
     timeout { puts "EXPECT_ERROR: Timeout after environment no more"; exit 1 }
 }
 
-# Small delay before main command
 sleep 0.5
 
-# Execute backup command with very long timeout for large configs (30 min)
-set timeout 1800
-send "admin display-config\r"
+puts "NOKIA_DEBUG: Entering configure mode"
 
-# Wait for the prompt to return after full output
-# Nokia config ends with "# Finished DAY MON DD HH:MM:SS YYYY TZ" then prompt
-# The config can be very large (100k+ lines), wait for "# Finished" marker
-# Use match_max to increase buffer size for large outputs
-match_max 100000000
-
+# Enter configure mode
+send "configure\r"
 expect {
-    -re {# Finished [A-Z][a-z][a-z] [A-Z][a-z][a-z] [0-9]+ [0-9]+:[0-9]+:[0-9]+ [0-9]+ [A-Z]+} { 
-        # Found the Finished marker, now wait for prompt
-        expect {
-            -re {[*]?[AB]:[^\r\n]+#\s*$} { }
-            -re {[a-zA-Z0-9_-]+#\s*$} { }
-            "#" { }
-            timeout { }
-        }
-    }
-    timeout { puts "EXPECT_ERROR: Timeout waiting for configuration output (30 min exceeded)"; exit 1 }
+    -re {[*]?[AB]:[^\r\n]+[#>]} { }
+    -re {[a-zA-Z0-9_-]+[#>]} { }
+    "#" { }
+    ">" { }
+    timeout { puts "EXPECT_ERROR: Timeout entering configure mode"; exit 1 }
+}
+
+sleep 0.3
+
+puts "NOKIA_DEBUG: Executing info command - this may take several minutes for large configs"
+
+# Very long timeout for large configs (60 min = 3600s)
+set timeout 3600
+
+# Execute info command to get full configuration
+send "info\r"
+
+# Wait for prompt after info output
+# The output can be very large (6000+ lines)
+# Look for the prompt pattern after all output
+expect {
+    -re {\r\n[*]?[AB]:[^\r\n]+#\s*$} { puts "NOKIA_DEBUG: Config capture complete (prompt type 1)" }
+    -re {\r\n[a-zA-Z0-9_@-]+#\s*$} { puts "NOKIA_DEBUG: Config capture complete (prompt type 2)" }
+    timeout { puts "EXPECT_ERROR: Timeout waiting for configuration output (60 min exceeded)"; exit 1 }
     eof { puts "EXPECT_ERROR: Connection closed during backup"; exit 1 }
+}
+
+puts "NOKIA_DEBUG: Exiting configure mode"
+
+# Exit configure mode
+send "exit all\r"
+expect {
+    -re {[*]?[AB]:[^\r\n]+[#>]} { }
+    -re {[a-zA-Z0-9_-]+[#>]} { }
+    "#" { }
+    ">" { }
+    timeout { }
 }
 
 # Exit gracefully
@@ -536,6 +561,8 @@ expect {
     eof { }
     timeout { }
 }
+
+puts "NOKIA_DEBUG: Backup completed successfully"
 EXPECT_EOF
 )
     
@@ -584,7 +611,7 @@ execute_zte_backup_expect() {
     local enable_password="$5"
     local timeout="${6:-180}"
     
-    log_info "Executing ZTE OLT backup with expect on $host:$port (Agent v1.0.25)"
+    log_info "Executing ZTE OLT backup with expect on $host:$port (Agent v1.0.26)"
     log_info "ZTE enable_password provided: ${enable_password:+(yes)}"
     
     # Create expect script for ZTE TITAN OLT (C300/C320/C600)
@@ -600,7 +627,7 @@ set enable_pass [lindex $argv 5]
 
 log_user 1
 
-puts "ZTE_DEBUG: Starting ZTE backup (agent v1.0.25)"
+puts "ZTE_DEBUG: Starting ZTE backup (agent v1.0.26)"
 puts "ZTE_DEBUG: Enable password provided: [expr {$enable_pass ne "" && $enable_pass ne "null" ? "yes" : "no (using default zxr10)"}]"
 
 # SSH connection - simplified for Debian 13 compatibility
