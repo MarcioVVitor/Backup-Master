@@ -9,7 +9,7 @@ import { Client as SSHClient } from "ssh2";
 import net from "net";
 import { createServerRoutes } from "./routes/server-routes";
 import { withTenantContext } from "./middleware/tenant";
-import { startScheduler, setBackupExecutor } from "./scheduler";
+import { startScheduler, setBackupExecutor, runPolicyNow } from "./scheduler";
 
 const isStandalone = !process.env.REPL_ID;
 
@@ -1707,6 +1707,18 @@ export async function registerRoutes(
     } catch (e) {
       console.error("Error getting scheduler status:", e);
       res.status(500).json({ message: "Erro ao obter status do scheduler" });
+    }
+  });
+
+  // API - Run policy manually (for testing)
+  app.post('/api/scheduler/policies/:id/run', isAuthenticated, async (req, res) => {
+    try {
+      const policyId = parseInt(req.params.id);
+      const result = await runPolicyNow(policyId);
+      res.json(result);
+    } catch (e: any) {
+      console.error("Error running policy:", e);
+      res.status(500).json({ success: false, message: e.message });
     }
   });
 

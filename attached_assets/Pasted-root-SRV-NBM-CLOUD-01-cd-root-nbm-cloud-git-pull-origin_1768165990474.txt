@@ -1,0 +1,51 @@
+root@SRV-NBM-CLOUD-01[~]# cd /root/nbm-cloud && git pull origin main && npm run build && cp -r dist/* /opt/nbm/dist/ && systemctl restart nbm
+remote: Enumerating objects: 23, done.
+remote: Counting objects: 100% (23/23), done.
+remote: Compressing objects: 100% (5/5), done.
+remote: Total 18 (delta 13), reused 18 (delta 13), pack-reused 0 (from 0)
+Unpacking objects: 100% (18/18), 108.73 KiB | 1.55 MiB/s, done.
+From https://github.com/MarcioVVitor/Backup-Master
+ * branch            main       -> FETCH_HEAD
+   9de2a16..a3e0bad  main       -> origin/main
+Updating 9de2a16..a3e0bad
+Fast-forward
+ attached_assets/image_1768164671697.png | Bin 0 -> 138295 bytes
+ server/routes.ts                        |  92 ++++++++++++++++++++++++
+ server/scheduler.ts                     | 295 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ server/storage.ts                       |   4 +-
+ 4 files changed, 389 insertions(+), 2 deletions(-)
+ create mode 100644 attached_assets/image_1768164671697.png
+ create mode 100644 server/scheduler.ts
+
+> rest-express@1.0.0 build
+> tsx script/build.ts
+
+building client...
+vite v7.3.0 building client environment for production...
+✓ 3317 modules transformed.
+../dist/public/index.html                     2.87 kB │ gzip:   1.04 kB
+../dist/public/assets/index-DJm-zcOy.css     80.73 kB │ gzip:  13.50 kB
+../dist/public/assets/index-_86PN_42.js   1,317.91 kB │ gzip: 365.39 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 11.30s
+building server...
+
+  dist/index.cjs  1.3mb ⚠️
+
+⚡ Done in 153ms
+root@SRV-NBM-CLOUD-01[~/nbm-cloud]# cd
+root@SRV-NBM-CLOUD-01[~]# journalctl -u nbm -f | grep scheduler
+Jan 11 18:09:46 SRV-NBM-CLOUD-01 nbm[50010]: [scheduler] 11/01/2026, 18:09:46 - Backup executor registered
+Jan 11 18:09:46 SRV-NBM-CLOUD-01 nbm[50010]: [scheduler] 11/01/2026, 18:09:46 - Starting backup scheduler...
+Jan 11 18:09:46 SRV-NBM-CLOUD-01 nbm[50010]: [scheduler] 11/01/2026, 18:09:46 - Timezone: America/Sao_Paulo
+Jan 11 18:09:46 SRV-NBM-CLOUD-01 nbm[50010]: [scheduler] 11/01/2026, 18:09:46 - Check interval: 60 seconds
+Jan 11 18:09:46 SRV-NBM-CLOUD-01 nbm[50010]: [scheduler] 11/01/2026, 18:09:46 - Current time: 18:09, Day of week: 0, Day of month: 11
+Jan 11 18:09:46 SRV-NBM-CLOUD-01 nbm[50010]: [scheduler] 11/01/2026, 18:09:46 - Scheduler started successfully
+Jan 11 18:10:13 SRV-NBM-CLOUD-01 nbm[50010]: 6:10:13 PM [express] GET /api/scheduler/policies 304 in 59ms :: [{"id":1,"companyId":null,"name":"teste","description":"","enabled":true,"frequencyType":"daily","time":"17:40","daysOfWeek":[],"dayOfMonth":null,"manufacturerFilters":["mikrotik","huawei","cisco","zte","datacom","datacom-dmos","juniper","nokia"],"modelFilters":["MX2004","DM4610","DM4370","DM-SW-3224F2","DM-EDD2104","ZTE-C610","ISAM-7360-FX-8","ASR-920","NEXUS-3064","S6851","ATN910C","S6330","S6750"," CCR2004-1G-12S+2XS","CCR1016-12G ","CHR","RB3011UiAS ","CCR2116-12G-4S+","CCR1036-8G-2S+","CCR1036-8G-2S+ "],"equipmentIds":[],"lastRunAt":null,"nextRunAt":null,"lastStatus":null,"createdBy":null,"createdAt":"2026-01-11T15:30:09.077Z","updatedAt":"2026-01-11T20:32:56.998Z"}]
+Jan 11 18:10:52 SRV-NBM-CLOUD-01 nbm[50010]: 6:10:52 PM [express] PUT /api/scheduler/policies/1 200 in 28ms :: {"id":1,"companyId":null,"name":"teste","description":"","enabled":true,"frequencyType":"daily","time":"17:12","daysOfWeek":[],"dayOfMonth":null,"manufacturerFilters":["juniper"],"modelFilters":["MX2004"],"equipmentIds":[],"lastRunAt":null,"nextRunAt":null,"lastStatus":null,"createdBy":null,"createdAt":"2026-01-11T15:30:09.077Z","updatedAt":"2026-01-11T21:10:52.551Z"}
+Jan 11 18:10:52 SRV-NBM-CLOUD-01 nbm[50010]: 6:10:52 PM [express] GET /api/scheduler/policies 200 in 7ms :: [{"id":1,"companyId":null,"name":"teste","description":"","enabled":true,"frequencyType":"daily","time":"17:12","daysOfWeek":[],"dayOfMonth":null,"manufacturerFilters":["juniper"],"modelFilters":["MX2004"],"equipmentIds":[],"lastRunAt":null,"nextRunAt":null,"lastStatus":null,"createdBy":null,"createdAt":"2026-01-11T15:30:09.077Z","updatedAt":"2026-01-11T21:10:52.551Z"}]
+

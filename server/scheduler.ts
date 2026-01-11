@@ -225,6 +225,7 @@ function calculateNextRun(policy: BackupPolicy): Date {
 async function checkAndRunPolicies(): Promise<void> {
   try {
     const currentTime = getCurrentTimeInTimezone();
+    const currentTimeStr = `${currentTime.hour.toString().padStart(2, "0")}:${currentTime.minute.toString().padStart(2, "0")}`;
     const policies = await storage.getBackupPolicies();
     const enabledPolicies = policies.filter(p => p.enabled);
     
@@ -232,13 +233,32 @@ async function checkAndRunPolicies(): Promise<void> {
       return;
     }
     
+    log(`Checking ${enabledPolicies.length} policies at ${currentTimeStr} (DOW:${currentTime.dayOfWeek}, DOM:${currentTime.dayOfMonth})`);
+    
     for (const policy of enabledPolicies) {
-      if (shouldRunPolicy(policy, currentTime)) {
+      const shouldRun = shouldRunPolicy(policy, currentTime);
+      log(`Policy "${policy.name}": time=${policy.time}, freq=${policy.frequencyType}, shouldRun=${shouldRun}`);
+      if (shouldRun) {
         await runPolicy(policy);
       }
     }
   } catch (err: any) {
     log(`Error checking policies: ${err.message}`);
+  }
+}
+
+export async function runPolicyNow(policyId: number): Promise<{ success: boolean; message: string }> {
+  try {
+    const policy = await storage.getBackupPolicyById(policyId);
+    if (!policy) {
+      return { success: false, message: "Política não encontrada" };
+    }
+    
+    log(`Manual execution requested for policy: ${policy.name}`);
+    await runPolicy(policy);
+    return { success: true, message: `Política "${policy.name}" executada` };
+  } catch (err: any) {
+    return { success: false, message: err.message };
   }
 }
 
