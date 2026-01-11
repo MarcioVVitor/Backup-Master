@@ -6,7 +6,7 @@
 # Don't exit on error - we handle errors ourselves
 set +e
 
-AGENT_VERSION="1.0.20"
+AGENT_VERSION="1.0.21"
 AGENT_DIR="/opt/nbm-agent"
 CONFIG_FILE="$AGENT_DIR/config.json"
 LOG_FILE="$AGENT_DIR/logs/agent.log"
@@ -224,10 +224,9 @@ set password [lindex $argv 4]
 log_user 1
 
 # Use sshpass for more reliable password handling
-spawn sshpass -p $password ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 \
-    -o ServerAliveInterval=10 -o ServerAliveCountMax=6 \
-    -o HostKeyAlgorithms=ssh-rsa -o PubkeyAcceptedKeyTypes=ssh-rsa \
-    -o KexAlgorithms=diffie-hellman-group14-sha1,diffie-hellman-group1-sha1 \
+# UserKnownHostsFile=/dev/null avoids host key verification errors
+spawn sshpass -p $password ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+    -o ConnectTimeout=30 -o ServerAliveInterval=10 -o ServerAliveCountMax=6 \
     -tt -p $port $username@$host
 
 # Wait for initial prompt (> or <hostname>)
@@ -458,10 +457,9 @@ set password [lindex $argv 4]
 log_user 1
 
 # Pure SSH connection - Nokia doesn't accept exec requests
-spawn ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 \
-    -o ServerAliveInterval=15 -o ServerAliveCountMax=10 \
-    -o HostKeyAlgorithms=ssh-rsa,ssh-dss -o PubkeyAcceptedKeyTypes=ssh-rsa \
-    -o KexAlgorithms=diffie-hellman-group14-sha1,diffie-hellman-group1-sha1,diffie-hellman-group-exchange-sha1 \
+# UserKnownHostsFile=/dev/null avoids host key verification errors
+spawn ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+    -o ConnectTimeout=30 -o ServerAliveInterval=15 -o ServerAliveCountMax=10 \
     -p $port $username@$host
 
 # Wait for password prompt
@@ -569,7 +567,7 @@ execute_zte_backup_expect() {
     local enable_password="$5"
     local timeout="${6:-180}"
     
-    log_info "Executing ZTE OLT backup with expect on $host:$port (Agent v1.0.20)"
+    log_info "Executing ZTE OLT backup with expect on $host:$port (Agent v1.0.21)"
     log_info "ZTE enable_password provided: ${enable_password:+(yes)}"
     
     # Create expect script for ZTE TITAN OLT (C300/C320/C600)
@@ -585,12 +583,13 @@ set enable_pass [lindex $argv 5]
 
 log_user 1
 
-puts "ZTE_DEBUG: Starting ZTE backup (agent v1.0.20)"
+puts "ZTE_DEBUG: Starting ZTE backup (agent v1.0.21)"
 puts "ZTE_DEBUG: Enable password provided: [expr {$enable_pass ne "" && $enable_pass ne "null" ? "yes" : "no (using default zxr10)"}]"
 
 # SSH connection - simplified for Debian 13 compatibility
-spawn ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 \
-    -o ServerAliveInterval=10 -o ServerAliveCountMax=6 \
+# UserKnownHostsFile=/dev/null avoids host key verification errors
+spawn ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+    -o ConnectTimeout=30 -o ServerAliveInterval=10 -o ServerAliveCountMax=6 \
     -p $port $username@$host
 
 # Wait for password prompt
@@ -736,10 +735,8 @@ execute_ssh_backup() {
     local exit_code
     
     # SSH options for compatibility with legacy devices (Huawei, Cisco, etc.)
-    local ssh_opts="-o StrictHostKeyChecking=no -o ConnectTimeout=10 -o ServerAliveInterval=5 -o ServerAliveCountMax=3"
-    # Add legacy algorithm support for older network equipment
-    ssh_opts="$ssh_opts -o HostKeyAlgorithms=ssh-rsa -o PubkeyAcceptedKeyTypes=ssh-rsa"
-    ssh_opts="$ssh_opts -o KexAlgorithms=diffie-hellman-group14-sha1,diffie-hellman-group1-sha1"
+    # UserKnownHostsFile=/dev/null avoids host key verification errors
+    local ssh_opts="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ServerAliveInterval=5 -o ServerAliveCountMax=3"
     
     # Check if command has multiple lines (needs stdin mode with PTY)
     if [[ "$command" == *$'\n'* ]] || [[ "$command" == *"\\n"* ]]; then
