@@ -3315,8 +3315,10 @@ interface BackupConfig {
 
 async function getBackupConfig(manufacturer: string): Promise<BackupConfig> {
   const storedScripts = await storage.getVendorScriptsByManufacturer(manufacturer);
+  console.log(`[getBackupConfig] Found ${storedScripts.length} scripts for ${manufacturer}:`, storedScripts.map(s => ({ id: s.id, name: s.name })));
   const backupScript = storedScripts.find(s => s.name.toLowerCase().includes('backup'));
   if (backupScript) {
+    console.log(`[getBackupConfig] Using script ID ${backupScript.id}: "${backupScript.name}" with command: ${backupScript.command.substring(0, 100)}...`);
     return {
       command: backupScript.command,
       extension: backupScript.fileExtension || '.cfg',
@@ -3324,6 +3326,7 @@ async function getBackupConfig(manufacturer: string): Promise<BackupConfig> {
       timeout: backupScript.timeout || 30000,
     };
   }
+  console.log(`[getBackupConfig] No backup script found, using default for ${manufacturer}`);
   return getDefaultBackupConfig(manufacturer);
 }
 
