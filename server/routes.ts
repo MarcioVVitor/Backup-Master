@@ -1766,13 +1766,8 @@ export async function registerRoutes(
   const wss = new WebSocketServer({ noServer: true });
   const sessionParser = getSession();
   
-  httpServer.on('upgrade', (request: any, socket: any, head: any) => {
-    console.log('[ws-upgrade] Request to:', request.url, 'from:', request.socket?.remoteAddress);
-    
-    if (request.url !== '/ws/terminal') {
-      return;
-    }
-    
+  // Terminal upgrade handler function (will be called from consolidated upgrade handler)
+  const handleTerminalUpgrade = (request: any, socket: any, head: any) => {
     console.log('[ws-terminal] Terminal WebSocket upgrade request');
     
     sessionParser(request, {} as any, async () => {
@@ -1832,7 +1827,7 @@ export async function registerRoutes(
         socket.destroy();
       }
     });
-  });
+  };
   
   wss.on('connection', (ws: WebSocket) => {
     let currentSessionId: string | null = null;
@@ -2814,6 +2809,9 @@ export async function registerRoutes(
       agentWss.handleUpgrade(request, socket, head, (ws) => {
         agentWss.emit('connection', ws, request);
       });
+    } else if (url.pathname === '/ws/terminal') {
+      console.log('[ws-upgrade] Handling terminal WebSocket upgrade');
+      handleTerminalUpgrade(request, socket, head);
     }
   });
 
