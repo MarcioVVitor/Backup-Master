@@ -572,7 +572,7 @@ execute_zte_backup_expect() {
     log_info "Executing ZTE OLT backup with expect on $host:$port"
     
     # Create expect script for ZTE TITAN OLT (C300/C320/C600)
-    # Note: ZTE OLT doesn't use "enable" command - privilege is set per user
+    # ZTE OLT uses enable command with password (default: zxr10)
     local expect_script=$(cat <<'EXPECT_EOF'
 #!/usr/bin/expect -f
 set timeout [lindex $argv 0]
@@ -580,6 +580,7 @@ set host [lindex $argv 1]
 set port [lindex $argv 2]
 set username [lindex $argv 3]
 set password [lindex $argv 4]
+set enable_pass [lindex $argv 5]
 
 log_user 1
 
@@ -599,10 +600,12 @@ expect {
 
 # Wait for ZTE OLT prompt (ends with # or >)
 # ZTE OLT prompts look like: ZXAN# or OLT-NAME> or hostname#
+set prompt_type ""
 expect {
-    -re {[a-zA-Z0-9_-]+[#>]\s*$} { }
-    "#" { }
-    ">" { }
+    -re {[a-zA-Z0-9_-]+#\s*$} { set prompt_type "privileged" }
+    -re {[a-zA-Z0-9_-]+>\s*$} { set prompt_type "user" }
+    "#" { set prompt_type "privileged" }
+    ">" { set prompt_type "user" }
     "Login incorrect" { puts "EXPECT_ERROR: Authentication failed"; exit 1 }
     "Access denied" { puts "EXPECT_ERROR: Access denied"; exit 1 }
     "Password:" { puts "EXPECT_ERROR: Authentication failed"; exit 1 }
@@ -613,31 +616,38 @@ expect {
 # Small delay to ensure connection is stable
 sleep 1
 
-# Enter config terminal mode to get privileged access
-send "configure terminal\r"
-expect {
-    -re {[a-zA-Z0-9_-]+\(config\)#} { }
-    -re {[a-zA-Z0-9_-]+#} { }
-    "#" { }
-    "%" { }
-    timeout { }
-}
-
-# Exit config mode
-send "exit\r"
-expect {
-    -re {[a-zA-Z0-9_-]+#} { }
-    "#" { }
-    ">" { }
-    timeout { }
+# If in user mode (>), enter enable mode
+if {$prompt_type eq "user"} {
+    send "enable\r"
+    expect {
+        -re {[Pp]assword:} {
+            # Use enable password if provided, otherwise try default zxr10
+            if {$enable_pass ne "" && $enable_pass ne "null"} {
+                send "$enable_pass\r"
+            } else {
+                send "zxr10\r"
+            }
+        }
+        "#" { }
+        timeout { puts "EXPECT_ERROR: Timeout entering enable mode"; exit 1 }
+    }
+    
+    # Wait for privileged prompt
+    expect {
+        -re {[a-zA-Z0-9_-]+#} { }
+        "#" { }
+        -re {[Aa]ccess [Dd]enied} { puts "EXPECT_ERROR: Enable password rejected"; exit 1 }
+        -re {[Bb]ad [Pp]assword} { puts "EXPECT_ERROR: Enable password rejected"; exit 1 }
+        ">" { puts "EXPECT_ERROR: Failed to enter enable mode"; exit 1 }
+        timeout { puts "EXPECT_ERROR: Timeout waiting for enable prompt"; exit 1 }
+    }
 }
 
 # Disable pagination - ZTE OLT uses scroll
 send "scroll\r"
 expect {
-    -re {[a-zA-Z0-9_-]+[#>]} { }
+    -re {[a-zA-Z0-9_-]+#} { }
     "#" { }
-    ">" { }
     timeout { }
 }
 
@@ -651,7 +661,7 @@ send "show running-config\r"
 # Wait for the prompt to return after full output
 # ZTE OLT config can be very large, use longer timeout
 expect {
-    -re {\r\n[a-zA-Z0-9_-]+[#>]\s*$} { }
+    -re {\r\n[a-zA-Z0-9_-]+#\s*$} { }
     timeout { puts "EXPECT_ERROR: Timeout waiting for configuration output"; exit 1 }
     eof { puts "EXPECT_ERROR: Connection closed during backup"; exit 1 }
 }
