@@ -405,8 +405,8 @@ handle_message() {
             local manufacturer=$(echo "$equipment" | jq -r '.manufacturer // empty')
             local command=$(echo "$config" | jq -r '.command // .backupCommand')
             
-            # For Cisco devices with enable password, prepend enable command
-            if [[ "$manufacturer" == "cisco" ]] && [[ -n "$enable_password" ]] && [[ "$enable_password" != "null" ]]; then
+            # For Cisco devices with enable password, prepend enable command (case-insensitive check)
+            if [[ "${manufacturer,,}" == "cisco" ]] && [[ -n "$enable_password" ]] && [[ "$enable_password" != "null" ]]; then
                 log_debug "Cisco device with enable password - adding enable command"
                 command="enable
 $enable_password
