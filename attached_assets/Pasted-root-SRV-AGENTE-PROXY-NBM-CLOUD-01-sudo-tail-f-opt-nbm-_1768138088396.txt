@@ -1,0 +1,61 @@
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[~]# sudo tail -f /opt/nbm-agent/logs/agent.log
+[2026-01-11 10:25:57] [INFO] Agent started with PID: 49456
+[2026-01-11 10:25:57] [INFO] Connecting to WebSocket: ws://143.255.197.25:5000/ws/agents
+[2026-01-11 10:25:57] [INFO] Establishing WebSocket connection...
+[2026-01-11 10:25:57] [DEBUG] WebSocket process started with PID: 49468
+[2026-01-11 10:25:57] [DEBUG] Sent auth message
+[2026-01-11 10:25:57] [DEBUG] Received: {"type":"auth_success","agentId":1,"config":null}
+[2026-01-11 10:25:57] [INFO] Authentication successful
+[2026-01-11 10:26:12] [DEBUG] Sent heartbeat
+[2026-01-11 10:26:12] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-11T13:26:12.895Z"}
+[2026-01-11 10:26:12] [DEBUG] Heartbeat acknowledged
+[2026-01-11 10:26:27] [DEBUG] Sent heartbeat
+[2026-01-11 10:26:27] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-11T13:26:27.890Z"}
+[2026-01-11 10:26:27] [DEBUG] Heartbeat acknowledged
+[2026-01-11 10:26:38] [DEBUG] Received: {"type":"backup_job","jobId":"backup-16-1768137998456","equipment":{"id":16,"name":"OLT-ACE-GNA-ZTE-NOVO-MUNDO-01","ip":"172.16.31.2","port":22,"protocol":"ssh","username":"marcio","password":"@2Dc9d967","enablePassword":"zxr10","manufacturer":"zte"},"config":{"command":"show running-config","useShell":true,"timeout":60000}}
+[2026-01-11 10:26:38] [DEBUG] Received message type: backup_job
+[2026-01-11 10:26:38] [INFO] Executing backup job backup-16-1768137998456 for 172.16.31.2:22 with command: show running-config
+[2026-01-11 10:26:38] [DEBUG] ZTE device - using expect session
+[2026-01-11 10:26:38] [INFO] Executing ZTE OLT backup with expect on 172.16.31.2:22 (Agent v1.0.17)
+[2026-01-11 10:26:38] [INFO] ZTE enable_password provided: (yes)
+[2026-01-11 10:26:38] [ERROR] ZTE expect error: ZTE_DEBUG: Starting ZTE backup (agent v1.0.17)
+ZTE_DEBUG: Enable password provided: yes
+spawn ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 -o ServerAliveInterval=10 -o ServerAliveCountMax=6 -o HostKeyAlgorithms=+ssh-rsa,+ssh-dss -o PubkeyAcceptedAlgorithms=+ssh-rsa -o KexAlgorithms=+diffie-hellman-group14-sha1,diffie-hellman-group1-sha1,diffie-hellman-group-exchange-sha1 -p 22 marcio@172.16.31.2
+command-line line 0: Bad key types '+ssh-rsa,+ssh-dss'.
+EXPECT_ERROR: Connection closed
+[2026-01-11 10:26:38] [ERROR] Backup failed for 172.16.31.2
+[2026-01-11 10:26:38] [INFO] Sending response, length: 108 bytes
+[2026-01-11 10:26:38] [INFO] Response sent successfully (108 bytes)
+[2026-01-11 10:26:42] [DEBUG] Sent heartbeat
+[2026-01-11 10:26:42] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-11T13:26:42.896Z"}
+[2026-01-11 10:26:42] [DEBUG] Heartbeat acknowledged
+[2026-01-11 10:26:57] [DEBUG] Sent heartbeat
+[2026-01-11 10:26:57] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-11T13:26:57.901Z"}
+[2026-01-11 10:26:57] [DEBUG] Heartbeat acknowledged
+[2026-01-11 10:27:00] [DEBUG] Received: {"type":"backup_job","jobId":"backup-16-1768138020415","equipment":{"id":16,"name":"OLT-ACE-GNA-ZTE-NOVO-MUNDO-01","ip":"172.16.31.2","port":22,"protocol":"ssh","username":"marcio","password":"@2Dc9d967","enablePassword":"zxr10","manufacturer":"zte"},"config":{"command":"show running-config","useShell":true,"timeout":60000}}
+[2026-01-11 10:27:00] [DEBUG] Received message type: backup_job
+[2026-01-11 10:27:00] [INFO] Executing backup job backup-16-1768138020415 for 172.16.31.2:22 with command: show running-config
+[2026-01-11 10:27:00] [DEBUG] ZTE device - using expect session
+[2026-01-11 10:27:00] [INFO] Executing ZTE OLT backup with expect on 172.16.31.2:22 (Agent v1.0.17)
+[2026-01-11 10:27:00] [INFO] ZTE enable_password provided: (yes)
+[2026-01-11 10:27:00] [ERROR] ZTE expect error: ZTE_DEBUG: Starting ZTE backup (agent v1.0.17)
+ZTE_DEBUG: Enable password provided: yes
+spawn ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 -o ServerAliveInterval=10 -o ServerAliveCountMax=6 -o HostKeyAlgorithms=+ssh-rsa,+ssh-dss -o PubkeyAcceptedAlgorithms=+ssh-rsa -o KexAlgorithms=+diffie-hellman-group14-sha1,diffie-hellman-group1-sha1,diffie-hellman-group-exchange-sha1 -p 22 marcio@172.16.31.2
+command-line line 0: Bad key types '+ssh-rsa,+ssh-dss'.
+EXPECT_ERROR: Connection closed
+[2026-01-11 10:27:00] [ERROR] Backup failed for 172.16.31.2
+[2026-01-11 10:27:00] [INFO] Sending response, length: 108 bytes
+[2026-01-11 10:27:00] [INFO] Response sent successfully (108 bytes)
+[2026-01-11 10:27:12] [DEBUG] Sent heartbeat
+[2026-01-11 10:27:12] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-11T13:27:12.908Z"}
+[2026-01-11 10:27:12] [DEBUG] Heartbeat acknowledged
+[2026-01-11 10:27:27] [DEBUG] Sent heartbeat
+[2026-01-11 10:27:27] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-11T13:27:27.929Z"}
+[2026-01-11 10:27:27] [DEBUG] Heartbeat acknowledged
+[2026-01-11 10:27:42] [DEBUG] Sent heartbeat
+[2026-01-11 10:27:42] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-11T13:27:42.931Z"}
+[2026-01-11 10:27:42] [DEBUG] Heartbeat acknowledged
+[2026-01-11 10:27:57] [DEBUG] Sent heartbeat
+[2026-01-11 10:27:57] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-11T13:27:57.934Z"}
+[2026-01-11 10:27:57] [DEBUG] Heartbeat acknowledged
+
