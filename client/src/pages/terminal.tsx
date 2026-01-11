@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useI18n } from "@/contexts/i18n-context";
 import { Button } from "@/components/ui/button";
@@ -6,12 +6,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import {
   Dialog,
   DialogContent,
@@ -36,7 +42,9 @@ import {
   Wifi,
   WifiOff,
   Server,
-  ChevronDown
+  ChevronDown,
+  Search,
+  ChevronsUpDown
 } from "lucide-react";
 
 interface Equipment {
@@ -266,6 +274,7 @@ export default function TerminalPage() {
   const [lines, setLines] = useState<TerminalLine[]>([]);
   const [commandHistory, setCommandHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
+  const [equipmentSearchOpen, setEquipmentSearchOpen] = useState(false);
   
   const terminalRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -274,6 +283,11 @@ export default function TerminalPage() {
   const { data: equipment = [] } = useQuery<Equipment[]>({
     queryKey: ["/api/equipment"],
   });
+
+  const selectedEq = useMemo(() => 
+    equipment.find(e => e.id.toString() === selectedEquipment),
+    [equipment, selectedEquipment]
+  );
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("terminal-theme");
@@ -435,8 +449,6 @@ export default function TerminalPage() {
     }
   };
 
-  const selectedEq = equipment.find(e => e.id.toString() === selectedEquipment);
-
   return (
     <div className="p-6 md:p-8 space-y-6">
       <div className="flex flex-col gap-4 md:flex-row md:justify-between md:items-center">
@@ -496,25 +508,73 @@ export default function TerminalPage() {
         <CardHeader className="pb-3">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div className="flex items-center gap-4 flex-1">
-              <div className="flex-1 max-w-sm">
-                <Select value={selectedEquipment} onValueChange={setSelectedEquipment} disabled={isConnected}>
-                  <SelectTrigger data-testid="select-terminal-equipment">
-                    <SelectValue placeholder={t.terminal.selectEquipment} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {equipment.map((eq) => (
-                      <SelectItem key={eq.id} value={eq.id.toString()}>
-                        <div className="flex items-center gap-2">
-                          <Server className="h-4 w-4" />
-                          <span>{eq.name}</span>
-                          <Badge variant="outline" className="text-[10px]">
-                            {eq.ip}
+              <div className="flex-1 max-w-md">
+                <Popover open={equipmentSearchOpen} onOpenChange={setEquipmentSearchOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={equipmentSearchOpen}
+                      className="w-full justify-between"
+                      disabled={isConnected}
+                      data-testid="select-terminal-equipment"
+                    >
+                      {selectedEq ? (
+                        <div className="flex items-center gap-2 truncate">
+                          <Server className="h-4 w-4 shrink-0" />
+                          <span className="truncate">{selectedEq.name}</span>
+                          <Badge variant="outline" className="text-[10px] shrink-0">
+                            {selectedEq.ip}
                           </Badge>
                         </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                      ) : (
+                        <span className="text-muted-foreground">{t.terminal.selectEquipment}</span>
+                      )}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[400px] p-0" align="start">
+                    <Command>
+                      <CommandInput 
+                        placeholder="Buscar por nome, marca ou modelo..." 
+                        data-testid="input-equipment-search"
+                      />
+                      <CommandList>
+                        <CommandEmpty>Nenhum equipamento encontrado.</CommandEmpty>
+                        <CommandGroup heading="Equipamentos">
+                          {equipment.map((eq) => (
+                            <CommandItem
+                              key={eq.id}
+                              value={`${eq.name} ${eq.manufacturer} ${eq.model || ''} ${eq.ip}`}
+                              onSelect={() => {
+                                setSelectedEquipment(eq.id.toString());
+                                setEquipmentSearchOpen(false);
+                              }}
+                              data-testid={`equipment-item-${eq.id}`}
+                            >
+                              <div className="flex items-center gap-2 w-full">
+                                <Server className="h-4 w-4 shrink-0" />
+                                <div className="flex flex-col flex-1 min-w-0">
+                                  <span className="font-medium truncate">{eq.name}</span>
+                                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                    <span>{eq.manufacturer}</span>
+                                    {eq.model && <span>- {eq.model}</span>}
+                                  </div>
+                                </div>
+                                <Badge variant="outline" className="text-[10px] shrink-0">
+                                  {eq.ip}
+                                </Badge>
+                                {selectedEquipment === eq.id.toString() && (
+                                  <Check className="h-4 w-4 shrink-0" />
+                                )}
+                              </div>
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
               </div>
               
               {!isConnected ? (

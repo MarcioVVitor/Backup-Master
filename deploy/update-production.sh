@@ -6,7 +6,7 @@ echo "NBM CLOUD - Production Update Script"
 echo "=========================================="
 
 SOURCE_DIR="/root/nbm-cloud"
-DEPLOY_DIR="/opt/nbm"
+DEPLOY_DIR="/opt/nbm/dist"
 BACKUP_DIR="/opt/nbm-backup-$(date +%Y%m%d_%H%M%S)"
 
 echo ""
