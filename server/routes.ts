@@ -2775,6 +2775,7 @@ export async function registerRoutes(
           protocol: equip.protocol || 'ssh',
           username: equip.username,
           password: equip.password,
+          enablePassword: equip.enablePassword,
           manufacturer: equip.manufacturer,
         },
         config: {

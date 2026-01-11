@@ -401,7 +401,17 @@ handle_message() {
             local port=$(echo "$equipment" | jq -r '.port // 22')
             local username=$(echo "$equipment" | jq -r '.username')
             local password=$(echo "$equipment" | jq -r '.password')
+            local enable_password=$(echo "$equipment" | jq -r '.enablePassword // empty')
+            local manufacturer=$(echo "$equipment" | jq -r '.manufacturer // empty')
             local command=$(echo "$config" | jq -r '.command // .backupCommand')
+            
+            # For Cisco devices with enable password, prepend enable command
+            if [[ "$manufacturer" == "cisco" ]] && [[ -n "$enable_password" ]] && [[ "$enable_password" != "null" ]]; then
+                log_debug "Cisco device with enable password - adding enable command"
+                command="enable
+$enable_password
+$command"
+            fi
             
             log_info "Executing backup job $job_id for $host:$port with command: $command"
             
