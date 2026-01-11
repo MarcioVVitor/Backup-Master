@@ -6,7 +6,7 @@
 # Don't exit on error - we handle errors ourselves
 set +e
 
-AGENT_VERSION="1.0.26"
+AGENT_VERSION="1.0.27"
 AGENT_DIR="/opt/nbm-agent"
 CONFIG_FILE="$AGENT_DIR/config.json"
 LOG_FILE="$AGENT_DIR/logs/agent.log"
@@ -445,7 +445,7 @@ execute_nokia_backup_expect() {
     local password="$4"
     local timeout="${5:-1800}"
     
-    log_info "Executing Nokia backup with expect on $host:$port (Agent v1.0.26 - configure/info method)"
+    log_info "Executing Nokia backup with expect on $host:$port (Agent v1.0.27 - sentinel method)"
     
     # Create expect script for Nokia SR OS
     # Nokia requires pure interactive SSH - no sshpass, no exec
@@ -465,7 +465,7 @@ set password [lindex $argv 4]
 
 log_user 1
 
-puts "NOKIA_DEBUG: Starting Nokia backup v1.0.26 (configure/info method)"
+puts "NOKIA_DEBUG: Starting Nokia backup v1.0.27 (sentinel method)"
 puts "NOKIA_DEBUG: Buffer size: 200MB, Timeout: ${timeout}s"
 
 # Pure SSH connection - Nokia doesn't accept exec requests
@@ -530,16 +530,27 @@ puts "NOKIA_DEBUG: Executing info command - this may take several minutes for la
 set timeout 3600
 
 # Execute info command to get full configuration
+# Then immediately queue a sentinel command that will only execute after info completes
+# This avoids matching intermediate context prompts that appear in the config output
 send "info\r"
 
-# Wait for prompt after info output
-# The output can be very large (6000+ lines)
-# Look for the prompt pattern after all output
+# Small delay then queue the sentinel command
+# The sentinel will only appear AFTER info output is complete
+after 500
+send "echo __NBM_BACKUP_COMPLETE__\r"
+
+# Wait for the sentinel marker - this is the ONLY reliable end marker
+# Do NOT match on prompts as they appear mid-stream in config output
 expect {
-    -re {\r\n[*]?[AB]:[^\r\n]+#\s*$} { puts "NOKIA_DEBUG: Config capture complete (prompt type 1)" }
-    -re {\r\n[a-zA-Z0-9_@-]+#\s*$} { puts "NOKIA_DEBUG: Config capture complete (prompt type 2)" }
+    "__NBM_BACKUP_COMPLETE__" { puts "NOKIA_DEBUG: Config capture complete (sentinel found)" }
     timeout { puts "EXPECT_ERROR: Timeout waiting for configuration output (60 min exceeded)"; exit 1 }
     eof { puts "EXPECT_ERROR: Connection closed during backup"; exit 1 }
+}
+
+# Wait for prompt after sentinel
+expect {
+    -re {[#>]\s*$} { }
+    timeout { }
 }
 
 puts "NOKIA_DEBUG: Exiting configure mode"
@@ -611,7 +622,7 @@ execute_zte_backup_expect() {
     local enable_password="$5"
     local timeout="${6:-180}"
     
-    log_info "Executing ZTE OLT backup with expect on $host:$port (Agent v1.0.26)"
+    log_info "Executing ZTE OLT backup with expect on $host:$port (Agent v1.0.27)"
     log_info "ZTE enable_password provided: ${enable_password:+(yes)}"
     
     # Create expect script for ZTE TITAN OLT (C300/C320/C600)
@@ -627,7 +638,7 @@ set enable_pass [lindex $argv 5]
 
 log_user 1
 
-puts "ZTE_DEBUG: Starting ZTE backup (agent v1.0.26)"
+puts "ZTE_DEBUG: Starting ZTE backup (agent v1.0.27)"
 puts "ZTE_DEBUG: Enable password provided: [expr {$enable_pass ne "" && $enable_pass ne "null" ? "yes" : "no (using default zxr10)"}]"
 
 # SSH connection - simplified for Debian 13 compatibility
