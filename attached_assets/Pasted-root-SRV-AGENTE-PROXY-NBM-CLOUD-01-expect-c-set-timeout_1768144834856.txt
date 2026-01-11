@@ -1,0 +1,74 @@
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[~]# expect -c '
+set timeout 30
+spawn telnet 10.0.65.4 23
+expect "login:"
+send "admin\r"
+expect "Password:"
+send "2dc9d967\r"
+expect "#"
+send "terminal datadump\r"
+expect "#"
+puts "TERMINAL DATADUMP SENT"
+send "exit\r"
+'
+spawn telnet 10.0.65.4 23
+Trying 10.0.65.4...
+Connected to 10.0.65.4.
+Escape character is '^]'.
+
+     # ####### ####### ####### #       #######  #####  ####### #     #
+      # #          #    #       #       #       #     # #     # ##   ##
+      # #          #    #       #       #       #       #     # # # # #
+      # #####      #    #####   #       #####   #       #     # #  #  #
+#     # #          #    #       #       #       #       #     # #     #
+#     # #          #    #       #       #       #     # #     # #     #
+ #####  #######    #    ####### ####### #######  #####  ####### #     #
+                  EQUIPAMENTO DE PROPRIEDADE JETELECOM
+
+SW2-ACE-GNA-CREER-JCP-GNA-19755 login: admin
+Password: 
+SW2-ACE-GNA-CREER-JCP-GN#terminal datadump
+                         ^
+% 25: Invalid input detected at '^' marker.
+SW2-ACE-GNA-CREER-JCP-GN#TERMINAL DATADUMP SENT
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[~]# 
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[~]# 
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[~]# 
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[~]# 
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[~]# 
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[~]# 
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[~]# 
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[~]# expect -c '
+set timeout 30
+spawn telnet 10.0.65.4 23
+expect "login:"
+send "admin\r"
+expect "Password:"
+send "2dc9d967\r"
+expect "#"
+send "terminal pager off\r"
+expect "#"
+puts "TERMINAL PAGER OFF SENT"
+send "exit\r"
+'
+spawn telnet 10.0.65.4 23
+Trying 10.0.65.4...
+Connected to 10.0.65.4.
+Escape character is '^]'.
+
+     # ####### ####### ####### #       #######  #####  ####### #     #
+      # #          #    #       #       #       #     # #     # ##   ##
+      # #          #    #       #       #       #       #     # # # # #
+      # #####      #    #####   #       #####   #       #     # #  #  #
+#     # #          #    #       #       #       #       #     # #     #
+#     # #          #    #       #       #       #     # #     # #     #
+ #####  #######    #    ####### ####### #######  #####  ####### #     #
+                  EQUIPAMENTO DE PROPRIEDADE JETELECOM
+
+SW2-ACE-GNA-CREER-JCP-GNA-19755 login: admin
+Password: 
+SW2-ACE-GNA-CREER-JCP-GN#terminal pager off
+                         ^
+% 25: Invalid input detected at '^' marker.
+SW2-ACE-GNA-CREER-JCP-GN#TERMINAL PAGER OFF SENT
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[~]# 
