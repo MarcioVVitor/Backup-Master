@@ -446,6 +446,7 @@ execute_nokia_backup_expect() {
     log_info "Executing Nokia backup with expect on $host:$port"
     
     # Create expect script for Nokia SR OS
+    # Nokia requires pure interactive SSH - no sshpass, no exec
     local expect_script=$(cat <<'EXPECT_EOF'
 #!/usr/bin/expect -f
 set timeout [lindex $argv 0]
@@ -456,21 +457,29 @@ set password [lindex $argv 4]
 
 log_user 1
 
-# Use sshpass for reliable password handling
-spawn sshpass -p $password ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 \
-    -o ServerAliveInterval=10 -o ServerAliveCountMax=6 \
-    -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa \
-    -o KexAlgorithms=+diffie-hellman-group14-sha1,diffie-hellman-group1-sha1 \
-    -tt -p $port $username@$host
+# Pure SSH connection - Nokia doesn't accept exec requests
+spawn ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 \
+    -o ServerAliveInterval=15 -o ServerAliveCountMax=10 \
+    -o HostKeyAlgorithms=+ssh-rsa,+ssh-dss -o PubkeyAcceptedAlgorithms=+ssh-rsa \
+    -o KexAlgorithms=+diffie-hellman-group14-sha1,diffie-hellman-group1-sha1,diffie-hellman-group-exchange-sha1 \
+    -p $port $username@$host
+
+# Wait for password prompt
+expect {
+    -re {[Pp]assword:} { send "$password\r" }
+    timeout { puts "EXPECT_ERROR: Timeout waiting for password prompt"; exit 1 }
+    eof { puts "EXPECT_ERROR: Connection closed"; exit 1 }
+}
 
 # Wait for Nokia prompt (ends with # or >)
-# Nokia prompts look like: A:hostname# or *A:hostname#
+# Nokia prompts look like: A:hostname# or *A:hostname# or just hostname#
 expect {
     -re {[*]?[AB]:[^\r\n]+[#>]} { }
+    -re {[a-zA-Z0-9_-]+[#>]\s*$} { }
     "#" { }
     ">" { }
-    "Password:" { puts "EXPECT_ERROR: Authentication failed"; exit 1 }
-    "password:" { puts "EXPECT_ERROR: Authentication failed"; exit 1 }
+    "Login incorrect" { puts "EXPECT_ERROR: Authentication failed"; exit 1 }
+    "Access denied" { puts "EXPECT_ERROR: Access denied"; exit 1 }
     timeout { puts "EXPECT_ERROR: Timeout waiting for prompt"; exit 1 }
     eof { puts "EXPECT_ERROR: Connection closed during login"; exit 1 }
 }
@@ -482,6 +491,7 @@ sleep 1
 send "environment no more\r"
 expect {
     -re {[*]?[AB]:[^\r\n]+[#>]} { }
+    -re {[a-zA-Z0-9_-]+[#>]} { }
     "#" { }
     ">" { }
     timeout { puts "EXPECT_ERROR: Timeout after environment no more"; exit 1 }
@@ -490,15 +500,16 @@ expect {
 # Small delay before main command
 sleep 0.5
 
-# Execute backup command with longer timeout
-set timeout 300
+# Execute backup command with very long timeout for large configs
+set timeout 600
 send "admin display-config\r"
 
 # Wait for the prompt to return after full output
 # Nokia config ends with prompt like A:hostname#
+# Use a loop to capture all output until we see the final prompt
 expect {
-    -re {\r\n[*]?[AB]:[^\r\n]+#} { }
-    -re {\r\n#} { }
+    -re {\r\n[*]?[AB]:[^\r\n]+#\s*$} { }
+    -re {\r\n[a-zA-Z0-9_-]+#\s*$} { }
     timeout { puts "EXPECT_ERROR: Timeout waiting for configuration output"; exit 1 }
     eof { puts "EXPECT_ERROR: Connection closed during backup"; exit 1 }
 }
@@ -506,7 +517,7 @@ expect {
 # Exit gracefully
 send "logout\r"
 expect {
-    "Are you sure" { send "y\r"; exp_continue }
+    -re {[Aa]re you sure} { send "y\r"; exp_continue }
     eof { }
     timeout { }
 }
