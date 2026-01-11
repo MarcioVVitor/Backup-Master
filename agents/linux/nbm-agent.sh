@@ -6,7 +6,7 @@
 # Don't exit on error - we handle errors ourselves
 set +e
 
-AGENT_VERSION="1.0.35"
+AGENT_VERSION="1.0.36"
 AGENT_DIR="/opt/nbm-agent"
 CONFIG_FILE="$AGENT_DIR/config.json"
 LOG_FILE="$AGENT_DIR/logs/agent.log"
@@ -449,7 +449,7 @@ execute_datacom_edd_backup_expect() {
     local protocol="${6:-ssh}"
     local timeout="${7:-300}"
     
-    log_info "Executing Datacom EDD backup with expect on $host:$port protocol=$protocol (Agent v1.0.35)"
+    log_info "Executing Datacom EDD backup with expect on $host:$port protocol=$protocol (Agent v1.0.36)"
     
     # Determine if using Telnet or SSH based on port or protocol
     local use_telnet="false"
@@ -476,7 +476,7 @@ set enable_pass [lindex $argv 5]
 log_user 1
 exp_internal 0
 
-puts "DATACOM_DEBUG: Starting Datacom EDD TELNET backup v1.0.35"
+puts "DATACOM_DEBUG: Starting Datacom EDD TELNET backup v1.0.36"
 puts "DATACOM_DEBUG: Host=$host Port=$port User=$username"
 
 # Telnet connection
@@ -544,7 +544,7 @@ send "show running-config\r"
 set config_complete 0
 while {$config_complete == 0} {
     expect {
-        "--More--" {
+        -exact "--More--" {
             # Send space to continue pagination
             send " "
         }
