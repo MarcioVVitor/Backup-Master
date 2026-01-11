@@ -1,0 +1,71 @@
+root@SRV-NBM-CLOUD-01[~]# cd /root/nbm-cloud && git pull origin main && ./deploy/update-production.sh
+remote: Enumerating objects: 10, done.
+remote: Counting objects: 100% (10/10), done.
+remote: Compressing objects: 100% (2/2), done.
+remote: Total 6 (delta 4), reused 6 (delta 4), pack-reused 0 (from 0)
+Unpacking objects: 100% (6/6), 1.98 KiB | 506.00 KiB/s, done.
+From https://github.com/MarcioVVitor/Backup-Master
+ * branch            main       -> FETCH_HEAD
+   87c6963..d4b7157  main       -> origin/main
+Updating 87c6963..d4b7157
+Fast-forward
+ ...ed-root-SRV-NBM-CLOUD-01-cd-root-nbm-cloud-git-pull-origin_1768156289483.txt | 57 ++++++++++++++++++++++++++++++++++++++
+ deploy/update-production.sh                                                     |  3 +-
+ 2 files changed, 59 insertions(+), 1 deletion(-)
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-cd-root-nbm-cloud-git-pull-origin_1768156289483.txt
+==========================================
+NBM CLOUD - Production Update Script
+==========================================
+
+[1/7] Backing up current deployment...
+Backup created: /opt/nbm-backup-20260111_153209
+
+[2/7] Pulling latest code from GitHub...
+From https://github.com/MarcioVVitor/Backup-Master
+ * branch            main       -> FETCH_HEAD
+HEAD is now at d4b7157 Update production deployment script to use cp instead of rsync
+Code updated to: d4b7157
+
+[3/7] Installing dependencies...
+
+[4/7] Building application...
+
+> rest-express@1.0.0 build
+> tsx script/build.ts
+
+building client...
+vite v7.3.0 building client environment for production...
+✓ 3312 modules transformed.
+../dist/public/index.html                     2.87 kB │ gzip:   1.04 kB
+../dist/public/assets/index-BzezBBps.css     80.70 kB │ gzip:  13.49 kB
+../dist/public/assets/index-DVbhoAE8.js   1,297.52 kB │ gzip: 357.35 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 12.45s
+building server...
+
+  dist/index.cjs  1.3mb ⚠️
+
+⚡ Done in 208ms
+
+[5/7] Deploying to production (removing old files)...
+
+[6/7] Setting permissions...
+
+[7/7] Restarting service...
+
+==========================================
+Deployment Complete!
+==========================================
+
+Verifying deployment...
+Current bundle: index-CFosh0Qd.js
+Service status: active
+
+To view logs: journalctl -u nbm -f
+Backup location: /opt/nbm-backup-20260111_153209
+
+root@SRV-NBM-CLOUD-01[~/nbm-cloud]# 
