@@ -1545,17 +1545,35 @@ export async function registerRoutes(
 
   app.post('/api/admin/customization', isAuthenticated, isAdmin, async (req, res) => {
     try {
+      console.log("[customization] Received body:", JSON.stringify(req.body));
       const parsed = customizationSchema.parse(req.body);
-      if (parsed.logoUrl !== undefined) await storage.setSetting('logo_url', parsed.logoUrl);
-      if (parsed.primaryColor !== undefined) await storage.setSetting('primary_color', parsed.primaryColor);
-      if (parsed.systemName !== undefined) await storage.setSetting('system_name', parsed.systemName);
-      if (parsed.serverIp !== undefined) await storage.setSetting('server_ip', parsed.serverIp);
+      console.log("[customization] Parsed data:", JSON.stringify(parsed));
+      
+      if (parsed.logoUrl !== undefined) {
+        console.log("[customization] Setting logo_url:", parsed.logoUrl);
+        await storage.setSetting('logo_url', parsed.logoUrl);
+      }
+      if (parsed.primaryColor !== undefined) {
+        console.log("[customization] Setting primary_color:", parsed.primaryColor);
+        await storage.setSetting('primary_color', parsed.primaryColor);
+      }
+      if (parsed.systemName !== undefined) {
+        console.log("[customization] Setting system_name:", parsed.systemName);
+        await storage.setSetting('system_name', parsed.systemName);
+      }
+      if (parsed.serverIp !== undefined) {
+        console.log("[customization] Setting server_ip:", parsed.serverIp);
+        await storage.setSetting('server_ip', parsed.serverIp);
+      }
+      
+      console.log("[customization] All settings saved successfully");
       res.json({ message: "Personalizacao salva com sucesso" });
     } catch (e) {
       if (e instanceof z.ZodError) {
+        console.error("[customization] Validation error:", JSON.stringify(e.errors));
         return res.status(400).json({ message: "Dados invalidos", errors: e.errors });
       }
-      console.error("Error saving customization:", e);
+      console.error("[customization] Error saving:", e);
       res.status(500).json({ message: "Erro ao salvar personalizacao" });
     }
   });
