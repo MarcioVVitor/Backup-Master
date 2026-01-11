@@ -251,11 +251,12 @@ function EquipmentForm({
         </div>
       </div>
 
+      <div className="space-y-2">
+        <Label>Senha Enable (Cisco)</Label>
+        <Input {...register("enablePassword")} type="password" placeholder="Senha para modo privilegiado (apenas Cisco)" />
+      </div>
+
       <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label>Senha Enable (Cisco)</Label>
-          <Input {...register("enablePassword")} type="password" placeholder="Senha para modo privilegiado" />
-        </div>
         <div className="space-y-2">
           <Label>{t.equipment.port}</Label>
           <Input 
