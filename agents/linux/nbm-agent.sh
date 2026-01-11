@@ -6,7 +6,7 @@
 # Don't exit on error - we handle errors ourselves
 set +e
 
-AGENT_VERSION="1.0.27"
+AGENT_VERSION="1.0.28"
 AGENT_DIR="/opt/nbm-agent"
 CONFIG_FILE="$AGENT_DIR/config.json"
 LOG_FILE="$AGENT_DIR/logs/agent.log"
@@ -437,6 +437,164 @@ EXPECT_EOF
     fi
 }
 
+# Execute SSH backup command for Datacom EDD (DmSwitch) with expect
+# Uses Cisco-like CLI: show running-config, terminal length 0
+execute_datacom_edd_backup_expect() {
+    local host="$1"
+    local port="$2"
+    local username="$3"
+    local password="$4"
+    local enable_password="$5"
+    local timeout="${6:-300}"
+    
+    log_info "Executing Datacom EDD backup with expect on $host:$port (Agent v1.0.28)"
+    
+    # Create expect script for Datacom EDD (DmSwitch family)
+    # Datacom EDD uses Cisco-like CLI
+    local expect_script=$(cat <<'EXPECT_EOF'
+#!/usr/bin/expect -f
+
+# Large buffer for configurations
+match_max 50000000
+
+set timeout [lindex $argv 0]
+set host [lindex $argv 1]
+set port [lindex $argv 2]
+set username [lindex $argv 3]
+set password [lindex $argv 4]
+set enable_pass [lindex $argv 5]
+
+log_user 1
+
+puts "DATACOM_DEBUG: Starting Datacom EDD backup v1.0.28"
+
+# SSH options - Datacom may use older SSH algorithms
+spawn ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+    -o ConnectTimeout=30 -o ServerAliveInterval=5 -o ServerAliveCountMax=60 \
+    -o TCPKeepAlive=yes \
+    -o HostKeyAlgorithms=+ssh-rsa,+ssh-dss -o PubkeyAcceptedAlgorithms=+ssh-rsa \
+    -o KexAlgorithms=+diffie-hellman-group1-sha1,+diffie-hellman-group14-sha1 \
+    -p $port $username@$host
+
+# Wait for password prompt
+expect {
+    -re {[Pp]assword:} { send "$password\r" }
+    timeout { puts "EXPECT_ERROR: Timeout waiting for password prompt"; exit 1 }
+    eof { puts "EXPECT_ERROR: Connection closed"; exit 1 }
+}
+
+# Wait for initial prompt (> or #)
+expect {
+    "#" { puts "DATACOM_DEBUG: Got privileged prompt" }
+    ">" { puts "DATACOM_DEBUG: Got user prompt" }
+    "Password:" { puts "EXPECT_ERROR: Authentication failed"; exit 1 }
+    "Login incorrect" { puts "EXPECT_ERROR: Authentication failed"; exit 1 }
+    timeout { puts "EXPECT_ERROR: Timeout after login"; exit 1 }
+}
+
+# Enter enable mode if needed (if prompt is >)
+if { [string match "*>" $expect_out(buffer)] } {
+    puts "DATACOM_DEBUG: Entering enable mode"
+    send "enable\r"
+    expect {
+        -re {[Pp]assword:} { 
+            if { $enable_pass ne "" && $enable_pass ne "null" } {
+                send "$enable_pass\r"
+            } else {
+                send "$password\r"
+            }
+        }
+        "#" { puts "DATACOM_DEBUG: No enable password needed" }
+        timeout { puts "EXPECT_ERROR: Timeout waiting for enable prompt"; exit 1 }
+    }
+    expect {
+        "#" { puts "DATACOM_DEBUG: Enable mode successful" }
+        -re {[Aa]ccess [Dd]enied} { puts "EXPECT_ERROR: Enable password rejected"; exit 1 }
+        ">" { puts "EXPECT_ERROR: Failed to enter enable mode"; exit 1 }
+        timeout { puts "EXPECT_ERROR: Timeout entering enable mode"; exit 1 }
+    }
+}
+
+# Disable pagination
+puts "DATACOM_DEBUG: Disabling pagination"
+send "terminal length 0\r"
+expect {
+    "#" { }
+    timeout { }
+}
+
+sleep 0.3
+
+# Execute show running-config
+puts "DATACOM_DEBUG: Executing show running-config"
+set timeout 600
+send "show running-config\r"
+
+# Wait for prompt after config output
+# Queue sentinel to detect end
+after 500
+send "echo __NBM_BACKUP_COMPLETE__\r"
+
+expect {
+    "__NBM_BACKUP_COMPLETE__" { puts "DATACOM_DEBUG: Config capture complete" }
+    -re {\r\n[a-zA-Z0-9_-]+#\s*$} { puts "DATACOM_DEBUG: Got prompt after config" }
+    timeout { puts "EXPECT_ERROR: Timeout waiting for configuration output"; exit 1 }
+    eof { puts "EXPECT_ERROR: Connection closed during backup"; exit 1 }
+}
+
+# If sentinel matched, wait for prompt
+expect {
+    "#" { }
+    timeout { }
+}
+
+# Exit gracefully
+send "exit\r"
+expect {
+    eof { }
+    timeout { }
+}
+
+puts "DATACOM_DEBUG: Backup completed successfully"
+EXPECT_EOF
+)
+    
+    # Write expect script to temp file
+    local expect_file="/tmp/datacom_edd_backup_$$.exp"
+    echo "$expect_script" > "$expect_file"
+    chmod +x "$expect_file"
+    
+    # Execute expect script
+    local output
+    local exit_code
+    output=$(timeout "$timeout" expect "$expect_file" "$timeout" "$host" "$port" "$username" "$password" "$enable_password" 2>&1)
+    exit_code=$?
+    
+    # Clean up
+    rm -f "$expect_file"
+    
+    # Check results
+    if [[ $exit_code -eq 124 ]]; then
+        log_error "Datacom EDD backup timed out after ${timeout}s"
+        return 1
+    fi
+    
+    # Check for expect errors
+    if [[ "$output" == *"EXPECT_ERROR:"* ]]; then
+        log_error "Datacom EDD expect error: $output"
+        return 1
+    fi
+    
+    local output_length=${#output}
+    if [[ $output_length -gt 100 ]]; then
+        echo "$output"
+        return 0
+    else
+        log_error "Datacom EDD backup failed - insufficient output"
+        return 1
+    fi
+}
+
 # Execute SSH backup command for Nokia SR OS with expect
 execute_nokia_backup_expect() {
     local host="$1"
@@ -445,7 +603,7 @@ execute_nokia_backup_expect() {
     local password="$4"
     local timeout="${5:-1800}"
     
-    log_info "Executing Nokia backup with expect on $host:$port (Agent v1.0.27 - sentinel method)"
+    log_info "Executing Nokia backup with expect on $host:$port (Agent v1.0.28 - sentinel method)"
     
     # Create expect script for Nokia SR OS
     # Nokia requires pure interactive SSH - no sshpass, no exec
@@ -465,7 +623,7 @@ set password [lindex $argv 4]
 
 log_user 1
 
-puts "NOKIA_DEBUG: Starting Nokia backup v1.0.27 (sentinel method)"
+puts "NOKIA_DEBUG: Starting Nokia backup v1.0.28 (sentinel method)"
 puts "NOKIA_DEBUG: Buffer size: 200MB, Timeout: ${timeout}s"
 
 # Pure SSH connection - Nokia doesn't accept exec requests
@@ -622,7 +780,7 @@ execute_zte_backup_expect() {
     local enable_password="$5"
     local timeout="${6:-180}"
     
-    log_info "Executing ZTE OLT backup with expect on $host:$port (Agent v1.0.27)"
+    log_info "Executing ZTE OLT backup with expect on $host:$port (Agent v1.0.28)"
     log_info "ZTE enable_password provided: ${enable_password:+(yes)}"
     
     # Create expect script for ZTE TITAN OLT (C300/C320/C600)
@@ -638,7 +796,7 @@ set enable_pass [lindex $argv 5]
 
 log_user 1
 
-puts "ZTE_DEBUG: Starting ZTE backup (agent v1.0.27)"
+puts "ZTE_DEBUG: Starting ZTE backup (agent v1.0.28)"
 puts "ZTE_DEBUG: Enable password provided: [expr {$enable_pass ne "" && $enable_pass ne "null" ? "yes" : "no (using default zxr10)"}]"
 
 # SSH connection - simplified for Debian 13 compatibility
@@ -1007,6 +1165,12 @@ handle_message() {
                 # ZTE ZXR10/TITAN - use expect with enable mode + show running-config
                 log_debug "ZTE device - using expect session"
                 if output=$(execute_zte_backup_expect "$host" "$port" "$username" "$password" "$enable_password" 180); then
+                    backup_success=true
+                fi
+            elif [[ "${manufacturer,,}" == "datacom" ]]; then
+                # Datacom EDD (DmSwitch family) - Cisco-like CLI
+                log_debug "Datacom EDD device - using expect session"
+                if output=$(execute_datacom_edd_backup_expect "$host" "$port" "$username" "$password" "$enable_password" 300); then
                     backup_success=true
                 fi
             else
