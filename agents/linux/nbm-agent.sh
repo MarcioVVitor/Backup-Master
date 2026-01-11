@@ -6,7 +6,7 @@
 # Don't exit on error - we handle errors ourselves
 set +e
 
-AGENT_VERSION="1.0.24"
+AGENT_VERSION="1.0.25"
 AGENT_DIR="/opt/nbm-agent"
 CONFIG_FILE="$AGENT_DIR/config.json"
 LOG_FILE="$AGENT_DIR/logs/agent.log"
@@ -462,9 +462,11 @@ log_user 1
 # Pure SSH connection - Nokia doesn't accept exec requests
 # UserKnownHostsFile=/dev/null avoids host key verification errors
 # Very aggressive keepalives for large configs that take a long time
+# HostKeyAlgorithms and PubkeyAcceptedAlgorithms enable legacy ssh-rsa for Nokia
 spawn ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
     -o ConnectTimeout=30 -o ServerAliveInterval=5 -o ServerAliveCountMax=60 \
     -o TCPKeepAlive=yes \
+    -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa \
     -p $port $username@$host
 
 # Wait for password prompt
@@ -582,7 +584,7 @@ execute_zte_backup_expect() {
     local enable_password="$5"
     local timeout="${6:-180}"
     
-    log_info "Executing ZTE OLT backup with expect on $host:$port (Agent v1.0.24)"
+    log_info "Executing ZTE OLT backup with expect on $host:$port (Agent v1.0.25)"
     log_info "ZTE enable_password provided: ${enable_password:+(yes)}"
     
     # Create expect script for ZTE TITAN OLT (C300/C320/C600)
@@ -598,7 +600,7 @@ set enable_pass [lindex $argv 5]
 
 log_user 1
 
-puts "ZTE_DEBUG: Starting ZTE backup (agent v1.0.24)"
+puts "ZTE_DEBUG: Starting ZTE backup (agent v1.0.25)"
 puts "ZTE_DEBUG: Enable password provided: [expr {$enable_pass ne "" && $enable_pass ne "null" ? "yes" : "no (using default zxr10)"}]"
 
 # SSH connection - simplified for Debian 13 compatibility

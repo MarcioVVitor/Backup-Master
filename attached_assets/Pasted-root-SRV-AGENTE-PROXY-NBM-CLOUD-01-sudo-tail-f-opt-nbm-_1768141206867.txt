@@ -1,0 +1,38 @@
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[~]# sudo tail -f /opt/nbm-agent/logs/agent.log
+[2026-01-11 11:18:46] [INFO] Agent stopped
+[2026-01-11 11:18:46] [INFO] Configuration loaded: Agent=proxy-grupojet-01, Server=http://143.255.197.25:5000
+[2026-01-11 11:18:46] [INFO] Starting NBM CLOUD Agent v1.0.24
+[2026-01-11 11:18:46] [INFO] Agent started with PID: 53934
+[2026-01-11 11:18:46] [INFO] Connecting to WebSocket: ws://143.255.197.25:5000/ws/agents
+[2026-01-11 11:18:46] [INFO] Establishing WebSocket connection...
+[2026-01-11 11:18:46] [DEBUG] WebSocket process started with PID: 53946
+[2026-01-11 11:18:46] [DEBUG] Sent auth message
+[2026-01-11 11:18:46] [DEBUG] Received: {"type":"auth_success","agentId":1,"config":null}
+[2026-01-11 11:18:46] [INFO] Authentication successful
+[2026-01-11 11:19:01] [DEBUG] Sent heartbeat
+[2026-01-11 11:19:01] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-11T14:19:01.154Z"}
+[2026-01-11 11:19:01] [DEBUG] Heartbeat acknowledged
+[2026-01-11 11:19:07] [DEBUG] Received: {"type":"backup_job","jobId":"backup-15-1768141147324","equipment":{"id":15,"name":"OLT-ACE-GNA-NOKIA-ANDRADE-01","ip":"172.16.31.18","port":22,"protocol":"ssh","username":"isadmin","password":"@2Dc9d967","enablePassword":"","manufacturer":"nokia"},"config":{"command":"admin display-config","useShell":true,"timeout":60000}}
+[2026-01-11 11:19:07] [DEBUG] Received message type: backup_job
+[2026-01-11 11:19:07] [INFO] Executing backup job backup-15-1768141147324 for 172.16.31.18:22 with command: admin display-config
+[2026-01-11 11:19:07] [DEBUG] Nokia device - using expect session
+[2026-01-11 11:19:07] [INFO] Executing Nokia backup with expect on 172.16.31.18:22
+[2026-01-11 11:19:07] [ERROR] Nokia expect error: spawn ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=30 -o ServerAliveInterval=5 -o ServerAliveCountMax=60 -o TCPKeepAlive=yes -p 22 isadmin@172.16.31.18
+Unable to negotiate with 172.16.31.18 port 22: no matching host key type found. Their offer: ssh-rsa
+EXPECT_ERROR: Connection closed
+[2026-01-11 11:19:07] [ERROR] Backup failed for 172.16.31.18
+[2026-01-11 11:19:07] [INFO] Sending response, length: 108 bytes
+[2026-01-11 11:19:07] [INFO] Response sent successfully (108 bytes)
+[2026-01-11 11:19:16] [DEBUG] Sent heartbeat
+[2026-01-11 11:19:16] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-11T14:19:16.145Z"}
+[2026-01-11 11:19:16] [DEBUG] Heartbeat acknowledged
+[2026-01-11 11:19:31] [DEBUG] Sent heartbeat
+[2026-01-11 11:19:31] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-11T14:19:31.151Z"}
+[2026-01-11 11:19:31] [DEBUG] Heartbeat acknowledged
+[2026-01-11 11:19:46] [DEBUG] Sent heartbeat
+[2026-01-11 11:19:46] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-11T14:19:46.170Z"}
+[2026-01-11 11:19:46] [DEBUG] Heartbeat acknowledged
+[2026-01-11 11:20:01] [DEBUG] Sent heartbeat
+[2026-01-11 11:20:01] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-11T14:20:01.181Z"}
+[2026-01-11 11:20:01] [DEBUG] Heartbeat acknowledged
+
