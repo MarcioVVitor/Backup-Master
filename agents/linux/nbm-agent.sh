@@ -6,7 +6,7 @@
 # Don't exit on error - we handle errors ourselves
 set +e
 
-AGENT_VERSION="1.0.0"
+AGENT_VERSION="1.0.17"
 AGENT_DIR="/opt/nbm-agent"
 CONFIG_FILE="$AGENT_DIR/config.json"
 LOG_FILE="$AGENT_DIR/logs/agent.log"
@@ -569,7 +569,8 @@ execute_zte_backup_expect() {
     local enable_password="$5"
     local timeout="${6:-180}"
     
-    log_info "Executing ZTE OLT backup with expect on $host:$port"
+    log_info "Executing ZTE OLT backup with expect on $host:$port (Agent v1.0.17)"
+    log_info "ZTE enable_password provided: ${enable_password:+(yes)}"
     
     # Create expect script for ZTE TITAN OLT (C300/C320/C600)
     # ZTE OLT uses enable command with password (default: zxr10)
@@ -583,6 +584,9 @@ set password [lindex $argv 4]
 set enable_pass [lindex $argv 5]
 
 log_user 1
+
+puts "ZTE_DEBUG: Starting ZTE backup (agent v1.0.17)"
+puts "ZTE_DEBUG: Enable password provided: [expr {$enable_pass ne "" && $enable_pass ne "null" ? "yes" : "no (using default zxr10)"}]"
 
 # SSH connection with legacy algorithm support
 spawn ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 \
@@ -602,10 +606,10 @@ expect {
 # ZTE OLT prompts look like: ZXAN# or OLT-NAME> or hostname#
 set prompt_type ""
 expect {
-    -re {[a-zA-Z0-9_-]+#\s*$} { set prompt_type "privileged" }
-    -re {[a-zA-Z0-9_-]+>\s*$} { set prompt_type "user" }
-    "#" { set prompt_type "privileged" }
-    ">" { set prompt_type "user" }
+    -re {[a-zA-Z0-9_-]+#\s*$} { set prompt_type "privileged"; puts "ZTE_DEBUG: Detected privileged mode (#)" }
+    -re {[a-zA-Z0-9_-]+>\s*$} { set prompt_type "user"; puts "ZTE_DEBUG: Detected user mode (>)" }
+    "#" { set prompt_type "privileged"; puts "ZTE_DEBUG: Detected privileged mode (#)" }
+    ">" { set prompt_type "user"; puts "ZTE_DEBUG: Detected user mode (>)" }
     "Login incorrect" { puts "EXPECT_ERROR: Authentication failed"; exit 1 }
     "Access denied" { puts "EXPECT_ERROR: Access denied"; exit 1 }
     "Password:" { puts "EXPECT_ERROR: Authentication failed"; exit 1 }
@@ -618,32 +622,39 @@ sleep 1
 
 # If in user mode (>), enter enable mode
 if {$prompt_type eq "user"} {
+    puts "ZTE_DEBUG: Entering enable mode..."
     send "enable\r"
     expect {
         -re {[Pp]assword:} {
+            puts "ZTE_DEBUG: Enable password prompt detected"
             # Use enable password if provided, otherwise try default zxr10
             if {$enable_pass ne "" && $enable_pass ne "null"} {
+                puts "ZTE_DEBUG: Sending provided enable password"
                 send "$enable_pass\r"
             } else {
+                puts "ZTE_DEBUG: Sending default enable password (zxr10)"
                 send "zxr10\r"
             }
         }
-        "#" { }
+        "#" { puts "ZTE_DEBUG: Already in privileged mode" }
         timeout { puts "EXPECT_ERROR: Timeout entering enable mode"; exit 1 }
     }
     
     # Wait for privileged prompt
     expect {
-        -re {[a-zA-Z0-9_-]+#} { }
-        "#" { }
+        -re {[a-zA-Z0-9_-]+#} { puts "ZTE_DEBUG: Now in privileged mode" }
+        "#" { puts "ZTE_DEBUG: Now in privileged mode" }
         -re {[Aa]ccess [Dd]enied} { puts "EXPECT_ERROR: Enable password rejected"; exit 1 }
         -re {[Bb]ad [Pp]assword} { puts "EXPECT_ERROR: Enable password rejected"; exit 1 }
-        ">" { puts "EXPECT_ERROR: Failed to enter enable mode"; exit 1 }
+        ">" { puts "EXPECT_ERROR: Failed to enter enable mode - still in user mode"; exit 1 }
         timeout { puts "EXPECT_ERROR: Timeout waiting for enable prompt"; exit 1 }
     }
+} else {
+    puts "ZTE_DEBUG: Already in privileged mode, skipping enable"
 }
 
 # Disable pagination - ZTE OLT uses scroll
+puts "ZTE_DEBUG: Disabling pagination with scroll command"
 send "scroll\r"
 expect {
     -re {[a-zA-Z0-9_-]+#} { }
@@ -655,13 +666,14 @@ expect {
 sleep 0.5
 
 # Execute backup command with long timeout for large configs
+puts "ZTE_DEBUG: Executing show running-config"
 set timeout 600
 send "show running-config\r"
 
 # Wait for the prompt to return after full output
 # ZTE OLT config can be very large, use longer timeout
 expect {
-    -re {\r\n[a-zA-Z0-9_-]+#\s*$} { }
+    -re {\r\n[a-zA-Z0-9_-]+#\s*$} { puts "ZTE_DEBUG: Config output complete" }
     timeout { puts "EXPECT_ERROR: Timeout waiting for configuration output"; exit 1 }
     eof { puts "EXPECT_ERROR: Connection closed during backup"; exit 1 }
 }
