@@ -201,6 +201,109 @@ test_connection() {
     echo "$result"
 }
 
+# Execute SSH backup command for Huawei with expect (waits for full output before quit)
+execute_huawei_backup_expect() {
+    local host="$1"
+    local port="$2"
+    local username="$3"
+    local password="$4"
+    local timeout="${5:-120}"
+    
+    log_info "Executing Huawei backup with expect on $host:$port"
+    
+    # Create expect script for proper interactive session
+    local expect_script=$(cat <<'EXPECT_EOF'
+#!/usr/bin/expect -f
+set timeout [lindex $argv 0]
+set host [lindex $argv 1]
+set port [lindex $argv 2]
+set username [lindex $argv 3]
+set password [lindex $argv 4]
+
+log_user 1
+
+# SSH options for legacy devices
+spawn ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 \
+    -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa \
+    -o KexAlgorithms=+diffie-hellman-group14-sha1,diffie-hellman-group1-sha1 \
+    -p $port $username@$host
+
+# Wait for password prompt
+expect {
+    "password:" { send "$password\r" }
+    "Password:" { send "$password\r" }
+    timeout { puts "EXPECT_ERROR: Timeout waiting for password prompt"; exit 1 }
+    eof { puts "EXPECT_ERROR: Connection closed"; exit 1 }
+}
+
+# Wait for initial prompt (> or <hostname>)
+expect {
+    -re {[><]} { }
+    "Password:" { puts "EXPECT_ERROR: Authentication failed"; exit 1 }
+    timeout { puts "EXPECT_ERROR: Timeout after login"; exit 1 }
+}
+
+# Disable pagination
+send "screen-length 0 temporary\r"
+expect {
+    -re {[><]} { }
+    timeout { puts "EXPECT_ERROR: Timeout after screen-length"; exit 1 }
+}
+
+# Execute backup command with longer timeout
+set timeout 180
+send "display current-configuration\r"
+
+# Wait for the prompt to return after full output
+# Huawei prompts look like <hostname> or [hostname]
+expect {
+    -re {<[^>]+>} { }
+    -re {\[[^\]]+\]} { }
+    timeout { puts "EXPECT_ERROR: Timeout waiting for configuration output"; exit 1 }
+}
+
+# Exit gracefully
+send "quit\r"
+expect eof
+EXPECT_EOF
+)
+    
+    # Write expect script to temp file
+    local expect_file="/tmp/huawei_backup_$$.exp"
+    echo "$expect_script" > "$expect_file"
+    chmod +x "$expect_file"
+    
+    # Execute expect script
+    local output
+    local exit_code
+    output=$(timeout "$timeout" expect "$expect_file" "$timeout" "$host" "$port" "$username" "$password" 2>&1)
+    exit_code=$?
+    
+    # Clean up
+    rm -f "$expect_file"
+    
+    # Check results
+    if [[ $exit_code -eq 124 ]]; then
+        log_error "Huawei backup timed out after ${timeout}s"
+        return 1
+    fi
+    
+    # Check for expect errors
+    if [[ "$output" == *"EXPECT_ERROR:"* ]]; then
+        log_error "Huawei expect error: $output"
+        return 1
+    fi
+    
+    local output_length=${#output}
+    if [[ $output_length -gt 100 ]]; then
+        echo "$output"
+        return 0
+    else
+        log_error "Huawei backup failed - insufficient output"
+        return 1
+    fi
+}
+
 # Execute SSH backup command for Cisco with expect (handles enable mode properly)
 execute_cisco_backup_expect() {
     local host="$1"
@@ -531,14 +634,21 @@ handle_message() {
             local tmp_file="/tmp/backup_output_$$"
             local backup_success=false
             
-            # For Cisco devices with enable password, use expect-based interactive session
+            # Use expect-based sessions for vendors that need interactive handling
             if [[ "${manufacturer,,}" == "cisco" ]] && [[ -n "$enable_password" ]] && [[ "$enable_password" != "null" ]]; then
+                # Cisco with enable password - use expect for interactive enable mode
                 log_debug "Cisco device with enable password - using expect session"
-                if output=$(execute_cisco_backup_expect "$host" "$port" "$username" "$password" "$enable_password" "$command" 120); then
+                if output=$(execute_cisco_backup_expect "$host" "$port" "$username" "$password" "$enable_password" "$command" 180); then
+                    backup_success=true
+                fi
+            elif [[ "${manufacturer,,}" == "huawei" ]]; then
+                # Huawei - use expect to properly wait for full config before quit
+                log_debug "Huawei device - using expect session"
+                if output=$(execute_huawei_backup_expect "$host" "$port" "$username" "$password" 180); then
                     backup_success=true
                 fi
             else
-                # Standard SSH backup for non-Cisco or Cisco without enable password
+                # Standard SSH backup for other vendors
                 if output=$(execute_ssh_backup "$host" "$port" "$username" "$password" "$command" 120); then
                     backup_success=true
                 fi
