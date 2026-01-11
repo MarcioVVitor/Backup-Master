@@ -1,0 +1,102 @@
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[~]# sudo tail -100 /opt/nbm-agent/logs/agent.log
+[2026-01-11 12:05:37] [DEBUG] Sent heartbeat
+[2026-01-11 12:05:52] [DEBUG] Sent heartbeat
+[2026-01-11 12:06:07] [DEBUG] Sent heartbeat
+[2026-01-11 12:06:22] [DEBUG] Sent heartbeat
+[2026-01-11 12:06:37] [DEBUG] Sent heartbeat
+[2026-01-11 12:06:52] [DEBUG] Sent heartbeat
+[2026-01-11 12:07:07] [DEBUG] Sent heartbeat
+[2026-01-11 12:07:22] [DEBUG] Sent heartbeat
+[2026-01-11 12:07:37] [DEBUG] Sent heartbeat
+[2026-01-11 12:07:52] [DEBUG] Sent heartbeat
+[2026-01-11 12:08:01] [INFO] Stopping agent (PID: 56385)...
+[2026-01-11 12:08:01] [INFO] Agent stopped
+[2026-01-11 12:08:01] [INFO] Configuration loaded: Agent=proxy-grupojet-01, Server=http://143.255.197.25:5000
+[2026-01-11 12:08:01] [INFO] Starting NBM CLOUD Agent v1.0.33
+[2026-01-11 12:08:01] [INFO] Agent started with PID: 56614
+[2026-01-11 12:08:01] [INFO] Connecting to WebSocket: ws://143.255.197.25:5000/ws/agents
+[2026-01-11 12:08:01] [INFO] Establishing WebSocket connection...
+[2026-01-11 12:08:01] [DEBUG] WebSocket process started with PID: 56625
+[2026-01-11 12:08:01] [DEBUG] Sent auth message
+[2026-01-11 12:08:01] [DEBUG] Received: {"type":"auth_success","agentId":1,"config":null}
+[2026-01-11 12:08:01] [INFO] Authentication successful
+[2026-01-11 12:08:16] [DEBUG] Sent heartbeat
+[2026-01-11 12:08:16] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-11T15:08:16.712Z"}
+[2026-01-11 12:08:16] [DEBUG] Heartbeat acknowledged
+[2026-01-11 12:08:22] [DEBUG] Received: {"type":"backup_job","jobId":"backup-17-1768144102748","equipment":{"id":17,"name":"SW2-ACE-GNA-CREER-JCP-GNA-19755 ","ip":"10.0.65.4","port":23,"protocol":"telnet","username":"admin","password":"2dc9d967","enablePassword":"","manufacturer":"datacom"},"config":{"command":"show running-config","useShell":true,"timeout":60000}}
+[2026-01-11 12:08:22] [DEBUG] Received message type: backup_job
+[2026-01-11 12:08:22] [INFO] Executing backup job backup-17-1768144102748 for 10.0.65.4:23 with command: show running-config
+[2026-01-11 12:08:22] [DEBUG] Datacom EDD device - using expect session (protocol: telnet)
+[2026-01-11 12:08:22] [INFO] Executing Datacom EDD backup with expect on 10.0.65.4:23 protocol=telnet (Agent v1.0.33)
+[2026-01-11 12:08:22] [INFO] Using Telnet for Datacom EDD on port 23
+[2026-01-11 12:08:31] [DEBUG] Sent heartbeat
+[2026-01-11 12:08:46] [DEBUG] Sent heartbeat
+[2026-01-11 12:09:01] [DEBUG] Sent heartbeat
+[2026-01-11 12:09:16] [DEBUG] Sent heartbeat
+[2026-01-11 12:09:31] [DEBUG] Sent heartbeat
+[2026-01-11 12:09:46] [DEBUG] Sent heartbeat
+[2026-01-11 12:10:01] [DEBUG] Sent heartbeat
+[2026-01-11 12:10:16] [DEBUG] Sent heartbeat
+[2026-01-11 12:10:31] [DEBUG] Sent heartbeat
+[2026-01-11 12:10:46] [DEBUG] Sent heartbeat
+[2026-01-11 12:11:01] [DEBUG] Sent heartbeat
+[2026-01-11 12:11:16] [DEBUG] Sent heartbeat
+[2026-01-11 12:11:22] [INFO] Stopping agent (PID: 56614)...
+[2026-01-11 12:11:22] [INFO] Agent stopped
+[2026-01-11 12:11:22] [INFO] Configuration loaded: Agent=proxy-grupojet-01, Server=http://143.255.197.25:5000
+[2026-01-11 12:11:22] [INFO] Starting NBM CLOUD Agent v1.0.34
+[2026-01-11 12:11:22] [INFO] Agent started with PID: 56823
+[2026-01-11 12:11:22] [INFO] Connecting to WebSocket: ws://143.255.197.25:5000/ws/agents
+[2026-01-11 12:11:22] [INFO] Establishing WebSocket connection...
+[2026-01-11 12:11:22] [DEBUG] WebSocket process started with PID: 56834
+[2026-01-11 12:11:22] [DEBUG] Sent auth message
+[2026-01-11 12:11:22] [DEBUG] Received: {"type":"auth_success","agentId":1,"config":null}
+[2026-01-11 12:11:22] [INFO] Authentication successful
+[2026-01-11 12:11:37] [DEBUG] Sent heartbeat
+[2026-01-11 12:11:37] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-11T15:11:37.965Z"}
+[2026-01-11 12:11:37] [DEBUG] Heartbeat acknowledged
+[2026-01-11 12:11:39] [DEBUG] Received: {"type":"backup_job","jobId":"backup-18-1768144299107","equipment":{"id":18,"name":"SW2-ACE-SVA-TORRE-ANDRE-01I ","ip":"10.0.11.2","port":23,"protocol":"telnet","username":"admin","password":"2dc9d967","enablePassword":"","manufacturer":"datacom"},"config":{"command":"show running-config","useShell":true,"timeout":60000}}
+[2026-01-11 12:11:39] [DEBUG] Received message type: backup_job
+[2026-01-11 12:11:39] [INFO] Executing backup job backup-18-1768144299107 for 10.0.11.2:23 with command: show running-config
+[2026-01-11 12:11:39] [DEBUG] Datacom EDD device - using expect session (protocol: telnet)
+[2026-01-11 12:11:39] [INFO] Executing Datacom EDD backup with expect on 10.0.11.2:23 protocol=telnet (Agent v1.0.34)
+[2026-01-11 12:11:39] [INFO] Using Telnet for Datacom EDD on port 23
+[2026-01-11 12:11:52] [DEBUG] Sent heartbeat
+[2026-01-11 12:12:07] [DEBUG] Sent heartbeat
+[2026-01-11 12:12:22] [DEBUG] Sent heartbeat
+[2026-01-11 12:12:37] [DEBUG] Sent heartbeat
+[2026-01-11 12:12:52] [DEBUG] Sent heartbeat
+[2026-01-11 12:13:07] [DEBUG] Sent heartbeat
+[2026-01-11 12:13:23] [DEBUG] Sent heartbeat
+[2026-01-11 12:13:38] [DEBUG] Sent heartbeat
+[2026-01-11 12:13:53] [DEBUG] Sent heartbeat
+[2026-01-11 12:14:08] [DEBUG] Sent heartbeat
+[2026-01-11 12:14:23] [DEBUG] Sent heartbeat
+[2026-01-11 12:14:38] [DEBUG] Sent heartbeat
+[2026-01-11 12:14:53] [DEBUG] Sent heartbeat
+[2026-01-11 12:15:08] [DEBUG] Sent heartbeat
+[2026-01-11 12:15:23] [DEBUG] Sent heartbeat
+[2026-01-11 12:15:38] [DEBUG] Sent heartbeat
+[2026-01-11 12:15:53] [DEBUG] Sent heartbeat
+[2026-01-11 12:16:08] [DEBUG] Sent heartbeat
+[2026-01-11 12:16:23] [DEBUG] Sent heartbeat
+[2026-01-11 12:16:38] [DEBUG] Sent heartbeat
+[2026-01-11 12:16:39] [ERROR] Datacom EDD backup timed out after 300s
+[2026-01-11 12:16:39] [ERROR] Backup failed for 10.0.11.2
+[2026-01-11 12:16:39] [INFO] Sending response, length: 108 bytes
+[2026-01-11 12:16:39] [INFO] Response sent successfully (108 bytes)
+[2026-01-11 12:16:39] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-11T15:11:52.957Z"}
+[2026-01-11 12:16:39] [DEBUG] Heartbeat acknowledged
+[2026-01-11 12:16:39] [DEBUG] Received: {"type":"backup_job","jobId":"backup-17-1768144314305","equipment":{"id":17,"name":"SW2-ACE-GNA-CREER-JCP-GNA-19755 ","ip":"10.0.65.4","port":23,"protocol":"telnet","username":"admin","password":"2dc9d967","enablePassword":"","manufacturer":"datacom"},"config":{"command":"show running-config","useShell":true,"timeout":60000}}
+[2026-01-11 12:16:39] [DEBUG] Received message type: backup_job
+[2026-01-11 12:16:39] [INFO] Executing backup job backup-17-1768144314305 for 10.0.65.4:23 with command: show running-config
+[2026-01-11 12:16:39] [DEBUG] Datacom EDD device - using expect session (protocol: telnet)
+[2026-01-11 12:16:39] [INFO] Executing Datacom EDD backup with expect on 10.0.65.4:23 protocol=telnet (Agent v1.0.34)
+[2026-01-11 12:16:39] [INFO] Using Telnet for Datacom EDD on port 23
+[2026-01-11 12:16:53] [DEBUG] Sent heartbeat
+[2026-01-11 12:17:08] [DEBUG] Sent heartbeat
+[2026-01-11 12:17:23] [DEBUG] Sent heartbeat
+[2026-01-11 12:17:38] [DEBUG] Sent heartbeat
+[2026-01-11 12:17:53] [DEBUG] Sent heartbeat
+[2026-01-11 12:18:08] [DEBUG] Sent heartbeat
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[~]# 
