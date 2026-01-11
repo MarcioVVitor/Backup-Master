@@ -6,7 +6,7 @@
 # Don't exit on error - we handle errors ourselves
 set +e
 
-AGENT_VERSION="1.0.22"
+AGENT_VERSION="1.0.23"
 AGENT_DIR="/opt/nbm-agent"
 CONFIG_FILE="$AGENT_DIR/config.json"
 LOG_FILE="$AGENT_DIR/logs/agent.log"
@@ -461,8 +461,10 @@ log_user 1
 
 # Pure SSH connection - Nokia doesn't accept exec requests
 # UserKnownHostsFile=/dev/null avoids host key verification errors
+# Very aggressive keepalives for large configs that take a long time
 spawn ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
-    -o ConnectTimeout=30 -o ServerAliveInterval=15 -o ServerAliveCountMax=10 \
+    -o ConnectTimeout=30 -o ServerAliveInterval=5 -o ServerAliveCountMax=60 \
+    -o TCPKeepAlive=yes \
     -p $port $username@$host
 
 # Wait for password prompt
@@ -501,17 +503,19 @@ expect {
 # Small delay before main command
 sleep 0.5
 
-# Execute backup command with very long timeout for large configs
-set timeout 600
+# Execute backup command with very long timeout for large configs (30 min)
+set timeout 1800
 send "admin display-config\r"
 
 # Wait for the prompt to return after full output
-# Nokia config ends with prompt like A:hostname#
-# Use a loop to capture all output until we see the final prompt
+# Nokia config ends with prompt like A:hostname# after "# Finished"
+# The config can be very large (100k+ lines), so we wait for the special end marker
 expect {
-    -re {\r\n[*]?[AB]:[^\r\n]+#\s*$} { }
-    -re {\r\n[a-zA-Z0-9_-]+#\s*$} { }
-    timeout { puts "EXPECT_ERROR: Timeout waiting for configuration output"; exit 1 }
+    -re {# Finished [^\r\n]+\r\n[*]?[AB]:[^\r\n]+#\s*$} { }
+    -re {# Finished [^\r\n]+\r\n[a-zA-Z0-9_-]+#\s*$} { }
+    -re {exit all\r\n[*]?[AB]:[^\r\n]+#\s*$} { }
+    -re {exit all\r\n[a-zA-Z0-9_-]+#\s*$} { }
+    timeout { puts "EXPECT_ERROR: Timeout waiting for configuration output (30 min exceeded)"; exit 1 }
     eof { puts "EXPECT_ERROR: Connection closed during backup"; exit 1 }
 }
 
@@ -570,7 +574,7 @@ execute_zte_backup_expect() {
     local enable_password="$5"
     local timeout="${6:-180}"
     
-    log_info "Executing ZTE OLT backup with expect on $host:$port (Agent v1.0.22)"
+    log_info "Executing ZTE OLT backup with expect on $host:$port (Agent v1.0.23)"
     log_info "ZTE enable_password provided: ${enable_password:+(yes)}"
     
     # Create expect script for ZTE TITAN OLT (C300/C320/C600)
@@ -586,7 +590,7 @@ set enable_pass [lindex $argv 5]
 
 log_user 1
 
-puts "ZTE_DEBUG: Starting ZTE backup (agent v1.0.22)"
+puts "ZTE_DEBUG: Starting ZTE backup (agent v1.0.23)"
 puts "ZTE_DEBUG: Enable password provided: [expr {$enable_pass ne "" && $enable_pass ne "null" ? "yes" : "no (using default zxr10)"}]"
 
 # SSH connection - simplified for Debian 13 compatibility
@@ -948,7 +952,7 @@ handle_message() {
             elif [[ "${manufacturer,,}" == "nokia" ]]; then
                 # Nokia SR OS - use expect with environment no more + admin display-config
                 log_debug "Nokia device - using expect session"
-                if output=$(execute_nokia_backup_expect "$host" "$port" "$username" "$password" 180); then
+                if output=$(execute_nokia_backup_expect "$host" "$port" "$username" "$password" 1800); then
                     backup_success=true
                 fi
             elif [[ "${manufacturer,,}" == "zte" ]]; then
