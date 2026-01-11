@@ -164,21 +164,59 @@ function calculateNextRun(policy: BackupPolicy): Date {
   const next = new Date(now);
   next.setHours(hour, minute, 0, 0);
   
-  if (next <= now) {
-    switch (policy.frequencyType) {
-      case "hourly":
+  switch (policy.frequencyType) {
+    case "hourly":
+      if (next <= now) {
         next.setHours(next.getHours() + 1);
-        break;
-      case "daily":
+      }
+      break;
+      
+    case "daily":
+      if (next <= now) {
         next.setDate(next.getDate() + 1);
-        break;
-      case "weekly":
-        next.setDate(next.getDate() + 7);
-        break;
-      case "monthly":
+      }
+      break;
+      
+    case "weekly":
+      if (policy.daysOfWeek && policy.daysOfWeek.length > 0) {
+        const targetDays = policy.daysOfWeek.map(d => parseInt(d)).sort((a, b) => a - b);
+        const currentDay = now.getDay();
+        
+        let foundNext = false;
+        for (const targetDay of targetDays) {
+          if (targetDay > currentDay || (targetDay === currentDay && next > now)) {
+            const daysUntil = targetDay - currentDay;
+            next.setDate(now.getDate() + daysUntil);
+            foundNext = true;
+            break;
+          }
+        }
+        
+        if (!foundNext) {
+          const daysUntil = 7 - currentDay + targetDays[0];
+          next.setDate(now.getDate() + daysUntil);
+        }
+      } else {
+        if (next <= now) {
+          next.setDate(next.getDate() + 7);
+        }
+      }
+      break;
+      
+    case "monthly":
+      const targetDay = policy.dayOfMonth || 1;
+      next.setDate(targetDay);
+      
+      if (next <= now) {
         next.setMonth(next.getMonth() + 1);
-        break;
-    }
+        next.setDate(targetDay);
+      }
+      
+      const lastDayOfMonth = new Date(next.getFullYear(), next.getMonth() + 1, 0).getDate();
+      if (targetDay > lastDayOfMonth) {
+        next.setDate(lastDayOfMonth);
+      }
+      break;
   }
   
   return next;
