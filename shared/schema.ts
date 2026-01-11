@@ -103,6 +103,7 @@ export const equipment = pgTable("equipment", {
   model: text("model"),
   username: text("username"),
   password: text("password"),
+  enablePassword: text("enable_password"),
   port: integer("port").default(22),
   protocol: text("protocol").default("ssh"),
   enabled: boolean("enabled").default(true),
