@@ -9,7 +9,7 @@ import { Client as SSHClient } from "ssh2";
 import net from "net";
 import { createServerRoutes } from "./routes/server-routes";
 import { withTenantContext } from "./middleware/tenant";
-import { startScheduler, setBackupExecutor, runPolicyNow } from "./scheduler";
+import { startScheduler, setBackupExecutor, runPolicyNow, setWorkerPoolConcurrency, getWorkerPoolMetrics, clearWorkerQueue } from "./scheduler";
 
 const isStandalone = !process.env.REPL_ID;
 
@@ -1718,6 +1718,54 @@ export async function registerRoutes(
       res.json(result);
     } catch (e: any) {
       console.error("Error running policy:", e);
+      res.status(500).json({ success: false, message: e.message });
+    }
+  });
+
+  // API - Worker Pool Configuration (concurrency control)
+  app.post('/api/scheduler/concurrency', isAuthenticated, async (req, res) => {
+    try {
+      const isServerAdmin = req.tenantUser?.isServerAdmin;
+      if (!isServerAdmin) {
+        return res.status(403).json({ message: "Apenas administradores podem alterar concorrência" });
+      }
+      
+      const { concurrency } = req.body;
+      if (typeof concurrency !== "number" || concurrency < 1 || concurrency > 100) {
+        return res.status(400).json({ message: "Concorrência deve ser entre 1 e 100" });
+      }
+      
+      setWorkerPoolConcurrency(concurrency);
+      res.json({ success: true, concurrency });
+    } catch (e: any) {
+      console.error("Error setting concurrency:", e);
+      res.status(500).json({ success: false, message: e.message });
+    }
+  });
+
+  // API - Worker Pool Metrics
+  app.get('/api/scheduler/metrics', isAuthenticated, async (req, res) => {
+    try {
+      const metrics = getWorkerPoolMetrics();
+      res.json(metrics);
+    } catch (e: any) {
+      console.error("Error getting metrics:", e);
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  // API - Clear Worker Queue
+  app.post('/api/scheduler/queue/clear', isAuthenticated, async (req, res) => {
+    try {
+      const isServerAdmin = req.tenantUser?.isServerAdmin;
+      if (!isServerAdmin) {
+        return res.status(403).json({ message: "Apenas administradores podem limpar a fila" });
+      }
+      
+      clearWorkerQueue();
+      res.json({ success: true, message: "Fila limpa" });
+    } catch (e: any) {
+      console.error("Error clearing queue:", e);
       res.status(500).json({ success: false, message: e.message });
     }
   });

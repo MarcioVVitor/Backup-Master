@@ -1,8 +1,12 @@
 import { storage } from "./storage";
 import type { BackupPolicy, Equipment } from "@shared/schema";
+import { workerPool } from "./backup-worker-pool";
 
 const SCHEDULER_INTERVAL = 60000; // Check every minute
 const TIMEZONE = "America/Sao_Paulo"; // Brazil timezone
+
+const DEFAULT_CONCURRENCY = 50;
+const MAX_CONCURRENCY = 100;
 
 let schedulerInterval: NodeJS.Timeout | null = null;
 let executeBackupFn: ((equipmentId: number, companyId: number) => Promise<void>) | null = null;
@@ -123,34 +127,28 @@ async function runPolicy(policy: BackupPolicy): Promise<void> {
       return;
     }
     
-    let successCount = 0;
-    let errorCount = 0;
+    const jobs = equipment.map(equip => ({
+      equipmentId: equip.id,
+      companyId: equip.companyId || 1,
+      policyId: policy.id,
+    }));
     
-    for (const equip of equipment) {
-      try {
-        if (executeBackupFn) {
-          log(`Policy ${policy.name}: Starting backup for ${equip.name} (${equip.ip})`);
-          await executeBackupFn(equip.id, equip.companyId || 1);
-          successCount++;
-          log(`Policy ${policy.name}: Backup completed for ${equip.name}`);
-        } else {
-          log(`Policy ${policy.name}: No backup executor available`);
-        }
-      } catch (err: any) {
-        errorCount++;
-        log(`Policy ${policy.name}: Backup failed for ${equip.name}: ${err.message}`);
-      }
+    workerPool.enqueueBatchWithCallback(jobs, 0, async (results) => {
+      log(`Policy ${policy.name}: Batch completed - Success: ${results.success}, Failed: ${results.failed}`);
       
-      await new Promise(r => setTimeout(r, 2000));
-    }
-    
-    log(`Policy ${policy.name}: Completed. Success: ${successCount}, Errors: ${errorCount}`);
-    
-    const nextRun = calculateNextRun(policy);
-    await storage.updateBackupPolicy(policy.id, { 
-      lastRunAt: new Date(),
-      nextRunAt: nextRun
+      const nextRun = calculateNextRun(policy);
+      const status = results.failed === 0 ? "success" : (results.success > 0 ? "partial" : "failed");
+      
+      await storage.updateBackupPolicy(policy.id, { 
+        lastRunAt: new Date(),
+        nextRunAt: nextRun,
+        lastStatus: status,
+      });
+      
+      log(`Policy ${policy.name}: Updated status to ${status}, next run at ${nextRun.toISOString()}`);
     });
+    
+    log(`Policy ${policy.name}: Enqueued ${jobs.length} backup jobs for parallel processing`);
     
   } catch (err: any) {
     log(`Policy ${policy.name}: Error running policy: ${err.message}`);
@@ -264,7 +262,26 @@ export async function runPolicyNow(policyId: number): Promise<{ success: boolean
 
 export function setBackupExecutor(fn: (equipmentId: number, companyId: number) => Promise<void>): void {
   executeBackupFn = fn;
-  log("Backup executor registered");
+  workerPool.setExecutor(fn);
+  log("Backup executor registered for scheduler and worker pool");
+}
+
+export function setWorkerPoolConcurrency(concurrency: number): void {
+  const safeConcurrency = Math.min(Math.max(1, concurrency), MAX_CONCURRENCY);
+  workerPool.setConfig({ maxConcurrency: safeConcurrency });
+  log(`Worker pool concurrency set to ${safeConcurrency}`);
+}
+
+export function getWorkerPoolMetrics() {
+  return workerPool.getMetrics();
+}
+
+export function getWorkerPoolStatus() {
+  return workerPool.getQueueStatus();
+}
+
+export function clearWorkerQueue() {
+  workerPool.clearQueue();
 }
 
 export function startScheduler(): void {
@@ -276,6 +293,7 @@ export function startScheduler(): void {
   log("Starting backup scheduler...");
   log(`Timezone: ${TIMEZONE}`);
   log(`Check interval: ${SCHEDULER_INTERVAL / 1000} seconds`);
+  log(`Worker pool concurrency: ${workerPool.getConfig().maxConcurrency}`);
   
   const currentTime = getCurrentTimeInTimezone();
   log(`Current time: ${currentTime.hour}:${currentTime.minute.toString().padStart(2, "0")}, Day of week: ${currentTime.dayOfWeek}, Day of month: ${currentTime.dayOfMonth}`);
@@ -298,15 +316,36 @@ export async function getSchedulerStatus(): Promise<{
   running: boolean;
   timezone: string;
   currentTime: string;
+  concurrency: number;
+  workerPool: {
+    pending: number;
+    running: number;
+    completed: number;
+    failed: number;
+  };
+  metrics: {
+    totalJobs: number;
+    avgDuration: number;
+    jobsPerMinute: number;
+  };
   nextChecks: Array<{ policyName: string; nextRunAt: string | null }>;
 }> {
   const currentTime = getCurrentTimeInTimezone();
   const policies = await storage.getBackupPolicies();
+  const poolStatus = workerPool.getQueueStatus();
+  const poolMetrics = workerPool.getMetrics();
   
   return {
     running: schedulerInterval !== null,
     timezone: TIMEZONE,
     currentTime: `${currentTime.hour}:${currentTime.minute.toString().padStart(2, "0")}`,
+    concurrency: workerPool.getConfig().maxConcurrency,
+    workerPool: poolStatus,
+    metrics: {
+      totalJobs: poolMetrics.totalJobs,
+      avgDuration: Math.round(poolMetrics.avgDuration),
+      jobsPerMinute: Math.round(poolMetrics.jobsPerMinute * 100) / 100,
+    },
     nextChecks: policies.filter(p => p.enabled).map(p => ({
       policyName: p.name,
       nextRunAt: p.nextRunAt?.toISOString() || null
