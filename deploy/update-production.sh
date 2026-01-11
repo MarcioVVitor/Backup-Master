@@ -31,7 +31,8 @@ npm run build
 
 echo ""
 echo "[5/7] Deploying to production (removing old files)..."
-rsync -av --delete "$SOURCE_DIR/dist/" "$DEPLOY_DIR/"
+rm -rf "$DEPLOY_DIR/public" "$DEPLOY_DIR/index.cjs" 2>/dev/null || true
+cp -r "$SOURCE_DIR/dist/"* "$DEPLOY_DIR/"
 
 echo ""
 echo "[6/7] Setting permissions..."
