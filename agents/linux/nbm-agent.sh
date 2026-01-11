@@ -6,7 +6,7 @@
 # Don't exit on error - we handle errors ourselves
 set +e
 
-AGENT_VERSION="1.0.19"
+AGENT_VERSION="1.0.20"
 AGENT_DIR="/opt/nbm-agent"
 CONFIG_FILE="$AGENT_DIR/config.json"
 LOG_FILE="$AGENT_DIR/logs/agent.log"
@@ -569,7 +569,7 @@ execute_zte_backup_expect() {
     local enable_password="$5"
     local timeout="${6:-180}"
     
-    log_info "Executing ZTE OLT backup with expect on $host:$port (Agent v1.0.19)"
+    log_info "Executing ZTE OLT backup with expect on $host:$port (Agent v1.0.20)"
     log_info "ZTE enable_password provided: ${enable_password:+(yes)}"
     
     # Create expect script for ZTE TITAN OLT (C300/C320/C600)
@@ -585,14 +585,12 @@ set enable_pass [lindex $argv 5]
 
 log_user 1
 
-puts "ZTE_DEBUG: Starting ZTE backup (agent v1.0.19)"
+puts "ZTE_DEBUG: Starting ZTE backup (agent v1.0.20)"
 puts "ZTE_DEBUG: Enable password provided: [expr {$enable_pass ne "" && $enable_pass ne "null" ? "yes" : "no (using default zxr10)"}]"
 
-# SSH connection with legacy algorithm support
+# SSH connection - simplified for Debian 13 compatibility
 spawn ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 \
     -o ServerAliveInterval=10 -o ServerAliveCountMax=6 \
-    -o HostKeyAlgorithms=ssh-rsa,ssh-dss -o PubkeyAcceptedKeyTypes=ssh-rsa \
-    -o KexAlgorithms=diffie-hellman-group14-sha1,diffie-hellman-group1-sha1,diffie-hellman-group-exchange-sha1 \
     -p $port $username@$host
 
 # Wait for password prompt

@@ -1,0 +1,44 @@
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[~]# cd /tmp && rm -rf nbm-update && git clone --depth 1 https://github.com/MarcioVVitor/Backup-Master.git nbm-update && sudo cp nbm-update/agents/linux/nbm-agent.sh /opt/nbm-agent/nbm-agent.sh && sudo chmod +x /opt/nbm-agent/nbm-agent.sh && rm -rf nbm-update && sudo systemctl restart nbm-agent
+Cloning into 'nbm-update'...
+remote: Enumerating objects: 415, done.
+remote: Counting objects: 100% (415/415), done.
+remote: Compressing objects: 100% (353/353), done.
+remote: Total 415 (delta 54), reused 399 (delta 52), pack-reused 0 (from 0)
+Receiving objects: 100% (415/415), 44.93 MiB | 30.19 MiB/s, done.
+Resolving deltas: 100% (54/54), done.
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[/tmp]# cd
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[~]# sudo tail -f /opt/nbm-agent/logs/agent.log
+[2026-01-11 10:55:53] [INFO] Agent stopped
+[2026-01-11 10:55:53] [INFO] Configuration loaded: Agent=proxy-grupojet-01, Server=http://143.255.197.25:5000
+[2026-01-11 10:55:53] [INFO] Starting NBM CLOUD Agent v1.0.19
+[2026-01-11 10:55:53] [INFO] Agent started with PID: 50873
+[2026-01-11 10:55:53] [INFO] Connecting to WebSocket: ws://143.255.197.25:5000/ws/agents
+[2026-01-11 10:55:53] [INFO] Establishing WebSocket connection...
+[2026-01-11 10:55:53] [DEBUG] WebSocket process started with PID: 50885
+[2026-01-11 10:55:53] [DEBUG] Sent auth message
+[2026-01-11 10:55:53] [DEBUG] Received: {"type":"auth_success","agentId":1,"config":null}
+[2026-01-11 10:55:53] [INFO] Authentication successful
+[2026-01-11 10:56:08] [DEBUG] Sent heartbeat
+[2026-01-11 10:56:08] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-11T13:56:08.435Z"}
+[2026-01-11 10:56:08] [DEBUG] Heartbeat acknowledged
+[2026-01-11 10:56:23] [DEBUG] Sent heartbeat
+[2026-01-11 10:56:23] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-11T13:56:23.428Z"}
+[2026-01-11 10:56:23] [DEBUG] Heartbeat acknowledged
+[2026-01-11 10:56:31] [DEBUG] Received: {"type":"backup_job","jobId":"backup-16-1768139791904","equipment":{"id":16,"name":"OLT-ACE-GNA-ZTE-NOVO-MUNDO-01","ip":"172.16.31.2","port":22,"protocol":"ssh","username":"marcio","password":"@2Dc9d967","enablePassword":"zxr10","manufacturer":"zte"},"config":{"command":"show running-config","useShell":true,"timeout":60000}}
+[2026-01-11 10:56:31] [DEBUG] Received message type: backup_job
+[2026-01-11 10:56:32] [INFO] Executing backup job backup-16-1768139791904 for 172.16.31.2:22 with command: show running-config
+[2026-01-11 10:56:32] [DEBUG] ZTE device - using expect session
+[2026-01-11 10:56:32] [INFO] Executing ZTE OLT backup with expect on 172.16.31.2:22 (Agent v1.0.19)
+[2026-01-11 10:56:32] [INFO] ZTE enable_password provided: (yes)
+[2026-01-11 10:56:32] [ERROR] ZTE expect error: ZTE_DEBUG: Starting ZTE backup (agent v1.0.19)
+ZTE_DEBUG: Enable password provided: yes
+spawn ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 -o ServerAliveInterval=10 -o ServerAliveCountMax=6 -o HostKeyAlgorithms=ssh-rsa,ssh-dss -o PubkeyAcceptedKeyTypes=ssh-rsa -o KexAlgorithms=diffie-hellman-group14-sha1,diffie-hellman-group1-sha1,diffie-hellman-group-exchange-sha1 -p 22 marcio@172.16.31.2
+command-line line 0: Bad key types 'ssh-rsa,ssh-dss'.
+EXPECT_ERROR: Connection closed
+[2026-01-11 10:56:32] [ERROR] Backup failed for 172.16.31.2
+[2026-01-11 10:56:32] [INFO] Sending response, length: 108 bytes
+[2026-01-11 10:56:32] [INFO] Response sent successfully (108 bytes)
+[2026-01-11 10:56:38] [DEBUG] Sent heartbeat
+[2026-01-11 10:56:38] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-11T13:56:38.433Z"}
+[2026-01-11 10:56:38] [DEBUG] Heartbeat acknowledged
+
