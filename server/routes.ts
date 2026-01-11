@@ -2893,13 +2893,27 @@ export async function registerRoutes(
       const now = new Date();
       const dateStr = now.toISOString().slice(0,10).replace(/-/g,'') + '_' + now.toTimeString().slice(0,8).replace(/:/g,'');
       const filename = `${equip.name}_${dateStr}${config.extension}`;
+      const objectName = `backups/${filename}`;
       const duration = (Date.now() - startTime) / 1000;
+
+      // Save content to storage
+      const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID;
+      if (bucketId) {
+        const { objectStorageClient } = await import("./replit_integrations/object_storage/objectStorage");
+        const bucket = objectStorageClient.bucket(bucketId);
+        const file = bucket.file(objectName);
+        await file.save(Buffer.from(result), { contentType: 'text/plain' });
+      } else {
+        const { localStorageClient } = await import("./local-storage");
+        await localStorageClient.saveFile(objectName, Buffer.from(result), equip.companyId || undefined);
+      }
 
       await storage.createBackup({
         equipmentId: equip.id,
         filename,
-        objectName: `backups/${filename}`,
+        objectName,
         size: result.length,
+        mimeType: 'text/plain',
         status: "success",
         companyId: equip.companyId,
         userId: 1,
@@ -2910,7 +2924,7 @@ export async function registerRoutes(
         duration,
       });
 
-      console.log(`[scheduler] Backup completed for ${equip.name} in ${duration}s`);
+      console.log(`[scheduler] Backup completed for ${equip.name} in ${duration}s, saved to ${objectName}`);
     } catch (err: any) {
       const duration = (Date.now() - startTime) / 1000;
       await storage.updateBackupHistory(historyRecord.id, {
