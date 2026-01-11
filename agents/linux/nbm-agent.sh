@@ -212,6 +212,7 @@ execute_huawei_backup_expect() {
     log_info "Executing Huawei backup with expect on $host:$port"
     
     # Create expect script for proper interactive session
+    # Uses sshpass to avoid password prompt issues and keep session alive
     local expect_script=$(cat <<'EXPECT_EOF'
 #!/usr/bin/expect -f
 set timeout [lindex $argv 0]
@@ -222,49 +223,60 @@ set password [lindex $argv 4]
 
 log_user 1
 
-# SSH options for legacy devices
-spawn ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 \
+# Use sshpass for more reliable password handling
+spawn sshpass -p $password ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 \
+    -o ServerAliveInterval=10 -o ServerAliveCountMax=6 \
     -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa \
     -o KexAlgorithms=+diffie-hellman-group14-sha1,diffie-hellman-group1-sha1 \
-    -p $port $username@$host
-
-# Wait for password prompt
-expect {
-    "password:" { send "$password\r" }
-    "Password:" { send "$password\r" }
-    timeout { puts "EXPECT_ERROR: Timeout waiting for password prompt"; exit 1 }
-    eof { puts "EXPECT_ERROR: Connection closed"; exit 1 }
-}
+    -tt -p $port $username@$host
 
 # Wait for initial prompt (> or <hostname>)
 expect {
-    -re {[><]} { }
+    -re {<[^>]+>} { }
+    -re {\[[^\]]+\]} { }
+    ">" { }
     "Password:" { puts "EXPECT_ERROR: Authentication failed"; exit 1 }
-    timeout { puts "EXPECT_ERROR: Timeout after login"; exit 1 }
+    "password:" { puts "EXPECT_ERROR: Authentication failed"; exit 1 }
+    timeout { puts "EXPECT_ERROR: Timeout waiting for prompt"; exit 1 }
+    eof { puts "EXPECT_ERROR: Connection closed during login"; exit 1 }
 }
+
+# Small delay to ensure connection is stable
+sleep 1
 
 # Disable pagination
 send "screen-length 0 temporary\r"
 expect {
-    -re {[><]} { }
+    -re {<[^>]+>} { }
+    -re {\[[^\]]+\]} { }
+    ">" { }
     timeout { puts "EXPECT_ERROR: Timeout after screen-length"; exit 1 }
 }
 
+# Small delay before main command
+sleep 0.5
+
 # Execute backup command with longer timeout
-set timeout 180
+set timeout 300
 send "display current-configuration\r"
 
 # Wait for the prompt to return after full output
-# Huawei prompts look like <hostname> or [hostname]
+# Huawei configs end with "return" before the prompt
+# We need to capture everything until we see the prompt again
 expect {
-    -re {<[^>]+>} { }
-    -re {\[[^\]]+\]} { }
+    -re {return\r?\n<[^>]+>} { }
+    -re {<[^>]+>$} { }
+    -re {\[[^\]]+\]$} { }
     timeout { puts "EXPECT_ERROR: Timeout waiting for configuration output"; exit 1 }
+    eof { puts "EXPECT_ERROR: Connection closed during backup"; exit 1 }
 }
 
 # Exit gracefully
 send "quit\r"
-expect eof
+expect {
+    eof { }
+    timeout { }
+}
 EXPECT_EOF
 )
     
