@@ -1,0 +1,49 @@
+root@SRV-NBM-CLOUD-01[~]# cd /opt/nbm-cloud
+
+# 1. Verificar o último commit
+git log -1 --oneline
+
+# 2. Verificar se há o componente view-toggle
+ls -la client/src/components/view-toggle.tsx
+
+# 3. Verificar se o build está atualizado
+ls -la dist/public/assets/*.js | head -5
+
+# 4. Ver status do PM2
+pm2 status
+
+# 5. Ver logs recentes
+pm2 logs nbm-cloud --lines 20
+6e6cc4e (HEAD -> main, origin/main, origin/HEAD) Add a script to automate installation and updates of the backup system
+-rw-rw-r-- 1 root root 1338 Jan 13 18:00 client/src/components/view-toggle.tsx
+-rw-rw-r-- 1 root root 1354094 Jan 13 18:10 dist/public/assets/index-DuzXYpu_.js
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+├────┼────────────────────┼──────────┼──────┼───────────┼──────────┼──────────┤
+│ 0  │ nbm-cloud          │ fork     │ 1    │ online    │ 0%       │ 80.0mb   │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+[TAILING] Tailing last 20 lines for [nbm-cloud] process (change the value with --lines option)
+/root/.pm2/logs/nbm-cloud-out.log last 20 lines:
+/root/.pm2/logs/nbm-cloud-error.log last 20 lines:
+0|nbm-clou |     at /opt/nbm-cloud/dist/index.cjs:1:225
+0|nbm-clou |     at /opt/nbm-cloud/dist/index.cjs:70:120223
+0|nbm-clou |     at /opt/nbm-cloud/dist/index.cjs:1:225
+0|nbm-clou |     at Object.<anonymous> (/opt/nbm-cloud/dist/index.cjs:145:32213)
+0|nbm-clou |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+0|nbm-clou |     at Module._extensions..js (node:internal/modules/cjs/loader:1623:10)
+0|nbm-clou |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+0|nbm-clou |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+0|nbm-clou |     at cjsLoader (node:internal/modules/esm/translators:298:15)
+0|nbm-clou | Error: DATABASE_URL must be set. Did you forget to provision a database?
+0|nbm-clou |     at /opt/nbm-cloud/dist/index.cjs:70:120034
+0|nbm-clou |     at /opt/nbm-cloud/dist/index.cjs:1:225
+0|nbm-clou |     at /opt/nbm-cloud/dist/index.cjs:70:120223
+0|nbm-clou |     at /opt/nbm-cloud/dist/index.cjs:1:225
+0|nbm-clou |     at Object.<anonymous> (/opt/nbm-cloud/dist/index.cjs:145:32213)
+0|nbm-clou |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+0|nbm-clou |     at Module._extensions..js (node:internal/modules/cjs/loader:1623:10)
+0|nbm-clou |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+0|nbm-clou |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+0|nbm-clou |     at cjsLoader (node:internal/modules/esm/translators:298:15)
+
+
