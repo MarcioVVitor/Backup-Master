@@ -6,7 +6,7 @@
 # Don't exit on error - we handle errors ourselves
 set +e
 
-AGENT_VERSION="1.1.0"
+AGENT_VERSION="1.2.0"
 AGENT_DIR="/opt/nbm-agent"
 CONFIG_FILE="$AGENT_DIR/config.json"
 LOG_FILE="$AGENT_DIR/logs/agent.log"
@@ -202,7 +202,7 @@ test_connection() {
 }
 
 # Execute SSH backup command for Huawei with expect (waits for full output before quit)
-# v1.1.0 - Enhanced for large configurations (100MB+ buffer, 900s timeout)
+# v1.2.0 - Uses temp file logging to capture full config without buffer limits
 execute_huawei_backup_expect() {
     local host="$1"
     local port="$2"
@@ -210,14 +210,17 @@ execute_huawei_backup_expect() {
     local password="$4"
     local timeout="${5:-1000}"
     
-    log_info "Executing Huawei backup with expect on $host:$port timeout=${timeout}s (Agent v1.1.0 - Enhanced)"
+    log_info "Executing Huawei backup with expect on $host:$port timeout=${timeout}s (Agent v1.2.0)"
+    
+    # Temp file for capturing output - avoids buffer limits
+    local output_file="/tmp/huawei_output_$$.txt"
     
     # Create expect script for proper interactive session
-    # Uses sshpass to avoid password prompt issues and keep session alive
+    # Uses log_file to capture ALL output to temp file (no buffer limits)
     local expect_script=$(cat <<'EXPECT_EOF'
 #!/usr/bin/expect -f
 
-# CRITICAL: Large buffer for big Huawei configurations (100MB)
+# CRITICAL: Maximum buffer for pattern matching
 match_max 100000000
 
 set timeout [lindex $argv 0]
@@ -225,93 +228,107 @@ set host [lindex $argv 1]
 set port [lindex $argv 2]
 set username [lindex $argv 3]
 set password [lindex $argv 4]
+set output_file [lindex $argv 5]
 
-log_user 1
+# Disable log_user initially to avoid login noise
+log_user 0
 
-puts "HUAWEI_DEBUG: Starting Huawei SSH backup v1.1.0 (Enhanced)"
-puts "HUAWEI_DEBUG: Host=$host Port=$port User=$username Timeout=${timeout}s"
-puts "HUAWEI_DEBUG: Buffer size: 100MB for large configurations"
+puts stderr "HUAWEI_DEBUG: Starting Huawei SSH backup v1.2.0"
+puts stderr "HUAWEI_DEBUG: Host=$host Port=$port User=$username Timeout=${timeout}s"
+puts stderr "HUAWEI_DEBUG: Output file: $output_file"
 
-# Use sshpass for more reliable password handling
-# UserKnownHostsFile=/dev/null avoids host key verification errors
-# TCPKeepAlive and ServerAlive keep connection alive during large config transfers
-# ServerAliveCountMax=120 = keeps connection alive for 10+ minutes of data transfer
+# SSH with legacy algorithm support for older Huawei devices
 spawn sshpass -p $password ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
-    -o ConnectTimeout=60 -o ServerAliveInterval=5 -o ServerAliveCountMax=120 \
+    -o ConnectTimeout=60 -o ServerAliveInterval=5 -o ServerAliveCountMax=180 \
     -o TCPKeepAlive=yes \
     -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa \
     -o KexAlgorithms=+diffie-hellman-group1-sha1,diffie-hellman-group14-sha1 \
     -tt -p $port $username@$host
 
-# Wait for initial prompt (> or <hostname>)
+# Wait for initial prompt
 expect {
-    -re {<[^>]+>} { puts "HUAWEI_DEBUG: Got <hostname> prompt" }
-    -re {\[[^\]]+\]} { puts "HUAWEI_DEBUG: Got [hostname] prompt" }
-    ">" { puts "HUAWEI_DEBUG: Got > prompt" }
-    "Password:" { puts "EXPECT_ERROR: Authentication failed"; exit 1 }
-    "password:" { puts "EXPECT_ERROR: Authentication failed"; exit 1 }
-    timeout { puts "EXPECT_ERROR: Timeout waiting for prompt"; exit 1 }
-    eof { puts "EXPECT_ERROR: Connection closed during login"; exit 1 }
+    -re {<[^>]+>} { puts stderr "HUAWEI_DEBUG: Got <hostname> prompt" }
+    -re {\[[^\]]+\]} { puts stderr "HUAWEI_DEBUG: Got [hostname] prompt" }
+    ">" { puts stderr "HUAWEI_DEBUG: Got > prompt" }
+    "Password:" { puts stderr "EXPECT_ERROR: Authentication failed"; exit 1 }
+    "password:" { puts stderr "EXPECT_ERROR: Authentication failed"; exit 1 }
+    timeout { puts stderr "EXPECT_ERROR: Timeout waiting for prompt"; exit 1 }
+    eof { puts stderr "EXPECT_ERROR: Connection closed during login"; exit 1 }
 }
 
-# Small delay to ensure connection is stable
 sleep 1
 
-# Disable pagination - critical for large configs
-puts "HUAWEI_DEBUG: Disabling screen pagination..."
+# Disable pagination - try multiple methods
+puts stderr "HUAWEI_DEBUG: Disabling screen pagination..."
 send "screen-length 0 temporary\r"
 expect {
     -re {<[^>]+>} { }
     -re {\[[^\]]+\]} { }
     ">" { }
-    timeout { puts "EXPECT_ERROR: Timeout after screen-length"; exit 1 }
-}
-
-# Try additional pagination disable for some Huawei models
-send "user-interface current\r"
-expect {
-    -re {<[^>]+>} { }
-    -re {\[[^\]]+\]} { }
-    ">" { }
-    timeout { }
-}
-send "screen-length 0\r"
-expect {
-    -re {<[^>]+>} { }
-    -re {\[[^\]]+\]} { }
-    ">" { }
-    timeout { }
-}
-send "quit\r"
-expect {
-    -re {<[^>]+>} { }
-    -re {\[[^\]]+\]} { }
-    ">" { }
     timeout { }
 }
 
-# Small delay before main command
 sleep 0.5
 
-# Execute backup command with VERY long timeout for large configs (15 minutes)
-puts "HUAWEI_DEBUG: Executing display current-configuration..."
+# Start logging to file BEFORE executing the backup command
+puts stderr "HUAWEI_DEBUG: Starting output capture to file..."
+log_file -noappend $output_file
+log_user 1
+
+# Execute backup command with very long timeout
+puts stderr "HUAWEI_DEBUG: Executing display current-configuration..."
 set timeout 900
 send "display current-configuration\r"
 
-# Wait for the prompt to return after full output
-# Huawei configs end with "return" before the prompt
-# We need to capture everything until we see the prompt again
-# Using multiple patterns to handle different Huawei versions
-expect {
-    -re {return\r?\n<[^>]+>} { puts "HUAWEI_DEBUG: Config complete (found return + prompt)" }
-    -re {#\r?\n<[^>]+>} { puts "HUAWEI_DEBUG: Config complete (found # + prompt)" }
-    -re {<[^>]+>\s*$} { puts "HUAWEI_DEBUG: Config complete (found prompt at end)" }
-    -re {\[[^\]]+\]\s*$} { puts "HUAWEI_DEBUG: Config complete (found [prompt] at end)" }
-    timeout { puts "EXPECT_ERROR: Timeout waiting for configuration output (900s)"; exit 1 }
-    eof { puts "EXPECT_ERROR: Connection closed during backup"; exit 1 }
+# Use exp_continue loop to keep reading until we find the final prompt
+# This handles intermediate prompts that appear in config output
+set config_complete 0
+set line_count 0
+
+while {$config_complete == 0} {
+    expect {
+        -re {\r\n} {
+            incr line_count
+            # Continue reading more lines
+            exp_continue
+        }
+        -re {return\r?\n<[^>]+>\s*$} {
+            puts stderr "HUAWEI_DEBUG: Config complete after $line_count lines (found return + final prompt)"
+            set config_complete 1
+        }
+        -re {#\r?\n<[^>]+>\s*$} {
+            puts stderr "HUAWEI_DEBUG: Config complete after $line_count lines (found # + final prompt)"
+            set config_complete 1
+        }
+        timeout {
+            # Check if we have enough content - timeout might mean config is done
+            if {$line_count > 50} {
+                puts stderr "HUAWEI_DEBUG: Timeout after $line_count lines - assuming config complete"
+                set config_complete 1
+            } else {
+                puts stderr "EXPECT_ERROR: Timeout waiting for configuration (only $line_count lines)"
+                log_file
+                exit 1
+            }
+        }
+        eof {
+            if {$line_count > 50} {
+                puts stderr "HUAWEI_DEBUG: Connection closed after $line_count lines - config captured"
+                set config_complete 1
+            } else {
+                puts stderr "EXPECT_ERROR: Connection closed during backup (only $line_count lines)"
+                log_file
+                exit 1
+            }
+        }
+    }
 }
 
-puts "HUAWEI_DEBUG: Configuration captured successfully"
+# Stop logging
+log_file
+log_user 0
+
+puts stderr "HUAWEI_DEBUG: Configuration captured successfully ($line_count lines)"
 
 # Exit gracefully
 send "quit\r"
@@ -320,7 +337,8 @@ expect {
     timeout { }
 }
 
-puts "HUAWEI_DEBUG: Backup completed successfully"
+puts stderr "HUAWEI_DEBUG: Backup completed successfully"
+exit 0
 EXPECT_EOF
 )
     
@@ -329,33 +347,39 @@ EXPECT_EOF
     echo "$expect_script" > "$expect_file"
     chmod +x "$expect_file"
     
-    # Execute expect script
-    local output
+    # Execute expect script - stderr has debug, output goes to file
     local exit_code
-    output=$(timeout "$timeout" expect "$expect_file" "$timeout" "$host" "$port" "$username" "$password" 2>&1)
-    exit_code=$?
+    timeout "$timeout" expect "$expect_file" "$timeout" "$host" "$port" "$username" "$password" "$output_file" 2>&1 | grep -v "^spawn " | grep -v "^HUAWEI_DEBUG:" >&2
+    exit_code=${PIPESTATUS[0]}
     
-    # Clean up
+    # Clean up expect script
     rm -f "$expect_file"
     
     # Check results
     if [[ $exit_code -eq 124 ]]; then
         log_error "Huawei backup timed out after ${timeout}s"
+        rm -f "$output_file"
         return 1
     fi
     
-    # Check for expect errors
-    if [[ "$output" == *"EXPECT_ERROR:"* ]]; then
-        log_error "Huawei expect error: $output"
-        return 1
-    fi
-    
-    local output_length=${#output}
-    if [[ $output_length -gt 100 ]]; then
-        echo "$output"
-        return 0
+    # Check if output file exists and has content
+    if [[ -f "$output_file" ]]; then
+        local file_size=$(stat -c%s "$output_file" 2>/dev/null || echo "0")
+        log_info "Huawei backup output file size: $file_size bytes"
+        
+        if [[ "$file_size" -gt 500 ]]; then
+            # Output the file content
+            cat "$output_file"
+            rm -f "$output_file"
+            return 0
+        else
+            log_error "Huawei backup failed - output file too small: $file_size bytes"
+            cat "$output_file" >&2
+            rm -f "$output_file"
+            return 1
+        fi
     else
-        log_error "Huawei backup failed - insufficient output"
+        log_error "Huawei backup failed - no output file created"
         return 1
     fi
 }

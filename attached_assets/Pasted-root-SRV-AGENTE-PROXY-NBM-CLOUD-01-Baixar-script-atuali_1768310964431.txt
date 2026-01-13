@@ -1,0 +1,30 @@
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[~]# # Baixar script atualizado diretamente do GitHub
+curl -o /opt/nbm-agent/nbm-agent.sh https://raw.githubusercontent.com/SEU_USUARIO/nbm-cloud/main/agents/linux/nbm-agent.sh
+
+# Dar permissão de execução
+chmod +x /opt/nbm-agent/nbm-agent.sh
+
+# Reiniciar
+systemctl restart nbm-agent
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100    14  100    14    0     0     75      0 --:--:-- --:--:-- --:--:--    75
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[~]# cd /tmp && rm -rf nbm-update && git clone --depth 1 https://github.com/MarcioVVitor/Backup-Master.git nbm-update && sudo cp nbm-update/agents/linux/nbm-agent.sh /opt/nbm-agent/nbm-agent.sh && sudo chmod +x /opt/nbm-agent/nbm-agent.sh && rm -rf nbm-update && sudo systemctl restart nbm-agent && journalctl -u nbm-agent -f
+Cloning into 'nbm-update'...
+remote: Enumerating objects: 464, done.
+remote: Counting objects: 100% (464/464), done.
+remote: Compressing objects: 100% (397/397), done.
+remote: Total 464 (delta 76), reused 425 (delta 57), pack-reused 0 (from 0)
+Receiving objects: 100% (464/464), 48.92 MiB | 31.64 MiB/s, done.
+Resolving deltas: 100% (76/76), done.
+Jan 13 10:24:46 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Main process exited, code=exited, status=203/EXEC
+Jan 13 10:24:46 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Failed with result 'exit-code'.
+Jan 13 10:24:56 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Scheduled restart job, restart counter is at 12.
+Jan 13 10:24:56 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: Started nbm-agent.service - NBM CLOUD Agent - Network Backup Proxy.
+Jan 13 10:24:56 SRV-AGENTE-PROXY-NBM-CLOUD-01 (agent.sh)[171798]: nbm-agent.service: Failed to execute /opt/nbm-agent/nbm-agent.sh: Exec format error
+Jan 13 10:24:56 SRV-AGENTE-PROXY-NBM-CLOUD-01 (agent.sh)[171798]: nbm-agent.service: Failed at step EXEC spawning /opt/nbm-agent/nbm-agent.sh: Exec format error
+Jan 13 10:24:56 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Main process exited, code=exited, status=203/EXEC
+Jan 13 10:24:56 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Failed with result 'exit-code'.
+Jan 13 10:25:00 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: Stopped nbm-agent.service - NBM CLOUD Agent - Network Backup Proxy.
+Jan 13 10:25:00 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: Started nbm-agent.service - NBM CLOUD Agent - Network Backup Proxy.
+
