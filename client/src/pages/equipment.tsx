@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useEquipment, useCreateEquipment, useUpdateEquipment, useDeleteEquipment } from "@/hooks/use-equipment";
 import { useManufacturers } from "@/hooks/use-settings";
 import { useI18n } from "@/contexts/i18n-context";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
-import { Plus, Search, Pencil, Trash2, Server } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, Server, ArrowUpDown, ChevronDown, ChevronRight, FolderOpen, ChevronLeft } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Table,
@@ -35,6 +35,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { insertEquipmentSchema, type InsertEquipment, type Equipment, type Agent } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ViewToggle, type ViewMode } from "@/components/view-toggle";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface EquipmentAgentMapping {
   id: number;
@@ -44,8 +47,17 @@ interface EquipmentAgentMapping {
   createdAt: string;
 }
 
+const ITEMS_PER_PAGE = 30;
+
 export default function EquipmentPage() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [viewMode, setViewMode] = useState<ViewMode>("table");
+  const [sortField, setSortField] = useState<"name" | "ip" | "manufacturer" | "protocol">("name");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [groupBy, setGroupBy] = useState<"none" | "manufacturer" | "protocol">("none");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+  
   const { data: equipment, isLoading } = useEquipment();
   const { data: manufacturers } = useManufacturers();
   const { data: agents = [] } = useQuery<Agent[]>({
@@ -63,10 +75,333 @@ export default function EquipmentPage() {
     return mapping?.agentId || null;
   };
 
-  const filteredEquipment = equipment?.filter(e => 
-    e.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    e.ip.includes(searchTerm)
+  const filteredAndSortedEquipment = useMemo(() => {
+    let result = equipment?.filter(e => 
+      e.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      e.ip.includes(searchTerm) ||
+      e.manufacturer.toLowerCase().includes(searchTerm.toLowerCase())
+    ) || [];
+
+    result.sort((a, b) => {
+      let comparison = 0;
+      switch (sortField) {
+        case "name":
+          comparison = a.name.localeCompare(b.name);
+          break;
+        case "ip":
+          comparison = a.ip.localeCompare(b.ip);
+          break;
+        case "manufacturer":
+          comparison = a.manufacturer.localeCompare(b.manufacturer);
+          break;
+        case "protocol":
+          comparison = (a.protocol || "").localeCompare(b.protocol || "");
+          break;
+      }
+      return sortOrder === "asc" ? comparison : -comparison;
+    });
+
+    return result;
+  }, [equipment, searchTerm, sortField, sortOrder]);
+
+  const groupedEquipment = useMemo(() => {
+    if (groupBy === "none") {
+      return { all: filteredAndSortedEquipment };
+    }
+
+    return filteredAndSortedEquipment.reduce((acc, item) => {
+      const key = groupBy === "manufacturer" ? item.manufacturer : (item.protocol || "unknown");
+      if (!acc[key]) acc[key] = [];
+      acc[key].push(item);
+      return acc;
+    }, {} as Record<string, Equipment[]>);
+  }, [filteredAndSortedEquipment, groupBy]);
+
+  const totalPages = Math.ceil(filteredAndSortedEquipment.length / ITEMS_PER_PAGE);
+  const paginatedEquipment = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredAndSortedEquipment.slice(start, start + ITEMS_PER_PAGE);
+  }, [filteredAndSortedEquipment, currentPage]);
+
+  const toggleSort = (field: typeof sortField) => {
+    if (sortField === field) {
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortOrder("asc");
+    }
+  };
+
+  const toggleGroup = (groupName: string) => {
+    const newExpanded = new Set(expandedGroups);
+    if (newExpanded.has(groupName)) {
+      newExpanded.delete(groupName);
+    } else {
+      newExpanded.add(groupName);
+    }
+    setExpandedGroups(newExpanded);
+  };
+
+  const handleGroupByChange = (val: "none" | "manufacturer" | "protocol") => {
+    setGroupBy(val);
+    if (val !== "none") {
+      const allKeys = new Set(filteredAndSortedEquipment.map(e => val === "manufacturer" ? e.manufacturer : (e.protocol || "unknown")));
+      setExpandedGroups(allKeys);
+    } else {
+      setExpandedGroups(new Set());
+    }
+  };
+
+  const renderEquipmentCard = (item: Equipment) => {
+    const mfr = manufacturers?.find(m => m.value === item.manufacturer);
+    return (
+      <Card key={item.id} className="hover-elevate cursor-pointer">
+        <CardHeader className="pb-2">
+          <div className="flex items-center justify-between">
+            <Badge variant="outline" className="uppercase text-[10px]">
+              {mfr?.label || item.manufacturer}
+            </Badge>
+            <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium ${
+              item.enabled 
+                ? "bg-green-50/50 text-green-700 dark:bg-green-900/20 dark:text-green-300" 
+                : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
+            }`}>
+              <span className={`h-1.5 w-1.5 rounded-full ${item.enabled ? "bg-green-500" : "bg-gray-400"}`} />
+              {item.enabled ? t.common.enabled : t.common.disabled}
+            </div>
+          </div>
+          <CardTitle className="text-lg mt-2">{item.name}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">IP:</span>
+              <span className="font-mono">{item.ip}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">{t.equipment.protocol}:</span>
+              <span className="uppercase">{item.protocol}:{item.port}</span>
+            </div>
+            {item.model && (
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">{t.equipment.model}:</span>
+                <span>{item.model}</span>
+              </div>
+            )}
+          </div>
+          <div className="flex justify-end gap-2 mt-4 pt-4 border-t">
+            <Button variant="ghost" size="sm" onClick={() => setEditingId(item.id)}>
+              <Pencil className="h-4 w-4 mr-1" />
+              {t.common.edit}
+            </Button>
+            <DeleteButton id={item.id} name={item.name} />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+
+  const renderEquipmentListItem = (item: Equipment) => {
+    const mfr = manufacturers?.find(m => m.value === item.manufacturer);
+    return (
+      <div key={item.id} className="flex items-center justify-between p-4 border rounded-lg">
+        <div className="flex items-center gap-4">
+          <div className={`h-2 w-2 rounded-full ${item.enabled ? "bg-green-500" : "bg-gray-400"}`} />
+          <div>
+            <div className="font-medium">{item.name}</div>
+            <div className="text-sm text-muted-foreground font-mono">{item.ip}</div>
+          </div>
+        </div>
+        <div className="flex items-center gap-4">
+          <Badge variant="outline">{mfr?.label || item.manufacturer}</Badge>
+          <span className="text-xs text-muted-foreground uppercase">{item.protocol}:{item.port}</span>
+          <div className="flex gap-1">
+            <Button variant="ghost" size="icon" onClick={() => setEditingId(item.id)}>
+              <Pencil className="h-4 w-4" />
+            </Button>
+            <DeleteButton id={item.id} name={item.name} />
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderTableView = () => (
+    <div className="bg-card rounded-xl border shadow-sm overflow-hidden">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="cursor-pointer hover:bg-muted/50" onClick={() => toggleSort("name")}>
+              <div className="flex items-center gap-2">
+                {t.common.name}
+                {sortField === "name" && <ArrowUpDown className="h-4 w-4" />}
+              </div>
+            </TableHead>
+            <TableHead className="cursor-pointer hover:bg-muted/50" onClick={() => toggleSort("ip")}>
+              <div className="flex items-center gap-2">
+                {t.equipment.ipAddress}
+                {sortField === "ip" && <ArrowUpDown className="h-4 w-4" />}
+              </div>
+            </TableHead>
+            <TableHead className="cursor-pointer hover:bg-muted/50" onClick={() => toggleSort("manufacturer")}>
+              <div className="flex items-center gap-2">
+                {t.equipment.manufacturer}
+                {sortField === "manufacturer" && <ArrowUpDown className="h-4 w-4" />}
+              </div>
+            </TableHead>
+            <TableHead className="cursor-pointer hover:bg-muted/50" onClick={() => toggleSort("protocol")}>
+              <div className="flex items-center gap-2">
+                {t.equipment.protocol}
+                {sortField === "protocol" && <ArrowUpDown className="h-4 w-4" />}
+              </div>
+            </TableHead>
+            <TableHead>{t.common.status}</TableHead>
+            <TableHead className="text-right">{t.common.actions}</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {paginatedEquipment.map((item) => (
+            <TableRow key={item.id}>
+              <TableCell className="font-medium">{item.name}</TableCell>
+              <TableCell className="font-mono text-xs">{item.ip}</TableCell>
+              <TableCell>
+                <span className="inline-flex items-center px-2 py-1 rounded-md bg-muted text-xs font-medium">
+                  {manufacturers?.find(m => m.value === item.manufacturer)?.label || item.manufacturer}
+                </span>
+              </TableCell>
+              <TableCell className="uppercase text-xs text-muted-foreground">{item.protocol}:{item.port}</TableCell>
+              <TableCell>
+                <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium border ${
+                  item.enabled 
+                    ? "bg-green-50/50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800" 
+                    : "bg-gray-100 text-gray-600 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700"
+                }`}>
+                  <span className={`h-1.5 w-1.5 rounded-full ${item.enabled ? "bg-green-500" : "bg-gray-400"}`} />
+                  {item.enabled ? t.common.enabled : t.common.disabled}
+                </div>
+              </TableCell>
+              <TableCell className="text-right">
+                <div className="flex items-center justify-end gap-2">
+                  <Button variant="ghost" size="icon" onClick={() => setEditingId(item.id)}>
+                    <Pencil className="h-4 w-4 text-muted-foreground" />
+                  </Button>
+                  <DeleteButton id={item.id} name={item.name} />
+                </div>
+              </TableCell>
+            </TableRow>
+          ))}
+          {!paginatedEquipment.length && !isLoading && (
+            <TableRow>
+              <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
+                {t.equipment.noEquipment}
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+    </div>
   );
+
+  const renderGroupedContent = () => {
+    const groups = Object.entries(groupedEquipment);
+    if (groups.length === 1 && groups[0][0] === "all") {
+      if (viewMode === "cards") {
+        return (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {paginatedEquipment.map(renderEquipmentCard)}
+          </div>
+        );
+      } else if (viewMode === "list") {
+        return (
+          <div className="space-y-2">
+            {paginatedEquipment.map(renderEquipmentListItem)}
+          </div>
+        );
+      } else {
+        return renderTableView();
+      }
+    }
+
+    return (
+      <div className="space-y-4">
+        {groups.map(([groupName, groupItems]) => {
+          const mfr = manufacturers?.find(m => m.value === groupName);
+          const isExpanded = expandedGroups.has(groupName);
+          
+          return (
+            <Collapsible key={groupName} open={isExpanded} onOpenChange={() => toggleGroup(groupName)}>
+              <CollapsibleTrigger asChild>
+                <Button variant="ghost" className="w-full justify-start gap-2 h-12 px-4 bg-muted/50 hover:bg-muted">
+                  {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                  <FolderOpen className="h-4 w-4" />
+                  <span className="font-medium">
+                    {groupBy === "manufacturer" ? (mfr?.label || groupName) : groupName.toUpperCase()}
+                  </span>
+                  <Badge variant="secondary" className="ml-2">
+                    {groupItems.length}
+                  </Badge>
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="pt-4">
+                {viewMode === "cards" ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {groupItems.map(renderEquipmentCard)}
+                  </div>
+                ) : viewMode === "list" ? (
+                  <div className="space-y-2">
+                    {groupItems.map(renderEquipmentListItem)}
+                  </div>
+                ) : (
+                  <div className="border rounded-lg overflow-hidden">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>{t.common.name}</TableHead>
+                          <TableHead>{t.equipment.ipAddress}</TableHead>
+                          <TableHead>{t.equipment.manufacturer}</TableHead>
+                          <TableHead>{t.equipment.protocol}</TableHead>
+                          <TableHead>{t.common.status}</TableHead>
+                          <TableHead className="text-right">{t.common.actions}</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {groupItems.map(item => (
+                          <TableRow key={item.id}>
+                            <TableCell className="font-medium">{item.name}</TableCell>
+                            <TableCell className="font-mono text-xs">{item.ip}</TableCell>
+                            <TableCell>
+                              <Badge variant="outline">{manufacturers?.find(m => m.value === item.manufacturer)?.label || item.manufacturer}</Badge>
+                            </TableCell>
+                            <TableCell className="uppercase text-xs">{item.protocol}:{item.port}</TableCell>
+                            <TableCell>
+                              <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs ${
+                                item.enabled ? "bg-green-50/50 text-green-700" : "bg-gray-100 text-gray-600"
+                              }`}>
+                                <span className={`h-1.5 w-1.5 rounded-full ${item.enabled ? "bg-green-500" : "bg-gray-400"}`} />
+                                {item.enabled ? t.common.enabled : t.common.disabled}
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex justify-end gap-2">
+                                <Button variant="ghost" size="icon" onClick={() => setEditingId(item.id)}>
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                                <DeleteButton id={item.id} name={item.name} />
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </CollapsibleContent>
+            </Collapsible>
+          );
+        })}
+      </div>
+    );
+  };
 
   return (
     <div className="p-6 md:p-8 space-y-6 animate-enter">
@@ -92,59 +427,50 @@ export default function EquipmentPage() {
         </div>
       </div>
 
-      <div className="bg-card rounded-xl border shadow-sm">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t.common.name}</TableHead>
-              <TableHead>{t.equipment.ipAddress}</TableHead>
-              <TableHead>{t.equipment.manufacturer}</TableHead>
-              <TableHead>{t.equipment.protocol}</TableHead>
-              <TableHead>{t.common.status}</TableHead>
-              <TableHead className="text-right">{t.common.actions}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredEquipment?.map((item) => (
-              <TableRow key={item.id}>
-                <TableCell className="font-medium">{item.name}</TableCell>
-                <TableCell className="font-mono text-xs">{item.ip}</TableCell>
-                <TableCell>
-                  <span className="inline-flex items-center px-2 py-1 rounded-md bg-muted text-xs font-medium">
-                    {manufacturers?.find(m => m.value === item.manufacturer)?.label || item.manufacturer}
-                  </span>
-                </TableCell>
-                <TableCell className="uppercase text-xs text-muted-foreground">{item.protocol}:{item.port}</TableCell>
-                <TableCell>
-                  <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium border ${
-                    item.enabled 
-                      ? "bg-green-50/50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800" 
-                      : "bg-gray-100 text-gray-600 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700"
-                  }`}>
-                    <span className={`h-1.5 w-1.5 rounded-full ${item.enabled ? "bg-green-500" : "bg-gray-400"}`} />
-                    {item.enabled ? t.common.enabled : t.common.disabled}
-                  </div>
-                </TableCell>
-                <TableCell className="text-right">
-                  <div className="flex items-center justify-end gap-2">
-                    <Button variant="ghost" size="icon" onClick={() => setEditingId(item.id)}>
-                      <Pencil className="h-4 w-4 text-muted-foreground" />
-                    </Button>
-                    <DeleteButton id={item.id} name={item.name} />
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-            {!filteredEquipment?.length && !isLoading && (
-              <TableRow>
-                <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
-                  {t.equipment.noEquipment}
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <ViewToggle viewMode={viewMode} onViewModeChange={setViewMode} />
+          <Select value={groupBy} onValueChange={handleGroupByChange}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Agrupar por..." />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">Sem agrupamento</SelectItem>
+              <SelectItem value="manufacturer">Por Fabricante</SelectItem>
+              <SelectItem value="protocol">Por Protocolo</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="text-sm text-muted-foreground">
+          {filteredAndSortedEquipment.length} equipamentos
+        </div>
       </div>
+
+      {renderGroupedContent()}
+
+      {groupBy === "none" && totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2 pt-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <span className="text-sm text-muted-foreground px-4">
+            Página {currentPage} de {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
 
       <CreateEquipmentDialog 
         open={isCreateOpen} 
