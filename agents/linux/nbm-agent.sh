@@ -6,7 +6,7 @@
 # Don't exit on error - we handle errors ourselves
 set +e
 
-AGENT_VERSION="1.0.42"
+AGENT_VERSION="1.1.0"
 AGENT_DIR="/opt/nbm-agent"
 CONFIG_FILE="$AGENT_DIR/config.json"
 LOG_FILE="$AGENT_DIR/logs/agent.log"
@@ -202,19 +202,24 @@ test_connection() {
 }
 
 # Execute SSH backup command for Huawei with expect (waits for full output before quit)
+# v1.1.0 - Enhanced for large configurations (100MB+ buffer, 900s timeout)
 execute_huawei_backup_expect() {
     local host="$1"
     local port="$2"
     local username="$3"
     local password="$4"
-    local timeout="${5:-120}"
+    local timeout="${5:-1000}"
     
-    log_info "Executing Huawei backup with expect on $host:$port"
+    log_info "Executing Huawei backup with expect on $host:$port timeout=${timeout}s (Agent v1.1.0 - Enhanced)"
     
     # Create expect script for proper interactive session
     # Uses sshpass to avoid password prompt issues and keep session alive
     local expect_script=$(cat <<'EXPECT_EOF'
 #!/usr/bin/expect -f
+
+# CRITICAL: Large buffer for big Huawei configurations (100MB)
+match_max 100000000
+
 set timeout [lindex $argv 0]
 set host [lindex $argv 1]
 set port [lindex $argv 2]
@@ -223,19 +228,26 @@ set password [lindex $argv 4]
 
 log_user 1
 
+puts "HUAWEI_DEBUG: Starting Huawei SSH backup v1.1.0 (Enhanced)"
+puts "HUAWEI_DEBUG: Host=$host Port=$port User=$username Timeout=${timeout}s"
+puts "HUAWEI_DEBUG: Buffer size: 100MB for large configurations"
+
 # Use sshpass for more reliable password handling
 # UserKnownHostsFile=/dev/null avoids host key verification errors
 # TCPKeepAlive and ServerAlive keep connection alive during large config transfers
+# ServerAliveCountMax=120 = keeps connection alive for 10+ minutes of data transfer
 spawn sshpass -p $password ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
-    -o ConnectTimeout=30 -o ServerAliveInterval=5 -o ServerAliveCountMax=12 \
+    -o ConnectTimeout=60 -o ServerAliveInterval=5 -o ServerAliveCountMax=120 \
     -o TCPKeepAlive=yes \
+    -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa \
+    -o KexAlgorithms=+diffie-hellman-group1-sha1,diffie-hellman-group14-sha1 \
     -tt -p $port $username@$host
 
 # Wait for initial prompt (> or <hostname>)
 expect {
-    -re {<[^>]+>} { }
-    -re {\[[^\]]+\]} { }
-    ">" { }
+    -re {<[^>]+>} { puts "HUAWEI_DEBUG: Got <hostname> prompt" }
+    -re {\[[^\]]+\]} { puts "HUAWEI_DEBUG: Got [hostname] prompt" }
+    ">" { puts "HUAWEI_DEBUG: Got > prompt" }
     "Password:" { puts "EXPECT_ERROR: Authentication failed"; exit 1 }
     "password:" { puts "EXPECT_ERROR: Authentication failed"; exit 1 }
     timeout { puts "EXPECT_ERROR: Timeout waiting for prompt"; exit 1 }
@@ -245,7 +257,8 @@ expect {
 # Small delay to ensure connection is stable
 sleep 1
 
-# Disable pagination
+# Disable pagination - critical for large configs
+puts "HUAWEI_DEBUG: Disabling screen pagination..."
 send "screen-length 0 temporary\r"
 expect {
     -re {<[^>]+>} { }
@@ -254,23 +267,51 @@ expect {
     timeout { puts "EXPECT_ERROR: Timeout after screen-length"; exit 1 }
 }
 
+# Try additional pagination disable for some Huawei models
+send "user-interface current\r"
+expect {
+    -re {<[^>]+>} { }
+    -re {\[[^\]]+\]} { }
+    ">" { }
+    timeout { }
+}
+send "screen-length 0\r"
+expect {
+    -re {<[^>]+>} { }
+    -re {\[[^\]]+\]} { }
+    ">" { }
+    timeout { }
+}
+send "quit\r"
+expect {
+    -re {<[^>]+>} { }
+    -re {\[[^\]]+\]} { }
+    ">" { }
+    timeout { }
+}
+
 # Small delay before main command
 sleep 0.5
 
-# Execute backup command with longer timeout for large configs
-set timeout 600
+# Execute backup command with VERY long timeout for large configs (15 minutes)
+puts "HUAWEI_DEBUG: Executing display current-configuration..."
+set timeout 900
 send "display current-configuration\r"
 
 # Wait for the prompt to return after full output
 # Huawei configs end with "return" before the prompt
 # We need to capture everything until we see the prompt again
+# Using multiple patterns to handle different Huawei versions
 expect {
-    -re {return\r?\n<[^>]+>} { }
-    -re {<[^>]+>$} { }
-    -re {\[[^\]]+\]$} { }
-    timeout { puts "EXPECT_ERROR: Timeout waiting for configuration output"; exit 1 }
+    -re {return\r?\n<[^>]+>} { puts "HUAWEI_DEBUG: Config complete (found return + prompt)" }
+    -re {#\r?\n<[^>]+>} { puts "HUAWEI_DEBUG: Config complete (found # + prompt)" }
+    -re {<[^>]+>\s*$} { puts "HUAWEI_DEBUG: Config complete (found prompt at end)" }
+    -re {\[[^\]]+\]\s*$} { puts "HUAWEI_DEBUG: Config complete (found [prompt] at end)" }
+    timeout { puts "EXPECT_ERROR: Timeout waiting for configuration output (900s)"; exit 1 }
     eof { puts "EXPECT_ERROR: Connection closed during backup"; exit 1 }
 }
+
+puts "HUAWEI_DEBUG: Configuration captured successfully"
 
 # Exit gracefully
 send "quit\r"
@@ -278,6 +319,8 @@ expect {
     eof { }
     timeout { }
 }
+
+puts "HUAWEI_DEBUG: Backup completed successfully"
 EXPECT_EOF
 )
     
