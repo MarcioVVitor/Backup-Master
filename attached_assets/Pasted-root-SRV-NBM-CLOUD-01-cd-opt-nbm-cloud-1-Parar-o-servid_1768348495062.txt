@@ -1,0 +1,61 @@
+root@SRV-NBM-CLOUD-01[~]# cd /opt/nbm-cloud
+
+# 1. Parar o servidor PRIMEIRO
+pm2 stop nbm-cloud
+
+# 2. Deletar o dist completamente
+rm -rf dist/
+
+# 3. Recompilar (isso cria index.html com timestamp atual)
+npm run build
+
+# 4. Verificar timestamp do novo index.html
+stat dist/public/index.html | grep Modify
+
+# 5. Iniciar o servidor (DEPOIS do build)
+pm2 start nbm-cloud
+
+# 6. Verificar Last-Modified
+curl -I http://localhost:5000/ | grep -i modified
+[PM2] Applying action stopProcessId on app [nbm-cloud](ids: [ 0 ])
+[PM2] [nbm-cloud](0) ✓
+┌────┬──────────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name         │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+├────┼──────────────┼─────────────┼─────────┼─────────┼──────────┼────────┼──────┼───────────┼──────────┼──────────┼──────────┼──────────┤
+│ 0  │ nbm-cloud    │ default     │ 1.0.0   │ fork    │ 0        │ 0      │ 2    │ stopped   │ 0%       │ 0b       │ root     │ disabled │
+└────┴──────────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+
+> rest-express@1.0.0 build
+> tsx script/build.ts
+
+building client...
+vite v7.3.0 building client environment for production...
+✓ 3320 modules transformed.
+../dist/public/index.html                     2.87 kB │ gzip:   1.04 kB
+../dist/public/assets/index-vnZetH7j.css     80.81 kB │ gzip:  13.52 kB
+../dist/public/assets/index-CPQxKp5j.js   1,358.66 kB │ gzip: 372.43 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 14.07s
+building server...
+
+  dist/index.cjs  1.3mb ⚠️
+
+⚡ Done in 164ms
+Modify: 2026-01-13 20:54:10.413794977 -0300
+[PM2] Applying action restartProcessId on app [nbm-cloud](ids: [ 0 ])
+[PM2] [nbm-cloud](0) ✓
+[PM2] Process successfully started
+┌────┬──────────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name         │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+├────┼──────────────┼─────────────┼─────────┼─────────┼──────────┼────────┼──────┼───────────┼──────────┼──────────┼──────────┼──────────┤
+│ 0  │ nbm-cloud    │ default     │ 1.0.0   │ fork    │ 115994   │ 0s     │ 2    │ online    │ 0%       │ 14.9mb   │ root     │ disabled │
+└────┴──────────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0  2865    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+Last-Modified: Sun, 11 Jan 2026 21:52:14 GMT
+root@SRV-NBM-CLOUD-01[/opt/nbm-cloud]# 
