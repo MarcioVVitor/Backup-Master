@@ -1,0 +1,119 @@
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[~]# # Verificar versão do agente
+grep "AGENT_VERSION" /opt/nbm-agent/nbm-agent.sh
+
+# Verificar se agente está rodando
+systemctl status nbm-agent
+
+# Ver logs gerais do agente
+journalctl -u nbm-agent -n 50 --no-pager
+AGENT_VERSION="1.2.0"
+    "agentVersion": "$AGENT_VERSION",
+    local new_version=$(grep "AGENT_VERSION=" "$update_dir/nbm-agent.sh" | cut -d'"' -f2)
+    log_info "Update completed: $AGENT_VERSION -> $new_version"
+    "fromVersion": "$AGENT_VERSION",
+        local auth_msg="{\"type\":\"auth\",\"token\":\"$AGENT_TOKEN\",\"agentId\":$AGENT_ID,\"name\":\"$AGENT_NAME\",\"version\":\"$AGENT_VERSION\"}"
+            -d "{\"agentId\": $AGENT_ID, \"version\": \"$AGENT_VERSION\"}" || true
+    log_info "Starting NBM CLOUD Agent v$AGENT_VERSION"
+NBM CLOUD Agent v$AGENT_VERSION
+        echo "NBM CLOUD Agent v$AGENT_VERSION"
+● nbm-agent.service - NBM CLOUD Agent - Network Backup Proxy
+     Loaded: loaded (/etc/systemd/system/nbm-agent.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-01-13 10:25:00 -03; 6h ago
+ Invocation: 2a5553c1463347b0b28e9c34ed53b8c1
+   Main PID: 171818 (nbm-agent.sh)
+      Tasks: 5 (limit: 9465)
+     Memory: 5.3M (peak: 10.7M)
+        CPU: 56.851s
+     CGroup: /system.slice/nbm-agent.service
+             ├─171818 /bin/bash /opt/nbm-agent/nbm-agent.sh start
+             ├─171831 /bin/bash /opt/nbm-agent/nbm-agent.sh start
+             ├─171833 websocat -t --ping-interval 10 -B 524288 ws://143.255.197.25:5000/ws/agents
+             ├─171835 /bin/bash /opt/nbm-agent/nbm-agent.sh start
+             └─189494 sleep 15
+
+Jan 13 10:25:00 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: Started nbm-agent.service - NBM CLOUD Agent - Network Backup Proxy.
+Jan 13 10:23:44 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Scheduled restart job, restart counter is at 5.
+Jan 13 10:23:44 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: Started nbm-agent.service - NBM CLOUD Agent - Network Backup Proxy.
+Jan 13 10:23:44 SRV-AGENTE-PROXY-NBM-CLOUD-01 (agent.sh)[171777]: nbm-agent.service: Failed to execute /opt/nbm-agent/nbm-agent.sh: Exec format error
+Jan 13 10:23:44 SRV-AGENTE-PROXY-NBM-CLOUD-01 (agent.sh)[171777]: nbm-agent.service: Failed at step EXEC spawning /opt/nbm-agent/nbm-agent.sh: Exec format error
+Jan 13 10:23:44 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Main process exited, code=exited, status=203/EXEC
+Jan 13 10:23:44 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Failed with result 'exit-code'.
+Jan 13 10:23:54 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Scheduled restart job, restart counter is at 6.
+Jan 13 10:23:54 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: Started nbm-agent.service - NBM CLOUD Agent - Network Backup Proxy.
+Jan 13 10:23:54 SRV-AGENTE-PROXY-NBM-CLOUD-01 (agent.sh)[171778]: nbm-agent.service: Failed to execute /opt/nbm-agent/nbm-agent.sh: Exec format error
+Jan 13 10:23:54 SRV-AGENTE-PROXY-NBM-CLOUD-01 (agent.sh)[171778]: nbm-agent.service: Failed at step EXEC spawning /opt/nbm-agent/nbm-agent.sh: Exec format error
+Jan 13 10:23:54 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Main process exited, code=exited, status=203/EXEC
+Jan 13 10:23:54 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Failed with result 'exit-code'.
+Jan 13 10:24:05 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Scheduled restart job, restart counter is at 7.
+Jan 13 10:24:05 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: Started nbm-agent.service - NBM CLOUD Agent - Network Backup Proxy.
+Jan 13 10:24:05 SRV-AGENTE-PROXY-NBM-CLOUD-01 (agent.sh)[171779]: nbm-agent.service: Failed to execute /opt/nbm-agent/nbm-agent.sh: Exec format error
+Jan 13 10:24:05 SRV-AGENTE-PROXY-NBM-CLOUD-01 (agent.sh)[171779]: nbm-agent.service: Failed at step EXEC spawning /opt/nbm-agent/nbm-agent.sh: Exec format error
+Jan 13 10:24:05 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Main process exited, code=exited, status=203/EXEC
+Jan 13 10:24:05 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Failed with result 'exit-code'.
+Jan 13 10:24:15 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Scheduled restart job, restart counter is at 8.
+Jan 13 10:24:15 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: Started nbm-agent.service - NBM CLOUD Agent - Network Backup Proxy.
+Jan 13 10:24:15 SRV-AGENTE-PROXY-NBM-CLOUD-01 (agent.sh)[171783]: nbm-agent.service: Failed to execute /opt/nbm-agent/nbm-agent.sh: Exec format error
+Jan 13 10:24:15 SRV-AGENTE-PROXY-NBM-CLOUD-01 (agent.sh)[171783]: nbm-agent.service: Failed at step EXEC spawning /opt/nbm-agent/nbm-agent.sh: Exec format error
+Jan 13 10:24:15 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Main process exited, code=exited, status=203/EXEC
+Jan 13 10:24:15 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Failed with result 'exit-code'.
+Jan 13 10:24:25 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Scheduled restart job, restart counter is at 9.
+Jan 13 10:24:25 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: Started nbm-agent.service - NBM CLOUD Agent - Network Backup Proxy.
+Jan 13 10:24:25 SRV-AGENTE-PROXY-NBM-CLOUD-01 (agent.sh)[171785]: nbm-agent.service: Failed to execute /opt/nbm-agent/nbm-agent.sh: Exec format error
+Jan 13 10:24:25 SRV-AGENTE-PROXY-NBM-CLOUD-01 (agent.sh)[171785]: nbm-agent.service: Failed at step EXEC spawning /opt/nbm-agent/nbm-agent.sh: Exec format error
+Jan 13 10:24:25 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Main process exited, code=exited, status=203/EXEC
+Jan 13 10:24:25 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Failed with result 'exit-code'.
+Jan 13 10:24:35 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Scheduled restart job, restart counter is at 10.
+Jan 13 10:24:35 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: Started nbm-agent.service - NBM CLOUD Agent - Network Backup Proxy.
+Jan 13 10:24:35 SRV-AGENTE-PROXY-NBM-CLOUD-01 (agent.sh)[171786]: nbm-agent.service: Failed to execute /opt/nbm-agent/nbm-agent.sh: Exec format error
+Jan 13 10:24:35 SRV-AGENTE-PROXY-NBM-CLOUD-01 (agent.sh)[171786]: nbm-agent.service: Failed at step EXEC spawning /opt/nbm-agent/nbm-agent.sh: Exec format error
+Jan 13 10:24:35 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Main process exited, code=exited, status=203/EXEC
+Jan 13 10:24:35 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Failed with result 'exit-code'.
+Jan 13 10:24:46 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Scheduled restart job, restart counter is at 11.
+Jan 13 10:24:46 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: Started nbm-agent.service - NBM CLOUD Agent - Network Backup Proxy.
+Jan 13 10:24:46 SRV-AGENTE-PROXY-NBM-CLOUD-01 (agent.sh)[171787]: nbm-agent.service: Failed to execute /opt/nbm-agent/nbm-agent.sh: Exec format error
+Jan 13 10:24:46 SRV-AGENTE-PROXY-NBM-CLOUD-01 (agent.sh)[171787]: nbm-agent.service: Failed at step EXEC spawning /opt/nbm-agent/nbm-agent.sh: Exec format error
+Jan 13 10:24:46 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Main process exited, code=exited, status=203/EXEC
+Jan 13 10:24:46 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Failed with result 'exit-code'.
+Jan 13 10:24:56 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Scheduled restart job, restart counter is at 12.
+Jan 13 10:24:56 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: Started nbm-agent.service - NBM CLOUD Agent - Network Backup Proxy.
+Jan 13 10:24:56 SRV-AGENTE-PROXY-NBM-CLOUD-01 (agent.sh)[171798]: nbm-agent.service: Failed to execute /opt/nbm-agent/nbm-agent.sh: Exec format error
+Jan 13 10:24:56 SRV-AGENTE-PROXY-NBM-CLOUD-01 (agent.sh)[171798]: nbm-agent.service: Failed at step EXEC spawning /opt/nbm-agent/nbm-agent.sh: Exec format error
+Jan 13 10:24:56 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Main process exited, code=exited, status=203/EXEC
+Jan 13 10:24:56 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Failed with result 'exit-code'.
+Jan 13 10:25:00 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: Stopped nbm-agent.service - NBM CLOUD Agent - Network Backup Proxy.
+Jan 13 10:25:00 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: Started nbm-agent.service - NBM CLOUD Agent - Network Backup Proxy.
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[~]# # Instalar dos2unix se necessário
+apt-get install -y dos2unix
+
+# Baixar e instalar agente atualizado
+cd /tmp && rm -rf nbm-update && git clone --depth 1 https://github.com/MarcioVVitor/Backup-Master.git nbm-update && sudo cp nbm-update/agents/linux/nbm-agent.sh /opt/nbm-agent/nbm-agent.sh && sudo chmod +x /opt/nbm-agent/nbm-agent.sh && rm -rf nbm-update && dos2unix /opt/nbm-agent/nbm-agent.sh && sudo systemctl restart nbm-agent
+
+# Verificar versão
+grep "AGENT_VERSION" /opt/nbm-agent/nbm-agent.sh
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+dos2unix is already the newest version (7.5.2-1).
+The following package was automatically installed and is no longer required:
+  linux-image-6.12.43+deb13-amd64
+Use 'apt autoremove' to remove it.
+0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
+Cloning into 'nbm-update'...
+remote: Enumerating objects: 465, done.
+remote: Counting objects: 100% (465/465), done.
+remote: Compressing objects: 100% (398/398), done.
+remote: Total 465 (delta 76), reused 426 (delta 57), pack-reused 0 (from 0)
+Receiving objects: 100% (465/465), 48.92 MiB | 28.95 MiB/s, done.
+Resolving deltas: 100% (76/76), done.
+dos2unix: converting file /opt/nbm-agent/nbm-agent.sh to Unix format...
+AGENT_VERSION="1.2.0"
+    "agentVersion": "$AGENT_VERSION",
+    local new_version=$(grep "AGENT_VERSION=" "$update_dir/nbm-agent.sh" | cut -d'"' -f2)
+    log_info "Update completed: $AGENT_VERSION -> $new_version"
+    "fromVersion": "$AGENT_VERSION",
+        local auth_msg="{\"type\":\"auth\",\"token\":\"$AGENT_TOKEN\",\"agentId\":$AGENT_ID,\"name\":\"$AGENT_NAME\",\"version\":\"$AGENT_VERSION\"}"
+            -d "{\"agentId\": $AGENT_ID, \"version\": \"$AGENT_VERSION\"}" || true
+    log_info "Starting NBM CLOUD Agent v$AGENT_VERSION"
+NBM CLOUD Agent v$AGENT_VERSION
+        echo "NBM CLOUD Agent v$AGENT_VERSION"
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[/tmp]# 
