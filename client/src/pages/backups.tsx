@@ -52,7 +52,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import type { Manufacturer, Equipment, File } from "@shared/schema";
+import type { Manufacturer, Equipment, FileRecord } from "@shared/schema";
 
 interface BackupContent {
   success: boolean;
@@ -169,7 +169,7 @@ export default function BackupsPage() {
       return { "all": filteredAndSortedFiles };
     }
 
-    const groups: Record<string, File[]> = {};
+    const groups: Record<string, FileRecord[]> = {};
     filteredAndSortedFiles.forEach(file => {
       let key: string;
       if (groupBy === "manufacturer") {
@@ -318,7 +318,7 @@ export default function BackupsPage() {
     }
   };
 
-  const renderCard = (file: File) => {
+  const renderCard = (file: FileRecord) => {
     const eq = getEquipment(file.equipmentId);
     const mfr = manufacturers.find(m => m.value === eq?.manufacturer);
     
@@ -443,7 +443,7 @@ export default function BackupsPage() {
     );
   };
 
-  const renderListItem = (file: File) => {
+  const renderListItem = (file: FileRecord) => {
     const eq = getEquipment(file.equipmentId);
     const mfr = manufacturers.find(m => m.value === eq?.manufacturer);
     

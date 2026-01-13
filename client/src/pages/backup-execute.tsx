@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useI18n } from "@/contexts/i18n-context";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { ViewToggle, ViewMode } from "@/components/view-toggle";
 import {
   Select,
   SelectContent,
@@ -15,6 +16,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { 
   Play, 
   Search, 
@@ -24,7 +38,12 @@ import {
   List,
   CheckSquare,
   Globe,
-  HelpCircle
+  HelpCircle,
+  ArrowUpDown,
+  FolderOpen,
+  ChevronDown,
+  ChevronRight,
+  X
 } from "lucide-react";
 import { Link } from "wouter";
 import type { Equipment, Manufacturer } from "@shared/schema";
@@ -61,11 +80,20 @@ const manufacturerColors: Record<string, string> = {
   juniper: "bg-green-500",
 };
 
+type SortField = "name" | "ip" | "manufacturer" | "model";
+type SortOrder = "asc" | "desc";
+type GroupBy = "none" | "manufacturer";
+
 export default function BackupExecutePage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedManufacturer, setSelectedManufacturer] = useState<string>("all");
   const [selectedModel, setSelectedModel] = useState<string>("all");
   const [selectedEquipment, setSelectedEquipment] = useState<Set<number>>(new Set());
+  const [viewMode, setViewMode] = useState<ViewMode>("cards");
+  const [sortField, setSortField] = useState<SortField>("name");
+  const [sortOrder, setSortOrder] = useState<SortOrder>("asc");
+  const [groupBy, setGroupBy] = useState<GroupBy>("none");
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set(["all"]));
   const [progress, setProgress] = useState<BackupProgress>({
     current: 0,
     total: 0,
@@ -86,16 +114,53 @@ export default function BackupExecutePage() {
     queryKey: ["/api/manufacturers"],
   });
 
-  const filteredEquipment = equipment.filter((e) => {
-    const matchesSearch =
-      e.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      e.ip.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (e.model?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
-    const matchesManufacturer =
-      selectedManufacturer === "all" || e.manufacturer === selectedManufacturer;
-    const matchesModel = selectedModel === "all" || e.model === selectedModel;
-    return matchesSearch && matchesManufacturer && matchesModel;
-  });
+  const filteredAndSortedEquipment = useMemo(() => {
+    let result = equipment.filter((e) => {
+      const matchesSearch =
+        e.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        e.ip.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (e.model?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
+      const matchesManufacturer =
+        selectedManufacturer === "all" || e.manufacturer === selectedManufacturer;
+      const matchesModel = selectedModel === "all" || e.model === selectedModel;
+      return matchesSearch && matchesManufacturer && matchesModel;
+    });
+
+    result.sort((a, b) => {
+      let comparison = 0;
+      switch (sortField) {
+        case "name":
+          comparison = a.name.localeCompare(b.name);
+          break;
+        case "ip":
+          comparison = a.ip.localeCompare(b.ip);
+          break;
+        case "manufacturer":
+          comparison = a.manufacturer.localeCompare(b.manufacturer);
+          break;
+        case "model":
+          comparison = (a.model || "").localeCompare(b.model || "");
+          break;
+      }
+      return sortOrder === "asc" ? comparison : -comparison;
+    });
+
+    return result;
+  }, [equipment, searchTerm, selectedManufacturer, selectedModel, sortField, sortOrder]);
+
+  const groupedEquipment = useMemo(() => {
+    if (groupBy === "none") {
+      return { "all": filteredAndSortedEquipment };
+    }
+
+    const groups: Record<string, Equipment[]> = {};
+    filteredAndSortedEquipment.forEach(eq => {
+      const key = eq.manufacturer;
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(eq);
+    });
+    return groups;
+  }, [filteredAndSortedEquipment, groupBy]);
 
   const uniqueModels = Array.from(new Set(equipment.map((e) => e.model).filter((m): m is string => m !== null && m !== undefined)));
 
@@ -117,11 +182,23 @@ export default function BackupExecutePage() {
   };
 
   const selectAllVisible = () => {
-    if (selectedEquipment.size === filteredEquipment.length) {
+    if (selectedEquipment.size === filteredAndSortedEquipment.length) {
       setSelectedEquipment(new Set());
     } else {
-      setSelectedEquipment(new Set(filteredEquipment.map((e) => e.id)));
+      setSelectedEquipment(new Set(filteredAndSortedEquipment.map((e) => e.id)));
     }
+  };
+
+  const toggleGroup = (group: string) => {
+    setExpandedGroups(prev => {
+      const next = new Set(prev);
+      if (next.has(group)) {
+        next.delete(group);
+      } else {
+        next.add(group);
+      }
+      return next;
+    });
   };
 
   useEffect(() => {
@@ -209,6 +286,333 @@ export default function BackupExecutePage() {
     return manufacturerColors[manufacturer.toLowerCase()] || "bg-gray-500";
   };
 
+  const getSelectedEquipmentDetails = () => {
+    return equipment.filter(e => selectedEquipment.has(e.id));
+  };
+
+  const renderCard = (eq: Equipment) => {
+    const isSelected = selectedEquipment.has(eq.id);
+    const mfr = manufacturers.find((m) => m.value === eq.manufacturer);
+    const Icon = getEquipmentIcon(eq.manufacturer);
+
+    return (
+      <Card
+        key={eq.id}
+        className={`cursor-pointer transition-all ${
+          isSelected
+            ? "ring-2 ring-primary border-primary bg-primary/5"
+            : "hover:border-primary/50"
+        }`}
+        onClick={() => toggleEquipment(eq.id)}
+        data-testid={`equipment-card-${eq.id}`}
+      >
+        <CardContent className="p-4">
+          <div className="flex items-start gap-3">
+            <Checkbox
+              checked={isSelected}
+              onCheckedChange={() => toggleEquipment(eq.id)}
+              onClick={(e) => e.stopPropagation()}
+              className="mt-1"
+              data-testid={`checkbox-equipment-${eq.id}`}
+            />
+            <div
+              className="p-2 rounded-lg"
+              style={{ backgroundColor: `${mfr?.color || "#6b7280"}20` }}
+            >
+              <Icon
+                className="h-5 w-5"
+                style={{ color: mfr?.color || "#6b7280" }}
+              />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-semibold text-sm truncate">{eq.name}</h3>
+              <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                <Network className="h-3 w-3" />
+                <span>{eq.ip}</span>
+              </div>
+              <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
+                <Server className="h-3 w-3" />
+                <span>{eq.model || t.executeBackup.noModel}</span>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+
+  const renderListItem = (eq: Equipment) => {
+    const isSelected = selectedEquipment.has(eq.id);
+    const mfr = manufacturers.find((m) => m.value === eq.manufacturer);
+    const Icon = getEquipmentIcon(eq.manufacturer);
+
+    return (
+      <div
+        key={eq.id}
+        className={`flex items-center gap-4 p-3 border rounded-lg cursor-pointer transition-all ${
+          isSelected
+            ? "ring-2 ring-primary border-primary bg-primary/5"
+            : "hover:border-primary/50"
+        }`}
+        onClick={() => toggleEquipment(eq.id)}
+        data-testid={`equipment-list-${eq.id}`}
+      >
+        <Checkbox
+          checked={isSelected}
+          onCheckedChange={() => toggleEquipment(eq.id)}
+          onClick={(e) => e.stopPropagation()}
+          data-testid={`checkbox-equipment-${eq.id}`}
+        />
+        <div
+          className="p-2 rounded-lg"
+          style={{ backgroundColor: `${mfr?.color || "#6b7280"}20` }}
+        >
+          <Icon
+            className="h-4 w-4"
+            style={{ color: mfr?.color || "#6b7280" }}
+          />
+        </div>
+        <div className="flex-1 min-w-0">
+          <h3 className="font-medium text-sm truncate">{eq.name}</h3>
+        </div>
+        <span className="text-sm text-muted-foreground">{eq.ip}</span>
+        <span className="text-sm text-muted-foreground">{eq.model || "-"}</span>
+        <Badge 
+          variant="secondary" 
+          className="text-xs shrink-0"
+          style={{ 
+            backgroundColor: mfr?.color ? `${mfr.color}20` : undefined,
+            color: mfr?.color || undefined
+          }}
+        >
+          {mfr?.label || eq.manufacturer}
+        </Badge>
+      </div>
+    );
+  };
+
+  const renderTableView = () => {
+    return (
+      <div className="border rounded-lg overflow-hidden">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-12">
+                <Checkbox 
+                  checked={selectedEquipment.size === filteredAndSortedEquipment.length && filteredAndSortedEquipment.length > 0}
+                  onCheckedChange={selectAllVisible}
+                />
+              </TableHead>
+              <TableHead 
+                className="cursor-pointer hover:bg-muted/50"
+                onClick={() => {
+                  if (sortField === "name") {
+                    setSortOrder(prev => prev === "asc" ? "desc" : "asc");
+                  } else {
+                    setSortField("name");
+                    setSortOrder("asc");
+                  }
+                }}
+              >
+                <div className="flex items-center gap-2">
+                  Nome
+                  {sortField === "name" && <ArrowUpDown className="h-4 w-4" />}
+                </div>
+              </TableHead>
+              <TableHead 
+                className="cursor-pointer hover:bg-muted/50"
+                onClick={() => {
+                  if (sortField === "ip") {
+                    setSortOrder(prev => prev === "asc" ? "desc" : "asc");
+                  } else {
+                    setSortField("ip");
+                    setSortOrder("asc");
+                  }
+                }}
+              >
+                <div className="flex items-center gap-2">
+                  IP
+                  {sortField === "ip" && <ArrowUpDown className="h-4 w-4" />}
+                </div>
+              </TableHead>
+              <TableHead 
+                className="cursor-pointer hover:bg-muted/50"
+                onClick={() => {
+                  if (sortField === "manufacturer") {
+                    setSortOrder(prev => prev === "asc" ? "desc" : "asc");
+                  } else {
+                    setSortField("manufacturer");
+                    setSortOrder("asc");
+                  }
+                }}
+              >
+                <div className="flex items-center gap-2">
+                  Fabricante
+                  {sortField === "manufacturer" && <ArrowUpDown className="h-4 w-4" />}
+                </div>
+              </TableHead>
+              <TableHead 
+                className="cursor-pointer hover:bg-muted/50"
+                onClick={() => {
+                  if (sortField === "model") {
+                    setSortOrder(prev => prev === "asc" ? "desc" : "asc");
+                  } else {
+                    setSortField("model");
+                    setSortOrder("asc");
+                  }
+                }}
+              >
+                <div className="flex items-center gap-2">
+                  Modelo
+                  {sortField === "model" && <ArrowUpDown className="h-4 w-4" />}
+                </div>
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredAndSortedEquipment.map(eq => {
+              const isSelected = selectedEquipment.has(eq.id);
+              const mfr = manufacturers.find(m => m.value === eq.manufacturer);
+              
+              return (
+                <TableRow 
+                  key={eq.id}
+                  className={`cursor-pointer ${isSelected ? "bg-primary/5" : ""}`}
+                  onClick={() => toggleEquipment(eq.id)}
+                >
+                  <TableCell>
+                    <Checkbox 
+                      checked={isSelected}
+                      onCheckedChange={() => toggleEquipment(eq.id)}
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  </TableCell>
+                  <TableCell className="font-medium">{eq.name}</TableCell>
+                  <TableCell className="text-muted-foreground">{eq.ip}</TableCell>
+                  <TableCell>
+                    <Badge 
+                      variant="secondary" 
+                      className="text-xs"
+                      style={{ 
+                        backgroundColor: mfr?.color ? `${mfr.color}20` : undefined,
+                        color: mfr?.color || undefined
+                      }}
+                    >
+                      {mfr?.label || eq.manufacturer}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">{eq.model || "-"}</TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </div>
+    );
+  };
+
+  const renderGroupedContent = () => {
+    const groups = Object.entries(groupedEquipment);
+    if (groups.length === 1 && groups[0][0] === "all") {
+      if (viewMode === "cards") {
+        return (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredAndSortedEquipment.map(renderCard)}
+          </div>
+        );
+      } else if (viewMode === "list") {
+        return (
+          <div className="space-y-2">
+            {filteredAndSortedEquipment.map(renderListItem)}
+          </div>
+        );
+      } else {
+        return renderTableView();
+      }
+    }
+
+    return (
+      <div className="space-y-4">
+        {groups.map(([groupName, groupEquipment]) => {
+          const mfr = manufacturers.find(m => m.value === groupName);
+          const isExpanded = expandedGroups.has(groupName);
+          const selectedInGroup = groupEquipment.filter(e => selectedEquipment.has(e.id)).length;
+          
+          return (
+            <Collapsible key={groupName} open={isExpanded} onOpenChange={() => toggleGroup(groupName)}>
+              <CollapsibleTrigger asChild>
+                <Button variant="ghost" className="w-full justify-start gap-2 h-12 px-4 bg-muted/50 hover:bg-muted">
+                  {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                  <FolderOpen className="h-4 w-4" style={{ color: mfr?.color || undefined }} />
+                  <span className="font-medium">
+                    {mfr?.label || groupName}
+                  </span>
+                  <Badge variant="secondary" className="ml-2">
+                    {groupEquipment.length}
+                  </Badge>
+                  {selectedInGroup > 0 && (
+                    <Badge variant="default" className="ml-1">
+                      {selectedInGroup} selecionados
+                    </Badge>
+                  )}
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="pt-4">
+                {viewMode === "cards" ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {groupEquipment.map(renderCard)}
+                  </div>
+                ) : viewMode === "list" ? (
+                  <div className="space-y-2">
+                    {groupEquipment.map(renderListItem)}
+                  </div>
+                ) : (
+                  <div className="border rounded-lg overflow-hidden">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-12">
+                            <Checkbox />
+                          </TableHead>
+                          <TableHead>Nome</TableHead>
+                          <TableHead>IP</TableHead>
+                          <TableHead>Modelo</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {groupEquipment.map(eq => {
+                          const isSelected = selectedEquipment.has(eq.id);
+                          return (
+                            <TableRow 
+                              key={eq.id}
+                              className={`cursor-pointer ${isSelected ? "bg-primary/5" : ""}`}
+                              onClick={() => toggleEquipment(eq.id)}
+                            >
+                              <TableCell>
+                                <Checkbox 
+                                  checked={isSelected}
+                                  onCheckedChange={() => toggleEquipment(eq.id)}
+                                  onClick={(e) => e.stopPropagation()}
+                                />
+                              </TableCell>
+                              <TableCell className="font-medium">{eq.name}</TableCell>
+                              <TableCell className="text-muted-foreground">{eq.ip}</TableCell>
+                              <TableCell className="text-sm text-muted-foreground">{eq.model || "-"}</TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </CollapsibleContent>
+            </Collapsible>
+          );
+        })}
+      </div>
+    );
+  };
+
   return (
     <div className="p-6 md:p-8 space-y-6 animate-enter">
       <div className="flex flex-col md:flex-row justify-between gap-4 md:items-center">
@@ -219,12 +623,15 @@ export default function BackupExecutePage() {
             <p className="text-sm text-muted-foreground">{t.executeBackup.subtitle}</p>
           </div>
         </div>
-        <Link href="/backups">
-          <Button variant="outline" data-testid="button-view-backups">
-            <List className="h-4 w-4 mr-2" />
-            {t.executeBackup.viewBackups}
-          </Button>
-        </Link>
+        <div className="flex items-center gap-4">
+          <ViewToggle viewMode={viewMode} onViewModeChange={setViewMode} />
+          <Link href="/backups">
+            <Button variant="outline" data-testid="button-view-backups">
+              <List className="h-4 w-4 mr-2" />
+              {t.executeBackup.viewBackups}
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <div className="space-y-4">
@@ -327,13 +734,43 @@ export default function BackupExecutePage() {
             ))}
           </SelectContent>
         </Select>
+
+        <Select value={groupBy} onValueChange={(v) => setGroupBy(v as GroupBy)}>
+          <SelectTrigger className="w-full md:w-[180px]" data-testid="select-group">
+            <FolderOpen className="h-4 w-4 mr-2" />
+            <SelectValue placeholder="Agrupar" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none">Sem agrupamento</SelectItem>
+            <SelectItem value="manufacturer">Por fabricante</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Select value={`${sortField}-${sortOrder}`} onValueChange={(v) => {
+          const [field, order] = v.split("-") as [SortField, SortOrder];
+          setSortField(field);
+          setSortOrder(order);
+        }}>
+          <SelectTrigger className="w-full md:w-[180px]" data-testid="select-sort">
+            <ArrowUpDown className="h-4 w-4 mr-2" />
+            <SelectValue placeholder="Ordenar" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="name-asc">Nome A-Z</SelectItem>
+            <SelectItem value="name-desc">Nome Z-A</SelectItem>
+            <SelectItem value="ip-asc">IP crescente</SelectItem>
+            <SelectItem value="ip-desc">IP decrescente</SelectItem>
+            <SelectItem value="manufacturer-asc">Fabricante A-Z</SelectItem>
+          </SelectContent>
+        </Select>
+
         <Button
           variant="outline"
           onClick={selectAllVisible}
           data-testid="button-select-all"
         >
           <CheckSquare className="h-4 w-4 mr-2" />
-          {selectedEquipment.size === filteredEquipment.length && filteredEquipment.length > 0
+          {selectedEquipment.size === filteredAndSortedEquipment.length && filteredAndSortedEquipment.length > 0
             ? t.executeBackup.deselectAll
             : t.executeBackup.selectAllVisible}
         </Button>
@@ -343,72 +780,26 @@ export default function BackupExecutePage() {
         <Server className="h-4 w-4 text-muted-foreground" />
         <span className="font-medium">{t.menu.equipment}</span>
         <Badge variant="secondary" className="text-xs">
-          {selectedEquipment.size} {t.executeBackup.selected}
+          {filteredAndSortedEquipment.length} equipamentos
         </Badge>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {loadingEquipment ? (
-          <div className="col-span-full text-center py-12 text-muted-foreground">
-            {t.executeBackup.loadingEquipment}
-          </div>
-        ) : filteredEquipment.length === 0 ? (
-          <div className="col-span-full text-center py-12 text-muted-foreground">
-            {t.executeBackup.noEquipmentFound}
-          </div>
-        ) : (
-          filteredEquipment.map((eq) => {
-            const isSelected = selectedEquipment.has(eq.id);
-            const mfr = manufacturers.find((m) => m.value === eq.manufacturer);
-            const Icon = getEquipmentIcon(eq.manufacturer);
-
-            return (
-              <Card
-                key={eq.id}
-                className={`cursor-pointer transition-all ${
-                  isSelected
-                    ? "ring-2 ring-primary border-primary bg-primary/5"
-                    : "hover:border-primary/50"
-                }`}
-                onClick={() => toggleEquipment(eq.id)}
-                data-testid={`equipment-card-${eq.id}`}
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-start gap-3">
-                    <Checkbox
-                      checked={isSelected}
-                      onCheckedChange={() => toggleEquipment(eq.id)}
-                      onClick={(e) => e.stopPropagation()}
-                      className="mt-1"
-                      data-testid={`checkbox-equipment-${eq.id}`}
-                    />
-                    <div
-                      className="p-2 rounded-lg"
-                      style={{ backgroundColor: `${mfr?.color || "#6b7280"}20` }}
-                    >
-                      <Icon
-                        className="h-5 w-5"
-                        style={{ color: mfr?.color || "#6b7280" }}
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-sm truncate">{eq.name}</h3>
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
-                        <Network className="h-3 w-3" />
-                        <span>{eq.ip}</span>
-                      </div>
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
-                        <Server className="h-3 w-3" />
-                        <span>{eq.model || t.executeBackup.noModel}</span>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })
+        {selectedEquipment.size > 0 && (
+          <Badge variant="default" className="text-xs">
+            {selectedEquipment.size} {t.executeBackup.selected}
+          </Badge>
         )}
       </div>
+
+      {loadingEquipment ? (
+        <div className="text-center py-12 text-muted-foreground">
+          {t.executeBackup.loadingEquipment}
+        </div>
+      ) : filteredAndSortedEquipment.length === 0 ? (
+        <div className="text-center py-12 text-muted-foreground">
+          {t.executeBackup.noEquipmentFound}
+        </div>
+      ) : (
+        renderGroupedContent()
+      )}
 
       {progress.isRunning || progress.completed ? (
         <div className="space-y-4 border rounded-lg p-4 bg-muted/30">
@@ -443,17 +834,55 @@ export default function BackupExecutePage() {
       ) : null}
 
       {selectedEquipment.size > 0 && !progress.isRunning && (
-        <div className="fixed bottom-6 right-6 z-50">
-          <Button
-            size="lg"
-            onClick={executeBackup}
-            disabled={progress.isRunning}
-            className="shadow-lg"
-            data-testid="button-execute-backup"
-          >
-            <Play className="h-5 w-5 mr-2" />
-            {t.executeBackup.executeNow} ({selectedEquipment.size})
-          </Button>
+        <div className="fixed bottom-0 left-0 right-0 bg-background border-t shadow-lg p-4 z-50">
+          <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <Badge variant="secondary" className="text-sm px-3 py-1">
+                {selectedEquipment.size} equipamentos selecionados
+              </Badge>
+              <div className="hidden md:flex items-center gap-2 max-w-md overflow-hidden">
+                {getSelectedEquipmentDetails().slice(0, 3).map(eq => {
+                  const mfr = manufacturers.find(m => m.value === eq.manufacturer);
+                  return (
+                    <Badge 
+                      key={eq.id} 
+                      variant="outline" 
+                      className="text-xs shrink-0"
+                      style={{ borderColor: mfr?.color || undefined, color: mfr?.color || undefined }}
+                    >
+                      {eq.name}
+                    </Badge>
+                  );
+                })}
+                {selectedEquipment.size > 3 && (
+                  <span className="text-xs text-muted-foreground">
+                    +{selectedEquipment.size - 3} mais
+                  </span>
+                )}
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSelectedEquipment(new Set())}
+                data-testid="button-clear-selection"
+              >
+                <X className="h-4 w-4 mr-1" />
+                Limpar
+              </Button>
+              <Button
+                size="lg"
+                onClick={executeBackup}
+                disabled={progress.isRunning}
+                className="shadow-lg"
+                data-testid="button-execute-backup"
+              >
+                <Play className="h-5 w-5 mr-2" />
+                {t.executeBackup.executeNow} ({selectedEquipment.size})
+              </Button>
+            </div>
+          </div>
         </div>
       )}
     </div>
