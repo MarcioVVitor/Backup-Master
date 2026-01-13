@@ -1,0 +1,23 @@
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[~]# c
+-bash: c: command not found
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[~]# 
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[~]# cd /tmp && rm -rf nbm-update && git clone --depth 1 https://github.com/MarcioVVitor/Backup-Master.git nbm-update && sudo cp nbm-update/agents/linux/nbm-agent.sh /opt/nbm-agent/nbm-agent.sh && sudo chmod +x /opt/nbm-agent/nbm-agent.sh && rm -rf nbm-update && dos2unix /opt/nbm-agent/nbm-agent.sh && sudo systemctl restart nbm-agent && journalctl -u nbm-agent -f
+Cloning into 'nbm-update'...
+remote: Enumerating objects: 466, done.
+remote: Counting objects: 100% (466/466), done.
+remote: Compressing objects: 100% (377/377), done.
+remote: Total 466 (delta 82), reused 440 (delta 79), pack-reused 0 (from 0)
+Receiving objects: 100% (466/466), 48.92 MiB | 24.04 MiB/s, done.
+Resolving deltas: 100% (82/82), done.
+dos2unix: converting file /opt/nbm-agent/nbm-agent.sh to Unix format...
+Jan 13 10:25:00 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: Started nbm-agent.service - NBM CLOUD Agent - Network Backup Proxy.
+Jan 13 17:11:09 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: Stopping nbm-agent.service - NBM CLOUD Agent - Network Backup Proxy...
+Jan 13 17:11:09 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Deactivated successfully.
+Jan 13 17:11:09 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: Stopped nbm-agent.service - NBM CLOUD Agent - Network Backup Proxy.
+Jan 13 17:11:09 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Consumed 56.903s CPU time, 10.7M memory peak.
+Jan 13 17:11:09 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: Started nbm-agent.service - NBM CLOUD Agent - Network Backup Proxy.
+Jan 13 17:16:30 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: Stopping nbm-agent.service - NBM CLOUD Agent - Network Backup Proxy...
+Jan 13 17:16:30 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: nbm-agent.service: Deactivated successfully.
+Jan 13 17:16:30 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: Stopped nbm-agent.service - NBM CLOUD Agent - Network Backup Proxy.
+Jan 13 17:16:30 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: Started nbm-agent.service - NBM CLOUD Agent - Network Backup Proxy.
+
