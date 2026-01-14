@@ -1,0 +1,96 @@
+root@SRV-NBM-CLOUD-01[~]# cd /opt/nbm-cloud && git pull && npm run build && pm2 restart nbm-cloud && pm2 logs nbm-cloud --lines 30 --nostream
+remote: Enumerating objects: 40, done.
+remote: Counting objects: 100% (40/40), done.
+remote: Compressing objects: 100% (19/19), done.
+remote: Total 36 (delta 32), reused 21 (delta 17), pack-reused 0 (from 0)
+Unpacking objects: 100% (36/36), 2.55 MiB | 8.00 MiB/s, done.
+From https://github.com/MarcioVVitor/Backup-Master
+   b6c5d3f..72ee178  main       -> origin/main
+Updating b6c5d3f..72ee178
+Fast-forward
+ attached_assets/Pasted-root-SRV-NBM-CLOUD-01-Matar-todos-os-processos-node-na-_1768428512241.txt |  39 ++++++++++++++++++++++++++++++++++++
+ attached_assets/Pasted-root-SRV-NBM-CLOUD-01-Verificar-e-adicionar-STANDALONE-_1768428736220.txt |  38 +++++++++++++++++++++++++++++++++++
+ attached_assets/Pasted-root-SRV-NBM-CLOUD-01-cd-opt-nbm-cloud-git-pull-origin-_1768428291027.txt |  59 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ attached_assets/image_1768428597023.png                                                          | Bin 0 -> 2142154 bytes
+ attached_assets/image_1768428682664.png                                                          | Bin 0 -> 2142154 bytes
+ attached_assets/image_1768428741333.png                                                          | Bin 0 -> 2142154 bytes
+ attached_assets/image_1768428792796.png                                                          | Bin 0 -> 2142154 bytes
+ attached_assets/image_1768428890281.png                                                          | Bin 0 -> 2142154 bytes
+ attached_assets/image_1768428957216.png                                                          | Bin 0 -> 2142154 bytes
+ attached_assets/image_1768429185502.png                                                          | Bin 0 -> 666129 bytes
+ server/standalone-auth.ts                                                                        |   3 +++
+ 11 files changed, 139 insertions(+)
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-Matar-todos-os-processos-node-na-_1768428512241.txt
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-Verificar-e-adicionar-STANDALONE-_1768428736220.txt
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-cd-opt-nbm-cloud-git-pull-origin-_1768428291027.txt
+ create mode 100644 attached_assets/image_1768428597023.png
+ create mode 100644 attached_assets/image_1768428682664.png
+ create mode 100644 attached_assets/image_1768428741333.png
+ create mode 100644 attached_assets/image_1768428792796.png
+ create mode 100644 attached_assets/image_1768428890281.png
+ create mode 100644 attached_assets/image_1768428957216.png
+ create mode 100644 attached_assets/image_1768429185502.png
+
+> rest-express@1.0.0 build
+> tsx script/build.ts
+
+building client...
+vite v7.3.0 building client environment for production...
+✓ 3320 modules transformed.
+../dist/public/index.html                     2.87 kB │ gzip:   1.04 kB
+../dist/public/assets/index-vnZetH7j.css     80.81 kB │ gzip:  13.52 kB
+../dist/public/assets/index-CX5CNVpA.js   1,358.75 kB │ gzip: 372.48 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 11.35s
+building server...
+
+  dist/index.cjs  1.3mb ⚠️
+
+⚡ Done in 145ms
+Use --update-env to update environment variables
+[PM2] Applying action restartProcessId on app [nbm-cloud](ids: [ 0 ])
+[PM2] [nbm-cloud](0) ✓
+┌────┬──────────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name         │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+├────┼──────────────┼─────────────┼─────────┼─────────┼──────────┼────────┼──────┼───────────┼──────────┼──────────┼──────────┼──────────┤
+│ 0  │ nbm-cloud    │ default     │ 1.0.0   │ cluster │ 153683   │ 0s     │ 1    │ online    │ 0%       │ 39.8mb   │ root     │ disabled │
+└────┴──────────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+[TAILING] Tailing last 30 lines for [nbm-cloud] process (change the value with --lines option)
+/var/log/nbm-cloud/error-0.log last 30 lines:
+/var/log/nbm-cloud/out-0.log last 30 lines:
+0|nbm-clou | 2026-01-14T19:23:57: [ws-agents] Auth failed - token not found
+0|nbm-clou | 2026-01-14T19:24:07: [ws-upgrade] Request to: /ws/agents from: 143.255.197.26
+0|nbm-clou | 2026-01-14T19:24:07: [ws-upgrade] Handling agent WebSocket upgrade
+0|nbm-clou | 2026-01-14T19:24:07: [ws-agents] New connection from: 143.255.197.26
+0|nbm-clou | 2026-01-14T19:24:07: [ws-agents] Received message, size: 148 bytes
+0|nbm-clou | 2026-01-14T19:24:07: [ws-agents] Received message type: auth
+0|nbm-clou | 2026-01-14T19:24:07: [ws-agents] Auth attempt, token hash: bb46e1143a4decc8...
+0|nbm-clou | 2026-01-14T19:24:07: [ws-agents] Auth failed - token not found
+0|nbm-clou | 2026-01-14T19:24:08: 7:24:08 PM [express] POST /api/auth/login 401 in 2ms :: {"message":"Invalid credentials"}
+0|nbm-clou | 2026-01-14T19:24:17: [ws-upgrade] Request to: /ws/agents from: 143.255.197.26
+0|nbm-clou | 2026-01-14T19:24:17: [ws-upgrade] Handling agent WebSocket upgrade
+0|nbm-clou | 2026-01-14T19:24:17: [ws-agents] New connection from: 143.255.197.26
+0|nbm-clou | 2026-01-14T19:24:17: [ws-agents] Received message, size: 148 bytes
+0|nbm-clou | 2026-01-14T19:24:17: [ws-agents] Received message type: auth
+0|nbm-clou | 2026-01-14T19:24:17: [ws-agents] Auth attempt, token hash: bb46e1143a4decc8...
+0|nbm-clou | 2026-01-14T19:24:17: [ws-agents] Auth failed - token not found
+0|nbm-clou | 2026-01-14T19:24:27: [ws-upgrade] Request to: /ws/agents from: 143.255.197.26
+0|nbm-clou | 2026-01-14T19:24:27: [ws-upgrade] Handling agent WebSocket upgrade
+0|nbm-clou | 2026-01-14T19:24:27: [ws-agents] New connection from: 143.255.197.26
+0|nbm-clou | 2026-01-14T19:24:27: [ws-agents] Received message, size: 148 bytes
+0|nbm-clou | 2026-01-14T19:24:27: [ws-agents] Received message type: auth
+0|nbm-clou | 2026-01-14T19:24:27: [ws-agents] Auth attempt, token hash: bb46e1143a4decc8...
+0|nbm-clou | 2026-01-14T19:24:27: [ws-agents] Auth failed - token not found
+0|nbm-clou | 2026-01-14T19:24:37: [ws-upgrade] Request to: /ws/agents from: 143.255.197.26
+0|nbm-clou | 2026-01-14T19:24:37: [ws-upgrade] Handling agent WebSocket upgrade
+0|nbm-clou | 2026-01-14T19:24:37: [ws-agents] New connection from: 143.255.197.26
+0|nbm-clou | 2026-01-14T19:24:37: [ws-agents] Received message, size: 148 bytes
+0|nbm-clou | 2026-01-14T19:24:37: [ws-agents] Received message type: auth
+0|nbm-clou | 2026-01-14T19:24:37: [ws-agents] Auth attempt, token hash: bb46e1143a4decc8...
+0|nbm-clou | 2026-01-14T19:24:37: [ws-agents] Auth failed - token not found
+
+root@SRV-NBM-CLOUD-01[/opt/nbm-cloud]# 
