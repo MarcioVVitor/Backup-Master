@@ -1,0 +1,80 @@
+root@SRV-NBM-CLOUD-01[~]# # Ver usuários do PostgreSQL
+sudo -u postgres psql -c "\du"
+
+# Ver bancos disponíveis
+sudo -u postgres psql -c "\l"
+sudo: unable to resolve host SRV-NBM-CLOUD-01: Name or service not known
+                             List of roles
+ Role name |                         Attributes                         
+-----------+------------------------------------------------------------
+ nbm       | 
+ postgres  | Superuser, Create role, Create DB, Replication, Bypass RLS
+
+sudo: unable to resolve host SRV-NBM-CLOUD-01: Name or service not known
+                                                     List of databases
+   Name    |  Owner   | Encoding | Locale Provider |   Collate   |    Ctype    | Locale | ICU Rules |   Access privileges   
+-----------+----------+----------+-----------------+-------------+-------------+--------+-----------+-----------------------
+ nbm       | nbm      | UTF8     | libc            | en_US.UTF-8 | en_US.UTF-8 |        |           | =Tc/nbm              +
+           |          |          |                 |             |             |        |           | nbm=CTc/nbm
+ postgres  | postgres | UTF8     | libc            | en_US.UTF-8 | en_US.UTF-8 |        |           | 
+ template0 | postgres | UTF8     | libc            | en_US.UTF-8 | en_US.UTF-8 |        |           | =c/postgres          +
+           |          |          |                 |             |             |        |           | postgres=CTc/postgres
+ template1 | postgres | UTF8     | libc            | en_US.UTF-8 | en_US.UTF-8 |        |           | =c/postgres          +
+           |          |          |                 |             |             |        |           | postgres=CTc/postgres
+(4 rows)
+
+root@SRV-NBM-CLOUD-01[~]# # Criar usuário e banco (se necessário)
+sudo -u postgres psql -c "CREATE USER nbm_user WITH PASSWORD 'SUA_SENHA_SEGURA';"
+sudo -u postgres psql -c "CREATE DATABASE nbm_cloud OWNER nbm_user;"
+sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE nbm_cloud TO nbm_user;"
+
+# Atualizar .env com credenciais corretas
+nano /opt/nbm-cloud/.env
+# Alterar DATABASE_URL=postgresql://nbm_user:SUA_SENHA_SEGURA@localhost:5432/nbm_cloud
+
+# Reiniciar PM2
+pm2 restart nbm-cloud --update-env
+sudo: unable to resolve host SRV-NBM-CLOUD-01: Name or service not known
+CREATE ROLE
+sudo: unable to resolve host SRV-NBM-CLOUD-01: Name or service not known
+CREATE DATABASE
+sudo: unable to resolve host SRV-NBM-CLOUD-01: Name or service not known
+GRANT
+[PM2] Applying action restartProcessId on app [nbm-cloud](ids: [ 0 ])
+[PM2] [nbm-cloud](0) ✓
+┌────┬──────────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name         │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+├────┼──────────────┼─────────────┼─────────┼─────────┼──────────┼────────┼──────┼───────────┼──────────┼──────────┼──────────┼──────────┤
+│ 0  │ nbm-cloud    │ default     │ 1.0.0   │ cluster │ 138536   │ 0s     │ 15   │ online    │ 0%       │ 39.8mb   │ root     │ disabled │
+└────┴──────────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+root@SRV-NBM-CLOUD-01[~]# [ws-agents] Received message, size: 21 bytes
+[ws-agents] Received message type: heartbeat
+
+root@SRV-NBM-CLOUD-01[~]# Atualizar .env com credenciais corretas
+nano /opt/nbm-cloud/.env
+-bash: Atualizar: command not found
+
+  GNU nano 8.4                                                           /opt/nbm-cloud/.env                                                                    
+# NBM CLOUD - Configuração de Produção
+# Gerado/Atualizado em: Tue Jan 13 06:18:41 PM -03 2026
+
+# Database PostgreSQL
+DATABASE_URL=postgresql://usuario:senha@localhost:5432/nbm_cloud
+
+# Sessão (chave secreta)
+SESSION_SECRET=sua_chave_secreta_aqui
+
+# Ambiente
+NODE_ENV=production
+
+# Porta
+PORT=5000
+
+
+
+
+
+
+                                                                       [ Read 14 lines ]
+^G Help         ^O Write Out    ^F Where Is     ^K Cut          ^T Execute      ^C Location     M-U Undo        M-A Set Mark    M-] To Bracket  M-B Previous
+^X Exit         ^R Read File    ^\ Replace      ^U Paste        ^J Justify      ^/ Go To Line   M-E Redo        M-6 Copy        ^B Where Was    M-F Next
