@@ -1618,17 +1618,31 @@ export async function registerRoutes(
   });
 
   app.post('/api/firmware', isAuthenticated, upload.single('file'), async (req, res) => {
+    console.log("[firmware-upload] ====== FIRMWARE UPLOAD START ======");
+    console.log("[firmware-upload] Request received");
+    console.log("[firmware-upload] Has file:", !!req.file);
+    console.log("[firmware-upload] Body:", JSON.stringify(req.body));
+    console.log("[firmware-upload] isStandalone:", isStandalone);
+    console.log("[firmware-upload] REPL_ID:", process.env.REPL_ID);
+    console.log("[firmware-upload] DEFAULT_OBJECT_STORAGE_BUCKET_ID:", process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID);
+    
     try {
       if (!req.file) {
+        console.log("[firmware-upload] ERROR: No file uploaded");
         return res.status(400).json({ message: "Nenhum arquivo enviado" });
       }
 
+      console.log("[firmware-upload] File name:", req.file.originalname);
+      console.log("[firmware-upload] File size:", req.file.size);
+
       const parsed = firmwareBodySchema.safeParse(req.body);
       if (!parsed.success) {
+        console.log("[firmware-upload] ERROR: Validation failed", parsed.error.errors);
         return res.status(400).json({ message: "Dados invalidos", errors: parsed.error.errors });
       }
 
       const { name, manufacturer, model, version, description } = parsed.data;
+      console.log("[firmware-upload] Parsed data:", { name, manufacturer, model, version });
 
       const user = req.user as any;
       const userSub = user?.claims?.sub;
@@ -1636,22 +1650,30 @@ export async function registerRoutes(
       const userId = userSub 
         ? await storage.getUserIdByReplitId(userSub) 
         : standaloneUser?.id || null;
+      console.log("[firmware-upload] User ID:", userId);
 
       const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID;
       const objectName = `firmware/${Date.now()}-${req.file.originalname}`;
+      console.log("[firmware-upload] Object name:", objectName);
+      console.log("[firmware-upload] Using bucket:", bucketId ? "Cloud Storage" : "Local Storage");
 
       if (bucketId) {
+        console.log("[firmware-upload] Saving to cloud storage...");
         const { objectStorageClient } = await import("./replit_integrations/object_storage/objectStorage");
         const bucket = objectStorageClient.bucket(bucketId);
         const file = bucket.file(objectName);
         await file.save(req.file.buffer, {
           contentType: req.file.mimetype || 'application/octet-stream',
         });
+        console.log("[firmware-upload] Cloud storage save complete");
       } else {
+        console.log("[firmware-upload] Saving to local storage...");
         const { localStorageClient } = await import("./local-storage");
         await localStorageClient.saveFile(objectName, req.file.buffer);
+        console.log("[firmware-upload] Local storage save complete");
       }
 
+      console.log("[firmware-upload] Creating database record...");
       const fw = await storage.createFirmware({
         name: name || req.file.originalname,
         manufacturer,
@@ -1663,10 +1685,13 @@ export async function registerRoutes(
         description: description || null,
         uploadedBy: userId,
       });
+      console.log("[firmware-upload] Database record created:", fw.id);
 
+      console.log("[firmware-upload] ====== FIRMWARE UPLOAD SUCCESS ======");
       res.status(201).json(fw);
     } catch (e) {
-      console.error("Error uploading firmware:", e);
+      console.error("[firmware-upload] ====== FIRMWARE UPLOAD ERROR ======");
+      console.error("[firmware-upload] Error:", e);
       res.status(500).json({ message: "Erro ao fazer upload do firmware" });
     }
   });
