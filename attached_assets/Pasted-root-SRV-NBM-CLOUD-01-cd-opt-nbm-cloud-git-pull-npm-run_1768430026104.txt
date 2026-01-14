@@ -1,0 +1,48 @@
+root@SRV-NBM-CLOUD-01[~]# cd /opt/nbm-cloud && git pull && npm run build && pm2 restart nbm-cloud
+remote: Enumerating objects: 14, done.
+remote: Counting objects: 100% (14/14), done.
+remote: Compressing objects: 100% (3/3), done.
+remote: Total 10 (delta 7), reused 10 (delta 7), pack-reused 0 (from 0)
+Unpacking objects: 100% (10/10), 1.09 MiB | 6.62 MiB/s, done.
+From https://github.com/MarcioVVitor/Backup-Master
+   72ee178..22f9110  main       -> origin/main
+Updating 72ee178..22f9110
+Fast-forward
+ attached_assets/Pasted-root-SRV-NBM-CLOUD-01-cd-opt-nbm-cloud-git-pull-npm-run_1768429498492.txt |  96 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ attached_assets/image_1768429707554.png                                                          | Bin 0 -> 1244046 bytes
+ server/routes.ts                                                                                 |  52 +++++++++++++++++++-----------
+ 3 files changed, 130 insertions(+), 18 deletions(-)
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-cd-opt-nbm-cloud-git-pull-npm-run_1768429498492.txt
+ create mode 100644 attached_assets/image_1768429707554.png
+
+> rest-express@1.0.0 build
+> tsx script/build.ts
+
+building client...
+vite v7.3.0 building client environment for production...
+✓ 3320 modules transformed.
+../dist/public/index.html                     2.87 kB │ gzip:   1.04 kB
+../dist/public/assets/index-vnZetH7j.css     80.81 kB │ gzip:  13.52 kB
+../dist/public/assets/index-CX5CNVpA.js   1,358.75 kB │ gzip: 372.48 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 11.22s
+building server...
+
+  dist/index.cjs  1.3mb ⚠️
+
+⚡ Done in 178ms
+Use --update-env to update environment variables
+[PM2] Applying action restartProcessId on app [nbm-cloud](ids: [ 0 ])
+[PM2] [nbm-cloud](0) ✓
+┌────┬──────────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name         │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+├────┼──────────────┼─────────────┼─────────┼─────────┼──────────┼────────┼──────┼───────────┼──────────┼──────────┼──────────┼──────────┤
+│ 0  │ nbm-cloud    │ default     │ 1.0.0   │ cluster │ 154265   │ 0s     │ 16   │ online    │ 0%       │ 39.9mb   │ root     │ disabled │
+└────┴──────────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+root@SRV-NBM-CLOUD-01[/opt/nbm-cloud]# cd
+root@SRV-NBM-CLOUD-01[~]# mkdir -p /opt/nbm/backups/firmware && chown -R root:root /opt/nbm/backups
+root@SRV-NBM-CLOUD-01[~]# 
