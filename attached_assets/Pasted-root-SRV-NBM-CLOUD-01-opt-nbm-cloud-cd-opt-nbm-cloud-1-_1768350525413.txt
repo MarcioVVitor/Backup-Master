@@ -1,0 +1,311 @@
+root@SRV-NBM-CLOUD-01[/opt/nbm-cloud]# cd /opt/nbm-cloud
+
+# 1. Carregar as variáveis manualmente e iniciar
+source .env && pm2 delete nbm-cloud
+source .env && DATABASE_URL="$DATABASE_URL" SESSION_SECRET="$SESSION_SECRET" pm2 start ecosystem.config.cjs
+
+# 2. Verificar logs
+pm2 logs nbm-cloud --lines 5
+
+# 3. Testar o JS
+curl -s http://localhost:5000/assets/index-CPQxKp5j.js | head -c 100
+[PM2] Applying action deleteProcessId on app [nbm-cloud](ids: [ 0 ])
+[PM2] [nbm-cloud](0) ✓
+┌────┬───────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name      │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+└────┴───────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+[PM2][WARN] Applications nbm-cloud not running, starting...
+[PM2] App [nbm-cloud] launched (1 instances)
+┌────┬──────────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name         │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+├────┼──────────────┼─────────────┼─────────┼─────────┼──────────┼────────┼──────┼───────────┼──────────┼──────────┼──────────┼──────────┤
+│ 0  │ nbm-cloud    │ default     │ 1.0.0   │ cluster │ 117328   │ 0s     │ 0    │ online    │ 0%       │ 39.9mb   │ root     │ disabled │
+└────┴──────────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+[TAILING] Tailing last 5 lines for [nbm-cloud] process (change the value with --lines option)
+/var/log/nbm-cloud/out-0.log last 5 lines:
+0|nbm-clou | 2026-01-13T20:22:41: [scheduler] 13/01/2026, 20:22:41 - Timezone: System (Linux)
+0|nbm-clou | 2026-01-13T20:22:41: [scheduler] 13/01/2026, 20:22:41 - Check interval: 60 seconds
+0|nbm-clou | 2026-01-13T20:22:41: [scheduler] 13/01/2026, 20:22:41 - Worker pool concurrency: 10
+0|nbm-clou | 2026-01-13T20:22:41: [scheduler] 13/01/2026, 20:22:41 - Current time: 20:22, Day of week: 2, Day of month: 13
+0|nbm-clou | 2026-01-13T20:22:41: [scheduler] 13/01/2026, 20:22:41 - Scheduler started successfully
+
+/var/log/nbm-cloud/error-0.log last 5 lines:
+0|nbm-clou |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+0|nbm-clou |     at Module._extensions..js (node:internal/modules/cjs/loader:1623:10)
+0|nbm-clou |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+0|nbm-clou |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+0|nbm-clou |     at cjsLoader (node:internal/modules/esm/translators:298:15)
+
+0|nbm-cloud  | 2026-01-13T21:28:25: [worker-pool] 13/01/2026, 21:28:25 - Worker pool initialized with concurrency: 10
+0|nbm-cloud  | 2026-01-13T21:28:25: [scheduler] 13/01/2026, 21:28:25 - Backup executor registered for scheduler and worker pool
+0|nbm-cloud  | 2026-01-13T21:28:25: [scheduler] 13/01/2026, 21:28:25 - Starting backup scheduler...
+0|nbm-cloud  | 2026-01-13T21:28:25: [scheduler] 13/01/2026, 21:28:25 - Timezone: System (Linux)
+0|nbm-cloud  | 2026-01-13T21:28:25: [scheduler] 13/01/2026, 21:28:25 - Check interval: 60 seconds
+0|nbm-cloud  | 2026-01-13T21:28:25: [scheduler] 13/01/2026, 21:28:25 - Worker pool concurrency: 10
+0|nbm-cloud  | 2026-01-13T21:28:25: [scheduler] 13/01/2026, 21:28:25 - Current time: 21:28, Day of week: 2, Day of month: 13
+0|nbm-cloud  | 2026-01-13T21:28:25: [scheduler] 13/01/2026, 21:28:25 - Scheduler started successfully
+0|nbm-cloud  | 2026-01-13T21:28:25: [static] Serving static files from: /opt/nbm-cloud/dist/public
+0|nbm-cloud  | Error: bind EADDRINUSE 0.0.0.0:5000
+0|nbm-cloud  |     at listenOnPrimaryHandle (node:net:1989:18)
+0|nbm-cloud  |     at rr (node:internal/cluster/child:163:12)
+0|nbm-cloud  |     at Worker.<anonymous> (node:internal/cluster/child:113:7)
+0|nbm-cloud  |     at process.onInternalMessage (node:internal/cluster/utils:49:5)
+0|nbm-cloud  |     at process.emit (node:events:536:35)
+0|nbm-cloud  |     at emit (node:internal/child_process:950:14)
+0|nbm-cloud  |     at process.processTicksAndRejections (node:internal/process/task_queues:83:21)
+0|nbm-cloud  | 2026-01-13T21:28:25: [worker-pool] 13/01/2026, 21:28:25 - Worker pool initialized with concurrency: 10
+0|nbm-cloud  | 2026-01-13T21:28:25: [scheduler] 13/01/2026, 21:28:25 - Backup executor registered for scheduler and worker pool
+0|nbm-cloud  | 2026-01-13T21:28:25: [scheduler] 13/01/2026, 21:28:25 - Starting backup scheduler...
+0|nbm-cloud  | 2026-01-13T21:28:25: [scheduler] 13/01/2026, 21:28:25 - Timezone: System (Linux)
+0|nbm-cloud  | 2026-01-13T21:28:25: [scheduler] 13/01/2026, 21:28:25 - Check interval: 60 seconds
+0|nbm-cloud  | 2026-01-13T21:28:25: [scheduler] 13/01/2026, 21:28:25 - Worker pool concurrency: 10
+0|nbm-cloud  | 2026-01-13T21:28:25: [scheduler] 13/01/2026, 21:28:25 - Current time: 21:28, Day of week: 2, Day of month: 13
+0|nbm-cloud  | 2026-01-13T21:28:25: [scheduler] 13/01/2026, 21:28:25 - Scheduler started successfully
+0|nbm-cloud  | 2026-01-13T21:28:25: [static] Serving static files from: /opt/nbm-cloud/dist/public
+0|nbm-cloud  | Error: bind EADDRINUSE 0.0.0.0:5000
+0|nbm-cloud  |     at listenOnPrimaryHandle (node:net:1989:18)
+0|nbm-cloud  |     at rr (node:internal/cluster/child:163:12)
+0|nbm-cloud  |     at Worker.<anonymous> (node:internal/cluster/child:113:7)
+0|nbm-cloud  |     at process.onInternalMessage (node:internal/cluster/utils:49:5)
+0|nbm-cloud  |     at process.emit (node:events:536:35)
+0|nbm-cloud  |     at emit (node:internal/child_process:950:14)
+0|nbm-cloud  |     at process.processTicksAndRejections (node:internal/process/task_queues:83:21)
+0|nbm-cloud  | 2026-01-13T21:28:26: [worker-pool] 13/01/2026, 21:28:26 - Worker pool initialized with concurrency: 10
+0|nbm-cloud  | 2026-01-13T21:28:26: [scheduler] 13/01/2026, 21:28:26 - Backup executor registered for scheduler and worker pool
+0|nbm-cloud  | 2026-01-13T21:28:26: [scheduler] 13/01/2026, 21:28:26 - Starting backup scheduler...
+0|nbm-cloud  | 2026-01-13T21:28:26: [scheduler] 13/01/2026, 21:28:26 - Timezone: System (Linux)
+0|nbm-cloud  | 2026-01-13T21:28:26: [scheduler] 13/01/2026, 21:28:26 - Check interval: 60 seconds
+0|nbm-cloud  | 2026-01-13T21:28:26: [scheduler] 13/01/2026, 21:28:26 - Worker pool concurrency: 10
+0|nbm-cloud  | 2026-01-13T21:28:26: [scheduler] 13/01/2026, 21:28:26 - Current time: 21:28, Day of week: 2, Day of month: 13
+0|nbm-cloud  | 2026-01-13T21:28:26: [scheduler] 13/01/2026, 21:28:26 - Scheduler started successfully
+0|nbm-cloud  | 2026-01-13T21:28:26: [static] Serving static files from: /opt/nbm-cloud/dist/public
+0|nbm-cloud  | Error: bind EADDRINUSE 0.0.0.0:5000
+0|nbm-cloud  |     at listenOnPrimaryHandle (node:net:1989:18)
+0|nbm-cloud  |     at rr (node:internal/cluster/child:163:12)
+0|nbm-cloud  |     at Worker.<anonymous> (node:internal/cluster/child:113:7)
+0|nbm-cloud  |     at process.onInternalMessage (node:internal/cluster/utils:49:5)
+0|nbm-cloud  |     at process.emit (node:events:536:35)
+0|nbm-cloud  |     at emit (node:internal/child_process:950:14)
+0|nbm-cloud  |     at process.processTicksAndRejections (node:internal/process/task_queues:83:21)
+0|nbm-cloud  | 2026-01-13T21:28:26: [worker-pool] 13/01/2026, 21:28:26 - Worker pool initialized with concurrency: 10
+0|nbm-cloud  | 2026-01-13T21:28:26: [scheduler] 13/01/2026, 21:28:26 - Backup executor registered for scheduler and worker pool
+0|nbm-cloud  | 2026-01-13T21:28:26: [scheduler] 13/01/2026, 21:28:26 - Starting backup scheduler...
+0|nbm-cloud  | 2026-01-13T21:28:26: [scheduler] 13/01/2026, 21:28:26 - Timezone: System (Linux)
+0|nbm-cloud  | 2026-01-13T21:28:26: [scheduler] 13/01/2026, 21:28:26 - Check interval: 60 seconds
+0|nbm-cloud  | 2026-01-13T21:28:26: [scheduler] 13/01/2026, 21:28:26 - Worker pool concurrency: 10
+0|nbm-cloud  | 2026-01-13T21:28:26: [scheduler] 13/01/2026, 21:28:26 - Current time: 21:28, Day of week: 2, Day of month: 13
+0|nbm-cloud  | 2026-01-13T21:28:26: [scheduler] 13/01/2026, 21:28:26 - Scheduler started successfully
+0|nbm-cloud  | 2026-01-13T21:28:26: [static] Serving static files from: /opt/nbm-cloud/dist/public
+0|nbm-cloud  | Error: bind EADDRINUSE 0.0.0.0:5000
+0|nbm-cloud  |     at listenOnPrimaryHandle (node:net:1989:18)
+0|nbm-cloud  |     at rr (node:internal/cluster/child:163:12)
+0|nbm-cloud  |     at Worker.<anonymous> (node:internal/cluster/child:113:7)
+0|nbm-cloud  |     at process.onInternalMessage (node:internal/cluster/utils:49:5)
+0|nbm-cloud  |     at process.emit (node:events:536:35)
+0|nbm-cloud  |     at emit (node:internal/child_process:950:14)
+0|nbm-cloud  |     at process.processTicksAndRejections (node:internal/process/task_queues:83:21)
+0|nbm-cloud  | 2026-01-13T21:28:27: [worker-pool] 13/01/2026, 21:28:27 - Worker pool initialized with concurrency: 10
+0|nbm-cloud  | 2026-01-13T21:28:27: [scheduler] 13/01/2026, 21:28:27 - Backup executor registered for scheduler and worker pool
+0|nbm-cloud  | 2026-01-13T21:28:27: [scheduler] 13/01/2026, 21:28:27 - Starting backup scheduler...
+0|nbm-cloud  | 2026-01-13T21:28:27: [scheduler] 13/01/2026, 21:28:27 - Timezone: System (Linux)
+0|nbm-cloud  | 2026-01-13T21:28:27: [scheduler] 13/01/2026, 21:28:27 - Check interval: 60 seconds
+0|nbm-cloud  | 2026-01-13T21:28:27: [scheduler] 13/01/2026, 21:28:27 - Worker pool concurrency: 10
+0|nbm-cloud  | 2026-01-13T21:28:27: [scheduler] 13/01/2026, 21:28:27 - Current time: 21:28, Day of week: 2, Day of month: 13
+0|nbm-cloud  | 2026-01-13T21:28:27: [scheduler] 13/01/2026, 21:28:27 - Scheduler started successfully
+0|nbm-cloud  | 2026-01-13T21:28:27: [static] Serving static files from: /opt/nbm-cloud/dist/public
+0|nbm-cloud  | Error: bind EADDRINUSE 0.0.0.0:5000
+0|nbm-cloud  |     at listenOnPrimaryHandle (node:net:1989:18)
+0|nbm-cloud  |     at rr (node:internal/cluster/child:163:12)
+0|nbm-cloud  |     at Worker.<anonymous> (node:internal/cluster/child:113:7)
+0|nbm-cloud  |     at process.onInternalMessage (node:internal/cluster/utils:49:5)
+0|nbm-cloud  |     at process.emit (node:events:536:35)
+0|nbm-cloud  |     at emit (node:internal/child_process:950:14)
+0|nbm-cloud  |     at process.processTicksAndRejections (node:internal/process/task_queues:83:21)
+0|nbm-cloud  | 2026-01-13T21:28:28: [worker-pool] 13/01/2026, 21:28:28 - Worker pool initialized with concurrency: 10
+0|nbm-cloud  | 2026-01-13T21:28:28: [scheduler] 13/01/2026, 21:28:28 - Backup executor registered for scheduler and worker pool
+0|nbm-cloud  | 2026-01-13T21:28:28: [scheduler] 13/01/2026, 21:28:28 - Starting backup scheduler...
+0|nbm-cloud  | 2026-01-13T21:28:28: [scheduler] 13/01/2026, 21:28:28 - Timezone: System (Linux)
+0|nbm-cloud  | 2026-01-13T21:28:28: [scheduler] 13/01/2026, 21:28:28 - Check interval: 60 seconds
+0|nbm-cloud  | 2026-01-13T21:28:28: [scheduler] 13/01/2026, 21:28:28 - Worker pool concurrency: 10
+0|nbm-cloud  | 2026-01-13T21:28:28: [scheduler] 13/01/2026, 21:28:28 - Current time: 21:28, Day of week: 2, Day of month: 13
+0|nbm-cloud  | 2026-01-13T21:28:28: [scheduler] 13/01/2026, 21:28:28 - Scheduler started successfully
+0|nbm-cloud  | 2026-01-13T21:28:28: [static] Serving static files from: /opt/nbm-cloud/dist/public
+0|nbm-cloud  | Error: bind EADDRINUSE 0.0.0.0:5000
+0|nbm-cloud  |     at listenOnPrimaryHandle (node:net:1989:18)
+0|nbm-cloud  |     at rr (node:internal/cluster/child:163:12)
+0|nbm-cloud  |     at Worker.<anonymous> (node:internal/cluster/child:113:7)
+0|nbm-cloud  |     at process.onInternalMessage (node:internal/cluster/utils:49:5)
+0|nbm-cloud  |     at process.emit (node:events:536:35)
+0|nbm-cloud  |     at emit (node:internal/child_process:950:14)
+0|nbm-cloud  |     at process.processTicksAndRejections (node:internal/process/task_queues:83:21)
+0|nbm-cloud  | 2026-01-13T21:28:28: [worker-pool] 13/01/2026, 21:28:28 - Worker pool initialized with concurrency: 10
+0|nbm-cloud  | 2026-01-13T21:28:28: [scheduler] 13/01/2026, 21:28:28 - Backup executor registered for scheduler and worker pool
+0|nbm-cloud  | 2026-01-13T21:28:28: [scheduler] 13/01/2026, 21:28:28 - Starting backup scheduler...
+0|nbm-cloud  | 2026-01-13T21:28:28: [scheduler] 13/01/2026, 21:28:28 - Timezone: System (Linux)
+0|nbm-cloud  | 2026-01-13T21:28:28: [scheduler] 13/01/2026, 21:28:28 - Check interval: 60 seconds
+0|nbm-cloud  | 2026-01-13T21:28:28: [scheduler] 13/01/2026, 21:28:28 - Worker pool concurrency: 10
+0|nbm-cloud  | 2026-01-13T21:28:28: [scheduler] 13/01/2026, 21:28:28 - Current time: 21:28, Day of week: 2, Day of month: 13
+0|nbm-cloud  | 2026-01-13T21:28:28: [scheduler] 13/01/2026, 21:28:28 - Scheduler started successfully
+0|nbm-cloud  | 2026-01-13T21:28:28: [static] Serving static files from: /opt/nbm-cloud/dist/public
+0|nbm-cloud  | Error: bind EADDRINUSE 0.0.0.0:5000
+0|nbm-cloud  |     at listenOnPrimaryHandle (node:net:1989:18)
+0|nbm-cloud  |     at rr (node:internal/cluster/child:163:12)
+0|nbm-cloud  |     at Worker.<anonymous> (node:internal/cluster/child:113:7)
+0|nbm-cloud  |     at process.onInternalMessage (node:internal/cluster/utils:49:5)
+0|nbm-cloud  |     at process.emit (node:events:536:35)
+0|nbm-cloud  |     at emit (node:internal/child_process:950:14)
+0|nbm-cloud  |     at process.processTicksAndRejections (node:internal/process/task_queues:83:21)
+0|nbm-cloud  | 2026-01-13T21:28:29: [worker-pool] 13/01/2026, 21:28:29 - Worker pool initialized with concurrency: 10
+0|nbm-cloud  | 2026-01-13T21:28:29: [scheduler] 13/01/2026, 21:28:29 - Backup executor registered for scheduler and worker pool
+0|nbm-cloud  | 2026-01-13T21:28:29: [scheduler] 13/01/2026, 21:28:29 - Starting backup scheduler...
+0|nbm-cloud  | 2026-01-13T21:28:29: [scheduler] 13/01/2026, 21:28:29 - Timezone: System (Linux)
+0|nbm-cloud  | 2026-01-13T21:28:29: [scheduler] 13/01/2026, 21:28:29 - Check interval: 60 seconds
+0|nbm-cloud  | 2026-01-13T21:28:29: [scheduler] 13/01/2026, 21:28:29 - Worker pool concurrency: 10
+0|nbm-cloud  | 2026-01-13T21:28:29: [scheduler] 13/01/2026, 21:28:29 - Current time: 21:28, Day of week: 2, Day of month: 13
+0|nbm-cloud  | 2026-01-13T21:28:29: [scheduler] 13/01/2026, 21:28:29 - Scheduler started successfully
+0|nbm-cloud  | 2026-01-13T21:28:29: [static] Serving static files from: /opt/nbm-cloud/dist/public
+0|nbm-cloud  | Error: bind EADDRINUSE 0.0.0.0:5000
+0|nbm-cloud  |     at listenOnPrimaryHandle (node:net:1989:18)
+0|nbm-cloud  |     at rr (node:internal/cluster/child:163:12)
+0|nbm-cloud  |     at Worker.<anonymous> (node:internal/cluster/child:113:7)
+0|nbm-cloud  |     at process.onInternalMessage (node:internal/cluster/utils:49:5)
+0|nbm-cloud  |     at process.emit (node:events:536:35)
+0|nbm-cloud  |     at emit (node:internal/child_process:950:14)
+0|nbm-cloud  |     at process.processTicksAndRejections (node:internal/process/task_queues:83:21)
+0|nbm-cloud  | 2026-01-13T21:28:29: [worker-pool] 13/01/2026, 21:28:29 - Worker pool initialized with concurrency: 10
+0|nbm-cloud  | 2026-01-13T21:28:29: [scheduler] 13/01/2026, 21:28:29 - Backup executor registered for scheduler and worker pool
+0|nbm-cloud  | 2026-01-13T21:28:29: [scheduler] 13/01/2026, 21:28:29 - Starting backup scheduler...
+0|nbm-cloud  | 2026-01-13T21:28:29: [scheduler] 13/01/2026, 21:28:29 - Timezone: System (Linux)
+0|nbm-cloud  | 2026-01-13T21:28:29: [scheduler] 13/01/2026, 21:28:29 - Check interval: 60 seconds
+0|nbm-cloud  | 2026-01-13T21:28:29: [scheduler] 13/01/2026, 21:28:29 - Worker pool concurrency: 10
+0|nbm-cloud  | 2026-01-13T21:28:29: [scheduler] 13/01/2026, 21:28:29 - Current time: 21:28, Day of week: 2, Day of month: 13
+0|nbm-cloud  | 2026-01-13T21:28:29: [scheduler] 13/01/2026, 21:28:29 - Scheduler started successfully
+0|nbm-cloud  | 2026-01-13T21:28:29: [static] Serving static files from: /opt/nbm-cloud/dist/public
+0|nbm-cloud  | Error: bind EADDRINUSE 0.0.0.0:5000
+0|nbm-cloud  |     at listenOnPrimaryHandle (node:net:1989:18)
+0|nbm-cloud  |     at rr (node:internal/cluster/child:163:12)
+0|nbm-cloud  |     at Worker.<anonymous> (node:internal/cluster/child:113:7)
+0|nbm-cloud  |     at process.onInternalMessage (node:internal/cluster/utils:49:5)
+0|nbm-cloud  |     at process.emit (node:events:536:35)
+0|nbm-cloud  |     at emit (node:internal/child_process:950:14)
+0|nbm-cloud  |     at process.processTicksAndRejections (node:internal/process/task_queues:83:21)
+0|nbm-cloud  | 2026-01-13T21:28:30: [worker-pool] 13/01/2026, 21:28:30 - Worker pool initialized with concurrency: 10
+0|nbm-cloud  | 2026-01-13T21:28:30: [scheduler] 13/01/2026, 21:28:30 - Backup executor registered for scheduler and worker pool
+0|nbm-cloud  | 2026-01-13T21:28:30: [scheduler] 13/01/2026, 21:28:30 - Starting backup scheduler...
+0|nbm-cloud  | 2026-01-13T21:28:30: [scheduler] 13/01/2026, 21:28:30 - Timezone: System (Linux)
+0|nbm-cloud  | 2026-01-13T21:28:30: [scheduler] 13/01/2026, 21:28:30 - Check interval: 60 seconds
+0|nbm-cloud  | 2026-01-13T21:28:30: [scheduler] 13/01/2026, 21:28:30 - Worker pool concurrency: 10
+0|nbm-cloud  | 2026-01-13T21:28:30: [scheduler] 13/01/2026, 21:28:30 - Current time: 21:28, Day of week: 2, Day of month: 13
+0|nbm-cloud  | 2026-01-13T21:28:30: [scheduler] 13/01/2026, 21:28:30 - Scheduler started successfully
+0|nbm-cloud  | 2026-01-13T21:28:30: [static] Serving static files from: /opt/nbm-cloud/dist/public
+0|nbm-cloud  | Error: bind EADDRINUSE 0.0.0.0:5000
+0|nbm-cloud  |     at listenOnPrimaryHandle (node:net:1989:18)
+0|nbm-cloud  |     at rr (node:internal/cluster/child:163:12)
+0|nbm-cloud  |     at Worker.<anonymous> (node:internal/cluster/child:113:7)
+0|nbm-cloud  |     at process.onInternalMessage (node:internal/cluster/utils:49:5)
+0|nbm-cloud  |     at process.emit (node:events:536:35)
+0|nbm-cloud  |     at emit (node:internal/child_process:950:14)
+0|nbm-cloud  |     at process.processTicksAndRejections (node:internal/process/task_queues:83:21)
+0|nbm-cloud  | 2026-01-13T21:28:31: [worker-pool] 13/01/2026, 21:28:31 - Worker pool initialized with concurrency: 10
+0|nbm-cloud  | 2026-01-13T21:28:31: [scheduler] 13/01/2026, 21:28:31 - Backup executor registered for scheduler and worker pool
+0|nbm-cloud  | 2026-01-13T21:28:31: [scheduler] 13/01/2026, 21:28:31 - Starting backup scheduler...
+0|nbm-cloud  | 2026-01-13T21:28:31: [scheduler] 13/01/2026, 21:28:31 - Timezone: System (Linux)
+0|nbm-cloud  | 2026-01-13T21:28:31: [scheduler] 13/01/2026, 21:28:31 - Check interval: 60 seconds
+0|nbm-cloud  | 2026-01-13T21:28:31: [scheduler] 13/01/2026, 21:28:31 - Worker pool concurrency: 10
+0|nbm-cloud  | 2026-01-13T21:28:31: [scheduler] 13/01/2026, 21:28:31 - Current time: 21:28, Day of week: 2, Day of month: 13
+0|nbm-cloud  | 2026-01-13T21:28:31: [scheduler] 13/01/2026, 21:28:31 - Scheduler started successfully
+0|nbm-cloud  | 2026-01-13T21:28:31: [static] Serving static files from: /opt/nbm-cloud/dist/public
+0|nbm-cloud  | Error: bind EADDRINUSE 0.0.0.0:5000
+0|nbm-cloud  |     at listenOnPrimaryHandle (node:net:1989:18)
+0|nbm-cloud  |     at rr (node:internal/cluster/child:163:12)
+0|nbm-cloud  |     at Worker.<anonymous> (node:internal/cluster/child:113:7)
+0|nbm-cloud  |     at process.onInternalMessage (node:internal/cluster/utils:49:5)
+0|nbm-cloud  |     at process.emit (node:events:536:35)
+0|nbm-cloud  |     at emit (node:internal/child_process:950:14)
+0|nbm-cloud  |     at process.processTicksAndRejections (node:internal/process/task_queues:83:21)
+0|nbm-cloud  | 2026-01-13T21:28:31: [worker-pool] 13/01/2026, 21:28:31 - Worker pool initialized with concurrency: 10
+0|nbm-cloud  | 2026-01-13T21:28:31: [scheduler] 13/01/2026, 21:28:31 - Backup executor registered for scheduler and worker pool
+0|nbm-cloud  | 2026-01-13T21:28:31: [scheduler] 13/01/2026, 21:28:31 - Starting backup scheduler...
+0|nbm-cloud  | 2026-01-13T21:28:31: [scheduler] 13/01/2026, 21:28:31 - Timezone: System (Linux)
+0|nbm-cloud  | 2026-01-13T21:28:31: [scheduler] 13/01/2026, 21:28:31 - Check interval: 60 seconds
+0|nbm-cloud  | 2026-01-13T21:28:31: [scheduler] 13/01/2026, 21:28:31 - Worker pool concurrency: 10
+0|nbm-cloud  | 2026-01-13T21:28:31: [scheduler] 13/01/2026, 21:28:31 - Current time: 21:28, Day of week: 2, Day of month: 13
+0|nbm-cloud  | 2026-01-13T21:28:31: [scheduler] 13/01/2026, 21:28:31 - Scheduler started successfully
+0|nbm-cloud  | 2026-01-13T21:28:31: [static] Serving static files from: /opt/nbm-cloud/dist/public
+0|nbm-cloud  | Error: bind EADDRINUSE 0.0.0.0:5000
+0|nbm-cloud  |     at listenOnPrimaryHandle (node:net:1989:18)
+0|nbm-cloud  |     at rr (node:internal/cluster/child:163:12)
+0|nbm-cloud  |     at Worker.<anonymous> (node:internal/cluster/child:113:7)
+0|nbm-cloud  |     at process.onInternalMessage (node:internal/cluster/utils:49:5)
+0|nbm-cloud  |     at process.emit (node:events:536:35)
+0|nbm-cloud  |     at emit (node:internal/child_process:950:14)
+0|nbm-cloud  |     at process.processTicksAndRejections (node:internal/process/task_queues:83:21)
+0|nbm-cloud  | 2026-01-13T21:28:32: [worker-pool] 13/01/2026, 21:28:32 - Worker pool initialized with concurrency: 10
+0|nbm-cloud  | 2026-01-13T21:28:32: [scheduler] 13/01/2026, 21:28:32 - Backup executor registered for scheduler and worker pool
+0|nbm-cloud  | 2026-01-13T21:28:32: [scheduler] 13/01/2026, 21:28:32 - Starting backup scheduler...
+0|nbm-cloud  | 2026-01-13T21:28:32: [scheduler] 13/01/2026, 21:28:32 - Timezone: System (Linux)
+0|nbm-cloud  | 2026-01-13T21:28:32: [scheduler] 13/01/2026, 21:28:32 - Check interval: 60 seconds
+0|nbm-cloud  | 2026-01-13T21:28:32: [scheduler] 13/01/2026, 21:28:32 - Worker pool concurrency: 10
+0|nbm-cloud  | 2026-01-13T21:28:32: [scheduler] 13/01/2026, 21:28:32 - Current time: 21:28, Day of week: 2, Day of month: 13
+0|nbm-cloud  | 2026-01-13T21:28:32: [scheduler] 13/01/2026, 21:28:32 - Scheduler started successfully
+0|nbm-cloud  | 2026-01-13T21:28:32: [static] Serving static files from: /opt/nbm-cloud/dist/public
+0|nbm-cloud  | Error: bind EADDRINUSE 0.0.0.0:5000
+0|nbm-cloud  |     at listenOnPrimaryHandle (node:net:1989:18)
+0|nbm-cloud  |     at rr (node:internal/cluster/child:163:12)
+0|nbm-cloud  |     at Worker.<anonymous> (node:internal/cluster/child:113:7)
+0|nbm-cloud  |     at process.onInternalMessage (node:internal/cluster/utils:49:5)
+0|nbm-cloud  |     at process.emit (node:events:536:35)
+0|nbm-cloud  |     at emit (node:internal/child_process:950:14)
+0|nbm-cloud  |     at process.processTicksAndRejections (node:internal/process/task_queues:83:21)
+0|nbm-cloud  | 2026-01-13T21:28:32: [worker-pool] 13/01/2026, 21:28:32 - Worker pool initialized with concurrency: 10
+0|nbm-cloud  | 2026-01-13T21:28:32: [scheduler] 13/01/2026, 21:28:32 - Backup executor registered for scheduler and worker pool
+0|nbm-cloud  | 2026-01-13T21:28:32: [scheduler] 13/01/2026, 21:28:32 - Starting backup scheduler...
+0|nbm-cloud  | 2026-01-13T21:28:32: [scheduler] 13/01/2026, 21:28:32 - Timezone: System (Linux)
+0|nbm-cloud  | 2026-01-13T21:28:32: [scheduler] 13/01/2026, 21:28:32 - Check interval: 60 seconds
+0|nbm-cloud  | 2026-01-13T21:28:32: [scheduler] 13/01/2026, 21:28:32 - Worker pool concurrency: 10
+0|nbm-cloud  | 2026-01-13T21:28:32: [scheduler] 13/01/2026, 21:28:32 - Current time: 21:28, Day of week: 2, Day of month: 13
+0|nbm-cloud  | 2026-01-13T21:28:32: [scheduler] 13/01/2026, 21:28:32 - Scheduler started successfully
+0|nbm-cloud  | 2026-01-13T21:28:32: [static] Serving static files from: /opt/nbm-cloud/dist/public
+0|nbm-cloud  | Error: bind EADDRINUSE 0.0.0.0:5000
+0|nbm-cloud  |     at listenOnPrimaryHandle (node:net:1989:18)
+0|nbm-cloud  |     at rr (node:internal/cluster/child:163:12)
+0|nbm-cloud  |     at Worker.<anonymous> (node:internal/cluster/child:113:7)
+0|nbm-cloud  |     at process.onInternalMessage (node:internal/cluster/utils:49:5)
+0|nbm-cloud  |     at process.emit (node:events:536:35)
+0|nbm-cloud  |     at emit (node:internal/child_process:950:14)
+0|nbm-cloud  |     at process.processTicksAndRejections (node:internal/process/task_queues:83:21)
+0|nbm-cloud  | 2026-01-13T21:28:33: [worker-pool] 13/01/2026, 21:28:33 - Worker pool initialized with concurrency: 10
+0|nbm-cloud  | 2026-01-13T21:28:33: [scheduler] 13/01/2026, 21:28:33 - Backup executor registered for scheduler and worker pool
+0|nbm-cloud  | 2026-01-13T21:28:33: [scheduler] 13/01/2026, 21:28:33 - Starting backup scheduler...
+0|nbm-cloud  | 2026-01-13T21:28:33: [scheduler] 13/01/2026, 21:28:33 - Timezone: System (Linux)
+0|nbm-cloud  | 2026-01-13T21:28:33: [scheduler] 13/01/2026, 21:28:33 - Check interval: 60 seconds
+0|nbm-cloud  | 2026-01-13T21:28:33: [scheduler] 13/01/2026, 21:28:33 - Worker pool concurrency: 10
+0|nbm-cloud  | 2026-01-13T21:28:33: [scheduler] 13/01/2026, 21:28:33 - Current time: 21:28, Day of week: 2, Day of month: 13
+0|nbm-cloud  | 2026-01-13T21:28:33: [scheduler] 13/01/2026, 21:28:33 - Scheduler started successfully
+0|nbm-cloud  | 2026-01-13T21:28:33: [static] Serving static files from: /opt/nbm-cloud/dist/public
+0|nbm-cloud  | Error: bind EADDRINUSE 0.0.0.0:5000
+0|nbm-cloud  |     at listenOnPrimaryHandle (node:net:1989:18)
+0|nbm-cloud  |     at rr (node:internal/cluster/child:163:12)
+0|nbm-cloud  |     at Worker.<anonymous> (node:internal/cluster/child:113:7)
+0|nbm-cloud  |     at process.onInternalMessage (node:internal/cluster/utils:49:5)
+0|nbm-cloud  |     at process.emit (node:events:536:35)
+0|nbm-cloud  |     at emit (node:internal/child_process:950:14)
+0|nbm-cloud  |     at process.processTicksAndRejections (node:internal/process/task_queues:83:21)
+0|nbm-cloud  | 2026-01-13T21:28:34: [worker-pool] 13/01/2026, 21:28:34 - Worker pool initialized with concurrency: 10
+0|nbm-cloud  | 2026-01-13T21:28:34: [scheduler] 13/01/2026, 21:28:34 - Backup executor registered for scheduler and worker pool
+0|nbm-cloud  | 2026-01-13T21:28:34: [scheduler] 13/01/2026, 21:28:34 - Starting backup scheduler...
+0|nbm-cloud  | 2026-01-13T21:28:34: [scheduler] 13/01/2026, 21:28:34 - Timezone: System (Linux)
+0|nbm-cloud  | 2026-01-13T21:28:34: [scheduler] 13/01/2026, 21:28:34 - Check interval: 60 seconds
+0|nbm-cloud  | 2026-01-13T21:28:34: [scheduler] 13/01/2026, 21:28:34 - Worker pool concurrency: 10
+0|nbm-cloud  | 2026-01-13T21:28:34: [scheduler] 13/01/2026, 21:28:34 - Current time: 21:28, Day of week: 2, Day of month: 13
+0|nbm-cloud  | 2026-01-13T21:28:34: [scheduler] 13/01/2026, 21:28:34 - Scheduler started successfully
+0|nbm-cloud  | 2026-01-13T21:28:34: [static] Serving static files from: /opt/nbm-cloud/dist/public
+0|nbm-cloud  | Error: bind EADDRINUSE 0.0.0.0:5000
+0|nbm-cloud  |     at listenOnPrimaryHandle (node:net:1989:18)
+0|nbm-cloud  |     at rr (node:internal/cluster/child:163:12)
+0|nbm-cloud  |     at Worker.<anonymous> (node:internal/cluster/child:113:7)
+0|nbm-cloud  |     at process.onInternalMessage (node:internal/cluster/utils:49:5)
+0|nbm-cloud  |     at process.emit (node:events:536:35)
+0|nbm-cloud  |     at emit (node:internal/child_process:950:14)
+0|nbm-cloud  |     at process.processTicksAndRejections (node:internal/process/task_queues:83:21)
+^A
