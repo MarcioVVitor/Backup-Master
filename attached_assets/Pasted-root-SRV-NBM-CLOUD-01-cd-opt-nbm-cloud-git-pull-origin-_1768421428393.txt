@@ -1,0 +1,57 @@
+root@SRV-NBM-CLOUD-01[~]# cd /opt/nbm-cloud
+git pull origin main
+npm run build
+pm2 restart nbm-cloud
+sleep 3
+curl -I http://localhost:5000/ 2>/dev/null | grep Cache
+remote: Enumerating objects: 24, done.
+remote: Counting objects: 100% (24/24), done.
+remote: Compressing objects: 100% (14/14), done.
+remote: Total 20 (delta 15), reused 11 (delta 6), pack-reused 0 (from 0)
+Unpacking objects: 100% (20/20), 361.50 KiB | 1.36 MiB/s, done.
+From https://github.com/MarcioVVitor/Backup-Master
+ * branch            main       -> FETCH_HEAD
+   dff0c20..3a970c7  main       -> origin/main
+Updating dff0c20..3a970c7
+Fast-forward
+ attached_assets/Pasted-root-SRV-NBM-CLOUD-01-1-Verificar-qual-bundle-o-servido_1768420600745.txt |  31 +++++++++++++++
+ attached_assets/Pasted-root-SRV-NBM-CLOUD-01-cd-opt-nbm-cloud-Rebuild-completo_1768420694295.txt |  43 ++++++++++++++++++++
+ attached_assets/Pasted-root-SRV-NBM-CLOUD-01-cd-opt-nbm-cloud-git-pull-origin-_1768410411766.txt | 117 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ attached_assets/image_1768420036369.png                                                          | Bin 0 -> 449653 bytes
+ server/static.ts                                                                                 |  10 +++--
+ 5 files changed, 197 insertions(+), 4 deletions(-)
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-1-Verificar-qual-bundle-o-servido_1768420600745.txt
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-cd-opt-nbm-cloud-Rebuild-completo_1768420694295.txt
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-cd-opt-nbm-cloud-git-pull-origin-_1768410411766.txt
+ create mode 100644 attached_assets/image_1768420036369.png
+
+> rest-express@1.0.0 build
+> tsx script/build.ts
+
+building client...
+vite v7.3.0 building client environment for production...
+✓ 3320 modules transformed.
+../dist/public/index.html                     2.87 kB │ gzip:   1.04 kB
+../dist/public/assets/index-vnZetH7j.css     80.81 kB │ gzip:  13.52 kB
+../dist/public/assets/index-CX5CNVpA.js   1,358.75 kB │ gzip: 372.48 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 12.36s
+building server...
+
+  dist/index.cjs  1.3mb ⚠️
+
+⚡ Done in 136ms
+Use --update-env to update environment variables
+[PM2] Applying action restartProcessId on app [nbm-cloud](ids: [ 0 ])
+[PM2] [nbm-cloud](0) ✓
+┌────┬──────────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name         │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+├────┼──────────────┼─────────────┼─────────┼─────────┼──────────┼────────┼──────┼───────────┼──────────┼──────────┼──────────┼──────────┤
+│ 0  │ nbm-cloud    │ default     │ 1.0.0   │ cluster │ 148077   │ 0s     │ 46   │ online    │ 0%       │ 39.8mb   │ root     │ disabled │
+└────┴──────────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+Cache-Control: public, max-age=0
+root@SRV-NBM-CLOUD-01[/opt/nbm-cloud]# 
