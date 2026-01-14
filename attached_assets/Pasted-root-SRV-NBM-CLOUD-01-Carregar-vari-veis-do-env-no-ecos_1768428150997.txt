@@ -1,0 +1,54 @@
+root@SRV-NBM-CLOUD-01[~]# # Carregar variáveis do .env no ecosystem.config.cjs
+cd /opt/nbm-cloud
+
+# Ler DATABASE_URL do .env
+source .env
+
+# Atualizar ecosystem para incluir as variáveis
+cat > ecosystem.config.cjs << 'EOF'
+module.exports = {
+  apps: [{
+    name: 'nbm-cloud',
+    script: 'dist/index.cjs',
+    cwd: '/opt/nbm-cloud',
+    instances: 1,
+    autorestart: true,
+    watch: false,
+    max_memory_restart: '1G',
+    env: {
+      NODE_ENV: 'production',
+      DATABASE_URL: process.env.DATABASE_URL || require('dotenv').config().parsed?.DATABASE_URL,
+      SESSION_SECRET: process.env.SESSION_SECRET || require('dotenv').config().parsed?.SESSION_SECRET
+    },
+    error_file: '/var/log/nbm-cloud/error.log',
+    out_file: '/var/log/nbm-cloud/out.log',
+curl -I http://localhost:5000/ 2>/dev/null | grep Cache
+
+added 1 package, and audited 653 packages in 3s
+
+92 packages are looking for funding
+  run `npm fund` for details
+
+4 high severity vulnerabilities
+
+To address all issues, run:
+  npm audit fix
+
+Run `npm audit` for details.
+[PM2] Applying action deleteProcessId on app [nbm-cloud](ids: [ 0 ])
+[PM2] [nbm-cloud](0) ✓
+┌────┬───────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name      │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+└────┴───────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+[dotenv@17.2.3] injecting env (4) from .env -- tip: ⚙️  enable debug logging with { debug: true }
+[PM2][WARN] Applications nbm-cloud not running, starting...
+[PM2] App [nbm-cloud] launched (1 instances)
+┌────┬──────────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name         │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+├────┼──────────────┼─────────────┼─────────┼─────────┼──────────┼────────┼──────┼───────────┼──────────┼──────────┼──────────┼──────────┤
+│ 0  │ nbm-cloud    │ default     │ 1.0.0   │ cluster │ 151235   │ 0s     │ 0    │ online    │ 0%       │ 39.2mb   │ root     │ disabled │
+└────┴──────────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+[PM2] Saving current process list...
+[PM2] Successfully saved in /root/.pm2/dump.pm2
+Cache-Control: public, max-age=0
+root@SRV-NBM-CLOUD-01[/opt/nbm-cloud]# 

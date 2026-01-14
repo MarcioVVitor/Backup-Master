@@ -29,24 +29,23 @@ export function serveStatic(app: Express) {
   const indexPath = path.resolve(distPath, "index.html");
   const indexHtml = fs.readFileSync(indexPath, 'utf-8');
 
-  // Serve index.html for root path with no-cache headers BEFORE express.static
-  app.get('/', (req: Request, res: Response) => {
-    res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-    res.setHeader('Pragma', 'no-cache');
-    res.setHeader('Expires', '0');
-    res.send(indexHtml);
-  });
-
-  // Serve static files (JS, CSS, images) - these CAN be cached
+  // Serve static files with custom cache headers
   app.use(express.static(distPath, { 
     fallthrough: true,
     index: false,
-    maxAge: '1y',  // Cache assets with hash in filename
-    immutable: true
+    maxAge: '1y',
+    immutable: true,
+    setHeaders: (res, filePath) => {
+      // HTML files should never be cached
+      if (path.extname(filePath) === '.html') {
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+      }
+    }
   }));
 
-  // SPA fallback - for client-side routing
+  // SPA fallback - serve index.html for all navigation requests
   app.use("*", (req: Request, res: Response) => {
     const reqPath = req.path || req.originalUrl;
     // Don't serve index.html for asset requests (files with extensions)
