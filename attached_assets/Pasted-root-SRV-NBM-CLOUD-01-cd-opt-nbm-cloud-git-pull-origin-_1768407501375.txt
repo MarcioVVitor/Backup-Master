@@ -1,0 +1,108 @@
+root@SRV-NBM-CLOUD-01[~]# cd /opt/nbm-cloud
+git pull origin main
+chmod +x scripts/setup.sh scripts/deploy.sh
+sudo ./scripts/setup.sh
+From https://github.com/MarcioVVitor/Backup-Master
+ * branch            main       -> FETCH_HEAD
+Already up to date.
+sudo: unable to resolve host SRV-NBM-CLOUD-01: Name or service not known
+╔══════════════════════════════════════════════╗
+║     NBM CLOUD v17.0 - Setup Automático       ║
+╚══════════════════════════════════════════════╝
+
+[1/7] Gerando credenciais seguras...
+  Usuário DB: nbm_app
+  Banco: nbm_cloud
+  Senha DB: QvVoBkXejyKcmGXYkQ48RuhT
+  Session Secret: L0SoAEV4A89L0VDu1MWrkzg3
+  Credenciais salvas em: /opt/nbm-cloud/.credentials
+[2/7] Configurando PostgreSQL...
+  Usuário nbm_app já existe, atualizando senha...
+ALTER ROLE
+  Banco nbm_cloud já existe
+GRANT
+GRANT
+  ✓ PostgreSQL configurado
+[3/7] Criando arquivo .env...
+  ✓ Arquivo .env criado
+[4/7] Atualizando código...
+Already up to date.
+  ✓ Código atualizado
+[5/7] Parando serviços existentes...
+[PM2] Applying action stopProcessId on app [nbm-cloud](ids: [ 0 ])
+[PM2] [nbm-cloud](0) ✓
+┌────┬──────────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name         │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+├────┼──────────────┼─────────────┼─────────┼─────────┼──────────┼────────┼──────┼───────────┼──────────┼──────────┼──────────┼──────────┤
+│ 0  │ nbm-cloud    │ default     │ 1.0.0   │ cluster │ 0        │ 0      │ 15   │ stopped   │ 0%       │ 0b       │ root     │ disabled │
+└────┴──────────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+[PM2] Applying action deleteProcessId on app [nbm-cloud](ids: [ 0 ])
+[PM2] [nbm-cloud](0) ✓
+┌────┬───────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name      │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+└────┴───────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+  ✓ Serviços parados
+[6/7] Fazendo build da aplicação...
+
+> rest-express@1.0.0 build
+> tsx script/build.ts
+
+building client...
+vite v7.3.0 building client environment for production...
+✓ 3320 modules transformed.
+../dist/public/index.html                     2.87 kB │ gzip:   1.04 kB
+../dist/public/assets/index-vnZetH7j.css     80.81 kB │ gzip:  13.52 kB
+../dist/public/assets/index-CPQxKp5j.js   1,358.66 kB │ gzip: 372.43 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 11.38s
+building server...
+
+  dist/index.cjs  1.3mb ⚠️
+
+⚡ Done in 168ms
+  ✓ Build concluído
+[6.5/7] Executando migrações do banco...
+
+> rest-express@1.0.0 db:push
+> drizzle-kit push
+
+No config path provided, using default 'drizzle.config.ts'
+Reading config file '/opt/nbm-cloud/drizzle.config.ts'
+Using 'pg' driver for database querying
+[✓] Pulling schema from database...
+[i] No changes detected
+  ✓ Migrações aplicadas
+[7/7] Iniciando aplicação...
+[PM2] Starting /opt/nbm-cloud/dist/index.cjs in cluster_mode (1 instance)
+[PM2] Done.
+┌────┬──────────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name         │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+├────┼──────────────┼─────────────┼─────────┼─────────┼──────────┼────────┼──────┼───────────┼──────────┼──────────┼──────────┼──────────┤
+│ 0  │ nbm-cloud    │ default     │ 1.0.0   │ cluster │ 141214   │ 0s     │ 0    │ online    │ 0%       │ 39.7mb   │ root     │ disabled │
+└────┴──────────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+[PM2] Saving current process list...
+[PM2] Successfully saved in /root/.pm2/dump.pm2
+  ✓ Aplicação iniciada
+
+Verificando...
+  ✓ Assets sendo servidos corretamente
+  ✓ Aplicação respondendo
+
+╔══════════════════════════════════════════════╗
+║           SETUP CONCLUÍDO!                   ║
+╚══════════════════════════════════════════════╝
+
+  Acesse: http://143.255.197.25:5000
+
+  Credenciais salvas em: /opt/nbm-cloud/.credentials
+
+┌────┬──────────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name         │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+├────┼──────────────┼─────────────┼─────────┼─────────┼──────────┼────────┼──────┼───────────┼──────────┼──────────┼──────────┼──────────┤
+│ 0  │ nbm-cloud    │ default     │ 1.0.0   │ cluster │ 141289   │ 0s     │ 5    │ online    │ 200%     │ 59.0mb   │ root     │ disabled │
+└────┴──────────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+root@SRV-NBM-CLOUD-01[/opt/nbm-cloud]# 
