@@ -1,0 +1,62 @@
+root@SRV-NBM-CLOUD-01[~]# # 1. Matar o processo antigo do usuário nbm
+kill 116299
+
+# 2. Verificar que a porta está livre
+lsof -i :5000
+
+# 3. Verificar se o .env existe e tem DATABASE_URL
+cat /opt/nbm-cloud/.env | grep DATABASE
+
+# 4. Iniciar o PM2 com o arquivo .env
+cd /opt/nbm-cloud
+pm2 start ecosystem.config.cjs --update-env
+
+# 5. Ver logs
+pm2 logs nbm-cloud --lines 10
+DATABASE_URL=postgresql://usuario:senha@localhost:5432/nbm_cloud
+[PM2] Applying action restartProcessId on app [nbm-cloud](ids: [ 0 ])
+[PM2] [nbm-cloud](0) ✓
+┌────┬──────────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name         │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+├────┼──────────────┼─────────────┼─────────┼─────────┼──────────┼────────┼──────┼───────────┼──────────┼──────────┼──────────┼──────────┤
+│ 0  │ nbm-cloud    │ default     │ 1.0.0   │ cluster │ 117273   │ 0s     │ 1    │ online    │ 0%       │ 39.8mb   │ root     │ disabled │
+└────┴──────────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+[TAILING] Tailing last 10 lines for [nbm-cloud] process (change the value with --lines option)
+/var/log/nbm-cloud/out-0.log last 10 lines:
+0|nbm-clou | 2026-01-13T20:22:41: [scheduler] 13/01/2026, 20:22:41 - Current time: 20:22, Day of week: 2, Day of month: 13
+0|nbm-clou | 2026-01-13T20:22:41: [scheduler] 13/01/2026, 20:22:41 - Scheduler started successfully
+0|nbm-clou | 2026-01-13T20:22:41: [worker-pool] 13/01/2026, 20:22:41 - Worker pool initialized with concurrency: 10
+0|nbm-clou | 2026-01-13T20:22:41: [scheduler] 13/01/2026, 20:22:41 - Backup executor registered for scheduler and worker pool
+0|nbm-clou | 2026-01-13T20:22:41: [scheduler] 13/01/2026, 20:22:41 - Starting backup scheduler...
+0|nbm-clou | 2026-01-13T20:22:41: [scheduler] 13/01/2026, 20:22:41 - Timezone: System (Linux)
+0|nbm-clou | 2026-01-13T20:22:41: [scheduler] 13/01/2026, 20:22:41 - Check interval: 60 seconds
+0|nbm-clou | 2026-01-13T20:22:41: [scheduler] 13/01/2026, 20:22:41 - Worker pool concurrency: 10
+0|nbm-clou | 2026-01-13T20:22:41: [scheduler] 13/01/2026, 20:22:41 - Current time: 20:22, Day of week: 2, Day of month: 13
+0|nbm-clou | 2026-01-13T20:22:41: [scheduler] 13/01/2026, 20:22:41 - Scheduler started successfully
+
+/var/log/nbm-cloud/error-0.log last 10 lines:
+0|nbm-clou |     at /opt/nbm-cloud/dist/index.cjs:70:120034
+0|nbm-clou |     at /opt/nbm-cloud/dist/index.cjs:1:225
+0|nbm-clou |     at /opt/nbm-cloud/dist/index.cjs:70:120223
+0|nbm-clou |     at /opt/nbm-cloud/dist/index.cjs:1:225
+0|nbm-clou |     at Object.<anonymous> (/opt/nbm-cloud/dist/index.cjs:145:32213)
+0|nbm-clou |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+0|nbm-clou |     at Module._extensions..js (node:internal/modules/cjs/loader:1623:10)
+0|nbm-clou |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+0|nbm-clou |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+0|nbm-clou |     at cjsLoader (node:internal/modules/esm/translators:298:15)
+
+0|nbm-cloud  | You have triggered an unhandledRejection, you may have forgotten to catch a Promise rejection:
+0|nbm-cloud  | Error: DATABASE_URL must be set. Did you forget to provision a database?
+0|nbm-cloud  |     at /opt/nbm-cloud/dist/index.cjs:70:120034
+0|nbm-cloud  |     at /opt/nbm-cloud/dist/index.cjs:1:225
+0|nbm-cloud  |     at /opt/nbm-cloud/dist/index.cjs:70:120223
+0|nbm-cloud  |     at /opt/nbm-cloud/dist/index.cjs:1:225
+0|nbm-cloud  |     at Object.<anonymous> (/opt/nbm-cloud/dist/index.cjs:145:32213)
+0|nbm-cloud  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+0|nbm-cloud  |     at Module._extensions..js (node:internal/modules/cjs/loader:1623:10)
+0|nbm-cloud  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+0|nbm-cloud  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+0|nbm-cloud  |     at cjsLoader (node:internal/modules/esm/translators:298:15)
+^C
+root@SRV-NBM-CLOUD-01[/opt/nbm-cloud]# 
