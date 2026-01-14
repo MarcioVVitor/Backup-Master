@@ -1,0 +1,49 @@
+root@SRV-NBM-CLOUD-01[~]# cd /opt/nbm-cloud
+
+# 1. Ver qual arquivo o servidor está realmente servindo
+cat dist/public/index.html | head -5
+
+# 2. Ver o conteúdo do JS para confirmar ViewToggle
+grep -o "view-cards\|view-table\|view-list" dist/public/assets/index-CPQxKp5j.js
+
+# 3. Verificar se há outro processo na porta 5000
+lsof -i :5000
+
+# 4. Ver logs do PM2
+pm2 logs nbm-cloud --lines 20
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5, user-scalable=yes" />
+view-cards
+view-table
+view-list
+COMMAND   PID USER FD   TYPE  DEVICE SIZE/OFF NODE NAME
+node    51174  nbm 18u  IPv4  789051      0t0  TCP *:5000 (LISTEN)
+node    51174  nbm 20u  IPv4 1594813      0t0  TCP SRV-NBM-CLOUD-PROXY-01:5000->143.255.197.26.grupojet.com.br:43304 (ESTABLISHED)
+[TAILING] Tailing last 20 lines for [nbm-cloud] process (change the value with --lines option)
+/root/.pm2/logs/nbm-cloud-out.log last 20 lines:
+/root/.pm2/logs/nbm-cloud-error.log last 20 lines:
+0|nbm-clou |     at /opt/nbm-cloud/dist/index.cjs:1:225
+0|nbm-clou |     at /opt/nbm-cloud/dist/index.cjs:70:120223
+0|nbm-clou |     at /opt/nbm-cloud/dist/index.cjs:1:225
+0|nbm-clou |     at Object.<anonymous> (/opt/nbm-cloud/dist/index.cjs:145:32213)
+0|nbm-clou |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+0|nbm-clou |     at Module._extensions..js (node:internal/modules/cjs/loader:1623:10)
+0|nbm-clou |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+0|nbm-clou |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+0|nbm-clou |     at cjsLoader (node:internal/modules/esm/translators:298:15)
+0|nbm-clou | Error: DATABASE_URL must be set. Did you forget to provision a database?
+0|nbm-clou |     at /opt/nbm-cloud/dist/index.cjs:70:120034
+0|nbm-clou |     at /opt/nbm-cloud/dist/index.cjs:1:225
+0|nbm-clou |     at /opt/nbm-cloud/dist/index.cjs:70:120223
+0|nbm-clou |     at /opt/nbm-cloud/dist/index.cjs:1:225
+0|nbm-clou |     at Object.<anonymous> (/opt/nbm-cloud/dist/index.cjs:145:32213)
+0|nbm-clou |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+0|nbm-clou |     at Module._extensions..js (node:internal/modules/cjs/loader:1623:10)
+0|nbm-clou |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+0|nbm-clou |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+0|nbm-clou |     at cjsLoader (node:internal/modules/esm/translators:298:15)
+
+
