@@ -1,0 +1,60 @@
+root@SRV-NBM-CLOUD-01[/opt/nbm-cloud]# cd
+root@SRV-NBM-CLOUD-01[~]# cd /opt/nbm-cloud
+
+# 1. Deletar o processo do PM2 completamente
+pm2 delete nbm-cloud
+
+# 2. Verificar que não há processos na porta
+lsof -i :5000
+
+# 3. Iniciar novamente com o ecosystem
+pm2 start ecosystem.config.cjs
+
+# 4. Ver os logs para confirmar que está usando o novo código
+pm2 logs nbm-cloud --lines 5
+
+# 5. Testar o JS
+curl -s http://localhost:5000/assets/index-CPQxKp5j.js | head -c 100
+[PM2] Applying action deleteProcessId on app [nbm-cloud](ids: [ 0 ])
+[PM2] [nbm-cloud](0) ✓
+┌────┬───────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name      │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+└────┴───────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+COMMAND    PID USER FD   TYPE  DEVICE SIZE/OFF NODE NAME
+node    116299  nbm 18u  IPv4 1724268      0t0  TCP *:5000 (LISTEN)
+node    116299  nbm 19u  IPv4 1719221      0t0  TCP SRV-NBM-CLOUD-PROXY-01:5000->143.255.197.26.grupojet.com.br:60828 (ESTABLISHED)
+[PM2][WARN] Applications nbm-cloud not running, starting...
+[PM2] App [nbm-cloud] launched (1 instances)
+┌────┬──────────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name         │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+├────┼──────────────┼─────────────┼─────────┼─────────┼──────────┼────────┼──────┼───────────┼──────────┼──────────┼──────────┼──────────┤
+│ 0  │ nbm-cloud    │ default     │ 1.0.0   │ cluster │ 117219   │ 0s     │ 0    │ online    │ 0%       │ 39.8mb   │ root     │ disabled │
+└────┴──────────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+[TAILING] Tailing last 5 lines for [nbm-cloud] process (change the value with --lines option)
+/var/log/nbm-cloud/out-0.log last 5 lines:
+0|nbm-clou | 2026-01-13T20:22:41: [scheduler] 13/01/2026, 20:22:41 - Timezone: System (Linux)
+0|nbm-clou | 2026-01-13T20:22:41: [scheduler] 13/01/2026, 20:22:41 - Check interval: 60 seconds
+0|nbm-clou | 2026-01-13T20:22:41: [scheduler] 13/01/2026, 20:22:41 - Worker pool concurrency: 10
+0|nbm-clou | 2026-01-13T20:22:41: [scheduler] 13/01/2026, 20:22:41 - Current time: 20:22, Day of week: 2, Day of month: 13
+0|nbm-clou | 2026-01-13T20:22:41: [scheduler] 13/01/2026, 20:22:41 - Scheduler started successfully
+
+/var/log/nbm-cloud/error-0.log last 5 lines:
+0|nbm-clou |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+0|nbm-clou |     at Module._extensions..js (node:internal/modules/cjs/loader:1623:10)
+0|nbm-clou |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+0|nbm-clou |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+0|nbm-clou |     at cjsLoader (node:internal/modules/esm/translators:298:15)
+
+0|nbm-cloud  | You have triggered an unhandledRejection, you may have forgotten to catch a Promise rejection:
+0|nbm-cloud  | Error: DATABASE_URL must be set. Did you forget to provision a database?
+0|nbm-cloud  |     at /opt/nbm-cloud/dist/index.cjs:70:120034
+0|nbm-cloud  |     at /opt/nbm-cloud/dist/index.cjs:1:225
+0|nbm-cloud  |     at /opt/nbm-cloud/dist/index.cjs:70:120223
+0|nbm-cloud  |     at /opt/nbm-cloud/dist/index.cjs:1:225
+0|nbm-cloud  |     at Object.<anonymous> (/opt/nbm-cloud/dist/index.cjs:145:32213)
+0|nbm-cloud  |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+0|nbm-cloud  |     at Module._extensions..js (node:internal/modules/cjs/loader:1623:10)
+0|nbm-cloud  |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+0|nbm-cloud  |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+0|nbm-cloud  |     at cjsLoader (node:internal/modules/esm/translators:298:15)
+
