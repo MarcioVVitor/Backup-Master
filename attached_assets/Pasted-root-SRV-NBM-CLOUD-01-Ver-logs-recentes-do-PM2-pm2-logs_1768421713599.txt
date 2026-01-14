@@ -1,0 +1,51 @@
+root@SRV-NBM-CLOUD-01[~]# # Ver logs recentes do PM2
+pm2 logs nbm-cloud --lines 20
+
+# Verificar se o código novo está no dist/index.cjs
+grep -o "no-store, no-cache" /opt/nbm-cloud/dist/index.cjs | head -1
+[TAILING] Tailing last 20 lines for [nbm-cloud] process (change the value with --lines option)
+/root/.pm2/logs/nbm-cloud-out-0.log last 20 lines:
+0|nbm-clou | [scheduler] 14/01/2026, 17:10:28 - Scheduler started successfully
+0|nbm-clou | [static] Serving static files from: /opt/nbm-cloud/dist/public
+0|nbm-clou | [worker-pool] 14/01/2026, 17:10:29 - Worker pool initialized with concurrency: 10
+0|nbm-clou | [scheduler] 14/01/2026, 17:10:29 - Backup executor registered for scheduler and worker pool
+0|nbm-clou | [scheduler] 14/01/2026, 17:10:29 - Starting backup scheduler...
+0|nbm-clou | [scheduler] 14/01/2026, 17:10:29 - Timezone: System (Linux)
+0|nbm-clou | [scheduler] 14/01/2026, 17:10:29 - Check interval: 60 seconds
+0|nbm-clou | [scheduler] 14/01/2026, 17:10:29 - Worker pool concurrency: 10
+0|nbm-clou | [scheduler] 14/01/2026, 17:10:29 - Current time: 17:10, Day of week: 3, Day of month: 14
+0|nbm-clou | [scheduler] 14/01/2026, 17:10:29 - Scheduler started successfully
+0|nbm-clou | [static] Serving static files from: /opt/nbm-cloud/dist/public
+0|nbm-clou | [worker-pool] 14/01/2026, 17:10:30 - Worker pool initialized with concurrency: 10
+0|nbm-clou | [scheduler] 14/01/2026, 17:10:30 - Backup executor registered for scheduler and worker pool
+0|nbm-clou | [scheduler] 14/01/2026, 17:10:30 - Starting backup scheduler...
+0|nbm-clou | [scheduler] 14/01/2026, 17:10:30 - Timezone: System (Linux)
+0|nbm-clou | [scheduler] 14/01/2026, 17:10:30 - Check interval: 60 seconds
+0|nbm-clou | [scheduler] 14/01/2026, 17:10:30 - Worker pool concurrency: 10
+0|nbm-clou | [scheduler] 14/01/2026, 17:10:30 - Current time: 17:10, Day of week: 3, Day of month: 14
+0|nbm-clou | [scheduler] 14/01/2026, 17:10:30 - Scheduler started successfully
+0|nbm-clou | [static] Serving static files from: /opt/nbm-cloud/dist/public
+
+/root/.pm2/logs/nbm-cloud-error-0.log last 20 lines:
+0|nbm-clou |     at process.onInternalMessage (node:internal/cluster/utils:49:5)
+0|nbm-clou |     at process.emit (node:events:536:35)
+0|nbm-clou |     at emit (node:internal/child_process:950:14)
+0|nbm-clou |     at process.processTicksAndRejections (node:internal/process/task_queues:83:21)
+0|nbm-clou | Error: bind EADDRINUSE 0.0.0.0:5000
+0|nbm-clou |     at listenOnPrimaryHandle (node:net:1989:18)
+0|nbm-clou |     at rr (node:internal/cluster/child:163:12)
+0|nbm-clou |     at Worker.<anonymous> (node:internal/cluster/child:113:7)
+0|nbm-clou |     at process.onInternalMessage (node:internal/cluster/utils:49:5)
+0|nbm-clou |     at process.emit (node:events:536:35)
+0|nbm-clou |     at emit (node:internal/child_process:950:14)
+0|nbm-clou |     at process.processTicksAndRejections (node:internal/process/task_queues:83:21)
+0|nbm-clou | Error: bind EADDRINUSE 0.0.0.0:5000
+0|nbm-clou |     at listenOnPrimaryHandle (node:net:1989:18)
+0|nbm-clou |     at rr (node:internal/cluster/child:163:12)
+0|nbm-clou |     at Worker.<anonymous> (node:internal/cluster/child:113:7)
+0|nbm-clou |     at process.onInternalMessage (node:internal/cluster/utils:49:5)
+0|nbm-clou |     at process.emit (node:events:536:35)
+0|nbm-clou |     at emit (node:internal/child_process:950:14)
+0|nbm-clou |     at process.processTicksAndRejections (node:internal/process/task_queues:83:21)
+
+
