@@ -1,0 +1,56 @@
+root@SRV-NBM-CLOUD-01[~]# cd /opt/nbm-cloud
+
+# 1. Ver data do bundle do servidor
+ls -la dist/index.cjs
+
+# 2. Verificar se o arquivo está sendo lido do lugar certo
+grep -c "view-cards" dist/index.cjs
+
+# 3. Deletar PM2 completamente e recriar
+pm2 delete nbm-cloud
+rm -rf dist/
+npm run build
+pm2 start ecosystem.config.cjs
+
+# 4. Verificar
+curl -I http://localhost:5000/ | grep -i modified
+-rw-rw-r-- 1 root root 1403062 Jan 13 20:54 dist/index.cjs
+0
+[PM2] Applying action deleteProcessId on app [nbm-cloud](ids: [ 0 ])
+[PM2] [nbm-cloud](0) ✓
+┌────┬───────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name      │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+└────┴───────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+
+> rest-express@1.0.0 build
+> tsx script/build.ts
+
+building client...
+vite v7.3.0 building client environment for production...
+✓ 3320 modules transformed.
+../dist/public/index.html                     2.87 kB │ gzip:   1.04 kB
+../dist/public/assets/index-vnZetH7j.css     80.81 kB │ gzip:  13.52 kB
+../dist/public/assets/index-CPQxKp5j.js   1,358.66 kB │ gzip: 372.43 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 11.64s
+building server...
+
+  dist/index.cjs  1.3mb ⚠️
+
+⚡ Done in 127ms
+[PM2][WARN] Applications nbm-cloud not running, starting...
+[PM2] App [nbm-cloud] launched (1 instances)
+┌────┬──────────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name         │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+├────┼──────────────┼─────────────┼─────────┼─────────┼──────────┼────────┼──────┼───────────┼──────────┼──────────┼──────────┼──────────┤
+│ 0  │ nbm-cloud    │ default     │ 1.0.0   │ cluster │ 116609   │ 0s     │ 0    │ online    │ 0%       │ 39.8mb   │ root     │ disabled │
+└────┴──────────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0  2865    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+Last-Modified: Sun, 11 Jan 2026 21:52:14 GMT
+root@SRV-NBM-CLOUD-01[/opt/nbm-cloud]# 
