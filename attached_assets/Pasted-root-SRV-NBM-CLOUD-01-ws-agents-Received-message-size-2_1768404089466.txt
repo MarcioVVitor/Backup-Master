@@ -1,0 +1,33 @@
+root@SRV-NBM-CLOUD-01[~]# [ws-agents] Received message, size: 21 bytes
+[ws-agents] Received message type: heartbeat
+root@SRV-NBM-CLOUD-01[~]# cd /opt/nbm-cloud
+git pull origin main
+chmod +x scripts/setup.sh scripts/deploy.sh
+sudo ./scripts/setup.sh
+remote: Enumerating objects: 24, done.
+remote: Counting objects: 100% (24/24), done.
+remote: Compressing objects: 100% (13/13), done.
+remote: Total 21 (delta 16), reused 13 (delta 8), pack-reused 0 (from 0)
+Unpacking objects: 100% (21/21), 9.55 KiB | 652.00 KiB/s, done.
+From https://github.com/MarcioVVitor/Backup-Master
+ * branch            main       -> FETCH_HEAD
+   ecfe1db..2e9b65d  main       -> origin/main
+Updating ecfe1db..2e9b65d
+Fast-forward
+ attached_assets/Pasted-root-SRV-NBM-CLOUD-01-Parar-PM2-completamente-e-matar-p_1768403568471.txt | 71 +++++++++++++++++++++++++++++++++++++++++
+ attached_assets/Pasted-root-SRV-NBM-CLOUD-01-Ver-logs-do-PM2-pm2-logs-nbm-clou_1768403512131.txt | 71 +++++++++++++++++++++++++++++++++++++++++
+ attached_assets/Pasted-root-SRV-NBM-CLOUD-01-Ver-se-a-nova-l-gica-est-no-bundl_1768403440889.txt | 57 +++++++++++++++++++++++++++++++++
+ attached_assets/Pasted-root-SRV-NBM-CLOUD-01-Ver-usu-rios-do-PostgreSQL-sudo-u_1768403826021.txt | 50 +++++++++++++++++++++++++++++
+ attached_assets/Pasted-root-SRV-NBM-CLOUD-01-Ver-usu-rios-do-PostgreSQL-sudo-u_1768403839976.txt | 80 ++++++++++++++++++++++++++++++++++++++++++++++
+ scripts/deploy.sh                                                                                | 96 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 6 files changed, 425 insertions(+)
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-Parar-PM2-completamente-e-matar-p_1768403568471.txt
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-Ver-logs-do-PM2-pm2-logs-nbm-clou_1768403512131.txt
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-Ver-se-a-nova-l-gica-est-no-bundl_1768403440889.txt
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-Ver-usu-rios-do-PostgreSQL-sudo-u_1768403826021.txt
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-Ver-usu-rios-do-PostgreSQL-sudo-u_1768403839976.txt
+ create mode 100644 scripts/deploy.sh
+chmod: cannot access 'scripts/setup.sh': No such file or directory
+sudo: unable to resolve host SRV-NBM-CLOUD-01: Name or service not known
+sudo: ./scripts/setup.sh: command not found
+root@SRV-NBM-CLOUD-01[/opt/nbm-cloud]# 
