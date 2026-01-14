@@ -25,31 +25,40 @@ export function serveStatic(app: Express) {
 
   console.log(`[static] Serving static files from: ${distPath}`);
 
-  // Serve static files with fallthrough disabled so 404s are handled properly
+  // Read index.html once at startup
+  const indexPath = path.resolve(distPath, "index.html");
+  const indexHtml = fs.readFileSync(indexPath, 'utf-8');
+
+  // Serve index.html for root path with no-cache headers BEFORE express.static
+  app.get('/', (req: Request, res: Response) => {
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    res.send(indexHtml);
+  });
+
+  // Serve static files (JS, CSS, images) - these CAN be cached
   app.use(express.static(distPath, { 
     fallthrough: true,
-    index: false 
+    index: false,
+    maxAge: '1y',  // Cache assets with hash in filename
+    immutable: true
   }));
 
-  // SPA fallback - only for navigation requests, not for static assets
+  // SPA fallback - for client-side routing
   app.use("*", (req: Request, res: Response) => {
-    // Don't serve index.html for asset requests (files with extensions)
     const reqPath = req.path || req.originalUrl;
+    // Don't serve index.html for asset requests (files with extensions)
     if (reqPath.includes('.') || reqPath.startsWith('/assets/')) {
-      // This is a static file request that wasn't found
       res.status(404).send('Not found');
       return;
     }
-    
-    // Read and send index.html with explicit cache headers
-    const indexPath = path.resolve(distPath, "index.html");
-    const html = fs.readFileSync(indexPath, 'utf-8');
     
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
-    res.setHeader('Surrogate-Control', 'no-store');
-    res.send(html);
+    res.send(indexHtml);
   });
 }
