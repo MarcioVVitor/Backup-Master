@@ -34,7 +34,12 @@ const customizationSchema = z.object({
   serverIp: z.string().optional(),
 });
 
-const upload = multer({ storage: multer.memoryStorage() });
+const upload = multer({ 
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 500 * 1024 * 1024, // 500MB limit for firmware files
+  }
+});
 
 const isAdmin = async (req: any, res: any, next: any) => {
   try {
