@@ -1,0 +1,56 @@
+root@SRV-NBM-CLOUD-01[~]# # Verificar se há outra rota '/' definida
+grep -n "app.get.*['\"]/" /opt/nbm-cloud/server/*.ts
+
+# Verificar a ordem dos middlewares - ver se registerRoutes adiciona algo antes
+grep -n "registerRoutes\|serveStatic" /opt/nbm-cloud/server/index.ts
+/opt/nbm-cloud/server/routes.ts:101:  app.get('/api/auth/mode', (req, res) => {
+/opt/nbm-cloud/server/routes.ts:106:  app.get('/api/debug/session', (req, res) => {
+/opt/nbm-cloud/server/routes.ts:120:  app.get('/install/agent.sh', async (req, res) => {
+/opt/nbm-cloud/server/routes.ts:150:  app.get('/api/manufacturers', isAuthenticated, (req, res) => {
+/opt/nbm-cloud/server/routes.ts:155:  app.get('/api/equipment', isAuthenticated, async (req, res) => {
+/opt/nbm-cloud/server/routes.ts:281:  app.get('/api/backups', isAuthenticated, async (req, res) => {
+/opt/nbm-cloud/server/routes.ts:375:  app.get('/api/backups/:id/download', isAuthenticated, async (req, res) => {
+/opt/nbm-cloud/server/routes.ts:410:  app.get('/api/backups/:id/view', isAuthenticated, async (req, res) => {
+/opt/nbm-cloud/server/routes.ts:617:  app.get('/api/backup-history', isAuthenticated, async (req, res) => {
+/opt/nbm-cloud/server/routes.ts:639:  app.get('/api/backups/history', isAuthenticated, async (req, res) => {
+/opt/nbm-cloud/server/routes.ts:661:  app.get('/api/files', isAuthenticated, async (req, res) => {
+/opt/nbm-cloud/server/routes.ts:857:  app.get('/api/settings', isAuthenticated, async (req, res) => {
+/opt/nbm-cloud/server/routes.ts:883:  app.get('/api/scripts', isAuthenticated, async (req, res) => {
+/opt/nbm-cloud/server/routes.ts:894:  app.get('/api/scripts/:manufacturer', isAuthenticated, async (req, res) => {
+/opt/nbm-cloud/server/routes.ts:904:  app.get('/api/scripts/id/:id', isAuthenticated, async (req, res) => {
+/opt/nbm-cloud/server/routes.ts:981:  app.get('/api/manufacturers', isAuthenticated, async (req, res) => {
+/opt/nbm-cloud/server/routes.ts:1034:  app.get('/api/stats', isAuthenticated, async (req, res) => {
+/opt/nbm-cloud/server/routes.ts:1045:  app.get('/api/admin/system-info', isAuthenticated, async (req, res) => {
+/opt/nbm-cloud/server/routes.ts:1064:  app.get('/api/admin/updates', isAuthenticated, async (req, res) => {
+/opt/nbm-cloud/server/routes.ts:1092:  app.get('/api/admin/updates/check', isAuthenticated, async (req, res) => {
+/opt/nbm-cloud/server/routes.ts:1131:  app.get('/api/admin/updates/history', isAuthenticated, async (req, res) => {
+/opt/nbm-cloud/server/routes.ts:1468:  app.get('/api/admin/users', isAuthenticated, isAdmin, async (req, res) => {
+/opt/nbm-cloud/server/routes.ts:1543:  app.get('/api/admin/customization', isAuthenticated, async (req, res) => {
+/opt/nbm-cloud/server/routes.ts:1597:  app.get('/api/firmware', isAuthenticated, async (req, res) => {
+/opt/nbm-cloud/server/routes.ts:1688:  app.get('/api/firmware/:id/download', isAuthenticated, async (req, res) => {
+/opt/nbm-cloud/server/routes.ts:1712:  app.get('/api/scheduler/status', isAuthenticated, async (req, res) => {
+/opt/nbm-cloud/server/routes.ts:1757:  app.get('/api/scheduler/metrics', isAuthenticated, async (req, res) => {
+/opt/nbm-cloud/server/routes.ts:1784:  app.get('/api/scheduler/policies', isAuthenticated, async (req, res) => {
+/opt/nbm-cloud/server/routes.ts:1794:  app.get('/api/scheduler/policies/:id', isAuthenticated, async (req, res) => {
+/opt/nbm-cloud/server/routes.ts:2229:  app.get('/api/agents', isAuthenticated, async (req, res) => {
+/opt/nbm-cloud/server/routes.ts:2249:  app.get('/api/agents/:id', isAuthenticated, async (req, res) => {
+/opt/nbm-cloud/server/routes.ts:2376:  app.get('/api/agents/:id/tokens', isAuthenticated, isAdmin, async (req, res) => {
+/opt/nbm-cloud/server/routes.ts:2400:  app.get('/api/agents/:id/jobs', isAuthenticated, async (req, res) => {
+/opt/nbm-cloud/server/routes.ts:2412:  app.get('/api/agents/:id/metrics', isAuthenticated, async (req, res) => {
+/opt/nbm-cloud/server/routes.ts:2455:  app.get('/api/agent-jobs', isAuthenticated, async (req, res) => {
+/opt/nbm-cloud/server/routes.ts:2466:  app.get('/api/agent-jobs/:id', isAuthenticated, async (req, res) => {
+/opt/nbm-cloud/server/routes.ts:2481:  app.get('/api/agent-jobs/:id/events', isAuthenticated, async (req, res) => {
+/opt/nbm-cloud/server/routes.ts:2493:  app.get('/api/equipment-agents', isAuthenticated, async (req, res) => {
+/opt/nbm-cloud/server/routes.ts:2536:  app.get('/api/equipment/:equipmentId/agents', isAuthenticated, async (req, res) => {
+/opt/nbm-cloud/server/routes.ts:2561:  app.get('/api/agents/download/package', isAuthenticated, async (req, res) => {
+/opt/nbm-cloud/server/routes.ts:2592:  app.get('/api/agents/download/install-script', isAuthenticated, async (req, res) => {
+/opt/nbm-cloud/server/routes.ts:2659:  app.get('/api/agents/:id/diagnostics', isAuthenticated, async (req, res) => {
+/opt/nbm-cloud/server/routes.ts:3287:  app.get('/api/companies', isAuthenticated, isServerAdminMiddleware, async (req, res) => {
+/opt/nbm-cloud/server/routes.ts:3383:  app.get('/api/companies/:id/users', isAuthenticated, isServerAdminMiddleware, async (req, res) => {
+/opt/nbm-cloud/server/standalone-auth.ts:148:  app.get("/api/auth/user", (req, res) => {
+/opt/nbm-cloud/server/static.ts:33:  app.get('/', (req: Request, res: Response) => {
+2:import { registerRoutes } from "./routes";
+3:import { serveStatic } from "./static";
+63:  await registerRoutes(httpServer, app);
+77:    serveStatic(app);
+root@SRV-NBM-CLOUD-01[~]# 
