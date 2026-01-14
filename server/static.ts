@@ -41,6 +41,12 @@ export function serveStatic(app: Express) {
       return;
     }
     
+    // Disable caching for index.html to ensure clients always get the latest bundle
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    res.setHeader('Surrogate-Control', 'no-store');
+    
     // For all other routes, serve index.html (SPA routing)
     res.sendFile(path.resolve(distPath, "index.html"));
   });
