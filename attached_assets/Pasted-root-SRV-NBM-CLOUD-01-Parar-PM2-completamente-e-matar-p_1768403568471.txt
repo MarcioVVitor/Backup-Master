@@ -1,0 +1,71 @@
+root@SRV-NBM-CLOUD-01[~]# # Parar PM2 completamente e matar processos
+pm2 stop all
+pm2 delete all
+pkill -f "node.*nbm-cloud" || true
+fuser -k 5000/tcp || true
+
+# Aguardar
+sleep 3
+
+# Verificar porta livre
+lsof -i :5000
+
+# Iniciar novamente (modo fork, não cluster)
+cd /opt/nbm-cloud
+source .env && DATABASE_URL="$DATABASE_URL" SESSION_SECRET="$SESSION_SECRET" NODE_ENV=production node dist/index.cjs &
+
+# Aguardar e testar
+sleep 5
+curl -s http://localhost:5000/assets/index-CPQxKp5j.js | head -c 100
+[PM2] Applying action stopProcessId on app [all](ids: [ 0 ])
+[PM2] [all](0) ✓
+┌────┬──────────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name         │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+├────┼──────────────┼─────────────┼─────────┼─────────┼──────────┼────────┼──────┼───────────┼──────────┼──────────┼──────────┼──────────┤
+│ 0  │ nbm-cloud    │ default     │ 1.0.0   │ cluster │ 0        │ 0      │ 75   │ stopped   │ 0%       │ 0b       │ root     │ disabled │
+└────┴──────────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+[PM2] Applying action deleteProcessId on app [all](ids: [ 0 ])
+[PM2] [nbm-cloud](0) ✓
+┌────┬───────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name      │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+└────┴───────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+-bash: fuser: command not found
+COMMAND    PID USER FD   TYPE  DEVICE SIZE/OFF NODE NAME
+node    118156  nbm 18u  IPv4 1739053      0t0  TCP *:5000 (LISTEN)
+node    118156  nbm 19u  IPv4 1738518      0t0  TCP SRV-NBM-CLOUD-PROXY-01:5000->143.255.197.26.grupojet.com.br:47772 (ESTABLISHED)
+[1] 138009
+[worker-pool] 14/01/2026, 12:12:38 - Worker pool initialized with concurrency: 10
+[scheduler] 14/01/2026, 12:12:39 - Backup executor registered for scheduler and worker pool
+[scheduler] 14/01/2026, 12:12:39 - Starting backup scheduler...
+[scheduler] 14/01/2026, 12:12:39 - Timezone: System (Linux)
+[scheduler] 14/01/2026, 12:12:39 - Check interval: 60 seconds
+[scheduler] 14/01/2026, 12:12:39 - Worker pool concurrency: 10
+[scheduler] 14/01/2026, 12:12:39 - Current time: 12:12, Day of week: 3, Day of month: 14
+[scheduler] 14/01/2026, 12:12:39 - Scheduler started successfully
+[static] Serving static files from: /opt/nbm-cloud/dist/public
+node:events:502
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use 0.0.0.0:5000
+    at Server.setupListenHandle [as _listen2] (node:net:1908:16)
+    at listenInCluster (node:net:1965:12)
+    at doListen (node:net:2139:7)
+    at process.processTicksAndRejections (node:internal/process/task_queues:83:21)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1944:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '0.0.0.0',
+  port: 5000
+}
+
+Node.js v20.19.6
+[1]+  Exit 1                  source .env && DATABASE_URL="$DATABASE_URL" SESSION_SECRET="$SESSION_SECRET" NODE_ENV=production node dist/index.cjs
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" conroot@SRV-NBM-CLOUD-01[/opt/nbm-cloud]# 
