@@ -1,0 +1,117 @@
+root@SRV-NBM-CLOUD-01[~]# cd /opt/nbm-cloud
+git pull origin main
+sudo ./scripts/deploy.sh
+remote: Enumerating objects: 18, done.
+remote: Counting objects: 100% (18/18), done.
+remote: Compressing objects: 100% (10/10), done.
+remote: Total 14 (delta 7), reused 11 (delta 4), pack-reused 0 (from 0)
+Unpacking objects: 100% (14/14), 2.55 MiB | 7.96 MiB/s, done.
+From https://github.com/MarcioVVitor/Backup-Master
+ * branch            main       -> FETCH_HEAD
+   21c52b4..dff0c20  main       -> origin/main
+Updating 21c52b4..dff0c20
+Fast-forward
+ attached_assets/Pasted-root-SRV-NBM-CLOUD-01-cd-opt-nbm-cloud-Descartar-mudan-_1768409373704.txt | 107 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ attached_assets/image_1768409834142.png                                                          | Bin 0 -> 749435 bytes
+ attached_assets/image_1768409861001.png                                                          | Bin 0 -> 428057 bytes
+ attached_assets/image_1768409887454.png                                                          | Bin 0 -> 670778 bytes
+ attached_assets/image_1768409904415.png                                                          | Bin 0 -> 606834 bytes
+ attached_assets/image_1768409934551.png                                                          | Bin 0 -> 622561 bytes
+ server/static.ts                                                                                 |   6 ++++
+ 7 files changed, 113 insertions(+)
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-cd-opt-nbm-cloud-Descartar-mudan-_1768409373704.txt
+ create mode 100644 attached_assets/image_1768409834142.png
+ create mode 100644 attached_assets/image_1768409861001.png
+ create mode 100644 attached_assets/image_1768409887454.png
+ create mode 100644 attached_assets/image_1768409904415.png
+ create mode 100644 attached_assets/image_1768409934551.png
+sudo: unable to resolve host SRV-NBM-CLOUD-01: Name or service not known
+╔══════════════════════════════════════════════╗
+║   NBM CLOUD v17.0 - Deployment Production    ║
+╚══════════════════════════════════════════════╝
+
+[1/8] Verificando pré-requisitos...
+  Node.js: v20.19.6
+  npm: 10.8.2
+  PM2: 6.0.14
+  ✓ Pré-requisitos OK
+[2/8] Criando backup...
+  Backup: /opt/nbm-cloud-backups/backup-20260114_140615.tar.gz
+  ✓ Backup criado
+[3/8] Atualizando código do GitHub...
+From https://github.com/MarcioVVitor/Backup-Master
+ * branch            main       -> FETCH_HEAD
+From https://github.com/MarcioVVitor/Backup-Master
+ * branch            main       -> FETCH_HEAD
+Already up to date.
+  Já está na versão mais recente: dff0c20
+  ✓ Código atualizado
+[4/8] Parando serviços...
+[PM2] Applying action stopProcessId on app [nbm-cloud](ids: [ 0 ])
+[PM2] [nbm-cloud](0) ✓
+┌────┬──────────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name         │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+├────┼──────────────┼─────────────┼─────────┼─────────┼──────────┼────────┼──────┼───────────┼──────────┼──────────┼──────────┼──────────┤
+│ 0  │ nbm-cloud    │ default     │ 1.0.0   │ cluster │ 0        │ 0      │ 15   │ stopped   │ 0%       │ 0b       │ root     │ disabled │
+└────┴──────────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+[PM2] Applying action deleteProcessId on app [nbm-cloud](ids: [ 0 ])
+[PM2] [nbm-cloud](0) ✓
+┌────┬───────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name      │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+└────┴───────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+  Matando processo 141970 na porta 5000
+  ✓ Serviços parados
+[5/8] Verificando dependências...
+  ✓ Dependências OK
+[6/8] Fazendo build da aplicação...
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 11.77s
+building server...
+
+  dist/index.cjs  1.3mb ⚠️
+
+⚡ Done in 191ms
+  ✓ Build concluído (1 arquivos JS)
+[7/8] Verificando configuração...
+  ✓ Conexão com banco OK
+  Aplicando migrações...
+[⣽] Pulling schema from database...
+[✓] Pulling schema from database...
+[i] No changes detected
+  ✓ Configuração OK
+[8/8] Iniciando aplicação...
+[PM2] Starting /opt/nbm-cloud/dist/index.cjs in cluster_mode (1 instance)
+[PM2] Done.
+┌────┬──────────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name         │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+├────┼──────────────┼─────────────┼─────────┼─────────┼──────────┼────────┼──────┼───────────┼──────────┼──────────┼──────────┼──────────┤
+│ 0  │ nbm-cloud    │ default     │ 1.0.0   │ cluster │ 143162   │ 0s     │ 0    │ online    │ 0%       │ 39.9mb   │ root     │ disabled │
+└────┴──────────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+[PM2] Saving current process list...
+[PM2] Successfully saved in /root/.pm2/dump.pm2
+
+Verificações finais...
+  ✓ Assets sendo servidos corretamente
+  ✓ Aplicação respondendo
+  ✓ API respondendo
+
+╔══════════════════════════════════════════════╗
+║        DEPLOYMENT CONCLUÍDO!                 ║
+╚══════════════════════════════════════════════╝
+
+  URL: http://143.255.197.25:5000
+  Commit: dff0c20
+  Log: /var/log/nbm-cloud/deploy.log
+
+┌────┬──────────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name         │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+├────┼──────────────┼─────────────┼─────────┼─────────┼──────────┼────────┼──────┼───────────┼──────────┼──────────┼──────────┼──────────┤
+│ 0  │ nbm-cloud    │ default     │ 1.0.0   │ cluster │ 143269   │ 0      │ 6    │ launching │ 0%       │ 0b       │ root     │ disabled │
+└────┴──────────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+root@SRV-NBM-CLOUD-01[/opt/nbm-cloud]# curl -s http://localhost:5000/ | grep -o 'assets/index-[^"]*'
+assets/index-ByG0Uy63.js
+assets/index-DJm-zcOy.css
+root@SRV-NBM-CLOUD-01[/opt/nbm-cloud]# 
