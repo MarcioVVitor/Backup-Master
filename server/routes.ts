@@ -1627,19 +1627,25 @@ export async function registerRoutes(
 
       const user = req.user as any;
       const userSub = user?.claims?.sub;
-      const userId = userSub ? await storage.getUserIdByReplitId(userSub) : null;
+      const standaloneUser = (req.session as any)?.user;
+      const userId = userSub 
+        ? await storage.getUserIdByReplitId(userSub) 
+        : standaloneUser?.id || null;
 
-      const { objectStorageClient } = await import("./replit_integrations/object_storage/objectStorage");
       const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID;
-      if (!bucketId) return res.status(500).json({ message: "Bucket nao configurado" });
-
       const objectName = `firmware/${Date.now()}-${req.file.originalname}`;
-      const bucket = objectStorageClient.bucket(bucketId);
-      const file = bucket.file(objectName);
 
-      await file.save(req.file.buffer, {
-        contentType: req.file.mimetype || 'application/octet-stream',
-      });
+      if (bucketId) {
+        const { objectStorageClient } = await import("./replit_integrations/object_storage/objectStorage");
+        const bucket = objectStorageClient.bucket(bucketId);
+        const file = bucket.file(objectName);
+        await file.save(req.file.buffer, {
+          contentType: req.file.mimetype || 'application/octet-stream',
+        });
+      } else {
+        const { localStorageClient } = await import("./local-storage");
+        await localStorageClient.saveFile(objectName, req.file.buffer);
+      }
 
       const fw = await storage.createFirmware({
         name: name || req.file.originalname,
@@ -1666,12 +1672,17 @@ export async function registerRoutes(
       const fw = await storage.getFirmwareById(id);
       if (!fw) return res.status(404).json({ message: "Firmware nao encontrado" });
 
-      const { objectStorageClient } = await import("./replit_integrations/object_storage/objectStorage");
       const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID;
-      if (bucketId && fw.objectName) {
+      if (fw.objectName) {
         try {
-          const bucket = objectStorageClient.bucket(bucketId);
-          await bucket.file(fw.objectName).delete();
+          if (bucketId) {
+            const { objectStorageClient } = await import("./replit_integrations/object_storage/objectStorage");
+            const bucket = objectStorageClient.bucket(bucketId);
+            await bucket.file(fw.objectName).delete();
+          } else {
+            const { localStorageClient } = await import("./local-storage");
+            await localStorageClient.deleteFile(fw.objectName);
+          }
         } catch (e) {
           console.error("Error deleting firmware file:", e);
         }
@@ -1691,13 +1702,18 @@ export async function registerRoutes(
       const fw = await storage.getFirmwareById(id);
       if (!fw) return res.status(404).json({ message: "Firmware nao encontrado" });
 
-      const { objectStorageClient } = await import("./replit_integrations/object_storage/objectStorage");
       const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID;
-      if (!bucketId) return res.status(500).json({ message: "Bucket nao configurado" });
+      let buffer: Buffer;
 
-      const bucket = objectStorageClient.bucket(bucketId);
-      const file = bucket.file(fw.objectName);
-      const [buffer] = await file.download();
+      if (bucketId) {
+        const { objectStorageClient } = await import("./replit_integrations/object_storage/objectStorage");
+        const bucket = objectStorageClient.bucket(bucketId);
+        const file = bucket.file(fw.objectName);
+        [buffer] = await file.download();
+      } else {
+        const { localStorageClient } = await import("./local-storage");
+        buffer = await localStorageClient.readFile(fw.objectName);
+      }
 
       res.setHeader('Content-Type', 'application/octet-stream');
       res.setHeader('Content-Disposition', `attachment; filename="${fw.filename}"`);
