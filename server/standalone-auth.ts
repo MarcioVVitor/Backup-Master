@@ -46,11 +46,14 @@ export function getSession(): RequestHandler {
 }
 
 export async function setupStandaloneAuth(app: Express) {
+  console.log("[standalone-auth] Setting up standalone authentication routes");
   app.set("trust proxy", 1);
   app.use(getSession());
 
   app.post("/api/auth/login", async (req, res) => {
+    console.log("[standalone-auth] POST /api/auth/login received");
     const { username, password } = req.body;
+    console.log("[standalone-auth] Login attempt for user:", username);
     
     if (!username || !password) {
       return res.status(400).json({ message: "Username and password required" });
