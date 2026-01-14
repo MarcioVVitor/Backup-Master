@@ -10,8 +10,9 @@ interface ViewToggleProps {
 }
 
 export function ViewToggle({ viewMode, onViewModeChange, showTable = true }: ViewToggleProps) {
+  console.log("[ViewToggle] Rendering - viewMode:", viewMode);
   return (
-    <div className="flex items-center border rounded-lg p-1 bg-muted/30">
+    <div className="flex items-center border rounded-lg p-1 bg-muted/30" data-testid="view-toggle-container">
       <Button
         variant={viewMode === "cards" ? "secondary" : "ghost"}
         size="sm"
