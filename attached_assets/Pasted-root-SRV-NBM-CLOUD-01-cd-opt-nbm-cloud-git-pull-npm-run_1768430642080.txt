@@ -1,0 +1,56 @@
+root@SRV-NBM-CLOUD-01[~]# cd /opt/nbm-cloud && git pull && npm run build && pm2 restart nbm-cloud
+remote: Enumerating objects: 19, done.
+remote: Counting objects: 100% (19/19), done.
+remote: Compressing objects: 100% (8/8), done.
+remote: Total 19 (delta 13), reused 17 (delta 11), pack-reused 0 (from 0)
+Unpacking objects: 100% (19/19), 1.13 MiB | 6.55 MiB/s, done.
+From https://github.com/MarcioVVitor/Backup-Master
+   22f9110..6c9f3ed  main       -> origin/main
+Updating 22f9110..6c9f3ed
+Fast-forward
+ attached_assets/Pasted-root-SRV-NBM-CLOUD-01-cd-opt-nbm-cloud-git-pull-npm-run_1768430026104.txt |  48 ++++++++++++++++++++
+ attached_assets/Pasted-root-SRV-NBM-CLOUD-01-pm2-logs-nbm-cloud-lines-30-nostr_1768430067581.txt |  67 ++++++++++++++++++++++++++++
+ attached_assets/Pasted-root-SRV-NBM-CLOUD-01-pm2-logs-nbm-cloud-lines-30-nostr_1768430205462.txt | 133 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ attached_assets/Pasted-root-SRV-NBM-CLOUD-01-pm2-logs-nbm-cloud-lines-50-nostr_1768430527262.txt | 107 ++++++++++++++++++++++++++++++++++++++++++++
+ attached_assets/image_1768430013599.png                                                          | Bin 0 -> 1263772 bytes
+ server/routes.ts                                                                                 |   7 ++-
+ 6 files changed, 361 insertions(+), 1 deletion(-)
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-cd-opt-nbm-cloud-git-pull-npm-run_1768430026104.txt
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-pm2-logs-nbm-cloud-lines-30-nostr_1768430067581.txt
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-pm2-logs-nbm-cloud-lines-30-nostr_1768430205462.txt
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-pm2-logs-nbm-cloud-lines-50-nostr_1768430527262.txt
+ create mode 100644 attached_assets/image_1768430013599.png
+
+> rest-express@1.0.0 build
+> tsx script/build.ts
+
+building client...
+vite v7.3.0 building client environment for production...
+✓ 3320 modules transformed.
+../dist/public/index.html                     2.87 kB │ gzip:   1.04 kB
+../dist/public/assets/index-vnZetH7j.css     80.81 kB │ gzip:  13.52 kB
+../dist/public/assets/index-CX5CNVpA.js   1,358.75 kB │ gzip: 372.48 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 11.77s
+building server...
+
+  dist/index.cjs  1.3mb ⚠️
+
+⚡ Done in 198ms
+Use --update-env to update environment variables
+[PM2] Applying action restartProcessId on app [nbm-cloud](ids: [ 0 ])
+[PM2] [nbm-cloud](0) ✓
+┌────┬──────────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name         │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+├────┼──────────────┼─────────────┼─────────┼─────────┼──────────┼────────┼──────┼───────────┼──────────┼──────────┼──────────┼──────────┤
+│ 0  │ nbm-cloud    │ default     │ 1.0.0   │ cluster │ 155023   │ 0s     │ 31   │ online    │ 0%       │ 39.9mb   │ root     │ disabled │
+└────┴──────────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+root@SRV-NBM-CLOUD-01[/opt/nbm-cloud]# free -h
+               total        used        free      shared  buff/cache   available
+Mem:           7.8Gi       1.2Gi       2.0Gi        31Mi       4.9Gi       6.6Gi
+Swap:          893Mi          0B       893Mi
+root@SRV-NBM-CLOUD-01[/opt/nbm-cloud]# 
