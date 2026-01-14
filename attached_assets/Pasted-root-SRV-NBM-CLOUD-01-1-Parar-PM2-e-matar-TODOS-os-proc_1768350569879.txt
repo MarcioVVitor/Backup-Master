@@ -1,0 +1,36 @@
+root@SRV-NBM-CLOUD-01[~]# # 1. Parar PM2 e matar TODOS os processos na porta 5000
+pm2 stop nbm-cloud
+pkill -f "node.*5000" 2>/dev/null
+fuser -k 5000/tcp 2>/dev/null
+
+# 2. Verificar que está livre
+lsof -i :5000
+
+# 3. Iniciar novamente
+cd /opt/nbm-cloud
+source .env && DATABASE_URL="$DATABASE_URL" SESSION_SECRET="$SESSION_SECRET" pm2 start ecosystem.config.cjs
+
+# 4. Testar
+curl -s http://localhost:5000/assets/index-CPQxKp5j.js | head -c 100
+[PM2] Applying action stopProcessId on app [nbm-cloud](ids: [ 0 ])
+[PM2] [nbm-cloud](0) ✓
+┌────┬──────────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name         │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+├────┼──────────────┼─────────────┼─────────┼─────────┼──────────┼────────┼──────┼───────────┼──────────┼──────────┼──────────┼──────────┤
+│ 0  │ nbm-cloud    │ default     │ 1.0.0   │ cluster │ 0        │ 0      │ 15   │ stopped   │ 0%       │ 0b       │ root     │ disabled │
+└────┴──────────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+COMMAND    PID USER FD   TYPE  DEVICE SIZE/OFF NODE NAME
+node    117296  nbm 18u  IPv4 1737839      0t0  TCP *:5000 (LISTEN)
+node    117296  nbm 19u  IPv4 1737034      0t0  TCP SRV-NBM-CLOUD-PROXY-01:5000->143.255.197.26.grupojet.com.br:35948 (ESTABLISHED)
+[PM2] Applying action restartProcessId on app [nbm-cloud](ids: [ 0 ])
+[PM2] [nbm-cloud](0) ✓
+┌────┬──────────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name         │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+├────┼──────────────┼─────────────┼─────────┼─────────┼──────────┼────────┼──────┼───────────┼──────────┼──────────┼──────────┼──────────┤
+│ 0  │ nbm-cloud    │ default     │ 1.0.0   │ cluster │ 117568   │ 0s     │ 15   │ online    │ 0%       │ 39.9mb   │ root     │ disabled │
+└────┴──────────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" conroot@SRV-NBM-CLOUD-01[/opt/nbm-cloud]# 
