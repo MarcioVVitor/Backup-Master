@@ -30,6 +30,7 @@ export function getSession(): RequestHandler {
     tableName: "sessions",
   });
   
+  const isStandalone = !process.env.REPL_ID;
   sharedSessionMiddleware = session({
     secret: process.env.SESSION_SECRET || "nbm-default-secret-change-me",
     store: sessionStore,
@@ -37,7 +38,8 @@ export function getSession(): RequestHandler {
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production" && process.env.STANDALONE !== "true",
+      secure: false, // HTTP in standalone mode, HTTPS handled by reverse proxy
+      sameSite: "lax" as const,
       maxAge: sessionTtl,
     },
   });
