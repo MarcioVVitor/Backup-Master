@@ -41,13 +41,15 @@ export function serveStatic(app: Express) {
       return;
     }
     
-    // Disable caching for index.html to ensure clients always get the latest bundle
+    // Read and send index.html with explicit cache headers
+    const indexPath = path.resolve(distPath, "index.html");
+    const html = fs.readFileSync(indexPath, 'utf-8');
+    
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
     res.setHeader('Surrogate-Control', 'no-store');
-    
-    // For all other routes, serve index.html (SPA routing)
-    res.sendFile(path.resolve(distPath, "index.html"));
+    res.send(html);
   });
 }
