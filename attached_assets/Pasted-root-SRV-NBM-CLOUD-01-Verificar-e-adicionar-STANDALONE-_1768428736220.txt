@@ -1,0 +1,38 @@
+root@SRV-NBM-CLOUD-01[~]# # Verificar e adicionar STANDALONE_AUTH
+grep -q "STANDALONE_AUTH" /opt/nbm-cloud/.env || echo "STANDALONE_AUTH=true" >> /opt/nbm-cloud/.env
+
+# Verificar o .env
+cat /opt/nbm-cloud/.env | grep -E "(STANDALONE|SESSION)"
+
+# Reiniciar
+pm2 restart nbm-cloud
+
+# Aguardar e verificar logs
+sleep 3
+pm2 logs nbm-cloud --lines 5 --nostream
+SESSION_SECRET=L0SoAEV4A89L0VDu1MWrkzg3
+STANDALONE_AUTH=true
+Use --update-env to update environment variables
+[PM2] Applying action restartProcessId on app [nbm-cloud](ids: [ 0 ])
+[PM2] [nbm-cloud](0) ✓
+┌────┬──────────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name         │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+├────┼──────────────┼─────────────┼─────────┼─────────┼──────────┼────────┼──────┼───────────┼──────────┼──────────┼──────────┼──────────┤
+│ 0  │ nbm-cloud    │ default     │ 1.0.0   │ cluster │ 152329   │ 0s     │ 17   │ online    │ 0%       │ 39.8mb   │ root     │ disabled │
+└────┴──────────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+[TAILING] Tailing last 5 lines for [nbm-cloud] process (change the value with --lines option)
+/var/log/nbm-cloud/error-0.log last 5 lines:
+0|nbm-clou |     at Worker.<anonymous> (node:internal/cluster/child:113:7)
+0|nbm-clou |     at process.onInternalMessage (node:internal/cluster/utils:49:5)
+0|nbm-clou |     at process.emit (node:events:536:35)
+0|nbm-clou |     at emit (node:internal/child_process:950:14)
+0|nbm-clou |     at process.processTicksAndRejections (node:internal/process/task_queues:83:21)
+
+/var/log/nbm-cloud/out-0.log last 5 lines:
+0|nbm-clou | 2026-01-14T19:11:56: [scheduler] 14/01/2026, 19:11:56 - Worker pool concurrency: 10
+0|nbm-clou | 2026-01-14T19:11:56: [scheduler] 14/01/2026, 19:11:56 - Current time: 19:11, Day of week: 3, Day of month: 14
+0|nbm-clou | 2026-01-14T19:11:56: [scheduler] 14/01/2026, 19:11:56 - Scheduler started successfully
+0|nbm-clou | 2026-01-14T19:11:56: [static] Serving static files from: /opt/nbm-cloud/dist/public
+0|nbm-clou | 2026-01-14T19:11:56: 7:11:56 PM [express] serving on port 5000
+
+root@SRV-NBM-CLOUD-01[~]# 
