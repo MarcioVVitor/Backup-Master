@@ -1,0 +1,57 @@
+root@SRV-NBM-CLOUD-01[~]# # Ver se a nova lógica está no bundle compilado
+grep -o "startsWith.*assets" /opt/nbm-cloud/dist/index.cjs | head -3
+
+# Se não mostrar nada, fazer rebuild completo
+pm2 stop nbm-cloud
+rm -rf /opt/nbm-cloud/dist
+cd /opt/nbm-cloud && npm run build
+
+# Verificar novamente
+grep "startsWith.*assets" /opt/nbm-cloud/dist/index.cjs
+
+# Reiniciar
+source /opt/nbm-cloud/.env && DATABASE_URL="$DATABASE_URL" SESSION_SECRET="$SESSION_SECRET" pm2 start /opt/nbm-cloud/ecosystem.config.cjs --update-env
+
+# Testar
+curl -s http://localhost:5000/assets/index-CPQxKp5j.js | head -c 50
+startsWith("/assets
+[PM2] Applying action stopProcessId on app [nbm-cloud](ids: [ 0 ])
+[PM2] [nbm-cloud](0) ✓
+┌────┬──────────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name         │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+├────┼──────────────┼─────────────┼─────────┼─────────┼──────────┼────────┼──────┼───────────┼──────────┼──────────┼──────────┼──────────┤
+│ 0  │ nbm-cloud    │ default     │ 1.0.0   │ cluster │ 0        │ 0      │ 60   │ stopped   │ 0%       │ 0b       │ root     │ disabled │
+└────┴──────────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+
+> rest-express@1.0.0 build
+> tsx script/build.ts
+
+building client...
+vite v7.3.0 building client environment for production...
+✓ 3320 modules transformed.
+../dist/public/index.html                     2.87 kB │ gzip:   1.04 kB
+../dist/public/assets/index-vnZetH7j.css     80.81 kB │ gzip:  13.52 kB
+../dist/public/assets/index-CPQxKp5j.js   1,358.66 kB │ gzip: 372.43 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 11.83s
+building server...
+
+  dist/index.cjs  1.3mb ⚠️
+
+⚡ Done in 164ms
+`)},500)}):s.exec(e.command,(c,l)=>{if(c)return u(),i(c);l.on("data",f=>{a+=f.toString()}),l.on("close",()=>{u(),n(a)}),l.stderr.on("data",f=>{a+=f.toString()})})}),s.on("error",c=>{u(),i(c)}),s.connect({host:t.ip,port:t.port||22,username:t.username,password:t.password,readyTimeout:3e4,algorithms:{kex:["ecdh-sha2-nistp256","ecdh-sha2-nistp384","ecdh-sha2-nistp521","diffie-hellman-group-exchange-sha256","diffie-hellman-group14-sha256","diffie-hellman-group14-sha1","diffie-hellman-group1-sha1"],cipher:["aes128-ctr","aes192-ctr","aes256-ctr","aes128-gcm@openssh.com","aes256-gcm@openssh.com","aes256-cbc","aes128-cbc","3des-cbc"]}})})}var tR=xe(Tl(),1),Bd=xe(require("fs"),1),vu=xe(require("path"),1);function rR(t){let e=vu.default.resolve(process.cwd(),"dist","public");if(Bd.default.existsSync(e)||(e=vu.default.resolve(__dirname,"public")),Bd.default.existsSync(e)||(e=vu.default.resolve(__dirname,"..","dist","public")),!Bd.default.existsSync(e))throw new Error(`Could not find the build directory: ${e}, make sure to build the client first`);console.log(`[static] Serving static files from: ${e}`),t.use(tR.default.static(e,{fallthrough:!0,index:!1})),t.use("*",(r,n)=>{let i=r.path||r.originalUrl;if(i.includes(".")||i.startsWith("/assets/")){n.status(404).send("Not found");return}n.sendFile(vu.default.resolve(e,"index.html"))})}var iR=require("http"),ys=(0,Dd.default)(),nR=(0,iR.createServer)(ys);ys.use(Dd.default.json({verify:(t,e,r)=>{t.rawBody=r}}));ys.use(Dd.default.urlencoded({extended:!1}));function Wx(t,e="express"){let r=new Date().toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit",second:"2-digit",hour12:!0});console.log(`${r} [${e}] ${t}`)}ys.use((t,e,r)=>{let n=Date.now(),i=t.path,s,a=e.json;e.json=function(o,...u){return s=o,a.apply(e,[o,...u])},e.on("finish",()=>{let o=Date.now()-n;if(i.startsWith("/api")){let u=`${t.method} ${i} ${e.statusCode} in ${o}ms`;s&&(u+=` :: ${JSON.stringify(s)}`),Wx(u)}}),r()});(async()=>{await eR(nR,ys),ys.use((e,r,n,i)=>{let s=e.status||e.statusCode||500,a=e.message||"Internal Server Error";throw n.status(s).json({message:a}),e}),rR(ys);let t=parseInt(process.env.PORT||"5000",10);nR.listen({port:t,host:"0.0.0.0",reusePort:!0},()=>{Wx(`serving on port ${t}`)})})();0&&(module.exports={log});
+[PM2] Applying action restartProcessId on app [nbm-cloud](ids: [ 0 ])
+[PM2] [nbm-cloud](0) ✓
+┌────┬──────────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name         │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+├────┼──────────────┼─────────────┼─────────┼─────────┼──────────┼────────┼──────┼───────────┼──────────┼──────────┼──────────┼──────────┤
+│ 0  │ nbm-cloud    │ default     │ 1.0.0   │ cluster │ 137766   │ 0s     │ 60   │ online    │ 0%       │ 39.8mb   │ root     │ disabled │
+└────┴──────────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <metroot@SRV-NBM-CLOUD-01[/opt/nbm-cloud]# 
