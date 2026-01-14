@@ -1,4 +1,4 @@
-import express, { type Express } from "express";
+import express, { type Express, type Request, type Response } from "express";
 import fs from "fs";
 import path from "path";
 
@@ -25,10 +25,23 @@ export function serveStatic(app: Express) {
 
   console.log(`[static] Serving static files from: ${distPath}`);
 
-  app.use(express.static(distPath));
+  // Serve static files with fallthrough disabled so 404s are handled properly
+  app.use(express.static(distPath, { 
+    fallthrough: true,
+    index: false 
+  }));
 
-  // fall through to index.html if the file doesn't exist
-  app.use("*", (_req, res) => {
+  // SPA fallback - only for navigation requests, not for static assets
+  app.use("*", (req: Request, res: Response) => {
+    // Don't serve index.html for asset requests (files with extensions)
+    const reqPath = req.path || req.originalUrl;
+    if (reqPath.includes('.') || reqPath.startsWith('/assets/')) {
+      // This is a static file request that wasn't found
+      res.status(404).send('Not found');
+      return;
+    }
+    
+    // For all other routes, serve index.html (SPA routing)
     res.sendFile(path.resolve(distPath, "index.html"));
   });
 }
