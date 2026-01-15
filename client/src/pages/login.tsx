@@ -84,6 +84,7 @@ export default function Login() {
     onSuccess: (data) => {
       toast({ title: "Login realizado", description: `Bem-vindo, ${data.user.username}!` });
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/server/check-admin"] });
     },
     onError: (error: Error) => {
       toast({ title: "Erro no login", description: error.message, variant: "destructive" });
@@ -98,6 +99,7 @@ export default function Login() {
         description: `Bem-vindo, ${data.user.username}!` 
       });
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/server/check-admin"] });
     },
     onError: (error: Error) => {
       toast({ title: "Erro no registro", description: error.message, variant: "destructive" });
