@@ -6,7 +6,7 @@
 # Don't exit on error - we handle errors ourselves
 set +e
 
-AGENT_VERSION="1.3.0"
+AGENT_VERSION="1.3.1"
 AGENT_DIR="/opt/nbm-agent"
 CONFIG_FILE="$AGENT_DIR/config.json"
 LOG_FILE="$AGENT_DIR/logs/agent.log"
@@ -202,7 +202,7 @@ test_connection() {
 }
 
 # Execute SSH backup command for Huawei with expect (waits for full output before quit)
-# v1.2.0 - Uses temp file logging to capture full config without buffer limits
+# v1.3.1 - Supports keyboard-interactive authentication (Enter password:)
 execute_huawei_backup_expect() {
     local host="$1"
     local port="$2"
@@ -210,13 +210,13 @@ execute_huawei_backup_expect() {
     local password="$4"
     local timeout="${5:-1000}"
     
-    log_info "Executing Huawei backup with expect on $host:$port timeout=${timeout}s (Agent v1.2.0)"
+    log_info "Executing Huawei backup with expect on $host:$port timeout=${timeout}s (Agent v1.3.1)"
     
     # Temp file for capturing output - avoids buffer limits
     local output_file="/tmp/huawei_output_$$.txt"
     
     # Create expect script for proper interactive session
-    # Uses log_file to capture ALL output to temp file (no buffer limits)
+    # v1.3.1: Uses expect directly for auth (supports keyboard-interactive)
     local expect_script=$(cat <<'EXPECT_EOF'
 #!/usr/bin/expect -f
 
@@ -233,26 +233,46 @@ set output_file [lindex $argv 5]
 # Disable log_user initially to avoid login noise
 log_user 0
 
-puts stderr "HUAWEI_DEBUG: Starting Huawei SSH backup v1.2.0"
+puts stderr "HUAWEI_DEBUG: Starting Huawei SSH backup v1.3.1"
 puts stderr "HUAWEI_DEBUG: Host=$host Port=$port User=$username Timeout=${timeout}s"
 puts stderr "HUAWEI_DEBUG: Output file: $output_file"
 
 # SSH with legacy algorithm support for older Huawei devices
-spawn sshpass -p $password ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+# v1.3.1: Removed sshpass - using expect for keyboard-interactive auth
+spawn ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
     -o ConnectTimeout=60 -o ServerAliveInterval=5 -o ServerAliveCountMax=180 \
     -o TCPKeepAlive=yes \
     -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa \
     -o KexAlgorithms=+diffie-hellman-group1-sha1,diffie-hellman-group14-sha1 \
+    -o PreferredAuthentications=keyboard-interactive,password \
     -tt -p $port $username@$host
 
-# Wait for initial prompt
+# v1.3.1: Handle keyboard-interactive authentication (Huawei style)
+# Wait for password prompt - supports multiple formats
+expect {
+    -re {[Ee]nter [Pp]assword:} {
+        puts stderr "HUAWEI_DEBUG: Got keyboard-interactive password prompt"
+        send "$password\r"
+    }
+    -re {[Pp]assword:} {
+        puts stderr "HUAWEI_DEBUG: Got standard password prompt"
+        send "$password\r"
+    }
+    -re {<[^>]+>} {
+        puts stderr "HUAWEI_DEBUG: Got <hostname> prompt (no password needed)"
+    }
+    timeout { puts stderr "EXPECT_ERROR: Timeout waiting for password prompt"; exit 1 }
+    eof { puts stderr "EXPECT_ERROR: Connection closed before auth"; exit 1 }
+}
+
+# Wait for device prompt after authentication
 expect {
     -re {<[^>]+>} { puts stderr "HUAWEI_DEBUG: Got <hostname> prompt" }
     -re {\[[^\]]+\]} { puts stderr "HUAWEI_DEBUG: Got [hostname] prompt" }
     ">" { puts stderr "HUAWEI_DEBUG: Got > prompt" }
-    "Password:" { puts stderr "EXPECT_ERROR: Authentication failed"; exit 1 }
-    "password:" { puts stderr "EXPECT_ERROR: Authentication failed"; exit 1 }
-    timeout { puts stderr "EXPECT_ERROR: Timeout waiting for prompt"; exit 1 }
+    -re {[Pp]assword:} { puts stderr "EXPECT_ERROR: Authentication failed - wrong password"; exit 1 }
+    -re {[Ee]nter [Pp]assword:} { puts stderr "EXPECT_ERROR: Authentication failed - wrong password"; exit 1 }
+    timeout { puts stderr "EXPECT_ERROR: Timeout waiting for prompt after login"; exit 1 }
     eof { puts stderr "EXPECT_ERROR: Connection closed during login"; exit 1 }
 }
 

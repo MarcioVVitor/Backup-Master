@@ -1,0 +1,119 @@
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[~]# # Ver a função de backup Huawei no agente
+grep -A 50 "execute_huawei_backup" /opt/nbm-agent/nbm-agent.sh
+execute_huawei_backup_expect() {
+    local host="$1"
+    local port="$2"
+    local username="$3"
+    local password="$4"
+    local timeout="${5:-1000}"
+    
+    log_info "Executing Huawei backup with expect on $host:$port timeout=${timeout}s (Agent v1.2.0)"
+    
+    # Temp file for capturing output - avoids buffer limits
+    local output_file="/tmp/huawei_output_$$.txt"
+    
+    # Create expect script for proper interactive session
+    # Uses log_file to capture ALL output to temp file (no buffer limits)
+    local expect_script=$(cat <<'EXPECT_EOF'
+#!/usr/bin/expect -f
+
+# CRITICAL: Maximum buffer for pattern matching
+match_max 100000000
+
+set timeout [lindex $argv 0]
+set host [lindex $argv 1]
+set port [lindex $argv 2]
+set username [lindex $argv 3]
+set password [lindex $argv 4]
+set output_file [lindex $argv 5]
+
+# Disable log_user initially to avoid login noise
+log_user 0
+
+puts stderr "HUAWEI_DEBUG: Starting Huawei SSH backup v1.2.0"
+puts stderr "HUAWEI_DEBUG: Host=$host Port=$port User=$username Timeout=${timeout}s"
+puts stderr "HUAWEI_DEBUG: Output file: $output_file"
+
+# SSH with legacy algorithm support for older Huawei devices
+spawn sshpass -p $password ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+    -o ConnectTimeout=60 -o ServerAliveInterval=5 -o ServerAliveCountMax=180 \
+    -o TCPKeepAlive=yes \
+    -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa \
+    -o KexAlgorithms=+diffie-hellman-group1-sha1,diffie-hellman-group14-sha1 \
+    -tt -p $port $username@$host
+
+# Wait for initial prompt
+expect {
+    -re {<[^>]+>} { puts stderr "HUAWEI_DEBUG: Got <hostname> prompt" }
+    -re {\[[^\]]+\]} { puts stderr "HUAWEI_DEBUG: Got [hostname] prompt" }
+    ">" { puts stderr "HUAWEI_DEBUG: Got > prompt" }
+    "Password:" { puts stderr "EXPECT_ERROR: Authentication failed"; exit 1 }
+    "password:" { puts stderr "EXPECT_ERROR: Authentication failed"; exit 1 }
+    timeout { puts stderr "EXPECT_ERROR: Timeout waiting for prompt"; exit 1 }
+    eof { puts stderr "EXPECT_ERROR: Connection closed during login"; exit 1 }
+--
+                if output=$(execute_huawei_backup_expect "$host" "$port" "$username" "$password" 600); then
+                    backup_success=true
+                fi
+            elif [[ "${manufacturer,,}" == "nokia" ]]; then
+                # Nokia SR OS - use expect with environment no more + admin display-config
+                log_debug "Nokia device - using expect session (30 min timeout)"
+                if output=$(execute_nokia_backup_expect "$host" "$port" "$username" "$password" 1800); then
+                    backup_success=true
+                fi
+            elif [[ "${manufacturer,,}" == "zte" ]]; then
+                # ZTE ZXR10/TITAN - use expect with enable mode + show running-config
+                log_debug "ZTE device - using expect session"
+                if output=$(execute_zte_backup_expect "$host" "$port" "$username" "$password" "$enable_password" 600); then
+                    backup_success=true
+                fi
+            elif [[ "${manufacturer,,}" == "datacom" ]]; then
+                # Datacom EDD (DmSwitch family) - Cisco-like CLI, supports SSH and Telnet
+                local protocol=$(echo "$equipment" | jq -r '.protocol // "ssh"')
+                log_debug "Datacom EDD device - using expect session (protocol: $protocol)"
+                if output=$(execute_datacom_edd_backup_expect "$host" "$port" "$username" "$password" "$enable_password" "$protocol" 600); then
+                    backup_success=true
+                fi
+            elif [[ "${manufacturer,,}" == "datacom-dmos" ]]; then
+                # Datacom DMOS (DmOS) - switches and OLTs, SSH only
+                log_debug "Datacom DMOS device - using expect session"
+                if output=$(execute_datacom_dmos_backup_expect "$host" "$port" "$username" "$password" 600); then
+                    backup_success=true
+                fi
+            elif [[ "${manufacturer,,}" == "juniper" ]]; then
+                # Juniper - SSH, uses 'show configuration | display set'
+                log_debug "Juniper device - using expect session"
+                if output=$(execute_juniper_backup_expect "$host" "$port" "$username" "$password" 600); then
+                    backup_success=true
+                fi
+            else
+                # Standard SSH backup for other vendors (fallback with 10 min timeout)
+                log_debug "Using generic SSH backup (10 min timeout)"
+                if output=$(execute_ssh_backup "$host" "$port" "$username" "$password" "$command" 600); then
+                    backup_success=true
+                fi
+            fi
+            
+            if [[ "$backup_success" == "true" ]]; then
+                log_info "Backup successful, output length: ${#output} bytes"
+                # Write output to temp file to avoid argument list too long error
+                printf '%s' "$output" > "$tmp_file"
+                # Use jq with rawfile to read large text content from file
+                json_response=$(jq -n --arg type "backup_result" --arg jobId "$job_id" --rawfile output "$tmp_file" \
+                    '{type: $type, jobId: $jobId, success: true, output: $output}')
+                rm -f "$tmp_file"
+            else
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[~]# # Testar conexão SSH com o Huawei
+ssh -o ConnectTimeout=10 -p 22 root@10.15.176.253
+The authenticity of host '10.15.176.253 (10.15.176.253)' can't be established.
+ECDSA key fingerprint is SHA256:pT//z9ly44q2LilgrSvsmJzAZP0C4EvoLkny1am9G9I.
+This key is not known by any other names.
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Warning: Permanently added '10.15.176.253' (ECDSA) to the list of known hosts.
+User Authentication
+(root@10.15.176.253) Enter password:
+
+Info: The max number of VTY users is 5, the number of current VTY users online is 1, and total number of terminal users online is 1.
+      The current login time is 2026-01-15 15:43:18-03:00.
+      The last login time is 2026-01-15 15:25:59-03:00 from 143.255.197.26 through SSH.
+<SW2-ACE-SAV-JET-01>
