@@ -3653,7 +3653,7 @@ const DEFAULT_VENDOR_SCRIPTS: Record<string, VendorDefaultScript> = {
     command: '/export compact',
     extension: '.rsc',
     useShell: true,
-    timeout: 30000,
+    timeout: 120000,
     description: 'Exporta configuracao completa do RouterOS em formato RSC. Conexao via SSH usando credenciais do equipamento (usuario, senha, porta do cadastro).',
     prompt: /\[.*@.*\]\s*>\s*$/,
     endPattern: /\[.*@.*\]\s*>\s*$/,
@@ -3662,7 +3662,7 @@ const DEFAULT_VENDOR_SCRIPTS: Record<string, VendorDefaultScript> = {
     command: 'screen-length 0 temporary\ndisplay current-configuration',
     extension: '.cfg',
     useShell: true,
-    timeout: 60000,
+    timeout: 300000,
     description: 'Desabilita paginacao e exporta configuracao atual. Conexao via SSH usando credenciais do equipamento (usuario, senha, porta do cadastro).',
     prompt: /<.*>|\[.*\]/,
     endPattern: /return/,
@@ -3671,47 +3671,52 @@ const DEFAULT_VENDOR_SCRIPTS: Record<string, VendorDefaultScript> = {
     command: 'terminal length 0\nshow running-config',
     extension: '.cfg',
     useShell: true,
-    timeout: 60000,
+    timeout: 300000,
     description: 'Desabilita paginacao e exibe configuracao em execucao. Conexao via SSH usando credenciais do equipamento (usuario, senha, porta do cadastro).',
     prompt: /[#>]\s*$/,
+    endPattern: /^end\s*$/m,
   },
   nokia: {
     command: 'environment no more\nadmin display-config',
     extension: '.cfg',
     useShell: true,
-    timeout: 60000,
+    timeout: 300000,
     description: 'Desabilita paginacao e exibe configuracao administrativa. Conexao via SSH usando credenciais do equipamento (usuario, senha, porta do cadastro).',
-    prompt: /[#>]\s*$/,
+    prompt: /[#>*]\s*$/,
+    endPattern: /^exit all\s*$/m,
   },
   zte: {
     command: 'terminal length 0\nshow running-config',
     extension: '.cfg',
     useShell: true,
-    timeout: 60000,
+    timeout: 300000,
     description: 'Desabilita paginacao e exibe configuracao em execucao. Conexao via SSH usando credenciais do equipamento (usuario, senha, porta do cadastro).',
     prompt: /[#>]\s*$/,
+    endPattern: /^end\s*$/m,
   },
   datacom: {
     command: 'terminal length 0\nshow running-config',
     extension: '.cfg',
     useShell: true,
-    timeout: 60000,
+    timeout: 300000,
     description: 'Desabilita paginacao e exibe configuracao em execucao DmOS. Conexao via SSH usando credenciais do equipamento (usuario, senha, porta do cadastro).',
     prompt: /[#>]\s*$/,
+    endPattern: /^end\s*$/m,
   },
   'datacom-dmos': {
     command: 'terminal length 0\nshow running-config',
     extension: '.cfg',
     useShell: true,
-    timeout: 60000,
+    timeout: 300000,
     description: 'Desabilita paginacao e exibe configuracao DmOS. Conexao via SSH usando credenciais do equipamento (usuario, senha, porta do cadastro).',
     prompt: /[#>]\s*$/,
+    endPattern: /^end\s*$/m,
   },
   juniper: {
     command: 'set cli screen-length 0\nshow configuration | display set',
     extension: '.conf',
     useShell: true,
-    timeout: 60000,
+    timeout: 300000,
     description: 'Desabilita paginacao e exibe configuracao em formato set. Conexao via SSH usando credenciais do equipamento (usuario, senha, porta do cadastro).',
     prompt: /[#>]\s*$/,
   },
@@ -3767,13 +3772,42 @@ async function executeSSHBackup(equip: any, config: BackupConfig): Promise<strin
     const conn = new Client();
     let output = '';
     let timer: NodeJS.Timeout;
+    let commandSent = false;
+    let dataReceived = false;
+    
+    // Timeout de inatividade dinâmico: maior para equipamentos com configs grandes
+    const idleTimeout = 30000; // 30 segundos sem dados = encerrar
+    const maxTimeout = config.timeout || 300000; // 5 minutos máximo
 
     const cleanup = () => {
       if (timer) clearTimeout(timer);
-      conn.end();
+      try {
+        conn.end();
+      } catch (e) {
+        // Ignore connection cleanup errors
+      }
+    };
+
+    const finishBackup = () => {
+      cleanup();
+      const cleanedOutput = cleanAnsiCodes(output);
+      console.log(`[ssh-backup] ${equip.name}: Backup concluído com ${cleanedOutput.length} caracteres`);
+      resolve(cleanedOutput);
+    };
+
+    // Verifica se a configuração terminou baseado no endPattern
+    const checkEndPattern = () => {
+      if (config.endPattern && config.endPattern.test(output)) {
+        console.log(`[ssh-backup] ${equip.name}: EndPattern detectado, finalizando`);
+        finishBackup();
+        return true;
+      }
+      return false;
     };
 
     conn.on('ready', () => {
+      console.log(`[ssh-backup] ${equip.name}: Conexão SSH estabelecida`);
+      
       if (config.useShell) {
         conn.shell((err, stream) => {
           if (err) {
@@ -3781,33 +3815,55 @@ async function executeSSHBackup(equip: any, config: BackupConfig): Promise<strin
             return reject(err);
           }
 
-          timer = setTimeout(() => {
-            cleanup();
-            resolve(cleanAnsiCodes(output));
-          }, config.timeout || 30000);
+          // Timeout máximo absoluto
+          const absoluteTimer = setTimeout(() => {
+            console.log(`[ssh-backup] ${equip.name}: Timeout máximo atingido (${maxTimeout}ms)`);
+            finishBackup();
+          }, maxTimeout);
 
-          stream.on('data', (data: Buffer) => {
-            output += data.toString();
-            
+          // Timer de inatividade (resetado a cada dado recebido)
+          const resetIdleTimer = () => {
             if (timer) clearTimeout(timer);
             timer = setTimeout(() => {
-              cleanup();
-              resolve(cleanAnsiCodes(output));
-            }, 5000);
+              console.log(`[ssh-backup] ${equip.name}: Timeout de inatividade (${idleTimeout}ms sem dados)`);
+              clearTimeout(absoluteTimer);
+              finishBackup();
+            }, idleTimeout);
+          };
+
+          resetIdleTimer();
+
+          stream.on('data', (data: Buffer) => {
+            const chunk = data.toString();
+            output += chunk;
+            dataReceived = true;
+            
+            // Verifica se chegou ao fim da configuração
+            if (commandSent && checkEndPattern()) {
+              clearTimeout(absoluteTimer);
+              return;
+            }
+            
+            // Reset do timer de inatividade
+            resetIdleTimer();
           });
 
           stream.on('close', () => {
-            cleanup();
-            resolve(cleanAnsiCodes(output));
+            clearTimeout(absoluteTimer);
+            finishBackup();
           });
 
           stream.stderr.on('data', (data: Buffer) => {
             output += data.toString();
+            resetIdleTimer();
           });
 
+          // Aguarda o prompt inicial antes de enviar comandos
           setTimeout(() => {
+            console.log(`[ssh-backup] ${equip.name}: Enviando comandos`);
             stream.write(config.command + '\n');
-          }, 500);
+            commandSent = true;
+          }, 1000);
         });
       } else {
         conn.exec(config.command, (err, stream) => {
