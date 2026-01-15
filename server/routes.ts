@@ -18,6 +18,16 @@ function getBrazilTime(): Date {
   return new Date(utcTime + (brazilOffset * 60000));
 }
 
+function sanitizePathSegment(str: string): string {
+  return str
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-zA-Z0-9._-]/g, '_')
+    .replace(/_+/g, '_')
+    .replace(/^_|_$/g, '')
+    .substring(0, 64);
+}
+
 const isStandalone = !process.env.REPL_ID;
 
 const updateUserSchema = z.object({
@@ -570,8 +580,10 @@ export async function registerRoutes(
       
       const now = getBrazilTime();
       const dateStr = now.toISOString().slice(0,10).replace(/-/g,'') + '_' + now.toTimeString().slice(0,8).replace(/:/g,'');
-      const filename = `${equip.name}_${dateStr}${config.extension}`;
-      const objectName = `backups/${equip.manufacturer}/${equip.name}/${filename}`;
+      const safeName = sanitizePathSegment(equip.name);
+      const safeManufacturer = sanitizePathSegment(equip.manufacturer);
+      const filename = `${safeName}_${dateStr}${config.extension}`;
+      const objectName = `backups/${safeManufacturer}/${safeName}/${filename}`;
       
       const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID;
       if (bucketId) {
@@ -797,8 +809,10 @@ export async function registerRoutes(
 
           const now = getBrazilTime();
           const dateStr = now.toISOString().slice(0,10).replace(/-/g,'') + '_' + now.toTimeString().slice(0,8).replace(/:/g,'');
-          const filename = `${equip.name}_${dateStr}${config.extension}`;
-          const objectName = `backups/${equip.manufacturer}/${equip.name}/${filename}`;
+          const safeName = sanitizePathSegment(equip.name);
+          const safeManufacturer = sanitizePathSegment(equip.manufacturer);
+          const filename = `${safeName}_${dateStr}${config.extension}`;
+          const objectName = `backups/${safeManufacturer}/${safeName}/${filename}`;
           
           const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID;
           if (bucketId) {
@@ -3015,8 +3029,10 @@ export async function registerRoutes(
 
       const now = getBrazilTime();
       const dateStr = now.toISOString().slice(0,10).replace(/-/g,'') + '_' + now.toTimeString().slice(0,8).replace(/:/g,'');
-      const filename = `${equip.name}_${dateStr}${config.extension}`;
-      const objectName = `backups/${filename}`;
+      const safeName = sanitizePathSegment(equip.name);
+      const safeManufacturer = sanitizePathSegment(equip.manufacturer);
+      const filename = `${safeName}_${dateStr}${config.extension}`;
+      const objectName = `backups/${safeManufacturer}/${safeName}/${filename}`;
       const duration = (Date.now() - startTime) / 1000;
 
       console.log(`[scheduler] Saving backup file: ${filename} (${result.length} bytes)`);
