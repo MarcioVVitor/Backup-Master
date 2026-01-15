@@ -3776,10 +3776,25 @@ async function executeSSHBackup(equip: any, config: BackupConfig): Promise<strin
     let commandsSent = false;
     let finished = false;
     
-    // Timeout de inatividade: 30 segundos sem dados
-    const idleTimeout = 30000;
-    // Timeout máximo: 5 minutos
-    const maxTimeout = config.timeout || 300000;
+    // Timeout de inatividade: baseado no fabricante
+    // Nokia, Huawei, Juniper podem ter pausas longas durante a geração de config
+    const manufacturer = equip.manufacturer?.toLowerCase() || '';
+    let idleTimeout: number;
+    if (manufacturer === 'nokia') {
+      idleTimeout = 300000; // 5 minutos para Nokia (configs muito grandes)
+    } else if (['huawei', 'juniper', 'cisco'].includes(manufacturer)) {
+      idleTimeout = 120000; // 2 minutos para Huawei, Juniper, Cisco
+    } else {
+      idleTimeout = 60000; // 1 minuto para outros
+    }
+    // Timeout máximo: baseado no fabricante
+    let maxTimeout: number;
+    if (manufacturer === 'nokia') {
+      maxTimeout = config.timeout || 1800000; // 30 minutos para Nokia
+    } else {
+      maxTimeout = config.timeout || 600000; // 10 minutos para outros
+    }
+    console.log(`[ssh-backup] ${equip.name}: Timeouts configurados - idle: ${idleTimeout/1000}s, max: ${maxTimeout/1000}s`);
     
     // Padrões para detectar paginação (---- More ----, --More--, etc)
     const morePatterns = [
