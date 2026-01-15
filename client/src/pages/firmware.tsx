@@ -218,6 +218,7 @@ export default function FirmwarePage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [firmwareName, setFirmwareName] = useState("");
   const [firmwareVersion, setFirmwareVersion] = useState("");
+  const [firmwareModel, setFirmwareModel] = useState("");
   const [manufacturer, setManufacturer] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [filterManufacturer, setFilterManufacturer] = useState("all");
@@ -385,11 +386,12 @@ export default function FirmwarePage() {
   }));
 
   const uploadFirmware = useMutation({
-    mutationFn: async (data: { file: File; name: string; version: string; manufacturer: string }) => {
+    mutationFn: async (data: { file: File; name: string; version: string; model: string; manufacturer: string }) => {
       const formData = new FormData();
       formData.append("file", data.file);
       formData.append("name", data.name);
       formData.append("version", data.version);
+      formData.append("model", data.model);
       formData.append("manufacturer", data.manufacturer);
       
       const response = await fetch("/api/firmware", {
@@ -535,6 +537,7 @@ export default function FirmwarePage() {
     setSelectedFile(null);
     setFirmwareName("");
     setFirmwareVersion("");
+    setFirmwareModel("");
     setManufacturer("");
   };
 
@@ -550,6 +553,7 @@ export default function FirmwarePage() {
         file: selectedFile,
         name: firmwareName,
         version: firmwareVersion,
+        model: firmwareModel,
         manufacturer
       });
     }
@@ -736,20 +740,32 @@ export default function FirmwarePage() {
                       data-testid="input-firmware-version"
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="manufacturer">{t.equipment.manufacturer}</Label>
-                    <Select value={manufacturer} onValueChange={setManufacturer}>
-                      <SelectTrigger data-testid="select-manufacturer">
-                        <SelectValue placeholder={t.firmware.selectManufacturer} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {MANUFACTURERS.map((mfr) => (
-                          <SelectItem key={mfr.value} value={mfr.value}>
-                            {mfr.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="manufacturer">{t.equipment.manufacturer}</Label>
+                      <Select value={manufacturer} onValueChange={setManufacturer}>
+                        <SelectTrigger data-testid="select-manufacturer">
+                          <SelectValue placeholder={t.firmware.selectManufacturer} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {MANUFACTURERS.map((mfr) => (
+                            <SelectItem key={mfr.value} value={mfr.value}>
+                              {mfr.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="firmwareModel">{t.equipment.model}</Label>
+                      <Input 
+                        id="firmwareModel"
+                        value={firmwareModel}
+                        onChange={(e) => setFirmwareModel(e.target.value)}
+                        placeholder="Ex: RB4011, CCR2004"
+                        data-testid="input-firmware-model"
+                      />
+                    </div>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="firmwareFile">{t.firmware.file}</Label>
