@@ -1,0 +1,151 @@
+root@SRV-NBM-CLOUD-01[~]# pm2 logs nbm-cloud --lines 100 | grep -i "backup\|huawei\|SW2\|agent"
+0|nbm-clou | 2026-01-15T15:10:21: [backup] Agent 1 retry failed: Timeout aguardando resposta do agente (360s)
+0|nbm-clou | 2026-01-15T15:16:24: [ws-agents] No pending job found for jobId: backup-3-1768500145359
+0|nbm-clou | 2026-01-15T15:16:27: [ws-agents] No pending job found for jobId: backup-4-1768500261756
+0|nbm-clou | 2026-01-15T15:20:44: [backup] Timeout waiting for agent response for job backup-3-1768500883999
+0|nbm-clou | 2026-01-15T15:20:44: [backup] Agent 1 failed: Timeout aguardando resposta do agente (360s)
+0|nbm-clou | 2026-01-15T15:26:28: [ws-agents] No pending job found for jobId: backup-3-1768500883999
+0|nbm-clou | 2026-01-15T15:26:49: [backup] Timeout waiting for agent response for job backup-3-1768501249001
+0|nbm-clou | 2026-01-15T15:26:49: [backup] Agent 1 retry failed: Timeout aguardando resposta do agente (360s)
+0|nbm-clou | 2026-01-15T15:26:49: Erro backup SSH: Error: Handshake failed: signature verification failed
+0|nbm-clou | 2026-01-15T15:32:49: [backup] Timeout waiting for agent response for job backup-4-1768501609924
+0|nbm-clou | 2026-01-15T15:32:49: [backup] Agent 1 failed: Timeout aguardando resposta do agente (360s)
+0|nbm-clou | 2026-01-15T15:36:28: [ws-agents] No pending job found for jobId: backup-3-1768501249001
+0|nbm-clou | 2026-01-15T15:36:32: [ws-agents] No pending job found for jobId: backup-4-1768501609924
+0|nbm-clou | 2026-01-15T15:36:36: [ws-agents] Backup failed for jobId: backup-4-1768501974924, error: Backup execution failed
+0|nbm-clou | 2026-01-15T15:36:36: [backup] Agent 1 retry failed: Backup execution failed
+0|nbm-clou | 2026-01-15T16:50:38: [backup] Timeout waiting for agent response for job backup-3-1768506278671
+0|nbm-clou | 2026-01-15T16:50:38: [backup] Agent 1 failed: Timeout aguardando resposta do agente (360s)
+0|nbm-clou | 2026-01-15T16:51:17: [backup] Timeout waiting for agent response for job backup-4-1768506317313
+0|nbm-clou | 2026-01-15T16:51:17: [backup] Agent 1 failed: Timeout aguardando resposta do agente (360s)
+0|nbm-clou | 2026-01-15T16:54:38: [ws-agents] No pending job found for jobId: backup-3-1768506278671
+0|nbm-clou | 2026-01-15T16:56:02: [backup] Timeout waiting for agent response for job backup-3-1768506602305
+0|nbm-clou | 2026-01-15T16:56:02: [backup] Agent 1 failed: Timeout aguardando resposta do agente (360s)
+0|nbm-clou | 2026-01-15T16:56:43: [backup] Timeout waiting for agent response for job backup-3-1768506643673
+0|nbm-clou | 2026-01-15T16:56:43: [backup] Agent 1 retry failed: Timeout aguardando resposta do agente (360s)
+0|nbm-clou | 2026-01-15T16:56:44: Erro backup SSH: Error: Handshake failed: signature verification failed
+0|nbm-clou | 2026-01-15T16:57:22: [backup] Timeout waiting for agent response for job backup-4-1768506682314
+0|nbm-clou | 2026-01-15T16:57:22: [backup] Agent 1 retry failed: Timeout aguardando resposta do agente (360s)
+0|nbm-clou | 2026-01-15T17:02:07: [backup] Timeout waiting for agent response for job backup-3-1768506967306
+0|nbm-clou | 2026-01-15T17:02:07: [backup] Agent 1 retry failed: Timeout aguardando resposta do agente (360s)
+0|nbm-clou | 2026-01-15T17:02:08: Erro backup SSH: Error: Handshake failed: signature verification failed
+0|nbm-clou | 2026-01-15T17:04:39: [ws-agents] No pending job found for jobId: backup-4-1768506317313
+0|nbm-clou | 2026-01-15T17:14:39: [ws-agents] No pending job found for jobId: backup-3-1768506602305
+0|nbm-clou | 2026-01-15T17:24:39: [ws-agents] No pending job found for jobId: backup-3-1768506643673
+0|nbm-clou | 2026-01-15T17:34:39: [ws-agents] No pending job found for jobId: backup-4-1768506682314
+0|nbm-clou | 2026-01-15T17:44:40: [ws-agents] No pending job found for jobId: backup-3-1768506967306
+0|nbm-clou | 2026-01-15T17:44:59: [backup] Timeout waiting for agent response for job backup-3-1768509539603
+0|nbm-clou | 2026-01-15T17:44:59: [backup] Agent 1 failed: Timeout aguardando resposta do agente (360s)
+0|nbm-clou | 2026-01-15T17:51:04: [backup] Timeout waiting for agent response for job backup-3-1768509904605
+0|nbm-clou | 2026-01-15T17:51:04: [backup] Agent 1 retry failed: Timeout aguardando resposta do agente (360s)
+0|nbm-clou | 2026-01-15T17:51:05: Erro backup SSH: Error: Handshake failed: signature verification failed
+0|nbm-clou | 2026-01-15T17:54:42: [ws-agents] No pending job found for jobId: backup-3-1768509539603
+0|nbm-clou | 2026-01-15T17:57:05: [backup] Timeout waiting for agent response for job backup-4-1768510265501
+0|nbm-clou | 2026-01-15T17:57:05: [backup] Agent 1 failed: Timeout aguardando resposta do agente (360s)
+0|nbm-clou | 2026-01-15T18:03:10: [backup] Timeout waiting for agent response for job backup-4-1768510630503
+0|nbm-clou | 2026-01-15T18:03:10: [backup] Agent 1 retry failed: Timeout aguardando resposta do agente (360s)
+0|nbm-clou | 2026-01-15T18:04:43: [ws-agents] No pending job found for jobId: backup-3-1768509904605
+0|nbm-clou | 2026-01-15T18:14:43: [ws-agents] No pending job found for jobId: backup-4-1768510265501
+0|nbm-clou | 2026-01-15T18:24:44: [ws-agents] No pending job found for jobId: backup-4-1768510630503
+0|nbm-clou | 2026-01-15T18:32:56: [ws-agents] Received message type: heartbeat
+0|nbm-clou | 2026-01-15T18:33:11: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:33:11: [ws-agents] Received message type: heartbeat
+0|nbm-clou | 2026-01-15T18:33:26: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:33:26: [ws-agents] Received message type: heartbeat
+0|nbm-clou | 2026-01-15T18:33:41: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:33:41: [ws-agents] Received message type: heartbeat
+0|nbm-clou | 2026-01-15T18:33:56: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:33:56: [ws-agents] Received message type: heartbeat
+0|nbm-clou | 2026-01-15T18:34:11: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:34:11: [ws-agents] Received message type: heartbeat
+0|nbm-clou | 2026-01-15T18:34:26: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:34:26: [ws-agents] Received message type: heartbeat
+0|nbm-clou | 2026-01-15T18:34:41: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:34:41: [ws-agents] Received message type: heartbeat
+0|nbm-clou | 2026-01-15T18:34:56: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:34:56: [ws-agents] Received message type: heartbeat
+0|nbm-clou | 2026-01-15T18:35:11: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:35:11: [ws-agents] Received message type: heartbeat
+0|nbm-clou | 2026-01-15T18:35:26: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:35:26: [ws-agents] Received message type: heartbeat
+0|nbm-clou | 2026-01-15T18:35:41: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:35:41: [ws-agents] Received message type: heartbeat
+0|nbm-clou | 2026-01-15T18:35:56: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:35:56: [ws-agents] Received message type: heartbeat
+0|nbm-clou | 2026-01-15T18:36:11: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:36:11: [ws-agents] Received message type: heartbeat
+0|nbm-clou | 2026-01-15T18:36:26: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:36:26: [ws-agents] Received message type: heartbeat
+0|nbm-clou | 2026-01-15T18:36:41: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:36:41: [ws-agents] Received message type: heartbeat
+0|nbm-clou | 2026-01-15T18:36:56: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:36:56: [ws-agents] Received message type: heartbeat
+0|nbm-clou | 2026-01-15T18:37:11: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:37:11: [ws-agents] Received message type: heartbeat
+0|nbm-clou | 2026-01-15T18:37:26: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:37:26: [ws-agents] Received message type: heartbeat
+0|nbm-clou | 2026-01-15T18:37:41: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:37:41: [ws-agents] Received message type: heartbeat
+0|nbm-clou | 2026-01-15T18:37:56: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:37:56: [ws-agents] Received message type: heartbeat
+0|nbm-clou | 2026-01-15T18:38:11: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:38:11: [ws-agents] Received message type: heartbeat
+0|nbm-clou | 2026-01-15T18:38:26: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:38:26: [ws-agents] Received message type: heartbeat
+0|nbm-clou | 2026-01-15T18:38:41: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:38:41: [ws-agents] Received message type: heartbeat
+0|nbm-clou | 2026-01-15T18:38:56: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:38:56: [ws-agents] Received message type: heartbeat
+0|nbm-clou | 2026-01-15T18:39:11: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:39:11: [ws-agents] Received message type: heartbeat
+0|nbm-clou | 2026-01-15T18:39:26: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:39:26: [ws-agents] Received message type: heartbeat
+0|nbm-clou | 2026-01-15T18:39:41: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:39:41: [ws-agents] Received message type: heartbeat
+0|nbm-clou | 2026-01-15T18:39:56: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:39:56: [ws-agents] Received message type: heartbeat
+0|nbm-clou | 2026-01-15T18:40:11: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:40:11: [ws-agents] Received message type: heartbeat
+0|nbm-clou | 2026-01-15T18:40:26: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:40:26: [ws-agents] Received message type: heartbeat
+0|nbm-clou | 2026-01-15T18:40:41: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:40:41: [ws-agents] Received message type: heartbeat
+0|nbm-clou | 2026-01-15T18:40:56: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:40:56: [ws-agents] Received message type: heartbeat
+0|nbm-clou | 2026-01-15T18:41:11: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:41:11: [ws-agents] Received message type: heartbeat
+0|nbm-clou | 2026-01-15T18:41:26: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:41:26: [ws-agents] Received message type: heartbeat
+0|nbm-clou | 2026-01-15T18:41:41: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:41:41: [ws-agents] Received message type: heartbeat
+0|nbm-clou | 2026-01-15T18:41:56: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:41:56: [ws-agents] Received message type: heartbeat
+0|nbm-clou | 2026-01-15T18:42:11: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:42:11: [ws-agents] Received message type: heartbeat
+0|nbm-clou | 2026-01-15T18:42:26: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:42:26: [ws-agents] Received message type: heartbeat
+0|nbm-clou | 2026-01-15T18:42:41: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:42:41: [ws-agents] Received message type: heartbeat
+0|nbm-clou | 2026-01-15T18:42:56: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:42:56: [ws-agents] Received message type: heartbeat
+0|nbm-clou | 2026-01-15T18:43:11: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:43:11: [ws-agents] Received message type: heartbeat
+0|nbm-clou | 2026-01-15T18:43:26: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:43:26: [ws-agents] Received message type: heartbeat
+0|nbm-clou | 2026-01-15T18:43:41: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:43:41: [ws-agents] Received message type: heartbeat
+0|nbm-clou | 2026-01-15T18:43:56: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:43:56: [ws-agents] Received message type: heartbeat
+0|nbm-clou | 2026-01-15T18:44:11: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:44:11: [ws-agents] Received message type: heartbeat
+0|nbm-clou | 2026-01-15T18:44:26: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:44:26: [ws-agents] Received message type: heartbeat
+0|nbm-clou | 2026-01-15T18:44:41: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:44:41: [ws-agents] Received message type: heartbeat
+0|nbm-clou | 2026-01-15T18:44:56: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:44:56: [ws-agents] Received message type: heartbeat
+0|nbm-clou | 2026-01-15T18:45:11: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:45:11: [ws-agents] Received message type: heartbeat
+^C
+root@SRV-NBM-CLOUD-01[~]# tail -100 /opt/nbm-agent/logs/agent.log | grep -i "backup\|huawei\|request"
+root@SRV-NBM-CLOUD-01[~]# 
