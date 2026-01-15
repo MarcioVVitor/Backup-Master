@@ -215,3 +215,15 @@ pm2 logs nbm-cloud
 - Increased default concurrency from 10 to 50
 - Larger batch size (200 jobs)
 - Optimized for processing 2000+ backups per company
+
+### Dashboard Enhancements
+- Pie chart showing equipment distribution by manufacturer
+- Agent status section with online/offline indicators
+- Additional metrics: backups today, average duration
+- Success/failure trend visualization with AreaChart
+- Expanded history table with manufacturer and duration columns
+
+### Firmware Upload Improvements
+- Added model field to firmware upload form
+- Grid layout for manufacturer and model inputs
+- Backend support for optional model parameter
