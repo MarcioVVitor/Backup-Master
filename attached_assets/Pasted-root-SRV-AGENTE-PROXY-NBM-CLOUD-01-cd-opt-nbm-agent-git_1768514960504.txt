@@ -1,0 +1,1091 @@
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[~]# cd /opt/nbm-agent
+git pull origin main
+systemctl restart nbm-agent
+remote: Enumerating objects: 24, done.
+remote: Counting objects: 100% (24/24), done.
+remote: Compressing objects: 100% (11/11), done.
+remote: Total 19 (delta 13), reused 13 (delta 7), pack-reused 0 (from 0)
+Unpacking objects: 100% (19/19), 7.44 KiB | 447.00 KiB/s, done.
+From https://github.com/MarcioVVitor/Backup-Master
+ * branch            main       -> FETCH_HEAD
+   34511f6..5af64c6  main       -> origin/main
+Updating 34511f6..5af64c6
+Fast-forward
+ agents/linux/nbm-agent.sh                                                                        |  20 ++++-
+ attached_assets/Pasted-root-SRV-AGENTE-PROXY-NBM-CLOUD-01-No-servidor-do-agent_1768513622606.txt |  70 +++++++++++++++++
+ attached_assets/Pasted-root-SRV-AGENTE-PROXY-NBM-CLOUD-01-cd-opt-nbm-agent-git_1768502805132.txt |  70 +++++++++++++++++
+ attached_assets/Pasted-root-SRV-NBM-CLOUD-01-pm2-logs-nbm-cloud-lines-100-grep_1768513533385.txt | 151 ++++++++++++++++++++++++++++++++++++
+ attached_assets/Pasted-root-SRV-NBM-CLOUD-01-source-opt-nbm-cloud-env-psql-DAT_1768514124274.txt | 230 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 538 insertions(+), 3 deletions(-)
+ create mode 100644 attached_assets/Pasted-root-SRV-AGENTE-PROXY-NBM-CLOUD-01-No-servidor-do-agent_1768513622606.txt
+ create mode 100644 attached_assets/Pasted-root-SRV-AGENTE-PROXY-NBM-CLOUD-01-cd-opt-nbm-agent-git_1768502805132.txt
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-pm2-logs-nbm-cloud-lines-100-grep_1768513533385.txt
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-source-opt-nbm-cloud-env-psql-DAT_1768514124274.txt
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[/opt/nbm-agent]# /opt/nbm-agent/nbm-agent.sh version
+NBM CLOUD Agent v1.3.2
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[/opt/nbm-agent]# tail -f /opt/nbm-agent/logs/agent.log
+[2026-01-15 19:03:09] [DEBUG] Parsed message type: auth_success
+[2026-01-15 19:03:09] [INFO] Authentication successful
+[2026-01-15 19:03:24] [DEBUG] Sent heartbeat
+[2026-01-15 19:03:24] [DEBUG] Received (63 bytes): {"type":"heartbeat_ack","timestamp":"2026-01-15T22:03:24.383Z"}
+[2026-01-15 19:03:24] [DEBUG] Parsed message type: heartbeat_ack
+[2026-01-15 19:03:24] [DEBUG] Heartbeat acknowledged
+[2026-01-15 19:03:39] [DEBUG] Sent heartbeat
+[2026-01-15 19:03:39] [DEBUG] Received (63 bytes): {"type":"heartbeat_ack","timestamp":"2026-01-15T22:03:39.390Z"}
+[2026-01-15 19:03:39] [DEBUG] Parsed message type: heartbeat_ack
+[2026-01-15 19:03:39] [DEBUG] Heartbeat acknowledged
+[2026-01-15 19:03:54] [DEBUG] Sent heartbeat
+[2026-01-15 19:03:54] [DEBUG] Received (63 bytes): {"type":"heartbeat_ack","timestamp":"2026-01-15T22:03:54.380Z"}
+[2026-01-15 19:03:54] [DEBUG] Parsed message type: heartbeat_ack
+[2026-01-15 19:03:54] [DEBUG] Heartbeat acknowledged
+[2026-01-15 19:04:06] [DEBUG] Received (388 bytes): {"type":"backup_job","jobId":"backup-4-1768514646435","equipment":{"id":4,"name":"SW3-PE-SVA-JET-01","ip":"172.16.247.246","port":12622,"protocol":"ssh","username":"marcio","password":"@#2Dc9d967","en...
+[2026-01-15 19:04:06] [DEBUG] Parsed message type: backup_job
+[2026-01-15 19:04:06] [INFO] >>> RECEIVED JOB: type=backup_job
+[2026-01-15 19:04:06] [INFO] >>> BACKUP JOB: jobId=backup-4-1768514646435, equipment=SW3-PE-SVA-JET-01
+[2026-01-15 19:04:06] [DEBUG] Received message type: backup_job
+[2026-01-15 19:04:06] [INFO] Executing backup job backup-4-1768514646435 for 172.16.247.246:12622 with command: # Script de Backup Huawei
+# Placeholders: {{EQUIPMENT_IP}}
+display current-configuration
+[2026-01-15 19:04:06] [DEBUG] Huawei device - using expect session (10 min timeout)
+[2026-01-15 19:04:06] [INFO] Executing Huawei backup with expect on 172.16.247.246:12622 timeout=600s (Agent v1.3.1)
+[2026-01-15 19:04:09] [DEBUG] Sent heartbeat
+display current-configuration
+!Software Version V200R022C00SPC500
+#
+sysname SW3-PE-SVA-JET-01
+#
+info-center loghost source LoopBack1
+info-center loghost 100.100.9.62 port 1543
+#
+ipv6
+#
+vlan batch 3 to 6 10 13 18 25 41 60 to 61 69 99 107
+vlan batch 109 to 111 113 to 115 117 to 118 120 to 122 124 to 138 140 to 141 144 to 145 219 to 220 361 422
+vlan batch 432 472 500 661 to 662 859 910 to 912 915 to 919 949 957 984
+vlan batch 1001 1010 1244 1268 1271 1275 1316 1321 1367 1606
+vlan batch 1699 1759 1870 1934 to 1935 1937 1962 to 1963 2002 2046 2063 2065
+vlan batch 2078 to 2079 2143 2204 2501 2503 2585 2667 2676 to 2677 3220 3544
+vlan batch 3613 3639 3992 to 3993
+#
+lnp disable
+#
+stp disable
+#
+authentication-profile name default_authen_profile
+authentication-profile name dot1x_authen_profile
+authentication-profile name dot1xmac_authen_profile
+authentication-profile name mac_authen_profile
+authentication-profile name multi_authen_profile
+authentication-profile name portal_authen_profile
+#
+domain huawei
+domain huawei admin
+#
+set save-configuration interval 1440 delay 1
+set save-configuration backup-to-server server 172.17.255.254 transport-type ftp user jetelecom password %^%#L_h.6:[Ft>bpa:B/c<dWU-eAMRuF};w><=Uo;6s#%^%# path /HUAWEI/
+set save-configuration backup-to-server server 177.86.168.130 transport-type tftp path /huawei/backup/
+#
+http server-source all-interface
+#
+clock timezone Brasilia minus 03:00:00
+#
+set if-mib sample-interval 0
+#
+dhcp enable
+#
+diffserv domain default
+#
+radius-server template DALORADIUS
+ radius-server shared-key cipher %^%#L~Ka+vSIgInY.6EIeVV56u|xO\5V!Y]'kzLnl#Z+%^%#
+ radius-server authentication 177.86.168.130 1812 source LoopBack 1 weight 80
+ radius-server accounting 177.86.168.130 1813 source LoopBack 1 weight 80
+ radius-server retransmit 2
+ undo radius-server user-name domain-included
+radius-server template default
+#
+mpls lsr-id 172.16.247.246
+mpls
+#
+fec-list mode
+#
+mpls l2vpn
+#
+vsi 114 static
+ description RID-TORRE-ANDREI
+ pwsignal ldp
+  vsi-id 114
+  peer 172.16.247.248
+  peer 172.16.243.250
+ mtu 1998
+#
+vsi 219 static
+ description PPPOE-LEOMAR
+ pwsignal ldp
+  vsi-id 219
+  peer 172.16.243.250
+ mtu 1998
+#
+vsi 859 static
+ description TORRE-VENTURA
+ pwsignal ldp
+  vsi-id 859
+  peer 172.16.243.251
+ mtu 1998
+#
+vsi 120 static
+ description CLI-SVA-CARAMURU
+ pwsignal ldp
+  vsi-id 120
+  peer 172.16.247.253
+ mtu 1998
+ encapsulation ethernet
+#
+vsi 122 static
+ description CLI-SVA-COCARI
+ pwsignal ldp
+  vsi-id 122
+  peer 172.16.247.253
+ mtu 1998
+ encapsulation ethernet
+#
+vsi 135 static
+ description CLI-RID-TELECOM-FTTH
+ pwsignal ldp
+  vsi-id 135
+  peer 10.15.46.0
+ mtu 1998
+ encapsulation ethernet
+#
+vsi 918 static
+ description CLI-TWO-TELECOM-FTTH-UNIX
+ pwsignal ldp
+  vsi-id 918
+  peer 10.15.46.0
+ mtu 1998
+ encapsulation ethernet
+#
+vsi 6 static
+ description GERENCIA-TWO-TELECOM
+ pwsignal ldp
+  vsi-id 6
+  peer 172.16.247.239
+ mtu 1998
+ encapsulation ethernet
+#
+vsi 949 static
+ description V949-SPNET-GERENCIA-CIDADES
+ pwsignal ldp
+  vsi-id 949
+  peer 172.16.247.235
+ mtu 9192
+ encapsulation ethernet
+#
+mpls ldp
+#
+#
+mpls ldp remote-peer cli-sva-ceuazul
+ remote-ip 172.20.23.255
+#
+mpls ldp remote-peer olt-clodoaldo
+#
+mpls ldp remote-peer olt-gmdg-arcari
+ remote-ip 172.16.243.252
+#
+mpls ldp remote-peer olt-leomar
+ remote-ip 172.16.243.250
+#
+mpls ldp remote-peer olt-sva-clodoaldo
+ remote-ip 172.16.243.251
+#
+mpls ldp remote-peer sw-ans-asilo
+ remote-ip 172.16.247.245
+#
+mpls ldp remote-peer sw-bsa-brazlandia
+ remote-ip 172.16.247.250
+#
+mpls ldp remote-peer sw-bsa-eleia
+ remote-ip 172.16.247.253
+#
+mpls ldp remote-peer sw-bsa-eleia-core
+ remote-ip 172.16.247.240
+#
+mpls ldp remote-peer sw-bsa-jk-shopp
+ remote-ip 172.16.247.251
+#
+mpls ldp remote-peer sw-bsa-mercure
+ remote-ip 172.16.247.249
+#
+mpls ldp remote-peer sw-gna-aquarios
+ remote-ip 172.16.247.235
+#
+mpls ldp remote-peer sw-gna-sede
+ remote-ip 172.16.247.243
+#
+mpls ldp remote-peer sw-lza-centro
+ remote-ip 172.16.247.247
+#
+mpls ldp remote-peer sw-scq-hi5-telecom
+ remote-ip 172.16.247.244
+#
+mpls ldp remote-peer sw-sva-andrei
+ remote-ip 172.16.247.248
+#
+mpls ldp remote-peer sw-vls-two-telecom
+ remote-ip 172.16.247.239
+#
+mpls ldp remote-peer sw-vpio-allrede
+ remote-ip 172.16.247.252
+#
+mpls ldp remote-peer sw3-pe-gmdg-jet-01
+ remote-ip 10.15.46.0
+#
+mpls ldp remote-peer sw3-pe-gna-aqs-jet-01
+ remote-ip 10.15.45.0
+#
+mpls ldp remote-peer sw3-pe-gna-euro-jet-01
+ remote-ip 10.15.65.0
+#
+mpls ldp remote-peer sw3-pe-gna-jdgo-andr-02
+ remote-ip 10.15.43.1
+#
+mpls ldp remote-peer sw3-pe-lll-turbolink-01
+ remote-ip 10.15.57.0
+#
+ecc peer-public-key 172.16.247.245 encoding-type der
+ public-key-code begin
+    0401FA37 C01433F7 DCB854CA F3431D28 75A581EF 481C443C D70E23DF 82F623D8
+    75FEF180 4355A434 50D53B64 E8BBECEC 96D5C682 0B3D8A13 438A949B 1DEF4AB9
+    32D1EF01 47872A6C 3EE84CD9 EC9D0E74 0B54E763 FCD2D412 BD3F94A7 192A3291
+    C8B96C2C 685F1BA4 E9736C24 58566F5B 6F4B518C 79A24616 66A6991C 57574CB0
+    B7D6F7E8 F9
+ public-key-code end
+peer-public-key end
+#
+ecc peer-public-key 10.15.176.253 encoding-type der
+ public-key-code begin
+    0400554F 73648B58 27C9E528 FC91DE17 3BEE5E95 8FB9B995 BC1D03D4 70A8BEF9
+    54015CB4 352BADDE BBDA13A4 E91C71CE E40E8079 98F81E9F AD41A91F 1B3B4008
+    1D433E00 18BE6935 8EF06F4F EDF1F342 D180DF61 1B9B15F4 31563A0B 66228235
+    12854A84 A26CD612 A67EF2CD DE38FC86 07AC10D7 2603F412 C9CD0413 E0E5C92B
+    4F9BDF71 06
+ public-key-code end
+peer-public-key end
+#
+pki realm default
+ certificate-check none
+#
+free-rule-template name default_free_rule
+#
+portal-access-profile name portal_access_profile
+#
+drop-profile default
+#
+vlan 3
+ description CHACARA-RUAN
+vlan 4
+ description EUDD
+vlan 5
+ description CLI-RID-TELECOM-OSPF
+vlan 6
+ description GERENCIA-TWO-TELECOM
+vlan 10
+ description ESC-RID-TELECOM
+vlan 18
+ description TWO-TELECOM-GAMELEIRA
+vlan 25
+ description GERENCIA-OLT_SILVANIA
+vlan 41
+ description SPEED-RV-LEOPOLDO-DIRETO
+vlan 60
+ description CLI-SPEED-TRUNK-RV
+vlan 61
+ description CRISTIAN
+vlan 69
+ description TRANS-SILVANIA<>VIANOPOLIS-TWO-TELECOM
+vlan 107
+ description RID-OLT-CORUMBA-2
+vlan 109
+ description RID-TORRE-MINERATUBA
+vlan 110
+ description TORRE_TREVO
+vlan 111
+ description RID-TORRE-AGUA-BRANCA
+vlan 114
+ description RID-TORRE-ANDREI
+vlan 115
+ description RID-TORRE-CORUMBA
+vlan 117
+ description RID-TORRE-ADEMAR
+vlan 118
+ description TORRE_LOJA_JET
+vlan 120
+ description CLI-SVA-CARAMURU
+vlan 121
+ description RID-OLT-CLAUDIMAR
+vlan 122
+ description CLI-SVA-COCARI
+vlan 124
+ description TORRE_VARIADO1
+ name TORRE_VARIADO1
+vlan 126
+ description TORRE_MACACO
+vlan 127
+ description RID-TORRE-GAMELEIRA
+vlan 128
+ description TORRE_VARIADO2
+vlan 129
+ description RID-OLT-CLODOALDO
+vlan 130
+ description TORRE-CORUMBRA-VENTURA
+vlan 131
+ description RID-TORRE-CLAUDIMAR
+vlan 132
+ description BORGATO
+vlan 133
+ description TORRE_CUZCUZEIRO
+vlan 134
+ description COOPERSIL
+vlan 135
+ description CLI-RID-TELECOM-FTTH
+vlan 136
+ description TORRE-TV
+vlan 137
+ description CLI-CHACARA-RUAN
+vlan 138
+ description RID-TORRE-BULHOES
+vlan 140
+ description RID-TELECOM-PPPOE-RURAL-FIBRA
+vlan 141
+ description V141-L2L-RID-FTTH-CRAUS
+vlan 144
+ description TORRE-QUILOMBO
+vlan 145
+ description RID-TELECOM-VPS
+vlan 219
+ description PPPOE-OLT-LEOMAR
+vlan 220
+ description RID-TELECOM-ANDREI
+vlan 361
+ description LINK-ESCRITORIO_SILVANIA
+vlan 422
+ description PTP-MPLS-SILVANIA<>VIANOPOLIS
+vlan 432
+ description PTP-MPLS-SILVANIA<>BULHOES
+vlan 472
+ description PTP-MPLS-SILVANIA--OLT-LEOMAR
+vlan 500
+ description CLI-SVA-SICREDI
+vlan 661
+ name TRANS-CYBER-SILVANIA<>CORUMBA-1
+vlan 662
+ name TRANS-CYBER-SILVANIA<>CORUMBA-2
+vlan 859
+ description RID-TORRE-VENTURA
+vlan 910
+ description CLI-FAZ-CELAZUL
+vlan 911
+ description TRANS-LIVE-TELECOM-SPEED
+vlan 912
+ description TRANS-LIVE-TELECOM-SPEED
+vlan 915
+ description PTP-MPLS-SILVANIA<>OLT-GAMELEIRA
+vlan 916
+ description TWO-TELECOM-PPPOE-GAMELEIRA-FIBRA
+vlan 917
+ description TRANS-TWO-VLS<>SVA
+vlan 918
+ description CLI-TWO-TELECOM-FTTH-UNIX
+vlan 949
+ description V949-SPNET-GERENCIA-CIDADES
+vlan 957
+ description V957-CLI-SPNET-L2-SVA
+vlan 984
+ description RID-TELECOM-TORRE_ANDREI
+vlan 1001
+ description V1001-L2L-UNE-EURO-GNA-SVA
+vlan 1010
+ description SPNET-SILVANIA-BKP
+vlan 1244
+ description MOBWIRE-(SVA-JLIP-1787)
+vlan 1268
+ description TRANS-GAMELEIRA-SPEED
+vlan 1271
+ description CLI-RID-TELECOM
+vlan 1275
+ description CLI-RID-TELECOM
+vlan 1316
+ description CLI-COLEGIO-INSTITULO-AUXILIADORA
+vlan 1321
+ description TRANS-CO-DIGITAL-MPGO
+vlan 1367
+ description V1367-L2L-TWO-VLS-DIR-SVA
+vlan 1606
+ description OLT-LEOMAR
+vlan 1699
+ description V1699-JETGOV-SEDUC-GO-SILVANIA-SVA-JCP-19499
+vlan 1759
+ description SPEED>RVNETWORK
+vlan 1870
+ description RID-TELECOM-1870
+vlan 1934
+ description V1934-P2P-STM-SPEED-RV
+vlan 1935
+ description V1935-P2P-ASI-SPEED-RV
+vlan 1937
+ description L2L-SPEED-SVA-GAMELEIRA
+vlan 1962
+ description PROTECAO-PTP-SILVANIA-ANAPOLIS--LIVE
+vlan 1963
+ description TRANS-EXPLORER-SVA-UCSP-2243
+vlan 2002
+ description V2002-L2L-UNE-AQSGNA-SVA
+vlan 2046
+ description TRANS-LIVE-TELECOM
+vlan 2063
+ description TRANS-LIVE-TELECOM
+vlan 2065
+ description SPNET-SILVANIA
+vlan 2078
+ description TRANS-LIVE-TELECOM
+vlan 2079
+ description TRANS-LIVE-TELECOM
+vlan 2143
+ description TRANS-CO-DIGITAL-TJGO
+vlan 2204
+ description V2204-CLI-SVA-GNA
+vlan 2501
+ name CLI-SICOOB-SP4-CYL-JCP-13793
+vlan 2503
+ description CLI-SICOOB-SP4-SMQ-JCP-13795
+vlan 2585
+ description V2585-PTP-SW3PESVAJET01-DIR-SW3PELLLTURBOLINK01
+vlan 2667
+ description 2677-PTP-SW3PEBSBELEA-DIR-SW3PESVAJET01
+vlan 2676
+ description 2676-PTP-SW3PEGNAAQSJET-DIR-SW3PESVAJET01
+vlan 2677
+ description PTP-2677-SW3PESVAJET01-DIR-SW3PEBSBELEA
+vlan 3220
+ description TRANS-CO-DIGITAL-TRE
+vlan 3544
+ description TRANS-LIVE-TELECOM
+vlan 3613
+ description PTP-JET-VIA-LIVE-GAMELEIRA-ASILO
+vlan 3639
+ description V3639-P2P-01-SW3-PE-VPS-SPNET-01
+vlan 3992
+ description ALLREDE-SVA-CCS-1811-3992
+vlan 3993
+ description ALLREDE-SVA-CCS-1811-3993
+#
+aaa
+ authentication-scheme DALORADIUS
+  authentication-mode radius local
+ authentication-scheme default
+  authentication-mode local
+ authentication-scheme radius
+  authentication-mode radius
+ authorization-scheme default
+  authorization-mode local
+ accounting-scheme DALORADIUS
+  accounting-mode radius
+  accounting start-fail online
+ accounting-scheme default
+  accounting-mode none
+ local-aaa-user password policy administrator
+  password history record number 0
+  password expire 0
+ domain default
+  authentication-scheme radius
+  accounting-scheme default
+  radius-server default
+ domain default_admin
+  authentication-scheme default
+  accounting-scheme default
+ domain huawei
+  authentication-scheme DALORADIUS
+  accounting-scheme DALORADIUS
+  radius-server DALORADIUS
+ local-user admin password irreversible-cipher $1c$_o5D0KwY&B$8:Gm0RBn=(SH3b6:Wko/"a}T.|P_j1y!Xh+e'T7;$
+ local-user admin privilege level 15
+ local-user admin service-type ssh http
+#
+ntp-service ipv6 server disable
+ntp-service sync-interval 180
+ntp-service unicast-server 177.86.168.130 source-interface LoopBack1
+ntp-service unicast-server 172.17.255.1
+#
+interface Vlanif1
+ ip address dhcp-alloc
+#
+interface Vlanif4
+ mpls l2vc 172.16.247.245 4
+#
+interface Vlanif6
+ description GERENCIA-TWO-TELECOM
+ l2 binding vsi 6
+#
+interface Vlanif13
+ mpls l2vc 172.16.247.239 13
+#
+interface Vlanif18
+ description CLI-TWO-TELECOM-GAMELEIRA
+ mpls l2vc 10.15.46.0 18 mtu 9198
+ mpls l2vpn flow-label both
+#
+interface Vlanif25
+ description GERENCIA-OLT_SILVANIA
+ mpls l2vc 172.16.247.253 25
+#
+interface Vlanif41
+ description SPEED-RV-LEOPOLDO-DIRETO
+ mpls l2vc 172.16.247.245 41
+ mpls l2vpn flow-label both
+#
+interface Vlanif61
+ description CRISTIAN_BULHOES
+ mpls l2vc 172.16.247.253 61
+#
+interface Vlanif69
+ description TRANS-SILVANIA<>VIANOPOLIS-TWO-TELECOM
+ mpls l2vc 172.16.247.239 69
+ mpls l2vpn flow-label both
+#
+interface Vlanif99
+ ip address 10.15.176.254 255.255.255.128
+#
+interface Vlanif107
+ description RID-OLT-CORUMBA-2
+#
+interface Vlanif109
+ description RID-TORRE-MINERATUBA
+ mpls l2vc 172.16.247.248 109
+ mpls l2vpn flow-label both
+#
+interface Vlanif110
+ description TORRE_TREVO
+#
+interface Vlanif111
+ description RID-TORRE-AGUA-BRANCA
+ mpls l2vc 172.16.243.250 111 mtu 9198
+ mpls l2vpn flow-label both
+#
+interface Vlanif113
+ mpls l2vc 172.16.247.239 113
+#
+interface Vlanif114
+ description RID-TORRE-ANDREI
+ l2 binding vsi 114
+#
+interface Vlanif115
+ mpls l2vc 172.16.247.248 115
+ mpls l2vpn flow-label both
+#
+interface Vlanif117
+ description RID-TORRE-ADEMAR
+ mpls l2vc 172.16.247.248 117
+ mpls l2vpn flow-label both
+#
+interface Vlanif118
+ description TORRE_CONTENDA
+#
+interface Vlanif120
+ description CLI-SVA-CARAMURU
+ l2 binding vsi 120
+#
+interface Vlanif121
+ description RID-OLT-CLAUDIMAR
+ mpls l2vc 172.16.247.248 121
+ mpls l2vpn flow-label both
+#
+interface Vlanif122
+ description CLI-SVA-COCARI
+ l2 binding vsi 122
+#
+interface Vlanif124
+ description TORRE_VARIADO1
+#
+interface Vlanif125
+ mpls l2vc 172.16.247.253 125
+#
+interface Vlanif127
+ description RID-TORRE-GAMELEIRA
+ mpls l2vc 10.15.46.0 127 mtu 9198
+ mpls l2vpn flow-label both
+#
+interface Vlanif128
+ description RID-TORRE-MARCIONIL
+ mpls l2vc 172.16.247.245 128
+ mpls l2vpn flow-label both
+#
+interface Vlanif129
+ description RID-OLT-CLODOALDO
+ mpls l2vc 172.16.247.248 129
+#
+interface Vlanif130
+ description TORRE-CORUMBRA-VENTURA
+ mpls l2vc 172.16.243.251 130 mtu 9198
+ mpls l2vpn flow-label both
+#
+interface Vlanif131
+ description RID-TORRE-CLAUDIMAR
+ mpls l2vc 172.16.247.248 131
+ mpls l2vpn flow-label both
+#
+interface Vlanif132
+ description BORGATO
+ mpls l2vc 172.16.247.240 132 mtu 9198
+#
+interface Vlanif133
+ description TORRE_CUZCUZEIRO
+#
+interface Vlanif134
+ description COOPERSIL
+ mpls l2vc 172.16.247.253 134
+#
+interface Vlanif135
+ description CLI-RID-TELECOM-FTTH
+ l2 binding vsi 135
+#
+interface Vlanif136
+ description RID-TELECOM-TORRE-TV
+#
+interface Vlanif137
+ description CLI-CHACARA-RUAN
+ mpls l2vc 172.16.247.243 137
+ mpls l2vpn flow-label both
+#
+interface Vlanif138
+ description RID-TORRE-BULHOES
+ mpls l2vc 10.15.57.0 138
+ mpls l2vpn flow-label both
+#
+interface Vlanif140
+ description CLI-RID-TELECOM-PPPOE-RURAL-FIBRA
+ mpls l2vc 10.15.46.0 140 mtu 9198
+ mpls l2vpn flow-label both
+#
+interface Vlanif141
+ description V141-L2L-RID-FTTH-CRAUS
+ mpls l2vc 10.15.57.0 141
+ mpls l2vpn flow-label both
+#
+interface Vlanif144
+ mpls l2vc 172.16.247.248 144
+ mpls l2vpn flow-label both
+#
+interface Vlanif145
+ description RID-TELECOM-VPS
+ mpls l2vc 172.16.247.239 145
+ mpls l2vpn flow-label both
+#
+interface Vlanif219
+ description PPPOE-OLT-LEOMAR
+ l2 binding vsi 219
+#
+interface Vlanif220
+ description RID-TELECOM-ANDREI
+ mpls l2vc 172.16.247.248 220
+#
+interface Vlanif361
+ description LINK-ESCRITORIO_SILVANIA
+ mpls l2vc 172.16.247.253 361
+#
+interface Vlanif422
+ description PTP-MPLS-SILVANIA<>VIANOPOLIS
+ ipv6 enable
+ ip address 172.16.247.113 255.255.255.252
+ ospf cost 20
+ ospf network-type p2p
+ mpls
+ mpls ldp
+#
+interface Vlanif432
+ description PTP-MPLS-SILVANIA<>BULHOES
+ ip address 172.16.247.125 255.255.255.252
+ ospf cost 15
+ ospf network-type p2p
+ mpls
+ mpls ldp
+#
+interface Vlanif472
+ description PTP-MPLS-SILVANIA--OLT-LEOMAR
+ ip address 172.16.243.9 255.255.255.252
+ ospf cost 100
+ ospf network-type p2p
+ mpls
+ mpls ldp
+#
+interface Vlanif500
+ description CLI-SVA-SICREDI
+ mpls l2vc 172.16.247.253 500
+ mpls l2vpn flow-label both
+#
+interface Vlanif661
+ description TRANS-CYBER-SILVANIA<>CORUMBA-1
+ shutdown
+#
+interface Vlanif662
+ description TRANS-CYBER-SILVANIA<>CORUMBA-1
+ shutdown
+ mtu 9198
+#
+interface Vlanif859
+ description RID-TORRE-VENTURA
+ l2 binding vsi 859
+#
+interface Vlanif910
+ description CLI-FAZ-CELAZUL
+ mpls l2vc 10.15.43.1 910
+ mpls l2vpn flow-label both
+#
+interface Vlanif911
+ description TRANS-LIVE-TELECOM-SPEED
+ mpls l2vc 172.16.247.245 911
+ mpls l2vpn flow-label both
+#
+interface Vlanif912
+ description TRANS-LIVE-TELECOM-SPEED
+ mpls l2vc 172.16.247.245 912
+ mpls l2vpn flow-label both
+#
+interface Vlanif915
+ description PTP-MPLS-SILVANIA<>OLT-GAMELEIRA
+ ipv6 enable
+ ip address 172.16.243.17 255.255.255.252
+ ospf cost 12000
+ ospf network-type p2p
+ mpls
+ mpls ldp
+#
+interface Vlanif916
+ description TWO-TELECOM-PPPOE-GAMELEIRA-FIBRA
+ mpls l2vc 172.16.247.239 916
+ mpls l2vpn flow-label both
+#
+interface Vlanif917
+ description TRANS-TWO-VLS<>SVA
+ mpls l2vc 172.16.247.239 917
+ mpls l2vpn flow-label both
+#
+interface Vlanif918
+ description CLI-TWO-TELECOM-FTTH-UNIX
+ l2 binding vsi 918
+#
+interface Vlanif919
+ mpls l2vc 172.16.247.239 919
+ mpls l2vpn flow-label both
+#
+interface Vlanif949
+ description V949-SPNET-GERENCIA-CIDADES
+ l2 binding vsi 949
+#
+interface Vlanif957
+ description V957-CLI-SPNET-L2-SVA
+ mpls l2vc 172.16.247.235 957 mtu 9192
+ mpls l2vpn flow-label both
+#
+interface Vlanif984
+ mpls l2vc 172.16.247.248 984
+ mpls l2vpn flow-label both
+#
+interface Vlanif1001
+ description V1001-L2L-UNE-EURO-GNA-SVA
+ mpls l2vc 10.15.65.0 1001 mtu 9192
+ mpls l2vpn flow-label both
+#
+interface Vlanif1010
+ description SPNET-SILVANIA-BKP
+ mpls l2vc 172.16.247.245 1010
+ mpls l2vpn flow-label both
+#
+interface Vlanif1244
+ description V1244-CLI-MOBWIRE-SVA-JLIP-1787
+ mpls l2vc 10.15.43.1 1244
+#
+interface Vlanif1271
+ description CLI-RID-TELECOM
+ mpls l2vc 172.16.247.240 1271 mtu 9198
+ mpls l2vpn flow-label both
+#
+interface Vlanif1275
+ description CLI-RID-TELECOM
+ mpls l2vc 172.16.247.240 1275 mtu 9198
+ mpls l2vpn flow-label both
+#
+interface Vlanif1316
+ description CLI-COLEGIO-INSTITULO-AUXILIADORA
+ mpls l2vc 10.15.43.1 1316
+ mpls l2vpn flow-label both
+#
+interface Vlanif1321
+ description TRANS-CO-DIGITAL-MPGO
+ mpls l2vc 172.16.247.245 1321
+ mpls l2vpn flow-label both
+#
+interface Vlanif1367
+ description V1367-L2L-TWO-VLS-DIR-SVA
+ mpls l2vc 172.16.247.239 1367
+ mpls l2vpn flow-label both
+#
+interface Vlanif1699
+ description V1699-JETGOV-SEDUC-GO-SILVANIA-SVA-JCP-19499
+ mpls l2vc 10.15.43.1 1699
+ mpls l2vpn flow-label both
+#
+interface Vlanif1759
+ description T-SPEED-NE20>SILVANIA
+ mpls l2vc 172.16.247.245 1759
+ mpls l2vpn flow-label both
+#
+interface Vlanif1870
+ description RID-TELECOM-1870
+ mpls l2vc 172.16.247.245 1870
+ mpls l2vpn flow-label both
+#
+interface Vlanif1934
+ description V1934-P2P-STM-SPEED-RV
+ mpls l2vc 172.16.247.245 1934
+ mpls l2vpn flow-label both
+#
+interface Vlanif1935
+ description V1935-P2P-ASI-SPEED-RV
+ mpls l2vc 172.16.247.245 1935
+ mpls l2vpn flow-label both
+#
+interface Vlanif1937
+ mpls l2vc 10.15.46.0 1937 mtu 9198
+ mpls l2vpn flow-label both
+#
+interface Vlanif1962
+ description PROTECAO-PTP-SILVANIA-ANAPOLIS--LIVE
+ ip address 172.16.248.185 255.255.255.252
+ ospf cost 90
+ ospf network-type p2p
+ mpls
+ mpls ldp
+#
+interface Vlanif1963
+ description L2L-EXPLORER-SVA-UCSP-2243
+ mpls l2vc 172.16.247.245 1963
+ mpls l2vpn flow-label both
+#
+interface Vlanif2002
+ description V2002-L2L-UNE-AQSGNA-SVA
+ mpls l2vc 172.16.247.235 2002 mtu 9192
+ mpls l2vpn flow-label both
+#
+interface Vlanif2046
+ description TRANS-LIVE-TELECOM
+ mpls l2vc 172.16.247.245 2046
+ mpls l2vpn flow-label both
+#
+interface Vlanif2063
+ description TRANS-LIVE-TELECOM
+ mpls l2vc 172.16.247.245 2063
+ mpls l2vpn flow-label both
+#
+interface Vlanif2065
+ description SPNET-SILVANIA
+ mpls l2vc 172.16.247.245 2065
+ mpls l2vpn flow-label both
+#
+interface Vlanif2078
+ description TRANS-LIVE-TELECOM
+ mpls l2vc 172.16.247.245 2078
+ mpls l2vpn flow-label both
+#
+interface Vlanif2079
+ description TRANS-LIVE-TELECOM
+ mpls l2vc 172.16.247.245 2079
+ mpls l2vpn flow-label both
+#
+interface Vlanif2143
+ description TRANS-CO-DIGITAL-TJGO
+ mpls l2vc 172.16.247.245 2143
+ mpls l2vpn flow-label both
+#
+interface Vlanif2204
+ description V2204-CLI-SVA-GNA
+ mpls l2vc 172.16.247.235 2204
+ mpls l2vpn flow-label both
+#
+interface Vlanif2501
+ description CLI-SICOOB-SP4-CYL-JCP-13793
+ mpls l2vc 10.15.43.1 2501
+ mpls l2vpn flow-label both
+#
+interface Vlanif2503
+ description CLI-SICOOB-SP4-SMQ-JCP-13795
+ mpls l2vc 10.15.43.1 2503
+ mpls l2vpn flow-label both
+#
+interface Vlanif2585
+ description V2585-PTP-SW3PESVAJET01-DIR-SW3PELLLTURBOLINK01
+ mtu 9000
+ ipv6 enable
+ ip address 10.11.1.121 255.255.255.252
+ ospf network-type p2p
+ mpls
+ mpls ldp
+#
+interface Vlanif2667
+#
+interface Vlanif2672
+ mtu 9192
+#
+interface Vlanif2676
+ description 2676-PTP-SW3PEGNAAQSJET-DIR-SW3PESVAJET01
+ mtu 9192
+ ip address 10.11.1.22 255.255.255.252
+ ospf network-type p2p
+ mpls
+ mpls ldp
+#
+interface Vlanif2677
+ description PTP-2677-SW3PESVAJET01-DIR-SW3PEBSBELEA
+ mtu 9000
+ ipv6 enable
+ ip address 10.11.1.26 255.255.255.252
+ ospf network-type p2p
+ mpls
+ mpls ldp
+#
+interface Vlanif3220
+ description TRANS-CO-DIGITAL-TRE
+ mpls l2vc 172.16.247.245 3220
+ mpls l2vpn flow-label both
+#
+interface Vlanif3544
+ description TRANS-LIVE-TELECOM
+ mpls l2vc 172.16.247.245 3544
+ mpls l2vpn flow-label both
+#
+interface Vlanif3613
+ description PTP-JET-VIA-LIVE-GAMELEIRA-ASILO
+ mpls l2vc 172.16.247.245 3613
+ mpls l2vpn flow-label both
+#
+interface Vlanif3639
+ description V3639-P2P-01-SW3-PE-VPS-SPNET-01
+ mpls l2vc 172.16.247.245 3639
+ mpls l2vpn flow-label both
+#
+interface Vlanif3992
+ description ALLREDE-SVA-CCS-1811-3992
+ mpls l2vc 172.16.247.235 3992
+ mpls l2vpn flow-label both
+#
+interface Vlanif3993
+ description ALLREDE-SVA-CCS-1811-3993
+ mpls l2vc 172.16.247.235 3993
+ mpls l2vpn flow-label both
+#
+interface MEth0/0/1
+ ip address 192.168.1.253 255.255.255.0
+#
+load-balance-profile PADRAO
+ l2 field smac dmac l2-protocol sport
+ ipv6 field sip dip l4-sport l4-dport protocol sport
+ ipv4 field sip dip l4-sport l4-dport protocol sport
+ mpls field top-label 2nd-label sip dip sport
+#
+interface Eth-Trunk0
+ description TRUNK-SW2-ACE-SVA-JET-01
+ port link-type trunk
+ undo port trunk allow-pass vlan 1
+ port trunk allow-pass vlan 3 5 10 99 107 109 to 111 114 to 115 117 to 118 120 to 122 126 to 131
+ port trunk allow-pass vlan 133 135 to 138 140 to 141 144 to 145 219 to 220 361 472 661 to 662 859 910
+ port trunk allow-pass vlan 984 1275 1606 1870
+ mode lacp
+#
+interface Eth-Trunk1
+ description PTP-MPLS-SILVANIA<>VIANOPOLIS
+ port link-type trunk
+ port trunk allow-pass vlan 422
+ mode lacp
+#
+interface Eth-Trunk2
+ description PTP-MPLS-SILVANIA<>BULHOES
+ port link-type trunk
+ port trunk allow-pass vlan 432
+ mode lacp
+#
+interface Eth-Trunk3
+ description CLI-TWO-TELECOM
+ port link-type trunk
+ mode lacp
+#
+interface Eth-Trunk4
+ description SILVANIA-BULHOES
+ port link-type trunk
+ undo port trunk allow-pass vlan 1
+ port trunk allow-pass vlan 2585
+ mode lacp
+#
+interface Eth-Trunk6
+ description TRUNK-SPEED-DIRETO
+ port link-type trunk
+ undo port trunk allow-pass vlan 1
+ port trunk allow-pass vlan 60 912 1268 1759 1934 to 1935
+ mode lacp
+ load-balance enhanced profile PADRAO
+#
+interface Eth-Trunk7
+ shutdown
+#
+interface Eth-Trunk8
+ description PTP-SW3PESVAJET01-DIR-SW3PEBSBELEA01
+ port link-type trunk
+ undo port trunk allow-pass vlan 1
+ port trunk allow-pass vlan 2677
+ mode lacp
+#
+interface Eth-Trunk9
+ description PTP-SW3PEGNAAQSJET-DIR-SW3PESVAJET01
+ port link-type trunk
+ undo port trunk allow-pass vlan 1
+ port trunk allow-pass vlan 2676
+ mode lacp
+#
+interface XGigabitEthernet0/0/1
+ description FIBRA01-TRUNK-SW2-ACE-SVA-JET-01
+ eth-trunk 0
+#
+interface XGigabitEthernet0/0/2
+ description FIBRA02-TRUNK-SW2-ACE-SVA-JET-01
+ eth-trunk 0
+#
+interface XGigabitEthernet0/0/3
+ description ATENDIMENTOS-JETELECOM
+ port link-type trunk
+ port trunk allow-pass vlan 6 10 13 25 69 113 118 120 122 125
+ port trunk allow-pass vlan 132 to 135 161 500 918 1321 1699 2143 3220 3992 to 3993
+#
+interface XGigabitEthernet0/0/4
+ description AS264040-TWO-TELECOM-RED-NETUTRA
+ port link-type trunk
+ undo port trunk allow-pass vlan 1
+ port trunk allow-pass vlan 18 917 to 919
+#
+interface XGigabitEthern[2026-01-15 19:04:24] [DEBUG] Sent heartbeat
+[2026-01-15 19:04:39] [DEBUG] Sent heartbeat
+[2026-01-15 19:04:54] [DEBUG] Sent heartbeat
+[2026-01-15 19:05:09] [DEBUG] Sent heartbeat
+[2026-01-15 19:05:24] [DEBUG] Sent heartbeat
+[2026-01-15 19:05:39] [DEBUG] Sent heartbeat
+[2026-01-15 19:05:54] [DEBUG] Sent heartbeat
+[2026-01-15 19:06:09] [DEBUG] Sent heartbeat
+[2026-01-15 19:06:24] [DEBUG] Sent heartbeat
+[2026-01-15 19:06:39] [DEBUG] Sent heartbeat
+[2026-01-15 19:06:54] [DEBUG] Sent heartbeat
+[2026-01-15 19:07:09] [DEBUG] Sent heartbeat
+[2026-01-15 19:07:24] [DEBUG] Sent heartbeat
+[2026-01-15 19:07:39] [DEBUG] Sent heartbeat
+[2026-01-15 19:07:54] [DEBUG] Sent heartbeat
+[2026-01-15 19:08:09] [DEBUG] Sent heartbeat
+[2026-01-15 19:08:24] [DEBUG] Sent heartbeat
+[2026-01-15 19:08:39] [DEBUG] Sent heartbeat
+[2026-01-15 19:08:54] [DEBUG] Sent heartbeat
+[2026-01-15 19:09:09] [DEBUG] Sent heartbeat
+
