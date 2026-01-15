@@ -1,0 +1,70 @@
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[~]# cd /opt/nbm-agent
+git pull origin main
+cp -f nbm-agent.sh /opt/nbm-agent/
+systemctl restart nbm-agent
+remote: Enumerating objects: 64, done.
+remote: Counting objects: 100% (64/64), done.
+remote: Compressing objects: 100% (39/39), done.
+remote: Total 57 (delta 47), reused 27 (delta 17), pack-reused 0 (from 0)
+Unpacking objects: 100% (57/57), 21.75 KiB | 436.00 KiB/s, done.
+From https://github.com/MarcioVVitor/Backup-Master
+ * branch            main       -> FETCH_HEAD
+   c38fdf7..34511f6  main       -> origin/main
+Updating c38fdf7..34511f6
+Fast-forward
+ agents/linux/nbm-agent.sh                                                   |  40 +++-
+ ...oot-SRV-AGENTE-PROXY-NBM-CLOUD-01-Instalar-expect-apt-_1768474826801.txt |  45 ++++
+ ...oot-SRV-AGENTE-PROXY-NBM-CLOUD-01-Ver-a-fun-o-de-backu_1768502636603.txt | 119 +++++++++++
+ ...oot-SRV-NBM-CLOUD-01-Carregar-as-vari-veis-e-reiniciar_1768475371908.txt |  65 ++++++
+ ...oot-SRV-NBM-CLOUD-01-Encontrar-e-matar-processo-na-por_1768475803756.txt |  63 ++++++
+ ...oot-SRV-NBM-CLOUD-01-Parar-todos-os-processos-PM2-pm2-_1768475847935.txt |  66 ++++++
+ ...oot-SRV-NBM-CLOUD-01-Ver-logs-de-erro-cat-var-log-nbm-_1768475320661.txt |  54 +++++
+ ...oot-SRV-NBM-CLOUD-01-Ver-ltimas-200-linhas-de-logs-com_1768474294805.txt | 408 ++++++++++++++++++++++++++++++++++++
+ ...oot-SRV-NBM-CLOUD-01-Ver-ltimos-backups-executados-pm2_1768476359196.txt |  22 ++
+ ...oot-SRV-NBM-CLOUD-01-cd-opt-nbm-cloud-git-pull-origin-_1768475669006.txt |  67 ++++++
+ ...oot-SRV-NBM-CLOUD-01-opt-nbm-cloud-cd-opt-nbm-cloud-Re_1768475746138.txt |  84 ++++++++
+ ...oot-SRV-NBM-CLOUD-01-pm2-logs-nbm-cloud-lines-100-grep_1768474210296.txt |  23 ++
+ ...oot-SRV-NBM-CLOUD-01-pm2-logs-nbm-cloud-lines-100-grep_1768500480191.txt |  10 +
+ ...oot-SRV-NBM-CLOUD-01-pm2-logs-nbm-cloud-lines-200-grep_1768500496799.txt |   9 +
+ ecosystem.config.cjs                                                        |  52 +++++
+ server/routes.ts                                                            |  23 +-
+ 16 files changed, 1136 insertions(+), 14 deletions(-)
+ create mode 100644 attached_assets/Pasted-root-SRV-AGENTE-PROXY-NBM-CLOUD-01-Instalar-expect-apt-_1768474826801.txt
+ create mode 100644 attached_assets/Pasted-root-SRV-AGENTE-PROXY-NBM-CLOUD-01-Ver-a-fun-o-de-backu_1768502636603.txt
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-Carregar-as-vari-veis-e-reiniciar_1768475371908.txt
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-Encontrar-e-matar-processo-na-por_1768475803756.txt
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-Parar-todos-os-processos-PM2-pm2-_1768475847935.txt
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-Ver-logs-de-erro-cat-var-log-nbm-_1768475320661.txt
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-Ver-ltimas-200-linhas-de-logs-com_1768474294805.txt
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-Ver-ltimos-backups-executados-pm2_1768476359196.txt
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-cd-opt-nbm-cloud-git-pull-origin-_1768475669006.txt
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-opt-nbm-cloud-cd-opt-nbm-cloud-Re_1768475746138.txt
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-pm2-logs-nbm-cloud-lines-100-grep_1768474210296.txt
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-pm2-logs-nbm-cloud-lines-100-grep_1768500480191.txt
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-pm2-logs-nbm-cloud-lines-200-grep_1768500496799.txt
+ create mode 100644 ecosystem.config.cjs
+cp: 'nbm-agent.sh' and '/opt/nbm-agent/nbm-agent.sh' are the same file
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[/opt/nbm-agent]# /opt/nbm-agent/nbm-agent.sh version
+tail -20 /opt/nbm-agent/logs/agent.log
+NBM CLOUD Agent v1.3.1
+[2026-01-15 15:45:57] [DEBUG] Sent heartbeat
+[2026-01-15 15:45:58] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-15T18:45:58.013Z"}
+[2026-01-15 15:45:58] [DEBUG] Heartbeat acknowledged
+[2026-01-15 15:46:13] [DEBUG] Sent heartbeat
+[2026-01-15 15:46:13] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-15T18:46:13.016Z"}
+[2026-01-15 15:46:13] [DEBUG] Heartbeat acknowledged
+[2026-01-15 15:46:22] [INFO] Stopping agent (PID: 69501)...
+[2026-01-15 15:46:22] [INFO] Agent stopped
+[2026-01-15 15:46:22] [INFO] Configuration loaded: Agent=proxy-grupojet-01, Server=http://143.255.197.25:5000
+[2026-01-15 15:46:22] [INFO] Starting NBM CLOUD Agent v1.3.1
+[2026-01-15 15:46:22] [INFO] Agent started with PID: 92766
+[2026-01-15 15:46:22] [INFO] Connecting to WebSocket: ws://143.255.197.25:5000/ws/agents
+[2026-01-15 15:46:22] [INFO] Establishing WebSocket connection...
+[2026-01-15 15:46:22] [DEBUG] WebSocket process started with PID: 92778
+[2026-01-15 15:46:22] [DEBUG] Sent auth message
+[2026-01-15 15:46:22] [DEBUG] Received: {"type":"auth_success","agentId":1,"config":null}
+[2026-01-15 15:46:22] [INFO] Authentication successful
+[2026-01-15 15:46:37] [DEBUG] Sent heartbeat
+[2026-01-15 15:46:37] [DEBUG] Received: {"type":"heartbeat_ack","timestamp":"2026-01-15T18:46:37.465Z"}
+[2026-01-15 15:46:37] [DEBUG] Heartbeat acknowledged
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[/opt/nbm-agent]# 
