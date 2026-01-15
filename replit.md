@@ -138,3 +138,80 @@ sudo ./install.sh
 - `systemctl restart nbm-agent` - Restart agent
 - `/opt/nbm-agent/nbm-agent.sh update` - Update from GitHub
 - `/opt/nbm-agent/nbm-agent.sh diagnostics` - Show diagnostics
+
+## Standalone Mode (Production Deployment)
+
+### Overview
+NBM CLOUD supports standalone mode for production deployment on Linux servers without Replit dependencies.
+
+### Detection
+- **Replit Mode**: When `REPL_ID` environment variable is present
+- **Standalone Mode**: When `REPL_ID` is not set
+
+### Authentication in Standalone Mode
+- **Implementation**: `server/standalone-auth.ts`
+- **Session Storage**: PostgreSQL using `connect-pg-simple`
+- **Password Hashing**: PBKDF2 with SHA-512
+- **Cookies**: HTTP-only, SameSite=Lax, Secure=false (for reverse proxy)
+- **First User**: Automatically becomes admin
+
+### Backup Storage in Standalone Mode
+- **Local Storage**: `server/local-storage.ts`
+- **Default Directory**: `/opt/nbm/backups` (configurable via `LOCAL_BACKUP_DIR`)
+- **Company Isolation**: Files stored in `company_{id}/backups/` subdirectories
+
+### High-Capacity Backup System
+- **Worker Pool**: 50 concurrent backup jobs (configurable up to 100)
+- **Timeout**: 10 minutes per backup (5 min execution + 5 min buffer)
+- **Retry**: 3 attempts with 10-second delay
+- **Batch Processing**: Up to 200 jobs per batch
+
+### Production Deployment Commands
+```bash
+# Initial setup
+cd /opt/nbm-cloud
+git pull origin main
+npm install
+npm run build
+npm run db:push
+
+# Start with PM2
+pm2 start ecosystem.config.cjs
+pm2 save
+
+# Apply updates
+cd /opt/nbm-cloud && git pull origin main && npm run build && pm2 restart nbm-cloud --update-env
+
+# View logs
+pm2 logs nbm-cloud
+```
+
+### Environment Variables for Standalone
+- `DATABASE_URL` - PostgreSQL connection string
+- `SESSION_SECRET` - Secret for session encryption
+- `LOCAL_BACKUP_DIR` - Custom backup directory (default: /opt/nbm/backups)
+- `PORT` - Server port (default: 5000)
+
+## Recent Changes (January 2026)
+
+### Session Fix for Standalone Authentication
+- Added explicit `req.session.save()` before responding to login/register
+- Fixed cookie persistence with `secure: false` and `sameSite: "lax"` for HTTP
+
+### Cache Invalidation on Login
+- Frontend now invalidates both `/api/auth/user` and `/api/server/check-admin` queries after login
+- Ensures Super Admin status is immediately reflected after login
+
+### Improved Backup Logging
+- Detailed logging for WebSocket backup_result handling
+- Logging for local storage file operations
+- Progress tracking for scheduled backup execution
+
+### Increased Backup Timeout
+- Changed from 2 minutes to 10 minutes total timeout
+- Better handling of large configuration backups (Huawei, Nokia, Juniper)
+
+### Worker Pool Optimization
+- Increased default concurrency from 10 to 50
+- Larger batch size (200 jobs)
+- Optimized for processing 2000+ backups per company

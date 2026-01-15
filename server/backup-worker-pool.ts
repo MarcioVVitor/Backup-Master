@@ -322,8 +322,8 @@ class BackupWorkerPool {
 }
 
 export const workerPool = new BackupWorkerPool({
-  maxConcurrency: 10,
-  batchSize: 100,
-  retryDelay: 5000,
+  maxConcurrency: 50,  // Increased for high-volume backup (up to 10,000 hosts)
+  batchSize: 200,      // Larger batches for efficiency
+  retryDelay: 10000,   // 10 seconds retry delay
   maxRetries: 3,
 });

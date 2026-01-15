@@ -4,6 +4,7 @@ import { workerPool } from "./backup-worker-pool";
 
 const SCHEDULER_INTERVAL = 60000; // Check every minute
 
+// High capacity configuration for 2000+ backups per company, up to 10,000 hosts
 const DEFAULT_CONCURRENCY = 50;
 const MAX_CONCURRENCY = 100;
 

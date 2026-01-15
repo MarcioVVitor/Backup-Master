@@ -2910,12 +2910,17 @@ export async function registerRoutes(
     }
     
     const jobId = `backup-${equip.id}-${Date.now()}`;
+    // Generous timeout: script timeout + 5 minutes buffer for large configs
+    const timeoutMs = (config.timeout || 300000) + 300000; // Default 5 min + 5 min buffer
+    
+    console.log(`[backup] Creating job ${jobId} for ${equip.name} with timeout ${timeoutMs}ms`);
     
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
+        console.error(`[backup] Timeout waiting for agent response for job ${jobId}`);
         pendingBackupJobs.delete(jobId);
-        reject(new Error('Timeout aguardando resposta do agente'));
-      }, (config.timeout || 60000) + 60000);
+        reject(new Error(`Timeout aguardando resposta do agente (${timeoutMs/1000}s)`));
+      }, timeoutMs);
       
       pendingBackupJobs.set(jobId, { resolve, reject, timeout });
       
@@ -2936,10 +2941,11 @@ export async function registerRoutes(
         config: {
           command: config.command,
           useShell: config.useShell,
-          timeout: config.timeout,
+          timeout: config.timeout || 300000,
         }
       };
-      console.log(`[backup] Sending backup_job to agent ${agentId}:`, JSON.stringify(backupMsg).substring(0, 200) + '...');
+      console.log(`[backup] Sending backup_job ${jobId} to agent ${agentId} for ${equip.name}`);
+      console.log(`[backup]   - IP: ${equip.ip}, Port: ${equip.port || 22}, Manufacturer: ${equip.manufacturer}`);
       ws.send(JSON.stringify(backupMsg));
     });
   }
@@ -2953,12 +2959,18 @@ export async function registerRoutes(
 
   // Initialize backup scheduler with executor that has access to agent refs
   const scheduledBackupExecutor = async (equipmentId: number, companyId: number): Promise<void> => {
+    console.log(`[scheduler] Starting backup for equipment ${equipmentId}, company ${companyId}`);
     const equip = await storage.getEquipmentById(equipmentId);
-    if (!equip || !equip.enabled) {
-      console.log(`[scheduler] Equipment ${equipmentId} not found or disabled`);
+    if (!equip) {
+      console.log(`[scheduler] Equipment ${equipmentId} not found`);
+      throw new Error(`Equipment ${equipmentId} not found`);
+    }
+    if (!equip.enabled) {
+      console.log(`[scheduler] Equipment ${equipmentId} (${equip.name}) is disabled`);
       return;
     }
 
+    console.log(`[scheduler] Equipment ${equipmentId}: ${equip.name} (${equip.manufacturer}) @ ${equip.ip}`);
     const startTime = Date.now();
     const historyRecord = await storage.createBackupHistory({
       equipmentId: equip.id,
@@ -2969,6 +2981,7 @@ export async function registerRoutes(
       executedBy: null,
       companyId: equip.companyId,
     });
+    console.log(`[scheduler] Created history record ${historyRecord.id} for ${equip.name}`);
 
     try {
       const config = await getBackupConfig(equip.manufacturer);
@@ -2994,25 +3007,38 @@ export async function registerRoutes(
         result = await executeSSHBackup(equip, config);
       }
 
+      console.log(`[scheduler] Backup execution completed for ${equip.name}, result length: ${result.length} bytes`);
+      
+      if (!result || result.length === 0) {
+        console.warn(`[scheduler] WARNING: Empty backup result for ${equip.name}`);
+      }
+
       const now = getBrazilTime();
       const dateStr = now.toISOString().slice(0,10).replace(/-/g,'') + '_' + now.toTimeString().slice(0,8).replace(/:/g,'');
       const filename = `${equip.name}_${dateStr}${config.extension}`;
       const objectName = `backups/${filename}`;
       const duration = (Date.now() - startTime) / 1000;
 
+      console.log(`[scheduler] Saving backup file: ${filename} (${result.length} bytes)`);
+
       // Save content to storage
       const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID;
       if (bucketId) {
+        console.log(`[scheduler] Using cloud storage (bucket: ${bucketId})`);
         const { objectStorageClient } = await import("./replit_integrations/object_storage/objectStorage");
         const bucket = objectStorageClient.bucket(bucketId);
         const file = bucket.file(objectName);
         await file.save(Buffer.from(result), { contentType: 'text/plain' });
+        console.log(`[scheduler] File saved to cloud storage: ${objectName}`);
       } else {
+        console.log(`[scheduler] Using local storage`);
         const { localStorageClient } = await import("./local-storage");
         await localStorageClient.saveFile(objectName, Buffer.from(result), equip.companyId || undefined);
+        console.log(`[scheduler] File saved to local storage: ${objectName}`);
       }
 
-      await storage.createBackup({
+      console.log(`[scheduler] Creating backup record in database`);
+      const backupRecord = await storage.createBackup({
         equipmentId: equip.id,
         filename,
         objectName,
@@ -3023,13 +3049,14 @@ export async function registerRoutes(
         userId: 1,
         createdAt: now,
       });
+      console.log(`[scheduler] Backup record created: id=${backupRecord.id}`);
 
       await storage.updateBackupHistory(historyRecord.id, {
         status: "success",
         duration,
       });
 
-      console.log(`[scheduler] Backup completed for ${equip.name} in ${duration}s, saved to ${objectName}`);
+      console.log(`[scheduler] ✓ Backup completed for ${equip.name} in ${duration.toFixed(2)}s, saved to ${objectName} (${result.length} bytes)`);
     } catch (err: any) {
       const duration = (Date.now() - startTime) / 1000;
       await storage.updateBackupHistory(historyRecord.id, {
@@ -3153,20 +3180,32 @@ export async function registerRoutes(
         
         // Handle backup result from agent
         if (message.type === 'backup_result') {
-          console.log(`[ws-agents] Received backup_result for jobId: ${message.jobId}, success: ${message.success}, output length: ${message.output?.length || 0}`);
+          const outputLen = message.output?.length || 0;
+          console.log(`[ws-agents] Received backup_result for jobId: ${message.jobId}`);
+          console.log(`[ws-agents]   - success: ${message.success}`);
+          console.log(`[ws-agents]   - output length: ${outputLen} bytes`);
+          console.log(`[ws-agents]   - error: ${message.error || 'none'}`);
+          console.log(`[ws-agents]   - pending jobs count: ${pendingBackupJobs.size}`);
+          
           const pending = pendingBackupJobs.get(message.jobId);
           if (pending) {
-            console.log(`[ws-agents] Found pending job, resolving...`);
+            console.log(`[ws-agents] Found pending job for ${message.jobId}, resolving...`);
             clearTimeout(pending.timeout);
             pendingBackupJobs.delete(message.jobId);
             
             if (message.success) {
-              pending.resolve(message.output);
+              if (outputLen === 0) {
+                console.warn(`[ws-agents] WARNING: Backup output is empty for jobId: ${message.jobId}`);
+              }
+              console.log(`[ws-agents] Resolving job ${message.jobId} with ${outputLen} bytes of output`);
+              pending.resolve(message.output || '');
             } else {
+              console.error(`[ws-agents] Backup failed for jobId: ${message.jobId}, error: ${message.error}`);
               pending.reject(new Error(message.error || 'Erro desconhecido no agente'));
             }
           } else {
-            console.log(`[ws-agents] No pending job found for jobId: ${message.jobId}`);
+            console.warn(`[ws-agents] No pending job found for jobId: ${message.jobId}`);
+            console.log(`[ws-agents] Current pending jobs: ${Array.from(pendingBackupJobs.keys()).join(', ')}`);
           }
         }
         
