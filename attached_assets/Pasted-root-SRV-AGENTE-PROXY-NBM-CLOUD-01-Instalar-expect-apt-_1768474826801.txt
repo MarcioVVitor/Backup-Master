@@ -1,0 +1,45 @@
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[~]# # Instalar expect
+apt-get install -y expect
+
+# Corrigir o config.json
+cat > /opt/nbm-agent/config.json << 'EOF'
+{
+    "serverUrl": "http://143.255.197.25:5000",
+    "name": "proxy-grupojet-01",
+    "agentId": 1,
+    "token": "60655194f8d3f859d3b74a4846b65881c698e39ac13b94c48793058478ffa75b"
+}
+EOF
+
+# Reiniciar o agente
+systemctl restart nbm-agent
+sleep 3 && tail -20 /opt/nbm-agent/logs/agent.log
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+expect is already the newest version (5.45.4-4).
+The following package was automatically installed and is no longer required:
+  linux-image-6.12.43+deb13-amd64
+Use 'apt autoremove' to remove it.
+0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
+[2026-01-15 07:59:53] [ERROR] Authentication failed: Token inválido
+[2026-01-15 07:59:53] [WARN] WebSocket disconnected, reconnecting in 10 seconds...
+[2026-01-15 08:00:03] [INFO] Establishing WebSocket connection...
+[2026-01-15 08:00:03] [DEBUG] WebSocket process started with PID: 68964
+[2026-01-15 08:00:03] [DEBUG] Sent auth message
+[2026-01-15 08:00:03] [DEBUG] Received: {"type":"auth_error","message":"Token inválido"}
+[2026-01-15 08:00:03] [ERROR] Authentication failed: Token inválido
+[2026-01-15 08:00:03] [WARN] WebSocket disconnected, reconnecting in 10 seconds...
+[2026-01-15 08:00:12] [INFO] Stopping agent (PID: 68620)...
+[2026-01-15 08:00:12] [INFO] Agent stopped
+[2026-01-15 08:00:12] [INFO] Configuration loaded: Agent=proxy-grupojet-01, Server=http://143.255.197.25:5000
+[2026-01-15 08:00:12] [INFO] Starting NBM CLOUD Agent v1.3.0
+[2026-01-15 08:00:12] [INFO] Agent started with PID: 68999
+[2026-01-15 08:00:12] [INFO] Connecting to WebSocket: ws://143.255.197.25:5000/ws/agents
+[2026-01-15 08:00:12] [INFO] Establishing WebSocket connection...
+[2026-01-15 08:00:12] [DEBUG] WebSocket process started with PID: 69011
+[2026-01-15 08:00:12] [DEBUG] Sent auth message
+[2026-01-15 08:00:12] [DEBUG] Received: {"type":"auth_error","message":"Token inválido"}
+[2026-01-15 08:00:12] [ERROR] Authentication failed: Token inválido
+[2026-01-15 08:00:12] [WARN] WebSocket disconnected, reconnecting in 10 seconds...
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[~]# 
