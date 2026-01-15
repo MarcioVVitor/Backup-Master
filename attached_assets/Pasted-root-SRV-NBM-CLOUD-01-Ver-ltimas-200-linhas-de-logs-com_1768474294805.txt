@@ -1,0 +1,408 @@
+root@SRV-NBM-CLOUD-01[~]# # Ver últimas 200 linhas de logs completos
+pm2 logs nbm-cloud --lines 200 --nostream
+[TAILING] Tailing last 200 lines for [nbm-cloud] process (change the value with --lines option)
+/var/log/nbm-cloud/out-0.log last 200 lines:
+0|nbm-clou | 2026-01-14T22:18:26: [worker-pool] 14/01/2026, 22:18:26 - Worker pool initialized with concurrency: 50
+0|nbm-clou | 2026-01-14T22:18:26: [standalone-auth] Setting up standalone authentication routes
+0|nbm-clou | 2026-01-14T22:18:26: [scheduler] 14/01/2026, 22:18:26 - Backup executor registered for scheduler and worker pool
+0|nbm-clou | 2026-01-14T22:18:26: [scheduler] 14/01/2026, 22:18:26 - Starting backup scheduler...
+0|nbm-clou | 2026-01-14T22:18:26: [scheduler] 14/01/2026, 22:18:26 - Timezone: System (Linux)
+0|nbm-clou | 2026-01-14T22:18:26: [scheduler] 14/01/2026, 22:18:26 - Check interval: 60 seconds
+0|nbm-clou | 2026-01-14T22:18:26: [scheduler] 14/01/2026, 22:18:26 - Worker pool concurrency: 50
+0|nbm-clou | 2026-01-14T22:18:26: [scheduler] 14/01/2026, 22:18:26 - Current time: 22:18, Day of week: 3, Day of month: 14
+0|nbm-clou | 2026-01-14T22:18:26: [scheduler] 14/01/2026, 22:18:26 - Scheduler started successfully
+0|nbm-clou | 2026-01-14T22:18:26: [static] Serving static files from: /opt/nbm-cloud/dist/public
+0|nbm-clou | 2026-01-14T22:18:26: [worker-pool] 14/01/2026, 22:18:26 - Worker pool initialized with concurrency: 50
+0|nbm-clou | 2026-01-14T22:18:26: [standalone-auth] Setting up standalone authentication routes
+0|nbm-clou | 2026-01-14T22:18:26: [scheduler] 14/01/2026, 22:18:26 - Backup executor registered for scheduler and worker pool
+0|nbm-clou | 2026-01-14T22:18:26: [scheduler] 14/01/2026, 22:18:26 - Starting backup scheduler...
+0|nbm-clou | 2026-01-14T22:18:26: [scheduler] 14/01/2026, 22:18:26 - Timezone: System (Linux)
+0|nbm-clou | 2026-01-14T22:18:26: [scheduler] 14/01/2026, 22:18:26 - Check interval: 60 seconds
+0|nbm-clou | 2026-01-14T22:18:26: [scheduler] 14/01/2026, 22:18:26 - Worker pool concurrency: 50
+0|nbm-clou | 2026-01-14T22:18:26: [scheduler] 14/01/2026, 22:18:26 - Current time: 22:18, Day of week: 3, Day of month: 14
+0|nbm-clou | 2026-01-14T22:18:26: [scheduler] 14/01/2026, 22:18:26 - Scheduler started successfully
+0|nbm-clou | 2026-01-14T22:18:26: [static] Serving static files from: /opt/nbm-cloud/dist/public
+0|nbm-clou | 2026-01-14T22:18:27: [worker-pool] 14/01/2026, 22:18:27 - Worker pool initialized with concurrency: 50
+0|nbm-clou | 2026-01-14T22:18:27: [standalone-auth] Setting up standalone authentication routes
+0|nbm-clou | 2026-01-14T22:18:27: [scheduler] 14/01/2026, 22:18:27 - Backup executor registered for scheduler and worker pool
+0|nbm-clou | 2026-01-14T22:18:27: [scheduler] 14/01/2026, 22:18:27 - Starting backup scheduler...
+0|nbm-clou | 2026-01-14T22:18:27: [scheduler] 14/01/2026, 22:18:27 - Timezone: System (Linux)
+0|nbm-clou | 2026-01-14T22:18:27: [scheduler] 14/01/2026, 22:18:27 - Check interval: 60 seconds
+0|nbm-clou | 2026-01-14T22:18:27: [scheduler] 14/01/2026, 22:18:27 - Worker pool concurrency: 50
+0|nbm-clou | 2026-01-14T22:18:27: [scheduler] 14/01/2026, 22:18:27 - Current time: 22:18, Day of week: 3, Day of month: 14
+0|nbm-clou | 2026-01-14T22:18:27: [scheduler] 14/01/2026, 22:18:27 - Scheduler started successfully
+0|nbm-clou | 2026-01-14T22:18:27: [static] Serving static files from: /opt/nbm-cloud/dist/public
+0|nbm-clou | 2026-01-14T22:18:28: [worker-pool] 14/01/2026, 22:18:28 - Worker pool initialized with concurrency: 50
+0|nbm-clou | 2026-01-14T22:18:28: [standalone-auth] Setting up standalone authentication routes
+0|nbm-clou | 2026-01-14T22:18:28: [scheduler] 14/01/2026, 22:18:28 - Backup executor registered for scheduler and worker pool
+0|nbm-clou | 2026-01-14T22:18:28: [scheduler] 14/01/2026, 22:18:28 - Starting backup scheduler...
+0|nbm-clou | 2026-01-14T22:18:28: [scheduler] 14/01/2026, 22:18:28 - Timezone: System (Linux)
+0|nbm-clou | 2026-01-14T22:18:28: [scheduler] 14/01/2026, 22:18:28 - Check interval: 60 seconds
+0|nbm-clou | 2026-01-14T22:18:28: [scheduler] 14/01/2026, 22:18:28 - Worker pool concurrency: 50
+0|nbm-clou | 2026-01-14T22:18:28: [scheduler] 14/01/2026, 22:18:28 - Current time: 22:18, Day of week: 3, Day of month: 14
+0|nbm-clou | 2026-01-14T22:18:28: [scheduler] 14/01/2026, 22:18:28 - Scheduler started successfully
+0|nbm-clou | 2026-01-14T22:18:28: [static] Serving static files from: /opt/nbm-cloud/dist/public
+0|nbm-clou | 2026-01-14T22:18:28: [worker-pool] 14/01/2026, 22:18:28 - Worker pool initialized with concurrency: 50
+0|nbm-clou | 2026-01-14T22:18:28: [standalone-auth] Setting up standalone authentication routes
+0|nbm-clou | 2026-01-14T22:18:28: [scheduler] 14/01/2026, 22:18:28 - Backup executor registered for scheduler and worker pool
+0|nbm-clou | 2026-01-14T22:18:28: [scheduler] 14/01/2026, 22:18:28 - Starting backup scheduler...
+0|nbm-clou | 2026-01-14T22:18:28: [scheduler] 14/01/2026, 22:18:28 - Timezone: System (Linux)
+0|nbm-clou | 2026-01-14T22:18:28: [scheduler] 14/01/2026, 22:18:28 - Check interval: 60 seconds
+0|nbm-clou | 2026-01-14T22:18:28: [scheduler] 14/01/2026, 22:18:28 - Worker pool concurrency: 50
+0|nbm-clou | 2026-01-14T22:18:28: [scheduler] 14/01/2026, 22:18:28 - Current time: 22:18, Day of week: 3, Day of month: 14
+0|nbm-clou | 2026-01-14T22:18:28: [scheduler] 14/01/2026, 22:18:28 - Scheduler started successfully
+0|nbm-clou | 2026-01-14T22:18:28: [static] Serving static files from: /opt/nbm-cloud/dist/public
+0|nbm-clou | 2026-01-14T22:18:29: [worker-pool] 14/01/2026, 22:18:29 - Worker pool initialized with concurrency: 50
+0|nbm-clou | 2026-01-14T22:18:29: [standalone-auth] Setting up standalone authentication routes
+0|nbm-clou | 2026-01-14T22:18:29: [scheduler] 14/01/2026, 22:18:29 - Backup executor registered for scheduler and worker pool
+0|nbm-clou | 2026-01-14T22:18:29: [scheduler] 14/01/2026, 22:18:29 - Starting backup scheduler...
+0|nbm-clou | 2026-01-14T22:18:29: [scheduler] 14/01/2026, 22:18:29 - Timezone: System (Linux)
+0|nbm-clou | 2026-01-14T22:18:29: [scheduler] 14/01/2026, 22:18:29 - Check interval: 60 seconds
+0|nbm-clou | 2026-01-14T22:18:29: [scheduler] 14/01/2026, 22:18:29 - Worker pool concurrency: 50
+0|nbm-clou | 2026-01-14T22:18:29: [scheduler] 14/01/2026, 22:18:29 - Current time: 22:18, Day of week: 3, Day of month: 14
+0|nbm-clou | 2026-01-14T22:18:29: [scheduler] 14/01/2026, 22:18:29 - Scheduler started successfully
+0|nbm-clou | 2026-01-14T22:18:29: [static] Serving static files from: /opt/nbm-cloud/dist/public
+0|nbm-clou | 2026-01-14T22:18:30: [worker-pool] 14/01/2026, 22:18:30 - Worker pool initialized with concurrency: 50
+0|nbm-clou | 2026-01-14T22:18:30: [standalone-auth] Setting up standalone authentication routes
+0|nbm-clou | 2026-01-14T22:18:30: [scheduler] 14/01/2026, 22:18:30 - Backup executor registered for scheduler and worker pool
+0|nbm-clou | 2026-01-14T22:18:30: [scheduler] 14/01/2026, 22:18:30 - Starting backup scheduler...
+0|nbm-clou | 2026-01-14T22:18:30: [scheduler] 14/01/2026, 22:18:30 - Timezone: System (Linux)
+0|nbm-clou | 2026-01-14T22:18:30: [scheduler] 14/01/2026, 22:18:30 - Check interval: 60 seconds
+0|nbm-clou | 2026-01-14T22:18:30: [scheduler] 14/01/2026, 22:18:30 - Worker pool concurrency: 50
+0|nbm-clou | 2026-01-14T22:18:30: [scheduler] 14/01/2026, 22:18:30 - Current time: 22:18, Day of week: 3, Day of month: 14
+0|nbm-clou | 2026-01-14T22:18:30: [scheduler] 14/01/2026, 22:18:30 - Scheduler started successfully
+0|nbm-clou | 2026-01-14T22:18:30: [static] Serving static files from: /opt/nbm-cloud/dist/public
+0|nbm-clou | 2026-01-14T22:18:30: [worker-pool] 14/01/2026, 22:18:30 - Worker pool initialized with concurrency: 50
+0|nbm-clou | 2026-01-14T22:18:30: [standalone-auth] Setting up standalone authentication routes
+0|nbm-clou | 2026-01-14T22:18:30: [scheduler] 14/01/2026, 22:18:30 - Backup executor registered for scheduler and worker pool
+0|nbm-clou | 2026-01-14T22:18:30: [scheduler] 14/01/2026, 22:18:30 - Starting backup scheduler...
+0|nbm-clou | 2026-01-14T22:18:30: [scheduler] 14/01/2026, 22:18:30 - Timezone: System (Linux)
+0|nbm-clou | 2026-01-14T22:18:30: [scheduler] 14/01/2026, 22:18:30 - Check interval: 60 seconds
+0|nbm-clou | 2026-01-14T22:18:30: [scheduler] 14/01/2026, 22:18:30 - Worker pool concurrency: 50
+0|nbm-clou | 2026-01-14T22:18:30: [scheduler] 14/01/2026, 22:18:30 - Current time: 22:18, Day of week: 3, Day of month: 14
+0|nbm-clou | 2026-01-14T22:18:30: [scheduler] 14/01/2026, 22:18:30 - Scheduler started successfully
+0|nbm-clou | 2026-01-14T22:18:30: [static] Serving static files from: /opt/nbm-cloud/dist/public
+0|nbm-clou | 2026-01-14T22:18:31: [worker-pool] 14/01/2026, 22:18:31 - Worker pool initialized with concurrency: 50
+0|nbm-clou | 2026-01-14T22:18:31: [standalone-auth] Setting up standalone authentication routes
+0|nbm-clou | 2026-01-14T22:18:31: [scheduler] 14/01/2026, 22:18:31 - Backup executor registered for scheduler and worker pool
+0|nbm-clou | 2026-01-14T22:18:31: [scheduler] 14/01/2026, 22:18:31 - Starting backup scheduler...
+0|nbm-clou | 2026-01-14T22:18:31: [scheduler] 14/01/2026, 22:18:31 - Timezone: System (Linux)
+0|nbm-clou | 2026-01-14T22:18:31: [scheduler] 14/01/2026, 22:18:31 - Check interval: 60 seconds
+0|nbm-clou | 2026-01-14T22:18:31: [scheduler] 14/01/2026, 22:18:31 - Worker pool concurrency: 50
+0|nbm-clou | 2026-01-14T22:18:31: [scheduler] 14/01/2026, 22:18:31 - Current time: 22:18, Day of week: 3, Day of month: 14
+0|nbm-clou | 2026-01-14T22:18:31: [scheduler] 14/01/2026, 22:18:31 - Scheduler started successfully
+0|nbm-clou | 2026-01-14T22:18:31: [static] Serving static files from: /opt/nbm-cloud/dist/public
+0|nbm-clou | 2026-01-14T22:18:31: [worker-pool] 14/01/2026, 22:18:31 - Worker pool initialized with concurrency: 50
+0|nbm-clou | 2026-01-14T22:18:31: [standalone-auth] Setting up standalone authentication routes
+0|nbm-clou | 2026-01-14T22:18:31: [scheduler] 14/01/2026, 22:18:31 - Backup executor registered for scheduler and worker pool
+0|nbm-clou | 2026-01-14T22:18:31: [scheduler] 14/01/2026, 22:18:31 - Starting backup scheduler...
+0|nbm-clou | 2026-01-14T22:18:31: [scheduler] 14/01/2026, 22:18:31 - Timezone: System (Linux)
+0|nbm-clou | 2026-01-14T22:18:31: [scheduler] 14/01/2026, 22:18:31 - Check interval: 60 seconds
+0|nbm-clou | 2026-01-14T22:18:31: [scheduler] 14/01/2026, 22:18:31 - Worker pool concurrency: 50
+0|nbm-clou | 2026-01-14T22:18:31: [scheduler] 14/01/2026, 22:18:31 - Current time: 22:18, Day of week: 3, Day of month: 14
+0|nbm-clou | 2026-01-14T22:18:31: [scheduler] 14/01/2026, 22:18:31 - Scheduler started successfully
+0|nbm-clou | 2026-01-14T22:18:31: [static] Serving static files from: /opt/nbm-cloud/dist/public
+0|nbm-clou | 2026-01-14T22:18:32: [worker-pool] 14/01/2026, 22:18:32 - Worker pool initialized with concurrency: 50
+0|nbm-clou | 2026-01-14T22:18:32: [standalone-auth] Setting up standalone authentication routes
+0|nbm-clou | 2026-01-14T22:18:32: [scheduler] 14/01/2026, 22:18:32 - Backup executor registered for scheduler and worker pool
+0|nbm-clou | 2026-01-14T22:18:32: [scheduler] 14/01/2026, 22:18:32 - Starting backup scheduler...
+0|nbm-clou | 2026-01-14T22:18:32: [scheduler] 14/01/2026, 22:18:32 - Timezone: System (Linux)
+0|nbm-clou | 2026-01-14T22:18:32: [scheduler] 14/01/2026, 22:18:32 - Check interval: 60 seconds
+0|nbm-clou | 2026-01-14T22:18:32: [scheduler] 14/01/2026, 22:18:32 - Worker pool concurrency: 50
+0|nbm-clou | 2026-01-14T22:18:32: [scheduler] 14/01/2026, 22:18:32 - Current time: 22:18, Day of week: 3, Day of month: 14
+0|nbm-clou | 2026-01-14T22:18:32: [scheduler] 14/01/2026, 22:18:32 - Scheduler started successfully
+0|nbm-clou | 2026-01-14T22:18:32: [static] Serving static files from: /opt/nbm-cloud/dist/public
+0|nbm-clou | 2026-01-14T22:18:32: [worker-pool] 14/01/2026, 22:18:32 - Worker pool initialized with concurrency: 50
+0|nbm-clou | 2026-01-14T22:18:32: [standalone-auth] Setting up standalone authentication routes
+0|nbm-clou | 2026-01-14T22:18:32: [scheduler] 14/01/2026, 22:18:32 - Backup executor registered for scheduler and worker pool
+0|nbm-clou | 2026-01-14T22:18:32: [scheduler] 14/01/2026, 22:18:32 - Starting backup scheduler...
+0|nbm-clou | 2026-01-14T22:18:32: [scheduler] 14/01/2026, 22:18:32 - Timezone: System (Linux)
+0|nbm-clou | 2026-01-14T22:18:32: [scheduler] 14/01/2026, 22:18:32 - Check interval: 60 seconds
+0|nbm-clou | 2026-01-14T22:18:32: [scheduler] 14/01/2026, 22:18:32 - Worker pool concurrency: 50
+0|nbm-clou | 2026-01-14T22:18:32: [scheduler] 14/01/2026, 22:18:32 - Current time: 22:18, Day of week: 3, Day of month: 14
+0|nbm-clou | 2026-01-14T22:18:32: [scheduler] 14/01/2026, 22:18:32 - Scheduler started successfully
+0|nbm-clou | 2026-01-14T22:18:33: [static] Serving static files from: /opt/nbm-cloud/dist/public
+0|nbm-clou | 2026-01-14T22:18:33: [worker-pool] 14/01/2026, 22:18:33 - Worker pool initialized with concurrency: 50
+0|nbm-clou | 2026-01-14T22:18:33: [standalone-auth] Setting up standalone authentication routes
+0|nbm-clou | 2026-01-14T22:18:33: [scheduler] 14/01/2026, 22:18:33 - Backup executor registered for scheduler and worker pool
+0|nbm-clou | 2026-01-14T22:18:33: [scheduler] 14/01/2026, 22:18:33 - Starting backup scheduler...
+0|nbm-clou | 2026-01-14T22:18:33: [scheduler] 14/01/2026, 22:18:33 - Timezone: System (Linux)
+0|nbm-clou | 2026-01-14T22:18:33: [scheduler] 14/01/2026, 22:18:33 - Check interval: 60 seconds
+0|nbm-clou | 2026-01-14T22:18:33: [scheduler] 14/01/2026, 22:18:33 - Worker pool concurrency: 50
+0|nbm-clou | 2026-01-14T22:18:33: [scheduler] 14/01/2026, 22:18:33 - Current time: 22:18, Day of week: 3, Day of month: 14
+0|nbm-clou | 2026-01-14T22:18:33: [scheduler] 14/01/2026, 22:18:33 - Scheduler started successfully
+0|nbm-clou | 2026-01-14T22:18:33: [static] Serving static files from: /opt/nbm-cloud/dist/public
+0|nbm-clou | 2026-01-14T22:18:34: [worker-pool] 14/01/2026, 22:18:34 - Worker pool initialized with concurrency: 50
+0|nbm-clou | 2026-01-14T22:18:34: [standalone-auth] Setting up standalone authentication routes
+0|nbm-clou | 2026-01-14T22:18:34: [scheduler] 14/01/2026, 22:18:34 - Backup executor registered for scheduler and worker pool
+0|nbm-clou | 2026-01-14T22:18:34: [scheduler] 14/01/2026, 22:18:34 - Starting backup scheduler...
+0|nbm-clou | 2026-01-14T22:18:34: [scheduler] 14/01/2026, 22:18:34 - Timezone: System (Linux)
+0|nbm-clou | 2026-01-14T22:18:34: [scheduler] 14/01/2026, 22:18:34 - Check interval: 60 seconds
+0|nbm-clou | 2026-01-14T22:18:34: [scheduler] 14/01/2026, 22:18:34 - Worker pool concurrency: 50
+0|nbm-clou | 2026-01-14T22:18:34: [scheduler] 14/01/2026, 22:18:34 - Current time: 22:18, Day of week: 3, Day of month: 14
+0|nbm-clou | 2026-01-14T22:18:34: [scheduler] 14/01/2026, 22:18:34 - Scheduler started successfully
+0|nbm-clou | 2026-01-14T22:18:34: [static] Serving static files from: /opt/nbm-cloud/dist/public
+0|nbm-clou | 2026-01-14T22:18:34: [worker-pool] 14/01/2026, 22:18:34 - Worker pool initialized with concurrency: 50
+0|nbm-clou | 2026-01-14T22:18:34: [standalone-auth] Setting up standalone authentication routes
+0|nbm-clou | 2026-01-14T22:18:34: [scheduler] 14/01/2026, 22:18:34 - Backup executor registered for scheduler and worker pool
+0|nbm-clou | 2026-01-14T22:18:34: [scheduler] 14/01/2026, 22:18:34 - Starting backup scheduler...
+0|nbm-clou | 2026-01-14T22:18:34: [scheduler] 14/01/2026, 22:18:34 - Timezone: System (Linux)
+0|nbm-clou | 2026-01-14T22:18:34: [scheduler] 14/01/2026, 22:18:34 - Check interval: 60 seconds
+0|nbm-clou | 2026-01-14T22:18:34: [scheduler] 14/01/2026, 22:18:34 - Worker pool concurrency: 50
+0|nbm-clou | 2026-01-14T22:18:34: [scheduler] 14/01/2026, 22:18:34 - Current time: 22:18, Day of week: 3, Day of month: 14
+0|nbm-clou | 2026-01-14T22:18:34: [scheduler] 14/01/2026, 22:18:34 - Scheduler started successfully
+0|nbm-clou | 2026-01-14T22:18:34: [static] Serving static files from: /opt/nbm-cloud/dist/public
+0|nbm-clou | 2026-01-14T22:18:35: [worker-pool] 14/01/2026, 22:18:35 - Worker pool initialized with concurrency: 50
+0|nbm-clou | 2026-01-14T22:18:35: [standalone-auth] Setting up standalone authentication routes
+0|nbm-clou | 2026-01-14T22:18:35: [scheduler] 14/01/2026, 22:18:35 - Backup executor registered for scheduler and worker pool
+0|nbm-clou | 2026-01-14T22:18:35: [scheduler] 14/01/2026, 22:18:35 - Starting backup scheduler...
+0|nbm-clou | 2026-01-14T22:18:35: [scheduler] 14/01/2026, 22:18:35 - Timezone: System (Linux)
+0|nbm-clou | 2026-01-14T22:18:35: [scheduler] 14/01/2026, 22:18:35 - Check interval: 60 seconds
+0|nbm-clou | 2026-01-14T22:18:35: [scheduler] 14/01/2026, 22:18:35 - Worker pool concurrency: 50
+0|nbm-clou | 2026-01-14T22:18:35: [scheduler] 14/01/2026, 22:18:35 - Current time: 22:18, Day of week: 3, Day of month: 14
+0|nbm-clou | 2026-01-14T22:18:35: [scheduler] 14/01/2026, 22:18:35 - Scheduler started successfully
+0|nbm-clou | 2026-01-14T22:18:35: [static] Serving static files from: /opt/nbm-cloud/dist/public
+0|nbm-clou | 2026-01-14T23:29:09: [worker-pool] 14/01/2026, 23:29:09 - Worker pool initialized with concurrency: 50
+0|nbm-clou | 2026-01-14T23:29:09: [standalone-auth] Setting up standalone authentication routes
+0|nbm-clou | 2026-01-14T23:29:09: [scheduler] 14/01/2026, 23:29:09 - Backup executor registered for scheduler and worker pool
+0|nbm-clou | 2026-01-14T23:29:09: [scheduler] 14/01/2026, 23:29:09 - Starting backup scheduler...
+0|nbm-clou | 2026-01-14T23:29:09: [scheduler] 14/01/2026, 23:29:09 - Timezone: System (Linux)
+0|nbm-clou | 2026-01-14T23:29:09: [scheduler] 14/01/2026, 23:29:09 - Check interval: 60 seconds
+0|nbm-clou | 2026-01-14T23:29:09: [scheduler] 14/01/2026, 23:29:09 - Worker pool concurrency: 50
+0|nbm-clou | 2026-01-14T23:29:09: [scheduler] 14/01/2026, 23:29:09 - Current time: 23:29, Day of week: 3, Day of month: 14
+0|nbm-clou | 2026-01-14T23:29:09: [scheduler] 14/01/2026, 23:29:09 - Scheduler started successfully
+0|nbm-clou | 2026-01-14T23:29:09: [static] Serving static files from: /opt/nbm-cloud/dist/public
+0|nbm-clou | 2026-01-14T23:29:09: [worker-pool] 14/01/2026, 23:29:09 - Worker pool initialized with concurrency: 50
+0|nbm-clou | 2026-01-14T23:29:09: [standalone-auth] Setting up standalone authentication routes
+0|nbm-clou | 2026-01-14T23:29:09: [scheduler] 14/01/2026, 23:29:09 - Backup executor registered for scheduler and worker pool
+0|nbm-clou | 2026-01-14T23:29:09: [scheduler] 14/01/2026, 23:29:09 - Starting backup scheduler...
+0|nbm-clou | 2026-01-14T23:29:09: [scheduler] 14/01/2026, 23:29:09 - Timezone: System (Linux)
+0|nbm-clou | 2026-01-14T23:29:09: [scheduler] 14/01/2026, 23:29:09 - Check interval: 60 seconds
+0|nbm-clou | 2026-01-14T23:29:09: [scheduler] 14/01/2026, 23:29:09 - Worker pool concurrency: 50
+0|nbm-clou | 2026-01-14T23:29:09: [scheduler] 14/01/2026, 23:29:09 - Current time: 23:29, Day of week: 3, Day of month: 14
+0|nbm-clou | 2026-01-14T23:29:09: [scheduler] 14/01/2026, 23:29:09 - Scheduler started successfully
+0|nbm-clou | 2026-01-14T23:29:09: [static] Serving static files from: /opt/nbm-cloud/dist/public
+0|nbm-clou | 2026-01-14T23:29:10: [worker-pool] 14/01/2026, 23:29:10 - Worker pool initialized with concurrency: 50
+0|nbm-clou | 2026-01-14T23:29:10: [standalone-auth] Setting up standalone authentication routes
+0|nbm-clou | 2026-01-14T23:29:10: [scheduler] 14/01/2026, 23:29:10 - Backup executor registered for scheduler and worker pool
+0|nbm-clou | 2026-01-14T23:29:10: [scheduler] 14/01/2026, 23:29:10 - Starting backup scheduler...
+0|nbm-clou | 2026-01-14T23:29:10: [scheduler] 14/01/2026, 23:29:10 - Timezone: System (Linux)
+0|nbm-clou | 2026-01-14T23:29:10: [scheduler] 14/01/2026, 23:29:10 - Check interval: 60 seconds
+0|nbm-clou | 2026-01-14T23:29:10: [scheduler] 14/01/2026, 23:29:10 - Worker pool concurrency: 50
+0|nbm-clou | 2026-01-14T23:29:10: [scheduler] 14/01/2026, 23:29:10 - Current time: 23:29, Day of week: 3, Day of month: 14
+0|nbm-clou | 2026-01-14T23:29:10: [scheduler] 14/01/2026, 23:29:10 - Scheduler started successfully
+0|nbm-clou | 2026-01-14T23:29:10: [static] Serving static files from: /opt/nbm-cloud/dist/public
+0|nbm-clou | 2026-01-14T23:29:10: [worker-pool] 14/01/2026, 23:29:10 - Worker pool initialized with concurrency: 50
+0|nbm-clou | 2026-01-14T23:29:10: [standalone-auth] Setting up standalone authentication routes
+0|nbm-clou | 2026-01-14T23:29:10: [scheduler] 14/01/2026, 23:29:10 - Backup executor registered for scheduler and worker pool
+0|nbm-clou | 2026-01-14T23:29:10: [scheduler] 14/01/2026, 23:29:10 - Starting backup scheduler...
+0|nbm-clou | 2026-01-14T23:29:10: [scheduler] 14/01/2026, 23:29:10 - Timezone: System (Linux)
+0|nbm-clou | 2026-01-14T23:29:10: [scheduler] 14/01/2026, 23:29:10 - Check interval: 60 seconds
+0|nbm-clou | 2026-01-14T23:29:10: [scheduler] 14/01/2026, 23:29:10 - Worker pool concurrency: 50
+0|nbm-clou | 2026-01-14T23:29:10: [scheduler] 14/01/2026, 23:29:10 - Current time: 23:29, Day of week: 3, Day of month: 14
+0|nbm-clou | 2026-01-14T23:29:10: [scheduler] 14/01/2026, 23:29:10 - Scheduler started successfully
+0|nbm-clou | 2026-01-14T23:29:10: [static] Serving static files from: /opt/nbm-cloud/dist/public
+
+/var/log/nbm-cloud/error-0.log last 200 lines:
+0|nbm-clou | 2026-01-14T22:18:30:   port: 5000
+0|nbm-clou | 2026-01-14T22:18:30: }
+0|nbm-clou | 2026-01-14T22:18:30: Error: listen EADDRINUSE: address already in use 0.0.0.0:5000
+0|nbm-clou | 2026-01-14T22:18:30:     at Server.setupListenHandle [as _listen2] (node:net:1908:16)
+0|nbm-clou | 2026-01-14T22:18:30:     at listenInCluster (node:net:1965:12)
+0|nbm-clou | 2026-01-14T22:18:30:     at doListen (node:net:2139:7)
+0|nbm-clou | 2026-01-14T22:18:30:     at process.processTicksAndRejections (node:internal/process/task_queues:83:21) {
+0|nbm-clou | 2026-01-14T22:18:30:   code: 'EADDRINUSE',
+0|nbm-clou | 2026-01-14T22:18:30:   errno: -98,
+0|nbm-clou | 2026-01-14T22:18:30:   syscall: 'listen',
+0|nbm-clou | 2026-01-14T22:18:30:   address: '0.0.0.0',
+0|nbm-clou | 2026-01-14T22:18:30:   port: 5000
+0|nbm-clou | 2026-01-14T22:18:30: }
+0|nbm-clou | 2026-01-14T22:18:31: Error: listen EADDRINUSE: address already in use 0.0.0.0:5000
+0|nbm-clou | 2026-01-14T22:18:31:     at Server.setupListenHandle [as _listen2] (node:net:1908:16)
+0|nbm-clou | 2026-01-14T22:18:31:     at listenInCluster (node:net:1965:12)
+0|nbm-clou | 2026-01-14T22:18:31:     at doListen (node:net:2139:7)
+0|nbm-clou | 2026-01-14T22:18:31:     at process.processTicksAndRejections (node:internal/process/task_queues:83:21) {
+0|nbm-clou | 2026-01-14T22:18:31:   code: 'EADDRINUSE',
+0|nbm-clou | 2026-01-14T22:18:31:   errno: -98,
+0|nbm-clou | 2026-01-14T22:18:31:   syscall: 'listen',
+0|nbm-clou | 2026-01-14T22:18:31:   address: '0.0.0.0',
+0|nbm-clou | 2026-01-14T22:18:31:   port: 5000
+0|nbm-clou | 2026-01-14T22:18:31: }
+0|nbm-clou | 2026-01-14T22:18:31: Error: listen EADDRINUSE: address already in use 0.0.0.0:5000
+0|nbm-clou | 2026-01-14T22:18:31:     at Server.setupListenHandle [as _listen2] (node:net:1908:16)
+0|nbm-clou | 2026-01-14T22:18:31:     at listenInCluster (node:net:1965:12)
+0|nbm-clou | 2026-01-14T22:18:31:     at doListen (node:net:2139:7)
+0|nbm-clou | 2026-01-14T22:18:31:     at process.processTicksAndRejections (node:internal/process/task_queues:83:21) {
+0|nbm-clou | 2026-01-14T22:18:31:   code: 'EADDRINUSE',
+0|nbm-clou | 2026-01-14T22:18:31:   errno: -98,
+0|nbm-clou | 2026-01-14T22:18:31:   syscall: 'listen',
+0|nbm-clou | 2026-01-14T22:18:31:   address: '0.0.0.0',
+0|nbm-clou | 2026-01-14T22:18:31:   port: 5000
+0|nbm-clou | 2026-01-14T22:18:31: }
+0|nbm-clou | 2026-01-14T22:18:32: Error: listen EADDRINUSE: address already in use 0.0.0.0:5000
+0|nbm-clou | 2026-01-14T22:18:32:     at Server.setupListenHandle [as _listen2] (node:net:1908:16)
+0|nbm-clou | 2026-01-14T22:18:32:     at listenInCluster (node:net:1965:12)
+0|nbm-clou | 2026-01-14T22:18:32:     at doListen (node:net:2139:7)
+0|nbm-clou | 2026-01-14T22:18:32:     at process.processTicksAndRejections (node:internal/process/task_queues:83:21) {
+0|nbm-clou | 2026-01-14T22:18:32:   code: 'EADDRINUSE',
+0|nbm-clou | 2026-01-14T22:18:32:   errno: -98,
+0|nbm-clou | 2026-01-14T22:18:32:   syscall: 'listen',
+0|nbm-clou | 2026-01-14T22:18:32:   address: '0.0.0.0',
+0|nbm-clou | 2026-01-14T22:18:32:   port: 5000
+0|nbm-clou | 2026-01-14T22:18:32: }
+0|nbm-clou | 2026-01-14T22:18:33: Error: listen EADDRINUSE: address already in use 0.0.0.0:5000
+0|nbm-clou | 2026-01-14T22:18:33:     at Server.setupListenHandle [as _listen2] (node:net:1908:16)
+0|nbm-clou | 2026-01-14T22:18:33:     at listenInCluster (node:net:1965:12)
+0|nbm-clou | 2026-01-14T22:18:33:     at doListen (node:net:2139:7)
+0|nbm-clou | 2026-01-14T22:18:33:     at process.processTicksAndRejections (node:internal/process/task_queues:83:21) {
+0|nbm-clou | 2026-01-14T22:18:33:   code: 'EADDRINUSE',
+0|nbm-clou | 2026-01-14T22:18:33:   errno: -98,
+0|nbm-clou | 2026-01-14T22:18:33:   syscall: 'listen',
+0|nbm-clou | 2026-01-14T22:18:33:   address: '0.0.0.0',
+0|nbm-clou | 2026-01-14T22:18:33:   port: 5000
+0|nbm-clou | 2026-01-14T22:18:33: }
+0|nbm-clou | 2026-01-14T22:18:33: Error: listen EADDRINUSE: address already in use 0.0.0.0:5000
+0|nbm-clou | 2026-01-14T22:18:33:     at Server.setupListenHandle [as _listen2] (node:net:1908:16)
+0|nbm-clou | 2026-01-14T22:18:33:     at listenInCluster (node:net:1965:12)
+0|nbm-clou | 2026-01-14T22:18:33:     at doListen (node:net:2139:7)
+0|nbm-clou | 2026-01-14T22:18:33:     at process.processTicksAndRejections (node:internal/process/task_queues:83:21) {
+0|nbm-clou | 2026-01-14T22:18:33:   code: 'EADDRINUSE',
+0|nbm-clou | 2026-01-14T22:18:33:   errno: -98,
+0|nbm-clou | 2026-01-14T22:18:33:   syscall: 'listen',
+0|nbm-clou | 2026-01-14T22:18:33:   address: '0.0.0.0',
+0|nbm-clou | 2026-01-14T22:18:33:   port: 5000
+0|nbm-clou | 2026-01-14T22:18:33: }
+0|nbm-clou | 2026-01-14T22:18:34: Error: listen EADDRINUSE: address already in use 0.0.0.0:5000
+0|nbm-clou | 2026-01-14T22:18:34:     at Server.setupListenHandle [as _listen2] (node:net:1908:16)
+0|nbm-clou | 2026-01-14T22:18:34:     at listenInCluster (node:net:1965:12)
+0|nbm-clou | 2026-01-14T22:18:34:     at doListen (node:net:2139:7)
+0|nbm-clou | 2026-01-14T22:18:34:     at process.processTicksAndRejections (node:internal/process/task_queues:83:21) {
+0|nbm-clou | 2026-01-14T22:18:34:   code: 'EADDRINUSE',
+0|nbm-clou | 2026-01-14T22:18:34:   errno: -98,
+0|nbm-clou | 2026-01-14T22:18:34:   syscall: 'listen',
+0|nbm-clou | 2026-01-14T22:18:34:   address: '0.0.0.0',
+0|nbm-clou | 2026-01-14T22:18:34:   port: 5000
+0|nbm-clou | 2026-01-14T22:18:34: }
+0|nbm-clou | 2026-01-14T22:18:34: Error: listen EADDRINUSE: address already in use 0.0.0.0:5000
+0|nbm-clou | 2026-01-14T22:18:34:     at Server.setupListenHandle [as _listen2] (node:net:1908:16)
+0|nbm-clou | 2026-01-14T22:18:34:     at listenInCluster (node:net:1965:12)
+0|nbm-clou | 2026-01-14T22:18:34:     at doListen (node:net:2139:7)
+0|nbm-clou | 2026-01-14T22:18:34:     at process.processTicksAndRejections (node:internal/process/task_queues:83:21) {
+0|nbm-clou | 2026-01-14T22:18:34:   code: 'EADDRINUSE',
+0|nbm-clou | 2026-01-14T22:18:34:   errno: -98,
+0|nbm-clou | 2026-01-14T22:18:34:   syscall: 'listen',
+0|nbm-clou | 2026-01-14T22:18:34:   address: '0.0.0.0',
+0|nbm-clou | 2026-01-14T22:18:34:   port: 5000
+0|nbm-clou | 2026-01-14T22:18:34: }
+0|nbm-clou | 2026-01-14T22:18:35: Error: listen EADDRINUSE: address already in use 0.0.0.0:5000
+0|nbm-clou | 2026-01-14T22:18:35:     at Server.setupListenHandle [as _listen2] (node:net:1908:16)
+0|nbm-clou | 2026-01-14T22:18:35:     at listenInCluster (node:net:1965:12)
+0|nbm-clou | 2026-01-14T22:18:35:     at doListen (node:net:2139:7)
+0|nbm-clou | 2026-01-14T22:18:35:     at process.processTicksAndRejections (node:internal/process/task_queues:83:21) {
+0|nbm-clou | 2026-01-14T22:18:35:   code: 'EADDRINUSE',
+0|nbm-clou | 2026-01-14T22:18:35:   errno: -98,
+0|nbm-clou | 2026-01-14T22:18:35:   syscall: 'listen',
+0|nbm-clou | 2026-01-14T22:18:35:   address: '0.0.0.0',
+0|nbm-clou | 2026-01-14T22:18:35:   port: 5000
+0|nbm-clou | 2026-01-14T22:18:35: }
+0|nbm-clou | 2026-01-14T23:29:09: Error: listen EADDRINUSE: address already in use 0.0.0.0:5000
+0|nbm-clou | 2026-01-14T23:29:09:     at Server.setupListenHandle [as _listen2] (node:net:1908:16)
+0|nbm-clou | 2026-01-14T23:29:09:     at listenInCluster (node:net:1965:12)
+0|nbm-clou | 2026-01-14T23:29:09:     at doListen (node:net:2139:7)
+0|nbm-clou | 2026-01-14T23:29:09:     at process.processTicksAndRejections (node:internal/process/task_queues:83:21) {
+0|nbm-clou | 2026-01-14T23:29:09:   code: 'EADDRINUSE',
+0|nbm-clou | 2026-01-14T23:29:09:   errno: -98,
+0|nbm-clou | 2026-01-14T23:29:09:   syscall: 'listen',
+0|nbm-clou | 2026-01-14T23:29:09:   address: '0.0.0.0',
+0|nbm-clou | 2026-01-14T23:29:09:   port: 5000
+0|nbm-clou | 2026-01-14T23:29:09: }
+0|nbm-clou | 2026-01-14T23:29:09: Error: listen EADDRINUSE: address already in use 0.0.0.0:5000
+0|nbm-clou | 2026-01-14T23:29:09:     at Server.setupListenHandle [as _listen2] (node:net:1908:16)
+0|nbm-clou | 2026-01-14T23:29:09:     at listenInCluster (node:net:1965:12)
+0|nbm-clou | 2026-01-14T23:29:09:     at doListen (node:net:2139:7)
+0|nbm-clou | 2026-01-14T23:29:09:     at process.processTicksAndRejections (node:internal/process/task_queues:83:21) {
+0|nbm-clou | 2026-01-14T23:29:09:   code: 'EADDRINUSE',
+0|nbm-clou | 2026-01-14T23:29:09:   errno: -98,
+0|nbm-clou | 2026-01-14T23:29:09:   syscall: 'listen',
+0|nbm-clou | 2026-01-14T23:29:09:   address: '0.0.0.0',
+0|nbm-clou | 2026-01-14T23:29:09:   port: 5000
+0|nbm-clou | 2026-01-14T23:29:09: }
+0|nbm-clou | 2026-01-14T23:29:10: Error: listen EADDRINUSE: address already in use 0.0.0.0:5000
+0|nbm-clou | 2026-01-14T23:29:10:     at Server.setupListenHandle [as _listen2] (node:net:1908:16)
+0|nbm-clou | 2026-01-14T23:29:10:     at listenInCluster (node:net:1965:12)
+0|nbm-clou | 2026-01-14T23:29:10:     at doListen (node:net:2139:7)
+0|nbm-clou | 2026-01-14T23:29:10:     at process.processTicksAndRejections (node:internal/process/task_queues:83:21) {
+0|nbm-clou | 2026-01-14T23:29:10:   code: 'EADDRINUSE',
+0|nbm-clou | 2026-01-14T23:29:10:   errno: -98,
+0|nbm-clou | 2026-01-14T23:29:10:   syscall: 'listen',
+0|nbm-clou | 2026-01-14T23:29:10:   address: '0.0.0.0',
+0|nbm-clou | 2026-01-14T23:29:10:   port: 5000
+0|nbm-clou | 2026-01-14T23:29:10: }
+0|nbm-clou | 2026-01-14T23:29:10: Error: listen EADDRINUSE: address already in use 0.0.0.0:5000
+0|nbm-clou | 2026-01-14T23:29:10:     at Server.setupListenHandle [as _listen2] (node:net:1908:16)
+0|nbm-clou | 2026-01-14T23:29:10:     at listenInCluster (node:net:1965:12)
+0|nbm-clou | 2026-01-14T23:29:10:     at doListen (node:net:2139:7)
+0|nbm-clou | 2026-01-14T23:29:10:     at process.processTicksAndRejections (node:internal/process/task_queues:83:21) {
+0|nbm-clou | 2026-01-14T23:29:10:   code: 'EADDRINUSE',
+0|nbm-clou | 2026-01-14T23:29:10:   errno: -98,
+0|nbm-clou | 2026-01-14T23:29:10:   syscall: 'listen',
+0|nbm-clou | 2026-01-14T23:29:10:   address: '0.0.0.0',
+0|nbm-clou | 2026-01-14T23:29:10:   port: 5000
+0|nbm-clou | 2026-01-14T23:29:10: }
+0|nbm-clou | 2026-01-14T23:29:36: Error: DATABASE_URL must be set. Did you forget to provision a database?
+0|nbm-clou | 2026-01-14T23:29:36:     at /opt/nbm-cloud/dist/index.cjs:70:120105
+0|nbm-clou | 2026-01-14T23:29:36:     at /opt/nbm-cloud/dist/index.cjs:1:225
+0|nbm-clou | 2026-01-14T23:29:36:     at /opt/nbm-cloud/dist/index.cjs:70:120294
+0|nbm-clou | 2026-01-14T23:29:36:     at /opt/nbm-cloud/dist/index.cjs:1:225
+0|nbm-clou | 2026-01-14T23:29:36:     at Object.<anonymous> (/opt/nbm-cloud/dist/index.cjs:145:33509)
+0|nbm-clou | 2026-01-14T23:29:36:     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+0|nbm-clou | 2026-01-14T23:29:36:     at Module._extensions..js (node:internal/modules/cjs/loader:1623:10)
+0|nbm-clou | 2026-01-14T23:29:36:     at Module.load (node:internal/modules/cjs/loader:1266:32)
+0|nbm-clou | 2026-01-14T23:29:36:     at Module._load (node:internal/modules/cjs/loader:1091:12)
+0|nbm-clou | 2026-01-14T23:29:36:     at cjsLoader (node:internal/modules/esm/translators:298:15)
+0|nbm-clou | 2026-01-14T23:31:10: Error: DATABASE_URL must be set. Did you forget to provision a database?
+0|nbm-clou | 2026-01-14T23:31:10:     at /opt/nbm-cloud/dist/index.cjs:70:120105
+0|nbm-clou | 2026-01-14T23:31:10:     at /opt/nbm-cloud/dist/index.cjs:1:225
+0|nbm-clou | 2026-01-14T23:31:10:     at /opt/nbm-cloud/dist/index.cjs:70:120294
+0|nbm-clou | 2026-01-14T23:31:10:     at /opt/nbm-cloud/dist/index.cjs:1:225
+0|nbm-clou | 2026-01-14T23:31:10:     at Object.<anonymous> (/opt/nbm-cloud/dist/index.cjs:145:33509)
+0|nbm-clou | 2026-01-14T23:31:10:     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+0|nbm-clou | 2026-01-14T23:31:10:     at Module._extensions..js (node:internal/modules/cjs/loader:1623:10)
+0|nbm-clou | 2026-01-14T23:31:10:     at Module.load (node:internal/modules/cjs/loader:1266:32)
+0|nbm-clou | 2026-01-14T23:31:10:     at Module._load (node:internal/modules/cjs/loader:1091:12)
+0|nbm-clou | 2026-01-14T23:31:10:     at cjsLoader (node:internal/modules/esm/translators:298:15)
+0|nbm-clou | 2026-01-14T23:38:40: Error: DATABASE_URL must be set. Did you forget to provision a database?
+0|nbm-clou | 2026-01-14T23:38:40:     at /opt/nbm-cloud/dist/index.cjs:70:120105
+0|nbm-clou | 2026-01-14T23:38:40:     at /opt/nbm-cloud/dist/index.cjs:1:225
+0|nbm-clou | 2026-01-14T23:38:40:     at /opt/nbm-cloud/dist/index.cjs:70:120294
+0|nbm-clou | 2026-01-14T23:38:40:     at /opt/nbm-cloud/dist/index.cjs:1:225
+0|nbm-clou | 2026-01-14T23:38:40:     at Object.<anonymous> (/opt/nbm-cloud/dist/index.cjs:145:33509)
+0|nbm-clou | 2026-01-14T23:38:40:     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+0|nbm-clou | 2026-01-14T23:38:40:     at Module._extensions..js (node:internal/modules/cjs/loader:1623:10)
+0|nbm-clou | 2026-01-14T23:38:40:     at Module.load (node:internal/modules/cjs/loader:1266:32)
+0|nbm-clou | 2026-01-14T23:38:40:     at Module._load (node:internal/modules/cjs/loader:1091:12)
+0|nbm-clou | 2026-01-14T23:38:40:     at cjsLoader (node:internal/modules/esm/translators:298:15)
+0|nbm-clou | 2026-01-14T23:42:45: Error: DATABASE_URL must be set. Did you forget to provision a database?
+0|nbm-clou | 2026-01-14T23:42:45:     at /opt/nbm-cloud/dist/index.cjs:70:120105
+0|nbm-clou | 2026-01-14T23:42:45:     at /opt/nbm-cloud/dist/index.cjs:1:225
+0|nbm-clou | 2026-01-14T23:42:45:     at /opt/nbm-cloud/dist/index.cjs:70:120294
+0|nbm-clou | 2026-01-14T23:42:45:     at /opt/nbm-cloud/dist/index.cjs:1:225
+0|nbm-clou | 2026-01-14T23:42:45:     at Object.<anonymous> (/opt/nbm-cloud/dist/index.cjs:145:33509)
+0|nbm-clou | 2026-01-14T23:42:45:     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+0|nbm-clou | 2026-01-14T23:42:45:     at Module._extensions..js (node:internal/modules/cjs/loader:1623:10)
+0|nbm-clou | 2026-01-14T23:42:45:     at Module.load (node:internal/modules/cjs/loader:1266:32)
+0|nbm-clou | 2026-01-14T23:42:45:     at Module._load (node:internal/modules/cjs/loader:1091:12)
+0|nbm-clou | 2026-01-14T23:42:45:     at cjsLoader (node:internal/modules/esm/translators:298:15)
+0|nbm-clou | 2026-01-15T07:24:00: Error: DATABASE_URL must be set. Did you forget to provision a database?
+0|nbm-clou | 2026-01-15T07:24:00:     at /opt/nbm-cloud/dist/index.cjs:70:120105
+0|nbm-clou | 2026-01-15T07:24:00:     at /opt/nbm-cloud/dist/index.cjs:1:225
+0|nbm-clou | 2026-01-15T07:24:00:     at /opt/nbm-cloud/dist/index.cjs:70:120294
+0|nbm-clou | 2026-01-15T07:24:00:     at /opt/nbm-cloud/dist/index.cjs:1:225
+0|nbm-clou | 2026-01-15T07:24:00:     at Object.<anonymous> (/opt/nbm-cloud/dist/index.cjs:145:33509)
+0|nbm-clou | 2026-01-15T07:24:00:     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+0|nbm-clou | 2026-01-15T07:24:00:     at Module._extensions..js (node:internal/modules/cjs/loader:1623:10)
+0|nbm-clou | 2026-01-15T07:24:00:     at Module.load (node:internal/modules/cjs/loader:1266:32)
+0|nbm-clou | 2026-01-15T07:24:00:     at Module._load (node:internal/modules/cjs/loader:1091:12)
+0|nbm-clou | 2026-01-15T07:24:00:     at cjsLoader (node:internal/modules/esm/translators:298:15)
+
+root@SRV-NBM-CLOUD-01[~]# 
