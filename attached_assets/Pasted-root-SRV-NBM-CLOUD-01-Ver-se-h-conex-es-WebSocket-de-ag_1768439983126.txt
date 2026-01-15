@@ -1,0 +1,117 @@
+root@SRV-NBM-CLOUD-01[~]# # Ver se há conexões WebSocket de agentes
+ss -tlnp | grep 5000
+
+# Verificar backups no armazenamento local
+ls -la /opt/nbm/backups/
+
+# Monitorar logs durante execução de backup
+pm2 logs nbm-cloud --lines 100 | grep -E "\[backup\]|\[scheduler\]|\[ws-agents\]"
+LISTEN 0      511          0.0.0.0:5000      0.0.0.0:*    users:(("node",pid=166118,fd=18)) 
+total 16
+drwxr-xr-x  4 root root 4096 Jan 14 19:31 .
+drwxrwxr-x 19 nbm  nbm  4096 Jan 11 15:32 ..
+drwxr-xr-x  3 root root 4096 Jan  9 23:09 company_1
+drwxrwxr-x  2 root root 4096 Jan 14 20:59 firmware
+0|nbm-clou | 2026-01-14T22:18:30: [scheduler] 14/01/2026, 22:18:30 - Backup executor registered for scheduler and worker pool
+0|nbm-clou | 2026-01-14T22:18:30: [scheduler] 14/01/2026, 22:18:30 - Starting backup scheduler...
+0|nbm-clou | 2026-01-14T22:18:30: [scheduler] 14/01/2026, 22:18:30 - Timezone: System (Linux)
+0|nbm-clou | 2026-01-14T22:18:30: [scheduler] 14/01/2026, 22:18:30 - Check interval: 60 seconds
+0|nbm-clou | 2026-01-14T22:18:30: [scheduler] 14/01/2026, 22:18:30 - Worker pool concurrency: 50
+0|nbm-clou | 2026-01-14T22:18:30: [scheduler] 14/01/2026, 22:18:30 - Current time: 22:18, Day of week: 3, Day of month: 14
+0|nbm-clou | 2026-01-14T22:18:30: [scheduler] 14/01/2026, 22:18:30 - Scheduler started successfully
+0|nbm-clou | 2026-01-14T22:18:30: [scheduler] 14/01/2026, 22:18:30 - Backup executor registered for scheduler and worker pool
+0|nbm-clou | 2026-01-14T22:18:30: [scheduler] 14/01/2026, 22:18:30 - Starting backup scheduler...
+0|nbm-clou | 2026-01-14T22:18:30: [scheduler] 14/01/2026, 22:18:30 - Timezone: System (Linux)
+0|nbm-clou | 2026-01-14T22:18:30: [scheduler] 14/01/2026, 22:18:30 - Check interval: 60 seconds
+0|nbm-clou | 2026-01-14T22:18:30: [scheduler] 14/01/2026, 22:18:30 - Worker pool concurrency: 50
+0|nbm-clou | 2026-01-14T22:18:30: [scheduler] 14/01/2026, 22:18:30 - Current time: 22:18, Day of week: 3, Day of month: 14
+0|nbm-clou | 2026-01-14T22:18:30: [scheduler] 14/01/2026, 22:18:30 - Scheduler started successfully
+0|nbm-clou | 2026-01-14T22:18:31: [scheduler] 14/01/2026, 22:18:31 - Backup executor registered for scheduler and worker pool
+0|nbm-clou | 2026-01-14T22:18:31: [scheduler] 14/01/2026, 22:18:31 - Starting backup scheduler...
+0|nbm-clou | 2026-01-14T22:18:31: [scheduler] 14/01/2026, 22:18:31 - Timezone: System (Linux)
+0|nbm-clou | 2026-01-14T22:18:31: [scheduler] 14/01/2026, 22:18:31 - Check interval: 60 seconds
+0|nbm-clou | 2026-01-14T22:18:31: [scheduler] 14/01/2026, 22:18:31 - Worker pool concurrency: 50
+0|nbm-clou | 2026-01-14T22:18:31: [scheduler] 14/01/2026, 22:18:31 - Current time: 22:18, Day of week: 3, Day of month: 14
+0|nbm-clou | 2026-01-14T22:18:31: [scheduler] 14/01/2026, 22:18:31 - Scheduler started successfully
+0|nbm-clou | 2026-01-14T22:18:31: [scheduler] 14/01/2026, 22:18:31 - Backup executor registered for scheduler and worker pool
+0|nbm-clou | 2026-01-14T22:18:31: [scheduler] 14/01/2026, 22:18:31 - Starting backup scheduler...
+0|nbm-clou | 2026-01-14T22:18:31: [scheduler] 14/01/2026, 22:18:31 - Timezone: System (Linux)
+0|nbm-clou | 2026-01-14T22:18:31: [scheduler] 14/01/2026, 22:18:31 - Check interval: 60 seconds
+0|nbm-clou | 2026-01-14T22:18:31: [scheduler] 14/01/2026, 22:18:31 - Worker pool concurrency: 50
+0|nbm-clou | 2026-01-14T22:18:31: [scheduler] 14/01/2026, 22:18:31 - Current time: 22:18, Day of week: 3, Day of month: 14
+0|nbm-clou | 2026-01-14T22:18:31: [scheduler] 14/01/2026, 22:18:31 - Scheduler started successfully
+0|nbm-clou | 2026-01-14T22:18:32: [scheduler] 14/01/2026, 22:18:32 - Backup executor registered for scheduler and worker pool
+0|nbm-clou | 2026-01-14T22:18:32: [scheduler] 14/01/2026, 22:18:32 - Starting backup scheduler...
+0|nbm-clou | 2026-01-14T22:18:32: [scheduler] 14/01/2026, 22:18:32 - Timezone: System (Linux)
+0|nbm-clou | 2026-01-14T22:18:32: [scheduler] 14/01/2026, 22:18:32 - Check interval: 60 seconds
+0|nbm-clou | 2026-01-14T22:18:32: [scheduler] 14/01/2026, 22:18:32 - Worker pool concurrency: 50
+0|nbm-clou | 2026-01-14T22:18:32: [scheduler] 14/01/2026, 22:18:32 - Current time: 22:18, Day of week: 3, Day of month: 14
+0|nbm-clou | 2026-01-14T22:18:32: [scheduler] 14/01/2026, 22:18:32 - Scheduler started successfully
+0|nbm-clou | 2026-01-14T22:18:32: [scheduler] 14/01/2026, 22:18:32 - Backup executor registered for scheduler and worker pool
+0|nbm-clou | 2026-01-14T22:18:32: [scheduler] 14/01/2026, 22:18:32 - Starting backup scheduler...
+0|nbm-clou | 2026-01-14T22:18:32: [scheduler] 14/01/2026, 22:18:32 - Timezone: System (Linux)
+0|nbm-clou | 2026-01-14T22:18:32: [scheduler] 14/01/2026, 22:18:32 - Check interval: 60 seconds
+0|nbm-clou | 2026-01-14T22:18:32: [scheduler] 14/01/2026, 22:18:32 - Worker pool concurrency: 50
+0|nbm-clou | 2026-01-14T22:18:32: [scheduler] 14/01/2026, 22:18:32 - Current time: 22:18, Day of week: 3, Day of month: 14
+0|nbm-clou | 2026-01-14T22:18:32: [scheduler] 14/01/2026, 22:18:32 - Scheduler started successfully
+0|nbm-clou | 2026-01-14T22:18:33: [scheduler] 14/01/2026, 22:18:33 - Backup executor registered for scheduler and worker pool
+0|nbm-clou | 2026-01-14T22:18:33: [scheduler] 14/01/2026, 22:18:33 - Starting backup scheduler...
+0|nbm-clou | 2026-01-14T22:18:33: [scheduler] 14/01/2026, 22:18:33 - Timezone: System (Linux)
+0|nbm-clou | 2026-01-14T22:18:33: [scheduler] 14/01/2026, 22:18:33 - Check interval: 60 seconds
+0|nbm-clou | 2026-01-14T22:18:33: [scheduler] 14/01/2026, 22:18:33 - Worker pool concurrency: 50
+0|nbm-clou | 2026-01-14T22:18:33: [scheduler] 14/01/2026, 22:18:33 - Current time: 22:18, Day of week: 3, Day of month: 14
+0|nbm-clou | 2026-01-14T22:18:33: [scheduler] 14/01/2026, 22:18:33 - Scheduler started successfully
+0|nbm-clou | 2026-01-14T22:18:34: [scheduler] 14/01/2026, 22:18:34 - Backup executor registered for scheduler and worker pool
+0|nbm-clou | 2026-01-14T22:18:34: [scheduler] 14/01/2026, 22:18:34 - Starting backup scheduler...
+0|nbm-clou | 2026-01-14T22:18:34: [scheduler] 14/01/2026, 22:18:34 - Timezone: System (Linux)
+0|nbm-clou | 2026-01-14T22:18:34: [scheduler] 14/01/2026, 22:18:34 - Check interval: 60 seconds
+0|nbm-clou | 2026-01-14T22:18:34: [scheduler] 14/01/2026, 22:18:34 - Worker pool concurrency: 50
+0|nbm-clou | 2026-01-14T22:18:34: [scheduler] 14/01/2026, 22:18:34 - Current time: 22:18, Day of week: 3, Day of month: 14
+0|nbm-clou | 2026-01-14T22:18:34: [scheduler] 14/01/2026, 22:18:34 - Scheduler started successfully
+0|nbm-clou | 2026-01-14T22:18:34: [scheduler] 14/01/2026, 22:18:34 - Backup executor registered for scheduler and worker pool
+0|nbm-clou | 2026-01-14T22:18:34: [scheduler] 14/01/2026, 22:18:34 - Starting backup scheduler...
+0|nbm-clou | 2026-01-14T22:18:34: [scheduler] 14/01/2026, 22:18:34 - Timezone: System (Linux)
+0|nbm-clou | 2026-01-14T22:18:34: [scheduler] 14/01/2026, 22:18:34 - Check interval: 60 seconds
+0|nbm-clou | 2026-01-14T22:18:34: [scheduler] 14/01/2026, 22:18:34 - Worker pool concurrency: 50
+0|nbm-clou | 2026-01-14T22:18:34: [scheduler] 14/01/2026, 22:18:34 - Current time: 22:18, Day of week: 3, Day of month: 14
+0|nbm-clou | 2026-01-14T22:18:34: [scheduler] 14/01/2026, 22:18:34 - Scheduler started successfully
+0|nbm-clou | 2026-01-14T22:18:35: [scheduler] 14/01/2026, 22:18:35 - Backup executor registered for scheduler and worker pool
+0|nbm-clou | 2026-01-14T22:18:35: [scheduler] 14/01/2026, 22:18:35 - Starting backup scheduler...
+0|nbm-clou | 2026-01-14T22:18:35: [scheduler] 14/01/2026, 22:18:35 - Timezone: System (Linux)
+0|nbm-clou | 2026-01-14T22:18:35: [scheduler] 14/01/2026, 22:18:35 - Check interval: 60 seconds
+0|nbm-clou | 2026-01-14T22:18:35: [scheduler] 14/01/2026, 22:18:35 - Worker pool concurrency: 50
+0|nbm-clou | 2026-01-14T22:18:35: [scheduler] 14/01/2026, 22:18:35 - Current time: 22:18, Day of week: 3, Day of month: 14
+0|nbm-clou | 2026-01-14T22:18:35: [scheduler] 14/01/2026, 22:18:35 - Scheduler started successfully
+^C
+root@SRV-NBM-CLOUD-01[~]# ^[[200~# Primeiro faça login no sistema web e obtenha o cookie de sessão
+-bash: $'\E[200~#': command not found
+root@SRV-NBM-CLOUD-01[~]# # Depois execute backup para um equipamento específico (ID 1 por exemplo)
+root@SRV-NBM-CLOUD-01[~]# curl -X POST http://localhost:5000/api/backups/execute/1 \
+>   -H "Cookie: connect.sid=SEU_COOKIE_AQUI"~
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5, user-scalable=yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="NBM CLOUD" />
+    <meta name="application-name" content="NBM CLOUD" />
+    <meta name="theme-color" content="#2563eb" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#1e3a8a" media="(prefers-color-scheme: dark)" />
+    <meta name="description" content="NBM CLOUD - Network Backup Management Cloud. Sistema multi-tenant para gerenciamento de backups de equipamentos de rede." />
+    <meta name="format-detection" content="telephone=no" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/favicon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Architects+Daughter&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Fira+Code:wght@300..700&family=Geist+Mono:wght@100..900&family=Geist:wght@100..900&family=IBM+Plex+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400..700;1,400..700&family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Outfit:wght@100..900&family=Oxanium:wght@200..800&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto+Mono:ital,wght@0,100..700;1,100..700&family=Roboto:ital,wght@0,100..900;1,100..900&family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&family=Space+Grotesk:wght@300..700&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+    <script type="module" crossorigin src="/assets/index-ByG0Uy63.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-DJm-zcOy.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>root@SRV-NBM-CLOUD-01[~]# 
