@@ -70,14 +70,21 @@ echo -e "${YELLOW}[7/10] Sincronizando banco de dados...${NC}"
 npm run db:push 2>&1 | tail -3 || npm run db:push --force 2>&1 | tail -3
 echo -e "${GREEN}✓ Banco sincronizado${NC}"
 
-# 8. Criar diretórios necessários
-echo -e "${YELLOW}[8/10] Criando diretórios...${NC}"
+# 8. Criar e corrigir permissões dos diretórios
+echo -e "${YELLOW}[8/10] Criando e corrigindo permissões dos diretórios...${NC}"
 mkdir -p /opt/nbm/backups
 mkdir -p /opt/nbm/backups/firmware
 mkdir -p /var/log/nbm-cloud
+
+# Corrigir permissões recursivamente em todos os diretórios de backup
+find /opt/nbm/backups -type d -exec chmod 755 {} \;
+find /opt/nbm/backups -type f -exec chmod 644 {} \;
 chown -R root:root /opt/nbm/backups
 chmod -R 755 /opt/nbm/backups
-echo -e "${GREEN}✓ Diretórios criados${NC}"
+
+echo "  - Permissões corrigidas em /opt/nbm/backups"
+ls -la /opt/nbm/backups/
+echo -e "${GREEN}✓ Diretórios criados e permissões corrigidas${NC}"
 
 # 9. Configurar PM2
 echo -e "${YELLOW}[9/10] Configurando PM2...${NC}"

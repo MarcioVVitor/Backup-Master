@@ -15,8 +15,15 @@ try {
 
 function ensureDir(dir: string) {
   if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
+    fs.mkdirSync(dir, { recursive: true, mode: 0o755 });
     console.log(`[local-storage] Created directory: ${dir}`);
+  }
+  // Ensure directory is writable
+  try {
+    fs.accessSync(dir, fs.constants.W_OK);
+  } catch {
+    console.log(`[local-storage] Fixing permissions on: ${dir}`);
+    fs.chmodSync(dir, 0o755);
   }
 }
 
