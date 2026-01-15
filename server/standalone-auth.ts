@@ -81,14 +81,22 @@ export async function setupStandaloneAuth(app: Express) {
         isAdmin: user.isAdmin,
       };
       
-      res.json({ 
-        message: "Login successful",
-        user: {
-          id: user.id,
-          username: user.username,
-          name: user.name,
-          isAdmin: user.isAdmin,
+      // Explicitly save session before responding
+      req.session.save((err) => {
+        if (err) {
+          console.error("[standalone-auth] Session save error:", err);
+          return res.status(500).json({ message: "Session error" });
         }
+        console.log("[standalone-auth] Session saved successfully for user:", user.username);
+        res.json({ 
+          message: "Login successful",
+          user: {
+            id: user.id,
+            username: user.username,
+            name: user.name,
+            isAdmin: user.isAdmin,
+          }
+        });
       });
     } catch (error: any) {
       console.error("Login error:", error);
@@ -134,14 +142,21 @@ export async function setupStandaloneAuth(app: Express) {
         isAdmin: user.isAdmin,
       };
       
-      res.json({ 
-        message: isFirstUser ? "Admin account created" : "Account created",
-        user: {
-          id: user.id,
-          username: user.username,
-          name: user.name,
-          isAdmin: user.isAdmin,
+      // Explicitly save session before responding
+      req.session.save((err) => {
+        if (err) {
+          console.error("[standalone-auth] Session save error:", err);
+          return res.status(500).json({ message: "Session error" });
         }
+        res.json({ 
+          message: isFirstUser ? "Admin account created" : "Account created",
+          user: {
+            id: user.id,
+            username: user.username,
+            name: user.name,
+            isAdmin: user.isAdmin,
+          }
+        });
       });
     } catch (error: any) {
       console.error("Register error:", error);
