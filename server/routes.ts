@@ -3764,7 +3764,7 @@ function cleanAnsiCodes(str: string): string {
     .replace(/\x00/g, '');
 }
 
-// Execução SSH com suporte a shell interativo
+// Execução SSH com suporte a shell interativo e auto-paginação
 async function executeSSHBackup(equip: any, config: BackupConfig): Promise<string> {
   const { Client } = await import("ssh2");
 
@@ -3772,15 +3772,28 @@ async function executeSSHBackup(equip: any, config: BackupConfig): Promise<strin
     const conn = new Client();
     let output = '';
     let timer: NodeJS.Timeout;
-    let commandSent = false;
-    let dataReceived = false;
+    let absoluteTimer: NodeJS.Timeout;
+    let commandsSent = false;
+    let finished = false;
     
-    // Timeout de inatividade dinâmico: maior para equipamentos com configs grandes
-    const idleTimeout = 30000; // 30 segundos sem dados = encerrar
-    const maxTimeout = config.timeout || 300000; // 5 minutos máximo
+    // Timeout de inatividade: 30 segundos sem dados
+    const idleTimeout = 30000;
+    // Timeout máximo: 5 minutos
+    const maxTimeout = config.timeout || 300000;
+    
+    // Padrões para detectar paginação (---- More ----, --More--, etc)
+    const morePatterns = [
+      /----\s*More\s*----/i,
+      /--More--/i,
+      /Press any key to continue/i,
+      /\[42D/,  // Huawei cursor movement before More
+      /---- More ----/,
+    ];
 
     const cleanup = () => {
+      finished = true;
       if (timer) clearTimeout(timer);
+      if (absoluteTimer) clearTimeout(absoluteTimer);
       try {
         conn.end();
       } catch (e) {
@@ -3789,18 +3802,34 @@ async function executeSSHBackup(equip: any, config: BackupConfig): Promise<strin
     };
 
     const finishBackup = () => {
+      if (finished) return;
       cleanup();
       const cleanedOutput = cleanAnsiCodes(output);
       console.log(`[ssh-backup] ${equip.name}: Backup concluído com ${cleanedOutput.length} caracteres`);
       resolve(cleanedOutput);
     };
 
-    // Verifica se a configuração terminou baseado no endPattern
+    // Verifica se há prompt "More" e precisa enviar espaço
+    const checkForMorePrompt = (chunk: string, stream: any) => {
+      const cleanChunk = cleanAnsiCodes(chunk);
+      for (const pattern of morePatterns) {
+        if (pattern.test(chunk) || pattern.test(cleanChunk)) {
+          console.log(`[ssh-backup] ${equip.name}: Detectado "More", enviando espaço`);
+          stream.write(' ');
+          return true;
+        }
+      }
+      return false;
+    };
+
+    // Verifica se a configuração terminou
     const checkEndPattern = () => {
-      if (config.endPattern && config.endPattern.test(output)) {
-        console.log(`[ssh-backup] ${equip.name}: EndPattern detectado, finalizando`);
-        finishBackup();
-        return true;
+      if (config.endPattern) {
+        const cleanOutput = cleanAnsiCodes(output);
+        if (config.endPattern.test(cleanOutput)) {
+          console.log(`[ssh-backup] ${equip.name}: EndPattern detectado`);
+          return true;
+        }
       }
       return false;
     };
@@ -3816,7 +3845,7 @@ async function executeSSHBackup(equip: any, config: BackupConfig): Promise<strin
           }
 
           // Timeout máximo absoluto
-          const absoluteTimer = setTimeout(() => {
+          absoluteTimer = setTimeout(() => {
             console.log(`[ssh-backup] ${equip.name}: Timeout máximo atingido (${maxTimeout}ms)`);
             finishBackup();
           }, maxTimeout);
@@ -3825,8 +3854,7 @@ async function executeSSHBackup(equip: any, config: BackupConfig): Promise<strin
           const resetIdleTimer = () => {
             if (timer) clearTimeout(timer);
             timer = setTimeout(() => {
-              console.log(`[ssh-backup] ${equip.name}: Timeout de inatividade (${idleTimeout}ms sem dados)`);
-              clearTimeout(absoluteTimer);
+              console.log(`[ssh-backup] ${equip.name}: Timeout de inatividade (${idleTimeout}ms)`);
               finishBackup();
             }, idleTimeout);
           };
@@ -3834,14 +3862,20 @@ async function executeSSHBackup(equip: any, config: BackupConfig): Promise<strin
           resetIdleTimer();
 
           stream.on('data', (data: Buffer) => {
+            if (finished) return;
+            
             const chunk = data.toString();
             output += chunk;
-            dataReceived = true;
             
-            // Verifica se chegou ao fim da configuração
-            if (commandSent && checkEndPattern()) {
-              clearTimeout(absoluteTimer);
-              return;
+            // Verifica e responde a prompts "More" (paginação)
+            if (commandsSent) {
+              checkForMorePrompt(chunk, stream);
+              
+              // Verifica se chegou ao fim da configuração
+              if (checkEndPattern()) {
+                setTimeout(() => finishBackup(), 500);
+                return;
+              }
             }
             
             // Reset do timer de inatividade
@@ -3849,7 +3883,6 @@ async function executeSSHBackup(equip: any, config: BackupConfig): Promise<strin
           });
 
           stream.on('close', () => {
-            clearTimeout(absoluteTimer);
             finishBackup();
           });
 
@@ -3858,12 +3891,28 @@ async function executeSSHBackup(equip: any, config: BackupConfig): Promise<strin
             resetIdleTimer();
           });
 
-          // Aguarda o prompt inicial antes de enviar comandos
-          setTimeout(() => {
-            console.log(`[ssh-backup] ${equip.name}: Enviando comandos`);
-            stream.write(config.command + '\n');
-            commandSent = true;
-          }, 1000);
+          // Envia comandos sequencialmente
+          const commands = config.command.split('\n');
+          let cmdIndex = 0;
+          
+          const sendNextCommand = () => {
+            if (cmdIndex < commands.length && !finished) {
+              const cmd = commands[cmdIndex];
+              console.log(`[ssh-backup] ${equip.name}: Enviando comando ${cmdIndex + 1}/${commands.length}: ${cmd.substring(0, 50)}...`);
+              stream.write(cmd + '\n');
+              cmdIndex++;
+              
+              // Aguarda antes do próximo comando
+              if (cmdIndex < commands.length) {
+                setTimeout(sendNextCommand, 1500);
+              } else {
+                commandsSent = true;
+              }
+            }
+          };
+          
+          // Aguarda prompt inicial antes de enviar comandos
+          setTimeout(sendNextCommand, 1500);
         });
       } else {
         conn.exec(config.command, (err, stream) => {
