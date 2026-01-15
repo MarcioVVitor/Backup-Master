@@ -6,7 +6,7 @@
 # Don't exit on error - we handle errors ourselves
 set +e
 
-AGENT_VERSION="1.2.0"
+AGENT_VERSION="1.3.0"
 AGENT_DIR="/opt/nbm-agent"
 CONFIG_FILE="$AGENT_DIR/config.json"
 LOG_FILE="$AGENT_DIR/logs/agent.log"
@@ -287,6 +287,24 @@ set line_count 0
 
 while {$config_complete == 0} {
     expect {
+        -re {---- More ----} {
+            # Handle pagination - send space to continue
+            puts stderr "HUAWEI_DEBUG: Detected More prompt, sending space (line $line_count)"
+            send " "
+            exp_continue
+        }
+        -re {--More--} {
+            # Handle pagination variant
+            puts stderr "HUAWEI_DEBUG: Detected --More-- prompt, sending space (line $line_count)"
+            send " "
+            exp_continue
+        }
+        -re {\[42D\s*} {
+            # Huawei cursor movement before More - send space
+            puts stderr "HUAWEI_DEBUG: Detected Huawei cursor escape, sending space (line $line_count)"
+            send " "
+            exp_continue
+        }
         -re {\r\n} {
             incr line_count
             # Continue reading more lines
@@ -1493,16 +1511,169 @@ EXPECT_EOF
     fi
 }
 
-# Execute SSH backup command
+# Execute Mikrotik backup with expect (handles RouterOS prompts)
+execute_mikrotik_backup_expect() {
+    local host="$1"
+    local port="$2"
+    local username="$3"
+    local password="$4"
+    local timeout="${5:-300}"
+    
+    log_info "Executing Mikrotik backup with expect on $host:$port (timeout=${timeout}s)"
+    
+    local output_file="/tmp/mikrotik_output_$$.txt"
+    
+    local expect_script=$(cat <<'EXPECT_EOF'
+#!/usr/bin/expect -f
+
+match_max 50000000
+
+set timeout [lindex $argv 0]
+set host [lindex $argv 1]
+set port [lindex $argv 2]
+set username [lindex $argv 3]
+set password [lindex $argv 4]
+set output_file [lindex $argv 5]
+
+log_user 0
+
+puts stderr "MIKROTIK_DEBUG: Starting Mikrotik SSH backup"
+puts stderr "MIKROTIK_DEBUG: Host=$host Port=$port User=$username Timeout=${timeout}s"
+
+# SSH with +ssh-rsa for older RouterOS versions
+spawn sshpass -p $password ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+    -o ConnectTimeout=30 -o ServerAliveInterval=5 -o ServerAliveCountMax=60 \
+    -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa \
+    -tt -p $port ${username}@${host}
+
+# Wait for prompt
+expect {
+    -re {\[[^\]]+\]\s*>\s*$} { puts stderr "MIKROTIK_DEBUG: Got RouterOS prompt" }
+    -re {>\s*$} { puts stderr "MIKROTIK_DEBUG: Got > prompt" }
+    "password:" { puts stderr "EXPECT_ERROR: Authentication failed"; exit 1 }
+    timeout { puts stderr "EXPECT_ERROR: Timeout waiting for prompt"; exit 1 }
+    eof { puts stderr "EXPECT_ERROR: Connection closed"; exit 1 }
+}
+
+sleep 0.5
+
+# Start logging to file
+log_file -noappend $output_file
+log_user 1
+
+# Execute export compact command
+puts stderr "MIKROTIK_DEBUG: Executing /export compact..."
+send "/export compact\r"
+
+set timeout 600
+set config_complete 0
+set line_count 0
+
+while {$config_complete == 0} {
+    expect {
+        -re {---- More ----} {
+            puts stderr "MIKROTIK_DEBUG: Detected More prompt, sending space"
+            send " "
+            exp_continue
+        }
+        -re {--More--} {
+            puts stderr "MIKROTIK_DEBUG: Detected --More-- prompt, sending space"
+            send " "
+            exp_continue
+        }
+        -re {\r\n} {
+            incr line_count
+            exp_continue
+        }
+        -re {\[[^\]]+\]\s*>\s*$} {
+            puts stderr "MIKROTIK_DEBUG: Config complete after $line_count lines (got prompt)"
+            set config_complete 1
+        }
+        timeout {
+            if {$line_count > 10} {
+                puts stderr "MIKROTIK_DEBUG: Timeout after $line_count lines - assuming complete"
+                set config_complete 1
+            } else {
+                puts stderr "EXPECT_ERROR: Timeout (only $line_count lines)"
+                log_file
+                exit 1
+            }
+        }
+        eof {
+            if {$line_count > 10} {
+                puts stderr "MIKROTIK_DEBUG: EOF after $line_count lines - config captured"
+                set config_complete 1
+            } else {
+                puts stderr "EXPECT_ERROR: EOF (only $line_count lines)"
+                log_file
+                exit 1
+            }
+        }
+    }
+}
+
+log_file
+log_user 0
+
+puts stderr "MIKROTIK_DEBUG: Configuration captured ($line_count lines)"
+
+send "quit\r"
+expect {
+    eof { }
+    timeout { }
+}
+
+puts stderr "MIKROTIK_DEBUG: Backup completed successfully"
+exit 0
+EXPECT_EOF
+)
+    
+    local expect_file="/tmp/mikrotik_backup_$$.exp"
+    echo "$expect_script" > "$expect_file"
+    chmod +x "$expect_file"
+    
+    local exit_code
+    timeout "$timeout" expect "$expect_file" "$timeout" "$host" "$port" "$username" "$password" "$output_file" 2>&1 | grep -v "^spawn " | grep -v "^MIKROTIK_DEBUG:" >&2
+    exit_code=${PIPESTATUS[0]}
+    
+    rm -f "$expect_file"
+    
+    if [[ $exit_code -eq 124 ]]; then
+        log_error "Mikrotik backup timed out after ${timeout}s"
+        rm -f "$output_file"
+        return 1
+    fi
+    
+    if [[ -f "$output_file" ]]; then
+        local file_size=$(stat -c%s "$output_file" 2>/dev/null || echo "0")
+        log_info "Mikrotik backup output file size: $file_size bytes"
+        
+        if [[ "$file_size" -gt 100 ]]; then
+            cat "$output_file"
+            rm -f "$output_file"
+            return 0
+        else
+            log_error "Mikrotik backup failed - output file too small: $file_size bytes"
+            cat "$output_file" >&2
+            rm -f "$output_file"
+            return 1
+        fi
+    else
+        log_error "Mikrotik backup failed - no output file created"
+        return 1
+    fi
+}
+
+# Execute SSH backup command (generic fallback)
 execute_ssh_backup() {
     local host="$1"
     local port="$2"
     local username="$3"
     local password="$4"
     local command="$5"
-    local timeout="${6:-60}"
+    local timeout="${6:-300}"
     
-    log_info "Executing SSH backup on $host:$port"
+    log_info "Executing SSH backup on $host:$port (timeout=${timeout}s)"
     
     local output
     local exit_code
@@ -1827,52 +1998,60 @@ handle_message() {
             local backup_success=false
             
             # Use expect-based sessions for vendors that need interactive handling
-            if [[ "${manufacturer,,}" == "cisco" ]] && [[ -n "$enable_password" ]] && [[ "$enable_password" != "null" ]]; then
+            # All timeouts increased to 600 seconds (10 minutes) for large configurations
+            if [[ "${manufacturer,,}" == "mikrotik" ]]; then
+                # Mikrotik RouterOS - use expect for proper /export handling
+                log_debug "Mikrotik device - using expect session"
+                if output=$(execute_mikrotik_backup_expect "$host" "$port" "$username" "$password" 600); then
+                    backup_success=true
+                fi
+            elif [[ "${manufacturer,,}" == "cisco" ]] && [[ -n "$enable_password" ]] && [[ "$enable_password" != "null" ]]; then
                 # Cisco with enable password - use expect for interactive enable mode
                 log_debug "Cisco device with enable password - using expect session"
-                if output=$(execute_cisco_backup_expect "$host" "$port" "$username" "$password" "$enable_password" "$command" 180); then
+                if output=$(execute_cisco_backup_expect "$host" "$port" "$username" "$password" "$enable_password" "$command" 600); then
                     backup_success=true
                 fi
             elif [[ "${manufacturer,,}" == "huawei" ]]; then
                 # Huawei - use expect to properly wait for full config before quit
-                log_debug "Huawei device - using expect session"
-                if output=$(execute_huawei_backup_expect "$host" "$port" "$username" "$password" 180); then
+                log_debug "Huawei device - using expect session (10 min timeout)"
+                if output=$(execute_huawei_backup_expect "$host" "$port" "$username" "$password" 600); then
                     backup_success=true
                 fi
             elif [[ "${manufacturer,,}" == "nokia" ]]; then
                 # Nokia SR OS - use expect with environment no more + admin display-config
-                log_debug "Nokia device - using expect session"
+                log_debug "Nokia device - using expect session (30 min timeout)"
                 if output=$(execute_nokia_backup_expect "$host" "$port" "$username" "$password" 1800); then
                     backup_success=true
                 fi
             elif [[ "${manufacturer,,}" == "zte" ]]; then
                 # ZTE ZXR10/TITAN - use expect with enable mode + show running-config
                 log_debug "ZTE device - using expect session"
-                if output=$(execute_zte_backup_expect "$host" "$port" "$username" "$password" "$enable_password" 180); then
+                if output=$(execute_zte_backup_expect "$host" "$port" "$username" "$password" "$enable_password" 600); then
                     backup_success=true
                 fi
             elif [[ "${manufacturer,,}" == "datacom" ]]; then
                 # Datacom EDD (DmSwitch family) - Cisco-like CLI, supports SSH and Telnet
                 local protocol=$(echo "$equipment" | jq -r '.protocol // "ssh"')
                 log_debug "Datacom EDD device - using expect session (protocol: $protocol)"
-                if output=$(execute_datacom_edd_backup_expect "$host" "$port" "$username" "$password" "$enable_password" "$protocol" 300); then
+                if output=$(execute_datacom_edd_backup_expect "$host" "$port" "$username" "$password" "$enable_password" "$protocol" 600); then
                     backup_success=true
                 fi
             elif [[ "${manufacturer,,}" == "datacom-dmos" ]]; then
                 # Datacom DMOS (DmOS) - switches and OLTs, SSH only
                 log_debug "Datacom DMOS device - using expect session"
-                if output=$(execute_datacom_dmos_backup_expect "$host" "$port" "$username" "$password" 300); then
+                if output=$(execute_datacom_dmos_backup_expect "$host" "$port" "$username" "$password" 600); then
                     backup_success=true
                 fi
             elif [[ "${manufacturer,,}" == "juniper" ]]; then
                 # Juniper - SSH, uses 'show configuration | display set'
                 log_debug "Juniper device - using expect session"
-                if output=$(execute_juniper_backup_expect "$host" "$port" "$username" "$password" 300); then
+                if output=$(execute_juniper_backup_expect "$host" "$port" "$username" "$password" 600); then
                     backup_success=true
                 fi
             else
-                # Standard SSH backup for other vendors
-                if output=$(execute_ssh_backup "$host" "$port" "$username" "$password" "$command" 120); then
+                # Standard SSH backup for other vendors (fallback with 10 min timeout)
+                log_debug "Using generic SSH backup (10 min timeout)"
+                if output=$(execute_ssh_backup "$host" "$port" "$username" "$password" "$command" 600); then
                     backup_success=true
                 fi
             fi
