@@ -1,0 +1,49 @@
+root@SRV-NBM-CLOUD-01[~]# # Atualizar servidor NBM CLOUD
+cd /opt/nbm-cloud && git pull origin main && npm run build && pm2 restart nbm-cloud --update-env
+
+# Atualizar agente (no servidor do agente 143.255.197.26)
+cd /opt/nbm-agent
+git pull origin main
+systemctl restart nbm-agent
+remote: Enumerating objects: 9, done.
+remote: Counting objects: 100% (9/9), done.
+remote: Compressing objects: 100% (1/1), done.
+remote: Total 5 (delta 3), reused 5 (delta 3), pack-reused 0 (from 0)
+Unpacking objects: 100% (5/5), 1.75 KiB | 358.00 KiB/s, done.
+From https://github.com/MarcioVVitor/Backup-Master
+ * branch            main       -> FETCH_HEAD
+   aaaf3b4..b0276f7  main       -> origin/main
+Updating aaaf3b4..b0276f7
+Fast-forward
+ agents/linux/nbm-agent.sh | 209 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-------
+ 1 file changed, 194 insertions(+), 15 deletions(-)
+
+> rest-express@1.0.0 build
+> tsx script/build.ts
+
+building client...
+vite v7.3.0 building client environment for production...
+✓ 3321 modules transformed.
+../dist/public/index.html                     2.87 kB │ gzip:   1.04 kB
+../dist/public/assets/index-BSVbG4kL.css     79.86 kB │ gzip:  13.42 kB
+../dist/public/assets/index-UML2fGml.js   1,391.58 kB │ gzip: 379.04 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 12.41s
+building server...
+
+  dist/index.cjs  1.3mb ⚠️
+
+⚡ Done in 177ms
+[PM2] Applying action restartProcessId on app [nbm-cloud](ids: [ 0 ])
+[PM2] [nbm-cloud](0) ✓
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+├────┼────────────────────┼──────────┼──────┼───────────┼──────────┼──────────┤
+│ 0  │ nbm-cloud          │ fork     │ 4    │ online    │ 0%       │ 21.7mb   │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+fatal: not a git repository (or any of the parent directories): .git
+root@SRV-NBM-CLOUD-01[/opt/nbm-agent]# 
