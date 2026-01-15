@@ -1,0 +1,67 @@
+root@SRV-NBM-CLOUD-01[~]# cd /opt/nbm-cloud
+git pull origin main
+pm2 delete nbm-cloud
+pm2 start ecosystem.config.cjs
+
+# Verificar se iniciou corretamente
+sleep 5 && pm2 logs nbm-cloud --lines 30 --nostream
+remote: Enumerating objects: 29, done.
+remote: Counting objects: 100% (29/29), done.
+remote: Compressing objects: 100% (21/21), done.
+remote: Total 27 (delta 20), reused 13 (delta 6), pack-reused 0 (from 0)
+Unpacking objects: 100% (27/27), 9.60 KiB | 317.00 KiB/s, done.
+From https://github.com/MarcioVVitor/Backup-Master
+ * branch            main       -> FETCH_HEAD
+   b0276f7..c992e05  main       -> origin/main
+Updating b0276f7..c992e05
+error: The following untracked working tree files would be overwritten by merge:
+	ecosystem.config.cjs
+Please move or remove them before you merge.
+Aborting
+[PM2] Applying action deleteProcessId on app [nbm-cloud](ids: [ 0 ])
+[PM2] [nbm-cloud](0) ✓
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+[PM2][WARN] Applications nbm-cloud not running, starting...
+[PM2] App [nbm-cloud] launched (1 instances)
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+├────┼────────────────────┼──────────┼──────┼───────────┼──────────┼──────────┤
+│ 0  │ nbm-cloud          │ fork     │ 0    │ online    │ 0%       │ 12.8mb   │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+[TAILING] Tailing last 30 lines for [nbm-cloud] process (change the value with --lines option)
+/var/log/nbm-cloud/out-0.log last 30 lines:
+/var/log/nbm-cloud/error-0.log last 30 lines:
+0|nbm-clou | 2026-01-15T08:06:53:     at /opt/nbm-cloud/dist/index.cjs:70:120294
+0|nbm-clou | 2026-01-15T08:06:53:     at /opt/nbm-cloud/dist/index.cjs:1:225
+0|nbm-clou | 2026-01-15T08:06:53:     at Object.<anonymous> (/opt/nbm-cloud/dist/index.cjs:145:33509)
+0|nbm-clou | 2026-01-15T08:06:53:     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+0|nbm-clou | 2026-01-15T08:06:53:     at Module._extensions..js (node:internal/modules/cjs/loader:1623:10)
+0|nbm-clou | 2026-01-15T08:06:53:     at Module.load (node:internal/modules/cjs/loader:1266:32)
+0|nbm-clou | 2026-01-15T08:06:53:     at Module._load (node:internal/modules/cjs/loader:1091:12)
+0|nbm-clou | 2026-01-15T08:06:53:     at cjsLoader (node:internal/modules/esm/translators:298:15)
+0|nbm-clou | 2026-01-15T08:09:21: Error: DATABASE_URL must be set. Did you forget to provision a database?
+0|nbm-clou | 2026-01-15T08:09:21:     at /opt/nbm-cloud/dist/index.cjs:70:120105
+0|nbm-clou | 2026-01-15T08:09:21:     at /opt/nbm-cloud/dist/index.cjs:1:225
+0|nbm-clou | 2026-01-15T08:09:21:     at /opt/nbm-cloud/dist/index.cjs:70:120294
+0|nbm-clou | 2026-01-15T08:09:21:     at /opt/nbm-cloud/dist/index.cjs:1:225
+0|nbm-clou | 2026-01-15T08:09:21:     at Object.<anonymous> (/opt/nbm-cloud/dist/index.cjs:145:33509)
+0|nbm-clou | 2026-01-15T08:09:21:     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+0|nbm-clou | 2026-01-15T08:09:21:     at Module._extensions..js (node:internal/modules/cjs/loader:1623:10)
+0|nbm-clou | 2026-01-15T08:09:21:     at Module.load (node:internal/modules/cjs/loader:1266:32)
+0|nbm-clou | 2026-01-15T08:09:21:     at Module._load (node:internal/modules/cjs/loader:1091:12)
+0|nbm-clou | 2026-01-15T08:09:21:     at cjsLoader (node:internal/modules/esm/translators:298:15)
+0|nbm-clou | 2026-01-15T08:14:17: Error: DATABASE_URL must be set. Did you forget to provision a database?
+0|nbm-clou | 2026-01-15T08:14:17:     at /opt/nbm-cloud/dist/index.cjs:70:120105
+0|nbm-clou | 2026-01-15T08:14:17:     at /opt/nbm-cloud/dist/index.cjs:1:225
+0|nbm-clou | 2026-01-15T08:14:17:     at /opt/nbm-cloud/dist/index.cjs:70:120294
+0|nbm-clou | 2026-01-15T08:14:17:     at /opt/nbm-cloud/dist/index.cjs:1:225
+0|nbm-clou | 2026-01-15T08:14:17:     at Object.<anonymous> (/opt/nbm-cloud/dist/index.cjs:145:33509)
+0|nbm-clou | 2026-01-15T08:14:17:     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+0|nbm-clou | 2026-01-15T08:14:17:     at Module._extensions..js (node:internal/modules/cjs/loader:1623:10)
+0|nbm-clou | 2026-01-15T08:14:17:     at Module.load (node:internal/modules/cjs/loader:1266:32)
+0|nbm-clou | 2026-01-15T08:14:17:     at Module._load (node:internal/modules/cjs/loader:1091:12)
+0|nbm-clou | 2026-01-15T08:14:17:     at cjsLoader (node:internal/modules/esm/translators:298:15)
+
+root@SRV-NBM-CLOUD-01[/opt/nbm-cloud]# 
