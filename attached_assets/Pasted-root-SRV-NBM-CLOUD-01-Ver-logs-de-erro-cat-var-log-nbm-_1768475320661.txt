@@ -1,0 +1,54 @@
+root@SRV-NBM-CLOUD-01[~]# # Ver logs de erro
+cat /var/log/nbm-cloud/error-0.log
+
+# Ver logs combinados
+cat /var/log/nbm-cloud/combined-0.log
+
+# Verificar se o servidor está rodando
+pm2 status
+
+# Ver logs em tempo real por 10 segundos
+timeout 10 pm2 logs nbm-cloud --raw
+2026-01-15T08:06:53: Error: DATABASE_URL must be set. Did you forget to provision a database?
+2026-01-15T08:06:53:     at /opt/nbm-cloud/dist/index.cjs:70:120105
+2026-01-15T08:06:53:     at /opt/nbm-cloud/dist/index.cjs:1:225
+2026-01-15T08:06:53:     at /opt/nbm-cloud/dist/index.cjs:70:120294
+2026-01-15T08:06:53:     at /opt/nbm-cloud/dist/index.cjs:1:225
+2026-01-15T08:06:53:     at Object.<anonymous> (/opt/nbm-cloud/dist/index.cjs:145:33509)
+2026-01-15T08:06:53:     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+2026-01-15T08:06:53:     at Module._extensions..js (node:internal/modules/cjs/loader:1623:10)
+2026-01-15T08:06:53:     at Module.load (node:internal/modules/cjs/loader:1266:32)
+2026-01-15T08:06:53:     at Module._load (node:internal/modules/cjs/loader:1091:12)
+2026-01-15T08:06:53:     at cjsLoader (node:internal/modules/esm/translators:298:15)
+2026-01-15T08:06:53: Error: DATABASE_URL must be set. Did you forget to provision a database?
+2026-01-15T08:06:53:     at /opt/nbm-cloud/dist/index.cjs:70:120105
+2026-01-15T08:06:53:     at /opt/nbm-cloud/dist/index.cjs:1:225
+2026-01-15T08:06:53:     at /opt/nbm-cloud/dist/index.cjs:70:120294
+2026-01-15T08:06:53:     at /opt/nbm-cloud/dist/index.cjs:1:225
+2026-01-15T08:06:53:     at Object.<anonymous> (/opt/nbm-cloud/dist/index.cjs:145:33509)
+2026-01-15T08:06:53:     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+2026-01-15T08:06:53:     at Module._extensions..js (node:internal/modules/cjs/loader:1623:10)
+2026-01-15T08:06:53:     at Module.load (node:internal/modules/cjs/loader:1266:32)
+2026-01-15T08:06:53:     at Module._load (node:internal/modules/cjs/loader:1091:12)
+2026-01-15T08:06:53:     at cjsLoader (node:internal/modules/esm/translators:298:15)
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+├────┼────────────────────┼──────────┼──────┼───────────┼──────────┼──────────┤
+│ 0  │ nbm-cloud          │ fork     │ 5    │ online    │ 0%       │ 87.6mb   │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+[TAILING] Tailing last 15 lines for [nbm-cloud] process (change the value with --lines option)
+/var/log/nbm-cloud/out-0.log last 15 lines:
+/var/log/nbm-cloud/error-0.log last 15 lines:
+2026-01-15T08:06:53: Error: DATABASE_URL must be set. Did you forget to provision a database?
+2026-01-15T08:06:53:     at /opt/nbm-cloud/dist/index.cjs:70:120105
+2026-01-15T08:06:53:     at /opt/nbm-cloud/dist/index.cjs:1:225
+2026-01-15T08:06:53:     at /opt/nbm-cloud/dist/index.cjs:70:120294
+2026-01-15T08:06:53:     at /opt/nbm-cloud/dist/index.cjs:1:225
+2026-01-15T08:06:53:     at Object.<anonymous> (/opt/nbm-cloud/dist/index.cjs:145:33509)
+2026-01-15T08:06:53:     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+2026-01-15T08:06:53:     at Module._extensions..js (node:internal/modules/cjs/loader:1623:10)
+2026-01-15T08:06:53:     at Module.load (node:internal/modules/cjs/loader:1266:32)
+2026-01-15T08:06:53:     at Module._load (node:internal/modules/cjs/loader:1091:12)
+2026-01-15T08:06:53:     at cjsLoader (node:internal/modules/esm/translators:298:15)
+
+root@SRV-NBM-CLOUD-01[~]# 
