@@ -1,0 +1,230 @@
+root@SRV-NBM-CLOUD-01[~]# source /opt/nbm-cloud/.env
+psql "$DATABASE_URL" -c "SELECT id, name, status, last_seen FROM agents;"
+ERROR:  column "last_seen" does not exist
+LINE 1: SELECT id, name, status, last_seen FROM agents;
+                                 ^
+root@SRV-NBM-CLOUD-01[~]# pm2 logs nbm-cloud --lines 300 | grep -i "job\|sending\|agent.*1\|dispatch"
+0|nbm-clou | 2026-01-15T09:51:12: [backup] Timeout waiting for agent response for job backup-3-1768481112440
+0|nbm-clou | 2026-01-15T09:51:12: [backup] Agent 1 failed: Timeout aguardando resposta do agente (360s)
+0|nbm-clou | 2026-01-15T09:55:12: [ws-agents] No pending job found for jobId: backup-3-1768481112440
+0|nbm-clou | 2026-01-15T09:57:17: [backup] Timeout waiting for agent response for job backup-3-1768481477440
+0|nbm-clou | 2026-01-15T09:57:17: [backup] Agent 1 retry failed: Timeout aguardando resposta do agente (360s)
+0|nbm-clou | 2026-01-15T10:03:18: [backup] Timeout waiting for agent response for job backup-4-1768481838480
+0|nbm-clou | 2026-01-15T10:03:18: [backup] Agent 1 failed: Timeout aguardando resposta do agente (360s)
+0|nbm-clou | 2026-01-15T10:05:13: [ws-agents] No pending job found for jobId: backup-3-1768481477440
+0|nbm-clou | 2026-01-15T10:05:13: [ws-agents] No pending job found for jobId: backup-4-1768481838480
+0|nbm-clou | 2026-01-15T10:05:14: [ws-agents] Backup failed for jobId: backup-4-1768482203485, error: Backup execution failed
+0|nbm-clou | 2026-01-15T10:05:14: [backup] Agent 1 retry failed: Backup execution failed
+0|nbm-clou | 2026-01-15T13:38:04: [backup] Timeout waiting for agent response for job backup-3-1768494724332
+0|nbm-clou | 2026-01-15T13:38:04: [backup] Agent 1 failed: Timeout aguardando resposta do agente (360s)
+0|nbm-clou | 2026-01-15T13:42:04: [ws-agents] No pending job found for jobId: backup-3-1768494724332
+0|nbm-clou | 2026-01-15T13:44:09: [backup] Timeout waiting for agent response for job backup-3-1768495089335
+0|nbm-clou | 2026-01-15T13:44:09: [backup] Agent 1 retry failed: Timeout aguardando resposta do agente (360s)
+0|nbm-clou | 2026-01-15T13:50:10: [backup] Timeout waiting for agent response for job backup-4-1768495450211
+0|nbm-clou | 2026-01-15T13:50:10: [backup] Agent 1 failed: Timeout aguardando resposta do agente (360s)
+0|nbm-clou | 2026-01-15T13:52:05: [ws-agents] No pending job found for jobId: backup-3-1768495089335
+0|nbm-clou | 2026-01-15T13:52:06: [ws-agents] No pending job found for jobId: backup-4-1768495450211
+0|nbm-clou | 2026-01-15T13:52:06: [ws-agents] Backup failed for jobId: backup-4-1768495815213, error: Backup execution failed
+0|nbm-clou | 2026-01-15T13:52:06: [backup] Agent 1 retry failed: Backup execution failed
+0|nbm-clou | 2026-01-15T15:02:20: [backup] Timeout waiting for agent response for job backup-3-1768499780357
+0|nbm-clou | 2026-01-15T15:02:20: [backup] Agent 1 failed: Timeout aguardando resposta do agente (360s)
+0|nbm-clou | 2026-01-15T15:04:16: [backup] Timeout waiting for agent response for job backup-4-1768499896754
+0|nbm-clou | 2026-01-15T15:04:16: [backup] Agent 1 failed: Timeout aguardando resposta do agente (360s)
+0|nbm-clou | 2026-01-15T15:06:20: [ws-agents] No pending job found for jobId: backup-3-1768499780357
+0|nbm-clou | 2026-01-15T15:06:23: [ws-agents] No pending job found for jobId: backup-4-1768499896754
+0|nbm-clou | 2026-01-15T15:08:25: [backup] Timeout waiting for agent response for job backup-3-1768500145359
+0|nbm-clou | 2026-01-15T15:08:25: [backup] Agent 1 retry failed: Timeout aguardando resposta do agente (360s)
+0|nbm-clou | 2026-01-15T15:10:21: [backup] Timeout waiting for agent response for job backup-4-1768500261756
+0|nbm-clou | 2026-01-15T15:10:21: [backup] Agent 1 retry failed: Timeout aguardando resposta do agente (360s)
+0|nbm-clou | 2026-01-15T15:16:24: [ws-agents] No pending job found for jobId: backup-3-1768500145359
+0|nbm-clou | 2026-01-15T15:16:27: [ws-agents] No pending job found for jobId: backup-4-1768500261756
+0|nbm-clou | 2026-01-15T15:20:44: [backup] Timeout waiting for agent response for job backup-3-1768500883999
+0|nbm-clou | 2026-01-15T15:20:44: [backup] Agent 1 failed: Timeout aguardando resposta do agente (360s)
+0|nbm-clou | 2026-01-15T15:26:28: [ws-agents] No pending job found for jobId: backup-3-1768500883999
+0|nbm-clou | 2026-01-15T15:26:49: [backup] Timeout waiting for agent response for job backup-3-1768501249001
+0|nbm-clou | 2026-01-15T15:26:49: [backup] Agent 1 retry failed: Timeout aguardando resposta do agente (360s)
+0|nbm-clou | 2026-01-15T15:32:49: [backup] Timeout waiting for agent response for job backup-4-1768501609924
+0|nbm-clou | 2026-01-15T15:32:49: [backup] Agent 1 failed: Timeout aguardando resposta do agente (360s)
+0|nbm-clou | 2026-01-15T15:36:28: [ws-agents] No pending job found for jobId: backup-3-1768501249001
+0|nbm-clou | 2026-01-15T15:36:32: [ws-agents] No pending job found for jobId: backup-4-1768501609924
+0|nbm-clou | 2026-01-15T15:36:36: [ws-agents] Backup failed for jobId: backup-4-1768501974924, error: Backup execution failed
+0|nbm-clou | 2026-01-15T15:36:36: [backup] Agent 1 retry failed: Backup execution failed
+0|nbm-clou | 2026-01-15T16:50:38: [backup] Timeout waiting for agent response for job backup-3-1768506278671
+0|nbm-clou | 2026-01-15T16:50:38: [backup] Agent 1 failed: Timeout aguardando resposta do agente (360s)
+0|nbm-clou | 2026-01-15T16:51:17: [backup] Timeout waiting for agent response for job backup-4-1768506317313
+0|nbm-clou | 2026-01-15T16:51:17: [backup] Agent 1 failed: Timeout aguardando resposta do agente (360s)
+0|nbm-clou | 2026-01-15T16:54:38: [ws-agents] No pending job found for jobId: backup-3-1768506278671
+0|nbm-clou | 2026-01-15T16:56:02: [backup] Timeout waiting for agent response for job backup-3-1768506602305
+0|nbm-clou | 2026-01-15T16:56:02: [backup] Agent 1 failed: Timeout aguardando resposta do agente (360s)
+0|nbm-clou | 2026-01-15T16:56:43: [backup] Timeout waiting for agent response for job backup-3-1768506643673
+0|nbm-clou | 2026-01-15T16:56:43: [backup] Agent 1 retry failed: Timeout aguardando resposta do agente (360s)
+0|nbm-clou | 2026-01-15T16:57:22: [backup] Timeout waiting for agent response for job backup-4-1768506682314
+0|nbm-clou | 2026-01-15T16:57:22: [backup] Agent 1 retry failed: Timeout aguardando resposta do agente (360s)
+0|nbm-clou | 2026-01-15T17:02:07: [backup] Timeout waiting for agent response for job backup-3-1768506967306
+0|nbm-clou | 2026-01-15T17:02:07: [backup] Agent 1 retry failed: Timeout aguardando resposta do agente (360s)
+0|nbm-clou | 2026-01-15T17:04:39: [ws-agents] No pending job found for jobId: backup-4-1768506317313
+0|nbm-clou | 2026-01-15T17:14:39: [ws-agents] No pending job found for jobId: backup-3-1768506602305
+0|nbm-clou | 2026-01-15T17:24:39: [ws-agents] No pending job found for jobId: backup-3-1768506643673
+0|nbm-clou | 2026-01-15T17:34:39: [ws-agents] No pending job found for jobId: backup-4-1768506682314
+0|nbm-clou | 2026-01-15T17:44:40: [ws-agents] No pending job found for jobId: backup-3-1768506967306
+0|nbm-clou | 2026-01-15T17:44:59: [backup] Timeout waiting for agent response for job backup-3-1768509539603
+0|nbm-clou | 2026-01-15T17:44:59: [backup] Agent 1 failed: Timeout aguardando resposta do agente (360s)
+0|nbm-clou | 2026-01-15T17:51:04: [backup] Timeout waiting for agent response for job backup-3-1768509904605
+0|nbm-clou | 2026-01-15T17:51:04: [backup] Agent 1 retry failed: Timeout aguardando resposta do agente (360s)
+0|nbm-clou | 2026-01-15T17:54:42: [ws-agents] No pending job found for jobId: backup-3-1768509539603
+0|nbm-clou | 2026-01-15T17:57:05: [backup] Timeout waiting for agent response for job backup-4-1768510265501
+0|nbm-clou | 2026-01-15T17:57:05: [backup] Agent 1 failed: Timeout aguardando resposta do agente (360s)
+0|nbm-clou | 2026-01-15T18:03:10: [backup] Timeout waiting for agent response for job backup-4-1768510630503
+0|nbm-clou | 2026-01-15T18:03:10: [backup] Agent 1 retry failed: Timeout aguardando resposta do agente (360s)
+0|nbm-clou | 2026-01-15T18:04:43: [ws-agents] No pending job found for jobId: backup-3-1768509904605
+0|nbm-clou | 2026-01-15T18:14:43: [ws-agents] No pending job found for jobId: backup-4-1768510265501
+0|nbm-clou | 2026-01-15T18:24:44: [ws-agents] No pending job found for jobId: backup-4-1768510630503
+0|nbm-clou | 2026-01-15T18:19:26: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:19:41: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:19:56: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:20:11: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:20:26: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:20:41: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:20:56: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:21:11: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:21:26: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:21:41: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:21:56: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:22:11: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:22:26: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:22:41: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:22:56: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:23:11: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:23:26: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:23:41: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:23:56: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:24:11: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:24:26: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:24:41: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:24:44: [ws-agents] Received message, size: 108 bytes
+0|nbm-clou | 2026-01-15T18:24:44: [ws-agents] Received backup_result for jobId: backup-4-1768510630503
+0|nbm-clou | 2026-01-15T18:24:44: [ws-agents]   - pending jobs count: 0
+0|nbm-clou | 2026-01-15T18:24:44: [ws-agents] Current pending jobs: 
+0|nbm-clou | 2026-01-15T18:24:56: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:25:11: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:25:26: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:25:41: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:25:56: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:26:11: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:26:26: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:26:41: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:26:56: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:27:11: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:27:26: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:27:41: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:27:56: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:28:11: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:28:26: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:28:41: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:28:56: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:29:11: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:29:26: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:29:41: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:29:56: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:30:11: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:30:26: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:30:41: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:30:56: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:31:11: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:31:26: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:31:41: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:31:56: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:32:11: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:32:26: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:32:41: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:32:56: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:33:11: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:33:26: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:33:41: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:33:56: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:34:11: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:34:26: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:34:41: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:34:56: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:35:11: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:35:26: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:35:41: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:35:56: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:36:11: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:36:26: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:36:41: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:36:56: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:37:11: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:37:26: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:37:41: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:37:56: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:38:11: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:38:26: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:38:41: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:38:56: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:39:11: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:39:26: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:39:41: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:39:56: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:40:11: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:40:26: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:40:41: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:40:56: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:41:11: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:41:26: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:41:41: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:41:56: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:42:11: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:42:26: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:42:41: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:42:56: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:43:11: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:43:26: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:43:41: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:43:56: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:44:11: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:44:26: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:44:41: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:44:56: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:45:11: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:45:26: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:45:41: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:45:56: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:46:11: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:46:26: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:46:42: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:46:57: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:47:12: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:47:27: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:47:42: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:47:57: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:48:12: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:48:27: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:48:42: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:48:57: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:49:12: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:49:27: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:49:42: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:49:57: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:50:12: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:50:27: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:50:42: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:50:57: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:51:12: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:51:27: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:51:42: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:51:57: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:52:12: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:52:27: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:52:42: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:52:57: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:53:12: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:53:27: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:53:42: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:53:57: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:54:12: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:54:27: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:54:42: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:54:57: [ws-agents] Received message, size: 21 bytes
+0|nbm-clou | 2026-01-15T18:55:12: [ws-agents] Received message, size: 21 bytes
+

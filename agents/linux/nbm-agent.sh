@@ -6,7 +6,7 @@
 # Don't exit on error - we handle errors ourselves
 set +e
 
-AGENT_VERSION="1.3.1"
+AGENT_VERSION="1.3.2"
 AGENT_DIR="/opt/nbm-agent"
 CONFIG_FILE="$AGENT_DIR/config.json"
 LOG_FILE="$AGENT_DIR/logs/agent.log"
@@ -2113,7 +2113,8 @@ connect_websocket() {
         # Use coproc for bidirectional communication with websocat
         # Ping interval of 10s helps detect disconnections faster
         # Buffer size of 512KB to handle large backup outputs
-        coproc WSCAT { websocat -t --ping-interval 10 -B 524288 "$ws_url" 2>&1; }
+        # NOTE: Don't use 2>&1 as it mixes stderr with JSON messages
+        coproc WSCAT { websocat -t --ping-interval 10 -B 524288 "$ws_url" 2>/dev/null; }
         
         if [[ -z "${WSCAT_PID:-}" ]]; then
             log_error "Failed to start websocat"
@@ -2148,8 +2149,15 @@ connect_websocket() {
                 continue
             fi
             
-            log_debug "Received: $msg"
+            # Log raw message (truncated for large messages)
+            local msg_len=${#msg}
+            if [[ $msg_len -gt 200 ]]; then
+                log_debug "Received ($msg_len bytes): ${msg:0:200}..."
+            else
+                log_debug "Received ($msg_len bytes): $msg"
+            fi
             local msg_type=$(echo "$msg" | jq -r '.type // empty' 2>/dev/null)
+            log_debug "Parsed message type: $msg_type"
             
             case "$msg_type" in
                 auth_success)
@@ -2163,6 +2171,12 @@ connect_websocket() {
                     log_debug "Heartbeat acknowledged"
                     ;;
                 execute_backup|backup_job|test_connection|request_diagnostics|terminal_command|terminal_connect|terminal_input|terminal_disconnect|update_agent)
+                    log_info ">>> RECEIVED JOB: type=$msg_type"
+                    if [[ "$msg_type" == "backup_job" || "$msg_type" == "execute_backup" ]]; then
+                        local job_id_log=$(echo "$msg" | jq -r '.jobId // "unknown"' 2>/dev/null)
+                        local equip_name_log=$(echo "$msg" | jq -r '.equipment.name // "unknown"' 2>/dev/null)
+                        log_info ">>> BACKUP JOB: jobId=$job_id_log, equipment=$equip_name_log"
+                    fi
                     response=$(handle_message "$msg")
                     if [[ -n "$response" ]]; then
                         local resp_len=${#response}
