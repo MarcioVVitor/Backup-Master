@@ -6,7 +6,7 @@
 # Don't exit on error - we handle errors ourselves
 set +e
 
-AGENT_VERSION="1.3.2"
+AGENT_VERSION="1.3.3"
 AGENT_DIR="/opt/nbm-agent"
 CONFIG_FILE="$AGENT_DIR/config.json"
 LOG_FILE="$AGENT_DIR/logs/agent.log"
@@ -305,6 +305,9 @@ send "display current-configuration\r"
 set config_complete 0
 set line_count 0
 
+# Reduced timeout for each expect iteration - config usually finishes fast
+set timeout 60
+
 while {$config_complete == 0} {
     expect {
         -re {---- More ----} {
@@ -325,11 +328,6 @@ while {$config_complete == 0} {
             send " "
             exp_continue
         }
-        -re {\r\n} {
-            incr line_count
-            # Continue reading more lines
-            exp_continue
-        }
         -re {return\r?\n<[^>]+>\s*$} {
             puts stderr "HUAWEI_DEBUG: Config complete after $line_count lines (found return + final prompt)"
             set config_complete 1
@@ -337,6 +335,21 @@ while {$config_complete == 0} {
         -re {#\r?\n<[^>]+>\s*$} {
             puts stderr "HUAWEI_DEBUG: Config complete after $line_count lines (found # + final prompt)"
             set config_complete 1
+        }
+        -re {<[^>]+>\s*$} {
+            # Any hostname prompt after config might indicate end
+            if {$line_count > 100} {
+                puts stderr "HUAWEI_DEBUG: Config complete after $line_count lines (found <hostname> prompt)"
+                set config_complete 1
+            } else {
+                incr line_count
+                exp_continue
+            }
+        }
+        -re {\r\n} {
+            incr line_count
+            # Continue reading more lines
+            exp_continue
         }
         timeout {
             # Check if we have enough content - timeout might mean config is done
