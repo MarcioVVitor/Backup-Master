@@ -1,0 +1,84 @@
+root@SRV-NBM-CLOUD-01[/opt/nbm-cloud]# cd /opt/nbm-cloud
+
+# Remover o arquivo local e fazer pull
+rm ecosystem.config.cjs
+git pull origin main
+
+# Limpar logs e reiniciar
+pm2 flush nbm-cloud
+pm2 delete nbm-cloud
+pm2 start ecosystem.config.cjs
+
+# Verificar se iniciou corretamente
+sleep 5 && pm2 logs nbm-cloud --lines 30 --nostream
+remote: Enumerating objects: 6, done.
+remote: Counting objects: 100% (6/6), done.
+remote: Compressing objects: 100% (2/2), done.
+remote: Total 4 (delta 2), reused 4 (delta 2), pack-reused 0 (from 0)
+Unpacking objects: 100% (4/4), 1.86 KiB | 634.00 KiB/s, done.
+From https://github.com/MarcioVVitor/Backup-Master
+ * branch            main       -> FETCH_HEAD
+   c992e05..6057b13  main       -> origin/main
+Updating b0276f7..6057b13
+Fast-forward
+ ...oot-SRV-AGENTE-PROXY-NBM-CLOUD-01-Instalar-expect-apt-_1768474826801.txt |  45 ++++
+ ...oot-SRV-NBM-CLOUD-01-Atualizar-servidor-NBM-CLOUD-cd-o_1768472685055.txt |  49 +++++
+ ...oot-SRV-NBM-CLOUD-01-Carregar-as-vari-veis-e-reiniciar_1768475371908.txt |  65 ++++++
+ ...oot-SRV-NBM-CLOUD-01-Ver-logs-de-erro-cat-var-log-nbm-_1768475320661.txt |  54 +++++
+ ...oot-SRV-NBM-CLOUD-01-Ver-ltimas-200-linhas-de-logs-com_1768474294805.txt | 408 ++++++++++++++++++++++++++++++++++++
+ ...oot-SRV-NBM-CLOUD-01-cd-opt-nbm-cloud-git-pull-origin-_1768475669006.txt |  67 ++++++
+ ...oot-SRV-NBM-CLOUD-01-pm2-logs-nbm-cloud-lines-100-grep_1768474210296.txt |  23 ++
+ ecosystem.config.cjs                                                        |  52 +++++
+ 8 files changed, 763 insertions(+)
+ create mode 100644 attached_assets/Pasted-root-SRV-AGENTE-PROXY-NBM-CLOUD-01-Instalar-expect-apt-_1768474826801.txt
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-Atualizar-servidor-NBM-CLOUD-cd-o_1768472685055.txt
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-Carregar-as-vari-veis-e-reiniciar_1768475371908.txt
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-Ver-logs-de-erro-cat-var-log-nbm-_1768475320661.txt
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-Ver-ltimas-200-linhas-de-logs-com_1768474294805.txt
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-cd-opt-nbm-cloud-git-pull-origin-_1768475669006.txt
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-pm2-logs-nbm-cloud-lines-100-grep_1768474210296.txt
+ create mode 100644 ecosystem.config.cjs
+[PM2] Flushing:
+[PM2] /var/log/nbm-cloud/combined-0.log
+[PM2] /var/log/nbm-cloud/out-0.log
+[PM2] /var/log/nbm-cloud/error-0.log
+[PM2] Logs flushed
+[PM2] Applying action deleteProcessId on app [nbm-cloud](ids: [ 0 ])
+[PM2] [nbm-cloud](0) ✓
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+[PM2][WARN] Applications nbm-cloud not running, starting...
+[PM2] App [nbm-cloud] launched (1 instances)
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+├────┼────────────────────┼──────────┼──────┼───────────┼──────────┼──────────┤
+│ 0  │ nbm-cloud          │ fork     │ 0    │ online    │ 0%       │ 12.3mb   │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+[TAILING] Tailing last 30 lines for [nbm-cloud] process (change the value with --lines option)
+/var/log/nbm-cloud/out-0.log last 30 lines:
+0|nbm-clou | 2026-01-15T08:15:17: [worker-pool] 15/01/2026, 08:15:17 - Worker pool initialized with concurrency: 50
+0|nbm-clou | 2026-01-15T08:15:17: [standalone-auth] Setting up standalone authentication routes
+0|nbm-clou | 2026-01-15T08:15:17: [scheduler] 15/01/2026, 08:15:17 - Backup executor registered for scheduler and worker pool
+0|nbm-clou | 2026-01-15T08:15:17: [scheduler] 15/01/2026, 08:15:17 - Starting backup scheduler...
+0|nbm-clou | 2026-01-15T08:15:17: [scheduler] 15/01/2026, 08:15:17 - Timezone: System (Linux)
+0|nbm-clou | 2026-01-15T08:15:17: [scheduler] 15/01/2026, 08:15:17 - Check interval: 60 seconds
+0|nbm-clou | 2026-01-15T08:15:17: [scheduler] 15/01/2026, 08:15:17 - Worker pool concurrency: 50
+0|nbm-clou | 2026-01-15T08:15:17: [scheduler] 15/01/2026, 08:15:17 - Current time: 8:15, Day of week: 4, Day of month: 15
+0|nbm-clou | 2026-01-15T08:15:17: [scheduler] 15/01/2026, 08:15:17 - Scheduler started successfully
+0|nbm-clou | 2026-01-15T08:15:17: [static] Serving static files from: /opt/nbm-cloud/dist/public
+
+/var/log/nbm-cloud/error-0.log last 30 lines:
+0|nbm-clou | 2026-01-15T08:15:17: Error: listen EADDRINUSE: address already in use 0.0.0.0:5000
+0|nbm-clou | 2026-01-15T08:15:17:     at Server.setupListenHandle [as _listen2] (node:net:1908:16)
+0|nbm-clou | 2026-01-15T08:15:17:     at listenInCluster (node:net:1965:12)
+0|nbm-clou | 2026-01-15T08:15:17:     at doListen (node:net:2139:7)
+0|nbm-clou | 2026-01-15T08:15:17:     at process.processTicksAndRejections (node:internal/process/task_queues:83:21) {
+0|nbm-clou | 2026-01-15T08:15:17:   code: 'EADDRINUSE',
+0|nbm-clou | 2026-01-15T08:15:17:   errno: -98,
+0|nbm-clou | 2026-01-15T08:15:17:   syscall: 'listen',
+0|nbm-clou | 2026-01-15T08:15:17:   address: '0.0.0.0',
+0|nbm-clou | 2026-01-15T08:15:17:   port: 5000
+0|nbm-clou | 2026-01-15T08:15:17: }
+
+root@SRV-NBM-CLOUD-01[/opt/nbm-cloud]# 
