@@ -789,7 +789,7 @@ export default function BackupsPage() {
   };
 
   return (
-    <div className="p-6 md:p-8 space-y-6 animate-enter">
+    <div className="p-4 sm:p-6 md:p-8 space-y-6 animate-enter">
       <div className="flex flex-col md:flex-row justify-between gap-4 md:items-center">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">{t.backups.title}</h1>

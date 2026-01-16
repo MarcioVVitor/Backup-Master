@@ -126,13 +126,13 @@ export default function Home() {
     : 0;
 
   return (
-    <div className="p-6 md:p-8 space-y-6 animate-enter">
+    <div className="p-4 sm:p-6 md:p-8 space-y-6 animate-enter">
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">{t.dashboard.title}</h1>
-        <p className="text-muted-foreground">{t.dashboard.subtitle}</p>
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">{t.dashboard.title}</h1>
+        <p className="text-sm sm:text-base text-muted-foreground">{t.dashboard.subtitle}</p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
         <StatsCard
           title={t.dashboard.totalEquipment}
           value={totalEquipment}
@@ -163,8 +163,8 @@ export default function Home() {
         />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <Card className="col-span-1 lg:col-span-2 border-none shadow-sm">
+      <div className="grid gap-4 grid-cols-1 lg:grid-cols-3">
+        <Card className="lg:col-span-2 border-none shadow-sm">
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5 text-green-500" />

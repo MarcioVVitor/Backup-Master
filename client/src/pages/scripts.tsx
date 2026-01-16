@@ -343,18 +343,18 @@ export default function ScriptsPage() {
   };
 
   return (
-    <div className="p-6 md:p-8 space-y-6 animate-enter">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="p-4 sm:p-6 md:p-8 space-y-6 animate-enter">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 page-header">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">{t.scripts.title}</h1>
-          <p className="text-muted-foreground">{t.scripts.subtitle}</p>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{t.scripts.title}</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">{t.scripts.subtitle}</p>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="relative">
+        <div className="flex flex-wrap items-center gap-2 page-header-actions">
+          <div className="relative flex-1 min-w-[150px] sm:flex-none">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder={t.common.search + "..."}
-              className="pl-9 w-[250px] bg-background"
+              className="pl-9 w-full sm:w-[250px] bg-background"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />

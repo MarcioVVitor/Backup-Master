@@ -184,14 +184,14 @@ export default function CredentialsPage() {
   };
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="p-4 sm:p-6 md:p-8 space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 page-header">
         <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Key className="h-8 w-8" />
+          <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
+            <Key className="h-6 w-6 sm:h-8 sm:w-8" />
             Cofre de Credenciais
           </h1>
-          <p className="text-muted-foreground mt-1">
+          <p className="text-sm sm:text-base text-muted-foreground mt-1">
             Gerencie credenciais reutilizáveis para seus equipamentos de rede
           </p>
         </div>
@@ -241,7 +241,7 @@ export default function CredentialsPage() {
                   Nova Credencial
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-md">
+              <DialogContent className="max-w-[95vw] sm:max-w-md">
                 <DialogHeader>
                   <DialogTitle>Nova Credencial</DialogTitle>
                 </DialogHeader>

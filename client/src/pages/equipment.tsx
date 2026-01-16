@@ -207,7 +207,7 @@ export default function EquipmentPage() {
   const renderEquipmentListItem = (item: Equipment) => {
     const mfr = manufacturers?.find(m => m.value === item.manufacturer);
     return (
-      <div key={item.id} className="flex items-center justify-between p-4 border rounded-lg">
+      <div key={item.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border rounded-lg gap-3">
         <div className="flex items-center gap-4">
           <div className={`h-2 w-2 rounded-full ${item.enabled ? "bg-green-500" : "bg-gray-400"}`} />
           <div>
@@ -408,7 +408,7 @@ export default function EquipmentPage() {
 
   return (
     <div className="p-6 md:p-8 space-y-6 animate-enter">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 page-header">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">{t.equipment.title}</h1>
           <p className="text-muted-foreground">{t.equipment.subtitle}</p>
