@@ -1,0 +1,115 @@
+root@SRV-NBM-CLOUD-01[~]# cd /opt/nbm-cloud && sudo bash scripts/deploy.sh
+sudo: unable to resolve host SRV-NBM-CLOUD-01: Name or service not known
+
+==============================================
+   NBM CLOUD v17.0 - Production Deploy
+==============================================
+
+[INFO] Modo: ATUALIZAÇÃO (repositório existente)
+[INFO] 1/8 - Instalando dependências do sistema...
+W: https://deb.nodesource.com/node_20.x/dists/nodistro/InRelease: Policy will reject signature within a year, see --audit for details
+
+changed 133 packages in 5s
+
+13 packages are looking for funding
+  run `npm fund` for details
+[OK] Dependências instaladas (Node v20.19.6)
+[INFO] 2/8 - Configurando usuário e diretórios...
+[OK] Usuário e diretórios configurados
+[INFO] 3/8 - Atualizando código fonte...
+remote: Enumerating objects: 5, done.
+remote: Counting objects: 100% (5/5), done.
+remote: Compressing objects: 100% (1/1), done.
+remote: Total 3 (delta 2), reused 3 (delta 2), pack-reused 0 (from 0)
+Unpacking objects: 100% (3/3), 574 bytes | 287.00 KiB/s, done.
+From https://github.com/MarcioVVitor/Backup-Master
+   f018ac3..066543c  main       -> origin/main
+HEAD is now at 066543c Add credentials page to the sidebar navigation menu
+From https://github.com/MarcioVVitor/Backup-Master
+ * branch            main       -> FETCH_HEAD
+Already up to date.
+[OK] Código atualizado (066543c3)
+[INFO] 4/8 - Instalando pacotes npm...
+
+added 651 packages, and audited 652 packages in 15s
+
+91 packages are looking for funding
+  run `npm fund` for details
+
+4 high severity vulnerabilities
+
+To address all issues, run:
+  npm audit fix
+
+Run `npm audit` for details.
+[OK] Pacotes npm instalados
+[INFO] 5/8 - Compilando aplicação...
+sudo: unable to resolve host SRV-NBM-CLOUD-01: Name or service not known
+
+> rest-express@1.0.0 build
+> tsx script/build.ts
+
+building client...
+vite v7.3.0 building client environment for production...
+✓ 3322 modules transformed.
+../dist/public/index.html                     2.87 kB │ gzip:   1.04 kB
+../dist/public/assets/index-B3b1iGL6.css     80.18 kB │ gzip:  13.49 kB
+../dist/public/assets/index-DZbVEoeK.js   1,410.26 kB │ gzip: 382.71 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 12.60s
+building server...
+
+  dist/index.cjs  1.4mb ⚠️
+
+⚡ Done in 179ms
+[OK] Aplicação compilada
+[INFO] 6/8 - Configurando ambiente...
+[OK] Arquivo .env já existe
+[INFO] 7/8 - Executando migrações...
+
+> rest-express@1.0.0 db:push
+> drizzle-kit push
+
+No config path provided, using default 'drizzle.config.ts'
+Reading config file '/opt/nbm-cloud/drizzle.config.ts'
+Using 'pg' driver for database querying
+[✓] Pulling schema from database...
+[i] No changes detected
+[OK] Migrações executadas
+[INFO] 8/8 - Iniciando serviços...
+sudo: unable to resolve host SRV-NBM-CLOUD-01: Name or service not known
+[PM2] Applying action restartProcessId on app [nbm-cloud](ids: [ 0 ])
+[PM2] [nbm-cloud](0) ✓
+┌────┬──────────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name         │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+├────┼──────────────┼─────────────┼─────────┼─────────┼──────────┼────────┼──────┼───────────┼──────────┼──────────┼──────────┼──────────┤
+│ 0  │ nbm-cloud    │ default     │ 1.0.0   │ fork    │ 302349   │ 0s     │ 109  │ online    │ 0%       │ 25.7mb   │ nbm      │ disabled │
+└────┴──────────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+sudo: unable to resolve host SRV-NBM-CLOUD-01: Name or service not known
+[PM2] Saving current process list...
+[PM2] Successfully saved in /home/nbm/.pm2/dump.pm2
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+[OK] Serviços iniciados
+
+==============================================
+  DEPLOY CONCLUÍDO!
+==============================================
+
+NBM CLOUD está rodando em:
+   http://143.255.197.25
+
+Comandos úteis:
+  pm2 logs nbm-cloud      - Ver logs
+  pm2 restart nbm-cloud   - Reiniciar
+  pm2 monit               - Monitor
+
+sudo: unable to resolve host SRV-NBM-CLOUD-01: Name or service not known
+┌────┬───────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name      │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+└────┴───────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+root@SRV-NBM-CLOUD-01[/opt/nbm-cloud]# 
