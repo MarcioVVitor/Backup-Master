@@ -194,6 +194,20 @@ pm2 logs nbm-cloud
 
 ## Recent Changes (January 2026)
 
+### Credential Management System (v17.0)
+- **Similar to Termius**: Complete credential management system for reusing saved passwords across equipment
+- **Credential Groups**: Organize credentials by categories (data centers, regions, etc.)
+- **Credential Storage**: Save username, password, enable password with manufacturer/model filters
+- **Security**: Passwords always masked as "••••••••" in responses; /api/credentials/:id/reveal requires admin role
+- **Equipment Integration**: Toggle between saved credentials or manual entry in equipment forms
+- **Manufacturer Filtering**: Credentials filtered by selected manufacturer in equipment form
+- **Multi-tenant**: Complete company isolation for all credential operations
+
+### Database Tables Added
+- `credential_groups` - Groups for organizing credentials (id, companyId, name, description)
+- `credentials` - Saved credentials (id, companyId, groupId, name, username, password, enablePassword, manufacturer, model, description)
+- `equipment.credentialId` - Optional reference to saved credential
+
 ### Session Fix for Standalone Authentication
 - Added explicit `req.session.save()` before responding to login/register
 - Fixed cookie persistence with `secure: false` and `sameSite: "lax"` for HTTP
