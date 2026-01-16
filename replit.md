@@ -241,3 +241,12 @@ pm2 logs nbm-cloud
 - Added model field to firmware upload form
 - Grid layout for manufacturer and model inputs
 - Backend support for optional model parameter
+
+### Remote Agent Administration (v17.0)
+- **Server Control**: Reboot and shutdown server remotely via WebSocket
+- **Service Control**: Restart NBM Agent service, check status, restart agent process
+- **Quick Commands**: Execute common diagnostics (df -h, free -h, uptime, ip addr) with one click
+- **Security**: Admin-only routes with confirmation dialogs for destructive actions
+- **API Endpoint**: POST /api/agents/:id/admin with actions: reboot, shutdown, restart_service, restart_agent, service_status
+- **Timeout Handling**: 10s for reboot/shutdown (expected disconnect), 30s for other commands
+- **Console Button**: Quick access to agent console from agents list page (online agents only)
