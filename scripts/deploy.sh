@@ -101,6 +101,9 @@ log_success "Usuário e diretórios configurados"
 # ============================================================================
 log_info "3/8 - Atualizando código fonte..."
 
+# Fix git safe directory issue
+git config --global --add safe.directory "$APP_DIR" 2>/dev/null || true
+
 cd "$APP_DIR"
 
 if [[ "$MODE" == "update" ]]; then

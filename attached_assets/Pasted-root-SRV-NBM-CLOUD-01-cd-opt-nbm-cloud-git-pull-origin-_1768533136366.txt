@@ -1,0 +1,84 @@
+root@SRV-NBM-CLOUD-01[~]# cd /opt/nbm-cloud
+git pull origin main
+chmod +x scripts/deploy.sh
+sudo bash scripts/deploy.sh
+remote: Enumerating objects: 75, done.
+remote: Counting objects: 100% (16/16), done.
+remote: Total 75 (delta 16), reused 16 (delta 16), pack-reused 59 (from 1)
+Unpacking objects: 100% (75/75), 87.87 KiB | 1.27 MiB/s, done.
+From https://github.com/MarcioVVitor/Backup-Master
+ * branch            main       -> FETCH_HEAD
+   438a8a9..6dc0c85  main       -> origin/main
+Updating 438a8a9..6dc0c85
+Fast-forward
+ PRODUCTION.md                                                                                    |  308 +++++++++++++++
+ agents/linux/nbm-agent.sh                                                                        |   81 +++-
+ attached_assets/Pasted-root-SRV-AGENTE-PROXY-NBM-CLOUD-01-No-servidor-do-agent_1768513622606.txt |   70 ++++
+ attached_assets/Pasted-root-SRV-AGENTE-PROXY-NBM-CLOUD-01-Ver-a-fun-o-de-backu_1768502636603.txt |  119 ++++++
+ attached_assets/Pasted-root-SRV-AGENTE-PROXY-NBM-CLOUD-01-cd-opt-nbm-agent-git_1768502805132.txt |   70 ++++
+ attached_assets/Pasted-root-SRV-AGENTE-PROXY-NBM-CLOUD-01-cd-opt-nbm-agent-git_1768514960504.txt | 1091 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ attached_assets/Pasted-root-SRV-NBM-CLOUD-01-pm2-logs-nbm-cloud-lines-100-grep_1768500480191.txt |   10 +
+ attached_assets/Pasted-root-SRV-NBM-CLOUD-01-pm2-logs-nbm-cloud-lines-100-grep_1768513533385.txt |  151 ++++++++
+ attached_assets/Pasted-root-SRV-NBM-CLOUD-01-pm2-logs-nbm-cloud-lines-200-grep_1768500496799.txt |    9 +
+ attached_assets/Pasted-root-SRV-NBM-CLOUD-01-source-opt-nbm-cloud-env-psql-DAT_1768514124274.txt |  230 ++++++++++++
+ client/src/App.tsx                                                                               |    6 +-
+ client/src/pages/credentials.tsx                                                                 |  780 ++++++++++++++++++++++++++++++++++++++
+ client/src/pages/equipment.tsx                                                                   |  146 ++++++--
+ replit.md                                                                                        |   14 +
+ scripts/deploy.sh                                                                                |  429 +++++++++++++--------
+ scripts/install-production.sh                                                                    |  645 ++++++++++++++++++++++++++++++++
+ scripts/quick-update.sh                                                                          |   73 ++++
+ server/routes.ts                                                                                 |  211 ++++++++++-
+ server/storage.ts                                                                                |  104 +++++-
+ shared/schema.ts                                                                                 |   52 +++
+ 20 files changed, 4405 insertions(+), 194 deletions(-)
+ create mode 100644 PRODUCTION.md
+ create mode 100644 attached_assets/Pasted-root-SRV-AGENTE-PROXY-NBM-CLOUD-01-No-servidor-do-agent_1768513622606.txt
+ create mode 100644 attached_assets/Pasted-root-SRV-AGENTE-PROXY-NBM-CLOUD-01-Ver-a-fun-o-de-backu_1768502636603.txt
+ create mode 100644 attached_assets/Pasted-root-SRV-AGENTE-PROXY-NBM-CLOUD-01-cd-opt-nbm-agent-git_1768502805132.txt
+ create mode 100644 attached_assets/Pasted-root-SRV-AGENTE-PROXY-NBM-CLOUD-01-cd-opt-nbm-agent-git_1768514960504.txt
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-pm2-logs-nbm-cloud-lines-100-grep_1768500480191.txt
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-pm2-logs-nbm-cloud-lines-100-grep_1768513533385.txt
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-pm2-logs-nbm-cloud-lines-200-grep_1768500496799.txt
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-source-opt-nbm-cloud-env-psql-DAT_1768514124274.txt
+ create mode 100644 client/src/pages/credentials.tsx
+ mode change 100644 => 100755 scripts/deploy.sh
+ create mode 100755 scripts/install-production.sh
+ create mode 100755 scripts/quick-update.sh
+sudo: unable to resolve host SRV-NBM-CLOUD-01: Name or service not known
+
+==============================================
+   NBM CLOUD v17.0 - Production Deploy
+==============================================
+
+[INFO] Modo: ATUALIZAÇÃO (repositório existente)
+[INFO] 1/8 - Instalando dependências do sistema...
+W: https://deb.nodesource.com/node_20.x/dists/nodistro/InRelease: Policy will reject signature within a year, see --audit for details
+Preconfiguring packages ...
+Selecting previously unselected package nginx-common.
+(Reading database ... 58549 files and directories currently installed.)
+Preparing to unpack .../nginx-common_1.26.3-3+deb13u1_all.deb ...
+Unpacking nginx-common (1.26.3-3+deb13u1) ...
+Selecting previously unselected package nginx.
+Preparing to unpack .../nginx_1.26.3-3+deb13u1_amd64.deb ...
+Unpacking nginx (1.26.3-3+deb13u1) ...
+Setting up nginx-common (1.26.3-3+deb13u1) ...
+Created symlink '/etc/systemd/system/multi-user.target.wants/nginx.service' → '/usr/lib/systemd/system/nginx.service'.
+Setting up nginx (1.26.3-3+deb13u1) ...
+Upgrading binary: nginx.
+Processing triggers for man-db (2.13.1-1) ...
+Processing triggers for ufw (0.36.2-9) ...
+
+changed 133 packages in 8s
+
+13 packages are looking for funding
+  run `npm fund` for details
+[OK] Dependências instaladas (Node v20.19.6)
+[INFO] 2/8 - Configurando usuário e diretórios...
+[OK] Usuário e diretórios configurados
+[INFO] 3/8 - Atualizando código fonte...
+fatal: detected dubious ownership in repository at '/opt/nbm-cloud'
+To add an exception for this directory, call:
+
+	git config --global --add safe.directory /opt/nbm-cloud
+root@SRV-NBM-CLOUD-01[/opt/nbm-cloud]# 
