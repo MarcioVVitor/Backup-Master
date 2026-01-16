@@ -101,6 +101,7 @@ export const equipment = pgTable("equipment", {
   ip: text("ip").notNull(),
   manufacturer: text("manufacturer").notNull(),
   model: text("model"),
+  credentialId: integer("credential_id"),
   username: text("username"),
   password: text("password"),
   enablePassword: text("enable_password"),
@@ -365,6 +366,45 @@ export const equipmentAgents = pgTable("equipment_agents", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// ============================================
+// GERENCIAMENTO DE CREDENCIAIS (Similar Termius)
+// ============================================
+
+// Grupos de Credenciais (ex: "Senhas Huawei Fibra", "Senhas Cisco Core")
+export const credentialGroups = pgTable("credential_groups", {
+  id: serial("id").primaryKey(),
+  companyId: integer("company_id").references(() => companies.id),
+  name: text("name").notNull(),
+  description: text("description"),
+  color: text("color").default("#6b7280"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => [
+  index("idx_credential_groups_company").on(table.companyId),
+]);
+
+// Credenciais Individuais (podem pertencer a um grupo)
+export const credentials = pgTable("credentials", {
+  id: serial("id").primaryKey(),
+  companyId: integer("company_id").references(() => companies.id),
+  groupId: integer("group_id").references(() => credentialGroups.id),
+  name: text("name").notNull(),
+  description: text("description"),
+  manufacturer: text("manufacturer"),
+  model: text("model"),
+  username: text("username").notNull(),
+  password: text("password").notNull(),
+  enablePassword: text("enable_password"),
+  port: integer("port").default(22),
+  protocol: text("protocol").default("ssh"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => [
+  index("idx_credentials_company").on(table.companyId),
+  index("idx_credentials_group").on(table.groupId),
+  index("idx_credentials_manufacturer").on(table.manufacturer),
+]);
+
 // Fabricantes padrão (usados para seed inicial)
 export const DEFAULT_MANUFACTURERS = [
   { value: "mikrotik", label: "Mikrotik", color: "#ff6b6b" },
@@ -410,6 +450,12 @@ export const insertAgentJobSchema = createInsertSchema(agentJobs).omit({ id: tru
 export const insertAgentJobEventSchema = createInsertSchema(agentJobEvents).omit({ id: true, timestamp: true });
 export const insertAgentMetricsSchema = createInsertSchema(agentMetrics).omit({ id: true, collectedAt: true });
 export const insertEquipmentAgentSchema = createInsertSchema(equipmentAgents).omit({ id: true, createdAt: true });
+
+// Schemas para Credenciais
+export const insertCredentialGroupSchema = createInsertSchema(credentialGroups).omit({ id: true, createdAt: true, updatedAt: true });
+export const updateCredentialGroupSchema = insertCredentialGroupSchema.partial();
+export const insertCredentialSchema = createInsertSchema(credentials).omit({ id: true, createdAt: true, updatedAt: true });
+export const updateCredentialSchema = insertCredentialSchema.partial();
 
 // Tipos
 export type User = typeof users.$inferSelect;
@@ -457,3 +503,9 @@ export type ServerAdmin = typeof serverAdmins.$inferSelect;
 export type InsertServerAdmin = z.infer<typeof insertServerAdminSchema>;
 export type UserCompany = typeof userCompanies.$inferSelect;
 export type InsertUserCompany = z.infer<typeof insertUserCompanySchema>;
+
+// Tipos para Credenciais
+export type CredentialGroup = typeof credentialGroups.$inferSelect;
+export type InsertCredentialGroup = z.infer<typeof insertCredentialGroupSchema>;
+export type Credential = typeof credentials.$inferSelect;
+export type InsertCredential = z.infer<typeof insertCredentialSchema>;
