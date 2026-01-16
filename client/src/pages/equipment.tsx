@@ -5,7 +5,7 @@ import { useManufacturers } from "@/hooks/use-settings";
 import { useI18n } from "@/contexts/i18n-context";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
-import { Plus, Search, Pencil, Trash2, Server, ArrowUpDown, ChevronDown, ChevronRight, FolderOpen, ChevronLeft } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, Server, ArrowUpDown, ChevronDown, ChevronRight, FolderOpen, ChevronLeft, Key } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Table,
@@ -32,7 +32,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { insertEquipmentSchema, type InsertEquipment, type Equipment, type Agent } from "@shared/schema";
+import { insertEquipmentSchema, type InsertEquipment, type Equipment, type Agent, type Credential } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -65,6 +65,9 @@ export default function EquipmentPage() {
   });
   const { data: equipmentAgentMappings = [] } = useQuery<EquipmentAgentMapping[]>({
     queryKey: ["/api/equipment-agents"],
+  });
+  const { data: credentials = [] } = useQuery<Credential[]>({
+    queryKey: ["/api/credentials"],
   });
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -477,6 +480,7 @@ export default function EquipmentPage() {
         onOpenChange={setIsCreateOpen} 
         manufacturers={manufacturers || []}
         agents={agents}
+        credentials={credentials}
       />
       
       {editingId && (
@@ -488,6 +492,7 @@ export default function EquipmentPage() {
           equipment={equipment?.find(e => e.id === editingId)!}
           agents={agents}
           linkedAgentId={getLinkedAgentId(editingId)}
+          credentials={credentials}
         />
       )}
     </div>
@@ -505,7 +510,8 @@ function EquipmentForm({
   manufacturers,
   agents,
   equipmentId,
-  linkedAgentId
+  linkedAgentId,
+  credentials
 }: { 
   onSubmit: (data: InsertEquipment, agentId?: number | null) => void, 
   defaultValues?: Partial<InsertEquipment>,
@@ -513,10 +519,17 @@ function EquipmentForm({
   manufacturers: { value: string, label: string }[],
   agents?: Agent[],
   equipmentId?: number,
-  linkedAgentId?: number | null
+  linkedAgentId?: number | null,
+  credentials?: Credential[]
 }) {
   const { t } = useI18n();
   const [selectedAgentId, setSelectedAgentId] = useState<number | null>(linkedAgentId || null);
+  const [credentialMode, setCredentialMode] = useState<"manual" | "saved">(
+    defaultValues?.credentialId ? "saved" : "manual"
+  );
+  const [selectedCredentialId, setSelectedCredentialId] = useState<number | null>(
+    defaultValues?.credentialId || null
+  );
   const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm<InsertEquipment>({
     resolver: zodResolver(insertEquipmentSchema),
     defaultValues: defaultValues || {
@@ -526,7 +539,25 @@ function EquipmentForm({
     }
   });
   
+  const watchedManufacturer = watch("manufacturer");
+  
+  const filteredCredentials = useMemo(() => {
+    if (!credentials) return [];
+    if (watchedManufacturer) {
+      return credentials.filter(c => !c.manufacturer || c.manufacturer === watchedManufacturer || c.manufacturer === "generic");
+    }
+    return credentials;
+  }, [credentials, watchedManufacturer]);
+  
   const handleFormSubmit = (data: InsertEquipment) => {
+    if (credentialMode === "saved" && selectedCredentialId) {
+      data.credentialId = selectedCredentialId;
+      data.username = undefined;
+      data.password = undefined;
+      data.enablePassword = undefined;
+    } else {
+      data.credentialId = null;
+    }
     onSubmit(data, selectedAgentId);
   };
 
@@ -535,12 +566,12 @@ function EquipmentForm({
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label>{t.common.name}</Label>
-          <Input {...register("name")} placeholder="Router Core 01" />
+          <Input {...register("name")} placeholder="Router Core 01" data-testid="input-equipment-name" />
           {errors.name && <span className="text-xs text-red-500">{errors.name.message}</span>}
         </div>
         <div className="space-y-2">
           <Label>{t.equipment.ipAddress}</Label>
-          <Input {...register("ip")} placeholder="192.168.1.1" />
+          <Input {...register("ip")} placeholder="192.168.1.1" data-testid="input-equipment-ip" />
           {errors.ip && <span className="text-xs text-red-500">{errors.ip.message}</span>}
         </div>
       </div>
@@ -549,7 +580,7 @@ function EquipmentForm({
         <div className="space-y-2">
           <Label>{t.equipment.manufacturer}</Label>
           <Select onValueChange={(val) => setValue("manufacturer", val)} defaultValue={defaultValues?.manufacturer}>
-            <SelectTrigger>
+            <SelectTrigger data-testid="select-equipment-manufacturer">
               <SelectValue placeholder={t.common.select + "..."} />
             </SelectTrigger>
             <SelectContent>
@@ -562,25 +593,90 @@ function EquipmentForm({
         </div>
         <div className="space-y-2">
           <Label>{t.equipment.model}</Label>
-          <Input {...register("model")} placeholder="CCR1036" />
+          <Input {...register("model")} placeholder="CCR1036" data-testid="input-equipment-model" />
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label>{t.equipment.username}</Label>
-          <Input {...register("username")} placeholder="admin" />
+      {credentials && credentials.length > 0 && (
+        <div className="space-y-3 p-3 border rounded-lg bg-muted/30">
+          <div className="flex items-center gap-2">
+            <Key className="h-4 w-4 text-muted-foreground" />
+            <Label className="text-sm font-medium">Credenciais de Acesso</Label>
+          </div>
+          <div className="flex gap-4">
+            <Button
+              type="button"
+              variant={credentialMode === "saved" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setCredentialMode("saved")}
+              data-testid="button-credential-saved"
+            >
+              <Key className="h-4 w-4 mr-2" />
+              Usar credencial salva
+            </Button>
+            <Button
+              type="button"
+              variant={credentialMode === "manual" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setCredentialMode("manual")}
+              data-testid="button-credential-manual"
+            >
+              Digitar manualmente
+            </Button>
+          </div>
+          
+          {credentialMode === "saved" && (
+            <div className="space-y-2">
+              <Select
+                value={selectedCredentialId?.toString() || "none"}
+                onValueChange={(val) => setSelectedCredentialId(val === "none" ? null : parseInt(val))}
+              >
+                <SelectTrigger data-testid="select-credential">
+                  <SelectValue placeholder="Selecione uma credencial..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Selecione...</SelectItem>
+                  {filteredCredentials.map(cred => (
+                    <SelectItem key={cred.id} value={cred.id.toString()}>
+                      <div className="flex items-center gap-2">
+                        <Key className="h-3 w-3" />
+                        <span>{cred.name}</span>
+                        <span className="text-xs text-muted-foreground">({cred.username})</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {filteredCredentials.length === 0 && (
+                <p className="text-xs text-muted-foreground">
+                  Nenhuma credencial disponível para este fabricante. 
+                  <a href="/credentials" className="text-primary hover:underline ml-1">Criar credencial</a>
+                </p>
+              )}
+            </div>
+          )}
         </div>
-        <div className="space-y-2">
-          <Label>{t.equipment.password}</Label>
-          <Input {...register("password")} type="password" placeholder="••••••" />
-        </div>
-      </div>
+      )}
 
-      <div className="space-y-2">
-        <Label>Senha Enable (Cisco/ZTE)</Label>
-        <Input {...register("enablePassword")} type="password" placeholder="Senha para modo privilegiado (Cisco, ZTE)" />
-      </div>
+      {(credentialMode === "manual" || !credentials || credentials.length === 0) && (
+        <>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>{t.equipment.username}</Label>
+              <Input {...register("username")} placeholder="admin" data-testid="input-equipment-username" />
+            </div>
+            <div className="space-y-2">
+              <Label>{t.equipment.password}</Label>
+              <Input {...register("password")} type="password" placeholder="••••••" data-testid="input-equipment-password" />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Senha Enable (Cisco/ZTE)</Label>
+            <Input {...register("enablePassword")} type="password" placeholder="Senha para modo privilegiado (Cisco, ZTE)" data-testid="input-equipment-enable-password" />
+          </div>
+        </>
+      )}
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
@@ -646,11 +742,12 @@ function EquipmentForm({
   );
 }
 
-function CreateEquipmentDialog({ open, onOpenChange, manufacturers, agents }: { 
+function CreateEquipmentDialog({ open, onOpenChange, manufacturers, agents, credentials }: { 
   open: boolean; 
   onOpenChange: (open: boolean) => void; 
   manufacturers: { value: string; label: string }[];
   agents: Agent[];
+  credentials: Credential[];
 }) {
   const { t } = useI18n();
   const { mutate, isPending } = useCreateEquipment();
@@ -688,13 +785,14 @@ function CreateEquipmentDialog({ open, onOpenChange, manufacturers, agents }: {
           isPending={isPending} 
           manufacturers={manufacturers}
           agents={agents}
+          credentials={credentials}
         />
       </DialogContent>
     </Dialog>
   );
 }
 
-function EditEquipmentDialog({ open, onOpenChange, id, equipment, manufacturers, agents, linkedAgentId }: { 
+function EditEquipmentDialog({ open, onOpenChange, id, equipment, manufacturers, agents, linkedAgentId, credentials }: { 
   open: boolean; 
   onOpenChange: (open: boolean) => void; 
   id: number; 
@@ -702,6 +800,7 @@ function EditEquipmentDialog({ open, onOpenChange, id, equipment, manufacturers,
   manufacturers: { value: string; label: string }[];
   agents: Agent[];
   linkedAgentId: number | null;
+  credentials: Credential[];
 }) {
   const { t } = useI18n();
   const { mutate, isPending } = useUpdateEquipment();
@@ -751,6 +850,7 @@ function EditEquipmentDialog({ open, onOpenChange, id, equipment, manufacturers,
           agents={agents}
           equipmentId={id}
           linkedAgentId={linkedAgentId}
+          credentials={credentials}
         />
       </DialogContent>
     </Dialog>
