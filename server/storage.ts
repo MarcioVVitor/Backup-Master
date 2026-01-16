@@ -19,6 +19,8 @@ import {
   companies,
   serverAdmins,
   userCompanies,
+  credentialGroups,
+  credentials,
   DEFAULT_MANUFACTURERS,
   type InsertFile, 
   type InsertEquipment, 
@@ -56,7 +58,11 @@ import {
   type ServerAdmin,
   type InsertServerAdmin,
   type UserCompany,
-  type InsertUserCompany
+  type InsertUserCompany,
+  type CredentialGroup,
+  type InsertCredentialGroup,
+  type Credential,
+  type InsertCredential
 } from "@shared/schema";
 import { eq, desc, sql, and, gte, lt, inArray } from "drizzle-orm";
 
@@ -172,6 +178,22 @@ export interface IStorage {
   setEquipmentAgent(data: InsertEquipmentAgent): Promise<EquipmentAgent>;
   removeEquipmentAgent(equipmentId: number, agentId: number): Promise<void>;
   getAgentForEquipment(equipmentId: number): Promise<Agent | undefined>;
+
+  // Grupos de Credenciais
+  getCredentialGroupsByCompany(companyId: number): Promise<CredentialGroup[]>;
+  getCredentialGroupById(id: number, companyId: number): Promise<CredentialGroup | undefined>;
+  createCredentialGroup(data: InsertCredentialGroup): Promise<CredentialGroup>;
+  updateCredentialGroup(id: number, companyId: number, data: Partial<InsertCredentialGroup>): Promise<CredentialGroup | undefined>;
+  deleteCredentialGroup(id: number, companyId: number): Promise<void>;
+
+  // Credenciais
+  getCredentialsByCompany(companyId: number): Promise<Credential[]>;
+  getCredentialsByGroup(companyId: number, groupId: number): Promise<Credential[]>;
+  getCredentialsByManufacturer(companyId: number, manufacturer: string): Promise<Credential[]>;
+  getCredentialById(id: number, companyId: number): Promise<Credential | undefined>;
+  createCredential(data: InsertCredential): Promise<Credential>;
+  updateCredential(id: number, companyId: number, data: Partial<InsertCredential>): Promise<Credential | undefined>;
+  deleteCredential(id: number, companyId: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1026,6 +1048,86 @@ export class DatabaseStorage implements IStorage {
       ...r,
       companyName: r.companyName || null,
     }));
+  }
+
+  // ============================================
+  // CREDENCIAIS - Grupos de Credenciais
+  // ============================================
+
+  async getCredentialGroupsByCompany(companyId: number): Promise<CredentialGroup[]> {
+    return await db.select().from(credentialGroups)
+      .where(eq(credentialGroups.companyId, companyId))
+      .orderBy(credentialGroups.name);
+  }
+
+  async getCredentialGroupById(id: number, companyId: number): Promise<CredentialGroup | undefined> {
+    const [group] = await db.select().from(credentialGroups)
+      .where(and(eq(credentialGroups.id, id), eq(credentialGroups.companyId, companyId)));
+    return group;
+  }
+
+  async createCredentialGroup(data: InsertCredentialGroup): Promise<CredentialGroup> {
+    const [created] = await db.insert(credentialGroups).values(data).returning();
+    return created;
+  }
+
+  async updateCredentialGroup(id: number, companyId: number, data: Partial<InsertCredentialGroup>): Promise<CredentialGroup | undefined> {
+    const [updated] = await db.update(credentialGroups)
+      .set({ ...data, updatedAt: new Date() })
+      .where(and(eq(credentialGroups.id, id), eq(credentialGroups.companyId, companyId)))
+      .returning();
+    return updated;
+  }
+
+  async deleteCredentialGroup(id: number, companyId: number): Promise<void> {
+    await db.delete(credentialGroups)
+      .where(and(eq(credentialGroups.id, id), eq(credentialGroups.companyId, companyId)));
+  }
+
+  // ============================================
+  // CREDENCIAIS - Credenciais Individuais
+  // ============================================
+
+  async getCredentialsByCompany(companyId: number): Promise<Credential[]> {
+    return await db.select().from(credentials)
+      .where(eq(credentials.companyId, companyId))
+      .orderBy(credentials.name);
+  }
+
+  async getCredentialsByGroup(companyId: number, groupId: number): Promise<Credential[]> {
+    return await db.select().from(credentials)
+      .where(and(eq(credentials.companyId, companyId), eq(credentials.groupId, groupId)))
+      .orderBy(credentials.name);
+  }
+
+  async getCredentialsByManufacturer(companyId: number, manufacturer: string): Promise<Credential[]> {
+    return await db.select().from(credentials)
+      .where(and(eq(credentials.companyId, companyId), eq(credentials.manufacturer, manufacturer)))
+      .orderBy(credentials.name);
+  }
+
+  async getCredentialById(id: number, companyId: number): Promise<Credential | undefined> {
+    const [cred] = await db.select().from(credentials)
+      .where(and(eq(credentials.id, id), eq(credentials.companyId, companyId)));
+    return cred;
+  }
+
+  async createCredential(data: InsertCredential): Promise<Credential> {
+    const [created] = await db.insert(credentials).values(data).returning();
+    return created;
+  }
+
+  async updateCredential(id: number, companyId: number, data: Partial<InsertCredential>): Promise<Credential | undefined> {
+    const [updated] = await db.update(credentials)
+      .set({ ...data, updatedAt: new Date() })
+      .where(and(eq(credentials.id, id), eq(credentials.companyId, companyId)))
+      .returning();
+    return updated;
+  }
+
+  async deleteCredential(id: number, companyId: number): Promise<void> {
+    await db.delete(credentials)
+      .where(and(eq(credentials.id, id), eq(credentials.companyId, companyId)));
   }
 }
 

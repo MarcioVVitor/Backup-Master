@@ -2,7 +2,7 @@ import type { Express } from "express";
 import type { Server } from "http";
 import { storage } from "./storage";
 import multer from "multer";
-import { insertEquipmentSchema, insertVendorScriptSchema, updateVendorScriptSchema, insertSystemUpdateSchema, insertFirmwareSchema, insertBackupPolicySchema, updateBackupPolicySchema, SUPPORTED_MANUFACTURERS, USER_ROLES } from "@shared/schema";
+import { insertEquipmentSchema, insertVendorScriptSchema, updateVendorScriptSchema, insertSystemUpdateSchema, insertFirmwareSchema, insertBackupPolicySchema, updateBackupPolicySchema, SUPPORTED_MANUFACTURERS, USER_ROLES, insertCredentialGroupSchema, updateCredentialGroupSchema, insertCredentialSchema, updateCredentialSchema } from "@shared/schema";
 import { z } from "zod";
 import { WebSocketServer, WebSocket } from "ws";
 import { Client as SSHClient } from "ssh2";
@@ -289,6 +289,215 @@ export async function registerRoutes(
     } catch (e) {
       console.error("Error deleting equipment:", e);
       res.status(500).json({ message: "Erro ao excluir equipamento" });
+    }
+  });
+
+  // ============================================
+  // API - Grupos de Credenciais (tenant-scoped)
+  // ============================================
+  
+  app.get('/api/credential-groups', isAuthenticated, async (req, res) => {
+    try {
+      const companyId = req.companyId;
+      if (!companyId) {
+        return res.status(403).json({ message: "Company context required" });
+      }
+      const groups = await storage.getCredentialGroupsByCompany(companyId);
+      res.json(groups);
+    } catch (e) {
+      console.error("Error listing credential groups:", e);
+      res.status(500).json({ message: "Erro ao listar grupos de credenciais" });
+    }
+  });
+
+  app.post('/api/credential-groups', isAuthenticated, async (req, res) => {
+    try {
+      const companyId = req.companyId;
+      if (!companyId) {
+        return res.status(403).json({ message: "Company context required" });
+      }
+      const parsed = insertCredentialGroupSchema.parse({ ...req.body, companyId });
+      const group = await storage.createCredentialGroup(parsed);
+      res.status(201).json(group);
+    } catch (e) {
+      if (e instanceof z.ZodError) {
+        return res.status(400).json({ message: "Dados inválidos", errors: e.errors });
+      }
+      console.error("Error creating credential group:", e);
+      res.status(500).json({ message: "Erro ao criar grupo de credenciais" });
+    }
+  });
+
+  app.put('/api/credential-groups/:id', isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const companyId = req.companyId;
+      if (!companyId) {
+        return res.status(403).json({ message: "Company context required" });
+      }
+      const parsed = updateCredentialGroupSchema.parse(req.body);
+      const group = await storage.updateCredentialGroup(id, companyId, parsed);
+      if (!group) return res.status(404).json({ message: "Grupo não encontrado" });
+      res.json(group);
+    } catch (e) {
+      if (e instanceof z.ZodError) {
+        return res.status(400).json({ message: "Dados inválidos", errors: e.errors });
+      }
+      console.error("Error updating credential group:", e);
+      res.status(500).json({ message: "Erro ao atualizar grupo de credenciais" });
+    }
+  });
+
+  app.delete('/api/credential-groups/:id', isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const companyId = req.companyId;
+      if (!companyId) {
+        return res.status(403).json({ message: "Company context required" });
+      }
+      await storage.deleteCredentialGroup(id, companyId);
+      res.sendStatus(204);
+    } catch (e) {
+      console.error("Error deleting credential group:", e);
+      res.status(500).json({ message: "Erro ao excluir grupo de credenciais" });
+    }
+  });
+
+  // ============================================
+  // API - Credenciais (tenant-scoped)
+  // ============================================
+  
+  app.get('/api/credentials', isAuthenticated, async (req, res) => {
+    try {
+      const companyId = req.companyId;
+      if (!companyId) {
+        return res.status(403).json({ message: "Company context required" });
+      }
+      const { manufacturer, groupId } = req.query;
+      let credentials;
+      if (manufacturer) {
+        credentials = await storage.getCredentialsByManufacturer(companyId, manufacturer as string);
+      } else if (groupId) {
+        credentials = await storage.getCredentialsByGroup(companyId, parseInt(groupId as string));
+      } else {
+        credentials = await storage.getCredentialsByCompany(companyId);
+      }
+      // Mask passwords in response
+      const masked = credentials.map(c => ({
+        ...c,
+        password: c.password ? '••••••••' : null,
+        enablePassword: c.enablePassword ? '••••••••' : null,
+      }));
+      res.json(masked);
+    } catch (e) {
+      console.error("Error listing credentials:", e);
+      res.status(500).json({ message: "Erro ao listar credenciais" });
+    }
+  });
+
+  app.get('/api/credentials/:id', isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const companyId = req.companyId;
+      if (!companyId) {
+        return res.status(403).json({ message: "Company context required" });
+      }
+      const credential = await storage.getCredentialById(id, companyId);
+      if (!credential) return res.status(404).json({ message: "Credencial não encontrada" });
+      // Mask passwords
+      res.json({
+        ...credential,
+        password: credential.password ? '••••••••' : null,
+        enablePassword: credential.enablePassword ? '••••••••' : null,
+      });
+    } catch (e) {
+      console.error("Error getting credential:", e);
+      res.status(500).json({ message: "Erro ao buscar credencial" });
+    }
+  });
+
+  // Get credential with unmasked password (for internal use in backups)
+  app.get('/api/credentials/:id/reveal', isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const companyId = req.companyId;
+      if (!companyId) {
+        return res.status(403).json({ message: "Company context required" });
+      }
+      const credential = await storage.getCredentialById(id, companyId);
+      if (!credential) return res.status(404).json({ message: "Credencial não encontrada" });
+      res.json(credential);
+    } catch (e) {
+      console.error("Error revealing credential:", e);
+      res.status(500).json({ message: "Erro ao revelar credencial" });
+    }
+  });
+
+  app.post('/api/credentials', isAuthenticated, async (req, res) => {
+    try {
+      const companyId = req.companyId;
+      if (!companyId) {
+        return res.status(403).json({ message: "Company context required" });
+      }
+      const parsed = insertCredentialSchema.parse({ ...req.body, companyId });
+      const credential = await storage.createCredential(parsed);
+      res.status(201).json({
+        ...credential,
+        password: '••••••••',
+        enablePassword: credential.enablePassword ? '••••••••' : null,
+      });
+    } catch (e) {
+      if (e instanceof z.ZodError) {
+        return res.status(400).json({ message: "Dados inválidos", errors: e.errors });
+      }
+      console.error("Error creating credential:", e);
+      res.status(500).json({ message: "Erro ao criar credencial" });
+    }
+  });
+
+  app.put('/api/credentials/:id', isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const companyId = req.companyId;
+      if (!companyId) {
+        return res.status(403).json({ message: "Company context required" });
+      }
+      const parsed = updateCredentialSchema.parse(req.body);
+      // If password is masked, don't update it
+      if (parsed.password === '••••••••') {
+        delete parsed.password;
+      }
+      if (parsed.enablePassword === '••••••••') {
+        delete parsed.enablePassword;
+      }
+      const credential = await storage.updateCredential(id, companyId, parsed);
+      if (!credential) return res.status(404).json({ message: "Credencial não encontrada" });
+      res.json({
+        ...credential,
+        password: '••••••••',
+        enablePassword: credential.enablePassword ? '••••••••' : null,
+      });
+    } catch (e) {
+      if (e instanceof z.ZodError) {
+        return res.status(400).json({ message: "Dados inválidos", errors: e.errors });
+      }
+      console.error("Error updating credential:", e);
+      res.status(500).json({ message: "Erro ao atualizar credencial" });
+    }
+  });
+
+  app.delete('/api/credentials/:id', isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const companyId = req.companyId;
+      if (!companyId) {
+        return res.status(403).json({ message: "Company context required" });
+      }
+      await storage.deleteCredential(id, companyId);
+      res.sendStatus(204);
+    } catch (e) {
+      console.error("Error deleting credential:", e);
+      res.status(500).json({ message: "Erro ao excluir credencial" });
     }
   });
 
