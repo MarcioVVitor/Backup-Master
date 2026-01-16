@@ -25,6 +25,7 @@ import Agents from "@/pages/agents";
 import AgentConsole from "@/pages/agent-console";
 import ServerPage from "@/pages/server";
 import Companies from "@/pages/companies";
+import Credentials from "@/pages/credentials";
 import Login from "@/pages/login";
 import NotFound from "@/pages/not-found";
 
@@ -56,7 +57,8 @@ import {
   Calendar,
   Network,
   Cloud,
-  Building2
+  Building2,
+  Key
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -105,6 +107,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
     { title: t.menu.dashboard, url: "/", icon: HomeIcon },
     { title: t.menu.manufacturers, url: "/manufacturers", icon: Factory },
     { title: t.menu.equipment, url: "/equipment", icon: Server },
+    { title: "Credenciais", url: "/credentials", icon: Key },
     { title: t.menu.scripts, url: "/scripts", icon: Terminal },
     { title: t.menu.executeBackup, url: "/backup-execute", icon: Play },
     { title: t.menu.backups, url: "/backups", icon: HardDrive },
@@ -253,6 +256,7 @@ function Router() {
       <Route path="/admin" component={Admin} />
       <Route path="/server" component={ServerPage} />
       <Route path="/companies" component={Companies} />
+      <Route path="/credentials" component={Credentials} />
       <Route component={NotFound} />
     </Switch>
   );
