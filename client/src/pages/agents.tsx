@@ -53,8 +53,20 @@ import {
   Activity,
   Download,
   Terminal,
-  FileText
+  FileText,
+  MoreHorizontal,
+  Settings,
+  RotateCcw,
+  Power
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR, enUS, es, fr, de } from "date-fns/locale";
 import { Link } from "wouter";
@@ -299,6 +311,18 @@ export default function AgentsPage() {
                     <TableCell>{agent.version || "-"}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1">
+                        {agent.status === 'online' && (
+                          <Link href="/agent-console">
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              title="Console"
+                              data-testid={`button-console-${agent.id}`}
+                            >
+                              <Terminal className="w-4 h-4" />
+                            </Button>
+                          </Link>
+                        )}
                         <Button
                           size="icon"
                           variant="ghost"

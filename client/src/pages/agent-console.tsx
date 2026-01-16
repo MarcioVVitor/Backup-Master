@@ -37,8 +37,25 @@ import {
   CheckCircle,
   XCircle,
   Loader2,
-  ArrowLeft
+  ArrowLeft,
+  Power,
+  RotateCcw,
+  Settings,
+  AlertTriangle,
+  Play,
+  Square
 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Link } from "wouter";
 
 interface DiagnosticsData {
@@ -170,6 +187,36 @@ export default function AgentConsolePage() {
     },
     onError: (error: any) => {
       addTerminalLine(`[ERROR] Falha na atualização: ${error.message}`);
+    },
+  });
+
+  const adminMutation = useMutation({
+    mutationFn: async ({ agentId, action, force }: { agentId: number; action: string; force?: boolean }) => {
+      const response = await apiRequest("POST", `/api/agents/${agentId}/admin`, { action, force });
+      return response.json();
+    },
+    onSuccess: (data, variables) => {
+      if (data.success) {
+        const actionLabels: Record<string, string> = {
+          reboot: "Reiniciar servidor",
+          shutdown: "Desligar servidor",
+          restart_service: "Reiniciar serviço do agente",
+          restart_agent: "Reiniciar processo do agente",
+          service_status: "Status do serviço"
+        };
+        addTerminalLine(`[ADMIN] ${actionLabels[variables.action] || variables.action}: Comando enviado`);
+        if (data.result?.output) {
+          addTerminalLine(data.result.output);
+        }
+        toast({ title: "Comando executado", description: `${actionLabels[variables.action]} enviado com sucesso` });
+      } else {
+        addTerminalLine(`[ERROR] ${data.message}`);
+        toast({ title: "Erro", description: data.message, variant: "destructive" });
+      }
+    },
+    onError: (error: any) => {
+      addTerminalLine(`[ERROR] Falha no comando admin: ${error.message}`);
+      toast({ title: "Erro", description: error.message, variant: "destructive" });
     },
   });
 
@@ -327,7 +374,7 @@ Comandos disponíveis:
         </Card>
       ) : (
         <Tabs defaultValue="terminal" className="w-full">
-          <TabsList className="grid w-full grid-cols-3" data-testid="tabs-agent-console">
+          <TabsList className="grid w-full grid-cols-4" data-testid="tabs-agent-console">
             <TabsTrigger value="terminal" data-testid="tab-terminal">
               <TerminalIcon className="h-4 w-4 mr-2" />
               Terminal
@@ -339,6 +386,10 @@ Comandos disponíveis:
             <TabsTrigger value="tools" data-testid="tab-tools">
               <Network className="h-4 w-4 mr-2" />
               Ferramentas
+            </TabsTrigger>
+            <TabsTrigger value="admin" data-testid="tab-admin">
+              <Settings className="h-4 w-4 mr-2" />
+              Administração
             </TabsTrigger>
           </TabsList>
 
@@ -658,6 +709,246 @@ Comandos disponíveis:
                     )}
                     Atualizar Agente
                   </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="admin" className="mt-4">
+            <div className="grid gap-4 md:grid-cols-2">
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2">
+                    <Server className="h-5 w-5" />
+                    Controle do Servidor
+                  </CardTitle>
+                  <CardDescription>
+                    Gerenciar o servidor onde o agente está instalado
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-3">
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button 
+                          variant="outline" 
+                          className="w-full"
+                          data-testid="button-reboot-server"
+                        >
+                          <RotateCcw className="h-4 w-4 mr-2" />
+                          Reiniciar Servidor
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle className="flex items-center gap-2">
+                            <AlertTriangle className="h-5 w-5 text-amber-500" />
+                            Reiniciar Servidor
+                          </AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Tem certeza que deseja reiniciar o servidor do agente? O agente ficará offline durante o reboot.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => adminMutation.mutate({
+                              agentId: parseInt(selectedAgentId),
+                              action: 'reboot'
+                            })}
+                          >
+                            Reiniciar
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button 
+                          variant="destructive" 
+                          className="w-full"
+                          data-testid="button-shutdown-server"
+                        >
+                          <Power className="h-4 w-4 mr-2" />
+                          Desligar Servidor
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle className="flex items-center gap-2">
+                            <AlertTriangle className="h-5 w-5 text-red-500" />
+                            Desligar Servidor
+                          </AlertDialogTitle>
+                          <AlertDialogDescription>
+                            <strong>ATENÇÃO:</strong> Esta ação irá desligar o servidor completamente. Será necessário acesso físico ou IPMI/iLO para ligar novamente.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            onClick={() => adminMutation.mutate({
+                              agentId: parseInt(selectedAgentId),
+                              action: 'shutdown'
+                            })}
+                          >
+                            Desligar
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2">
+                    <Settings className="h-5 w-5" />
+                    Controle do Serviço NBM Agent
+                  </CardTitle>
+                  <CardDescription>
+                    Gerenciar o serviço do agente NBM Cloud
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-3">
+                    <Button 
+                      variant="outline"
+                      onClick={() => adminMutation.mutate({
+                        agentId: parseInt(selectedAgentId),
+                        action: 'restart_service'
+                      })}
+                      disabled={adminMutation.isPending}
+                      className="w-full"
+                      data-testid="button-restart-service"
+                    >
+                      {adminMutation.isPending ? (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <RefreshCw className="h-4 w-4 mr-2" />
+                      )}
+                      Reiniciar Serviço
+                    </Button>
+
+                    <Button 
+                      variant="outline"
+                      onClick={() => adminMutation.mutate({
+                        agentId: parseInt(selectedAgentId),
+                        action: 'service_status'
+                      })}
+                      disabled={adminMutation.isPending}
+                      className="w-full"
+                      data-testid="button-service-status"
+                    >
+                      {adminMutation.isPending ? (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <Activity className="h-4 w-4 mr-2" />
+                      )}
+                      Status do Serviço
+                    </Button>
+                  </div>
+
+                  <div className="pt-2 border-t">
+                    <Button 
+                      variant="secondary"
+                      onClick={() => adminMutation.mutate({
+                        agentId: parseInt(selectedAgentId),
+                        action: 'restart_agent'
+                      })}
+                      disabled={adminMutation.isPending}
+                      className="w-full"
+                      data-testid="button-restart-agent"
+                    >
+                      {adminMutation.isPending ? (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <RotateCcw className="h-4 w-4 mr-2" />
+                      )}
+                      Reiniciar Processo do Agente
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="md:col-span-2">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2">
+                    <TerminalIcon className="h-5 w-5" />
+                    Comandos Rápidos
+                  </CardTitle>
+                  <CardDescription>
+                    Executar comandos administrativos comuns
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <Button 
+                      variant="outline"
+                      onClick={() => {
+                        terminalMutation.mutate({ 
+                          agentId: parseInt(selectedAgentId), 
+                          command: 'df -h' 
+                        });
+                        addTerminalLine("$ df -h");
+                      }}
+                      disabled={terminalMutation.isPending}
+                      data-testid="button-cmd-disk"
+                    >
+                      <HardDrive className="h-4 w-4 mr-2" />
+                      Disco
+                    </Button>
+
+                    <Button 
+                      variant="outline"
+                      onClick={() => {
+                        terminalMutation.mutate({ 
+                          agentId: parseInt(selectedAgentId), 
+                          command: 'free -h' 
+                        });
+                        addTerminalLine("$ free -h");
+                      }}
+                      disabled={terminalMutation.isPending}
+                      data-testid="button-cmd-memory"
+                    >
+                      <Cpu className="h-4 w-4 mr-2" />
+                      Memória
+                    </Button>
+
+                    <Button 
+                      variant="outline"
+                      onClick={() => {
+                        terminalMutation.mutate({ 
+                          agentId: parseInt(selectedAgentId), 
+                          command: 'uptime' 
+                        });
+                        addTerminalLine("$ uptime");
+                      }}
+                      disabled={terminalMutation.isPending}
+                      data-testid="button-cmd-uptime"
+                    >
+                      <Clock className="h-4 w-4 mr-2" />
+                      Uptime
+                    </Button>
+
+                    <Button 
+                      variant="outline"
+                      onClick={() => {
+                        terminalMutation.mutate({ 
+                          agentId: parseInt(selectedAgentId), 
+                          command: 'ip addr show' 
+                        });
+                        addTerminalLine("$ ip addr show");
+                      }}
+                      disabled={terminalMutation.isPending}
+                      data-testid="button-cmd-network"
+                    >
+                      <Globe className="h-4 w-4 mr-2" />
+                      Rede
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             </div>

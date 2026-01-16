@@ -2923,6 +2923,7 @@ export async function registerRoutes(
   const pendingTerminalSessions = new Map<string, { onOutput: (output: string, isComplete: boolean) => void }>();
   const pendingUpdateJobs = new Map<string, { resolve: (result: any) => void, reject: (err: any) => void, timeout: NodeJS.Timeout }>();
   const pendingTestConnectionJobs = new Map<string, { resolve: (result: any) => void, reject: (err: any) => void, timeout: NodeJS.Timeout }>();
+  const pendingAdminJobs = new Map<string, { resolve: (result: any) => void, reject: (err: any) => void, timeout: NodeJS.Timeout }>();
 
   // API - Agent Diagnostics
   app.get('/api/agents/:id/diagnostics', isAuthenticated, async (req, res) => {
@@ -3125,6 +3126,71 @@ export async function registerRoutes(
     }
   });
   
+  // API - Agent Server Administration (reboot, restart, shutdown)
+  app.post('/api/agents/:id/admin', isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const agentId = parseInt(req.params.id);
+      const companyId = req.companyId;
+      const isServerAdmin = req.tenantUser?.isServerAdmin;
+      const { action, force } = req.body;
+      
+      const validActions = ['reboot', 'shutdown', 'restart_service', 'restart_agent', 'service_status'];
+      if (!action || !validActions.includes(action)) {
+        return res.status(400).json({ 
+          success: false, 
+          message: `Ação inválida. Ações válidas: ${validActions.join(', ')}` 
+        });
+      }
+      
+      // Verify agent belongs to user's company
+      const agent = await storage.getAgentById(agentId);
+      if (!agent) {
+        return res.status(404).json({ success: false, message: 'Agente não encontrado' });
+      }
+      if (!isServerAdmin && agent.companyId !== companyId) {
+        return res.status(403).json({ success: false, message: 'Acesso negado' });
+      }
+      
+      const ws = connectedAgents.get(agentId);
+      
+      if (!ws || ws.readyState !== 1) {
+        return res.status(400).json({ success: false, message: 'Agente não está conectado' });
+      }
+      
+      const requestId = `admin-${agentId}-${Date.now()}`;
+      
+      // For shutdown/reboot, set short timeout as agent will disconnect
+      const isDisconnectAction = ['reboot', 'shutdown'].includes(action);
+      const timeoutMs = isDisconnectAction ? 10000 : 30000;
+      
+      const result = await new Promise<any>((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          pendingAdminJobs.delete(requestId);
+          if (isDisconnectAction) {
+            // For reboot/shutdown, timeout is expected
+            resolve({ success: true, message: `Comando ${action} enviado com sucesso` });
+          } else {
+            reject(new Error('Timeout aguardando resposta do agente'));
+          }
+        }, timeoutMs);
+        
+        pendingAdminJobs.set(requestId, { resolve, reject, timeout });
+        
+        ws.send(JSON.stringify({
+          type: 'admin_command',
+          requestId,
+          action,
+          force: force || false,
+        }));
+      });
+      
+      res.json({ success: true, result });
+    } catch (e: any) {
+      console.error('Error executing admin command:', e);
+      res.status(500).json({ success: false, message: e.message });
+    }
+  });
+
   // Helper function to execute backup via agent
   async function executeBackupViaAgent(agentId: number, equip: any, config: any): Promise<string> {
     const ws = connectedAgents.get(agentId);
@@ -3566,6 +3632,20 @@ export async function registerRoutes(
             clearTimeout(pending.timeout);
             pendingTestConnectionJobs.delete(message.requestId);
             pending.resolve(message.result);
+          }
+        }
+        
+        // Handle admin command result from agent
+        if (message.type === 'admin_result') {
+          const pending = pendingAdminJobs.get(message.requestId);
+          if (pending) {
+            clearTimeout(pending.timeout);
+            pendingAdminJobs.delete(message.requestId);
+            if (message.success) {
+              pending.resolve(message);
+            } else {
+              pending.reject(new Error(message.error || 'Admin command failed'));
+            }
           }
         }
         
