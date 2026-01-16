@@ -415,6 +415,12 @@ export const DEFAULT_MANUFACTURERS = [
   { value: "datacom", label: "Datacom", color: "#4ecdc4" },
   { value: "datacom-dmos", label: "Datacom DMOS", color: "#45b7d1" },
   { value: "juniper", label: "Juniper", color: "#84bc41" },
+  { value: "dell", label: "Dell", color: "#007db8" },
+  { value: "fortinet", label: "Fortinet", color: "#da291c" },
+  { value: "ubiquiti", label: "Ubiquiti", color: "#0559c9" },
+  { value: "intelbras", label: "Intelbras", color: "#00a650" },
+  { value: "hp-aruba", label: "HP/Aruba", color: "#ff8300" },
+  { value: "grandstream", label: "Grandstream", color: "#1e3a5f" },
 ] as const;
 
 // Compatibilidade com código existente
