@@ -404,10 +404,10 @@ Comandos disponíveis:
                   Execute comandos diretamente no servidor do agente
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-0">
                 <div 
                   ref={terminalRef}
-                  className="bg-gray-900 text-green-400 font-mono text-sm p-4 rounded-lg h-[400px] overflow-y-auto mb-4"
+                  className="bg-gray-900 text-green-400 font-mono text-sm p-4 rounded-lg h-[450px] overflow-y-auto cursor-text"
                   onClick={() => inputRef.current?.focus()}
                   data-testid="terminal-output"
                 >
@@ -420,29 +420,24 @@ Comandos disponíveis:
                       Executando...
                     </div>
                   )}
-                </div>
-                
-                <div className="flex gap-2">
-                  <div className="flex-1 relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-mono">$</span>
-                    <Input
-                      ref={inputRef}
-                      value={command}
-                      onChange={(e) => setCommand(e.target.value)}
-                      onKeyDown={handleKeyDown}
-                      placeholder="Digite um comando..."
-                      className="pl-7 font-mono"
-                      disabled={terminalMutation.isPending}
-                      data-testid="input-terminal-command"
-                    />
-                  </div>
-                  <Button 
-                    onClick={handleCommand}
-                    disabled={terminalMutation.isPending || !command.trim()}
-                    data-testid="button-send-command"
-                  >
-                    <Send className="h-4 w-4" />
-                  </Button>
+                  {!(terminalMutation.isPending || diagnosticsMutation.isPending || testConnectionMutation.isPending) && (
+                    <div className="flex items-center">
+                      <span className="text-green-400 mr-2">$</span>
+                      <input
+                        ref={inputRef}
+                        type="text"
+                        value={command}
+                        onChange={(e) => setCommand(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        className="flex-1 bg-transparent border-none outline-none text-green-400 font-mono caret-green-400"
+                        autoFocus
+                        spellCheck={false}
+                        autoComplete="off"
+                        data-testid="input-terminal-command"
+                      />
+                      <span className="w-2 h-5 bg-green-400 animate-pulse" />
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
