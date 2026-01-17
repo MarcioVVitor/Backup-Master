@@ -1,0 +1,46 @@
+root@SRV-NBM-CLOUD-01[~]# cd /opt/nbm-cloud && git pull origin main && npm run build && pm2 restart nbm-cloud --update-env
+remote: Enumerating objects: 18, done.
+remote: Counting objects: 100% (18/18), done.
+remote: Compressing objects: 100% (3/3), done.
+remote: Total 12 (delta 9), reused 12 (delta 9), pack-reused 0 (from 0)
+Unpacking objects: 100% (12/12), 208.07 KiB | 2.67 MiB/s, done.
+From https://github.com/MarcioVVitor/Backup-Master
+ * branch            main       -> FETCH_HEAD
+   20fa95a..50ca73b  main       -> origin/main
+Updating 20fa95a..50ca73b
+Fast-forward
+ ...ot-SRV-NBM-CLOUD-01-cd-opt-nbm-cloud-git-pull-origin-_1768653171196.txt |  47 ++++++++++++++++++++++++++++++++++
+ attached_assets/image_1768653242229.png                                    | Bin 0 -> 242830 bytes
+ client/src/pages/agent-console.tsx                                         |  45 +++++++++++++++-----------------
+ 3 files changed, 67 insertions(+), 25 deletions(-)
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-cd-opt-nbm-cloud-git-pull-origin-_1768653171196.txt
+ create mode 100644 attached_assets/image_1768653242229.png
+
+> rest-express@1.0.0 build
+> tsx script/build.ts
+
+building client...
+vite v7.3.0 building client environment for production...
+✓ 3322 modules transformed.
+../dist/public/index.html                     2.87 kB │ gzip:   1.04 kB
+../dist/public/assets/index-CAgCxbrV.css     81.66 kB │ gzip:  13.73 kB
+../dist/public/assets/index-QRTNviPp.js   1,416.50 kB │ gzip: 384.06 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 10.98s
+building server...
+
+  dist/index.cjs  1.4mb ⚠️
+
+⚡ Done in 157ms
+[PM2] Applying action restartProcessId on app [nbm-cloud](ids: [ 0 ])
+[PM2] [nbm-cloud](0) ✓
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+├────┼────────────────────┼──────────┼──────┼───────────┼──────────┼──────────┤
+│ 0  │ nbm-cloud          │ fork     │ 4    │ online    │ 0%       │ 17.1mb   │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+root@SRV-NBM-CLOUD-01[/opt/nbm-cloud]# 
