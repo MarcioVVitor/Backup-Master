@@ -1907,13 +1907,28 @@ handle_message() {
             local command=$(echo "$message" | jq -r '.command')
             local session_id=$(echo "$message" | jq -r '.sessionId')
             log_info "Executing terminal command: $command (session: $session_id)"
-            local result=$(execute_command "$command")
-            local exit_code=$(echo "$result" | jq -r '.exitCode // 0')
-            local raw_output=$(echo "$result" | jq -r '.output // empty')
-            # Re-escape output for JSON
-            local escaped_output=$(echo "$raw_output" | jq -Rs '.')
-            log_info "Terminal command result: exit_code=$exit_code, output_length=${#raw_output}"
-            echo "{\"type\": \"terminal_output\", \"sessionId\": \"$session_id\", \"output\": $escaped_output, \"isComplete\": true}"
+            
+            # Execute command and capture output
+            local cmd_output
+            local cmd_exit_code
+            cmd_output=$(timeout 30 bash -c "$command" 2>&1) || true
+            cmd_exit_code=$?
+            
+            log_info "Terminal command result: exit_code=$cmd_exit_code, output_length=${#cmd_output}"
+            
+            # Escape output for JSON using jq
+            local escaped_output
+            escaped_output=$(printf '%s' "$cmd_output" | jq -Rs '.')
+            if [[ -z "$escaped_output" ]]; then
+                escaped_output='""'
+            fi
+            
+            log_debug "Escaped output: $escaped_output"
+            
+            # Build and return response
+            local response_json="{\"type\": \"terminal_output\", \"sessionId\": \"$session_id\", \"output\": $escaped_output, \"isComplete\": true}"
+            log_debug "Response JSON length: ${#response_json}"
+            echo "$response_json"
             ;;
             
         terminal_connect)

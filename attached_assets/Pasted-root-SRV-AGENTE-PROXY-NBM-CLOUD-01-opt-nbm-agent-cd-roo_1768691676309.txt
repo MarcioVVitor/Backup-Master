@@ -1,0 +1,46 @@
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[/opt/nbm-agent]# cd
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[~]# # No servidor do agente
+tail -f /opt/nbm-agent/logs/agent.log | grep -i terminal
+[2026-01-17 20:13:40] [DEBUG] Received (77 bytes): {"type":"terminal_command","sessionId":"term-1-1768691620534","command":"ls"}
+[2026-01-17 20:13:40] [DEBUG] Parsed message type: terminal_command
+[2026-01-17 20:13:40] [INFO] >>> RECEIVED JOB: type=terminal_command
+[2026-01-17 20:13:40] [DEBUG] Received message type: terminal_command
+[2026-01-17 20:13:40] [INFO] Executing terminal command: ls (session: term-1-1768691620534)
+[2026-01-17 20:13:40] [INFO] Terminal command result: exit_code=0, output_length=100
+[2026-01-17 20:13:54] [DEBUG] Received (79 bytes): {"type":"terminal_command","sessionId":"term-1-1768691634003","command":"logs"}
+[2026-01-17 20:13:54] [DEBUG] Parsed message type: terminal_command
+[2026-01-17 20:13:54] [INFO] >>> RECEIVED JOB: type=terminal_command
+[2026-01-17 20:13:54] [DEBUG] Received message type: terminal_command
+[2026-01-17 20:13:54] [INFO] Executing terminal command: logs (session: term-1-1768691634003)
+[2026-01-17 20:13:54] [INFO] Terminal command result: exit_code=127, output_length=37
+[2026-01-17 20:14:02] [DEBUG] Received (77 bytes): {"type":"terminal_command","sessionId":"term-1-1768691642931","command":"ls"}
+[2026-01-17 20:14:02] [DEBUG] Parsed message type: terminal_command
+[2026-01-17 20:14:02] [INFO] >>> RECEIVED JOB: type=terminal_command
+[2026-01-17 20:14:02] [DEBUG] Received message type: terminal_command
+[2026-01-17 20:14:03] [INFO] Executing terminal command: ls (session: term-1-1768691642931)
+[2026-01-17 20:14:03] [INFO] Terminal command result: exit_code=0, output_length=100
+[2026-01-17 20:14:17] [DEBUG] Received (82 bytes): {"type":"terminal_command","sessionId":"term-1-1768691657779","command":"free -h"}
+[2026-01-17 20:14:17] [DEBUG] Parsed message type: terminal_command
+[2026-01-17 20:14:17] [INFO] >>> RECEIVED JOB: type=terminal_command
+[2026-01-17 20:14:17] [DEBUG] Received message type: terminal_command
+[2026-01-17 20:14:17] [INFO] Executing terminal command: free -h (session: term-1-1768691657779)
+[2026-01-17 20:14:17] [INFO] Terminal command result: exit_code=0, output_length=206
+[2026-01-17 20:14:18] [DEBUG] Received (81 bytes): {"type":"terminal_command","sessionId":"term-1-1768691658875","command":"uptime"}
+[2026-01-17 20:14:18] [DEBUG] Parsed message type: terminal_command
+[2026-01-17 20:14:18] [INFO] >>> RECEIVED JOB: type=terminal_command
+[2026-01-17 20:14:18] [DEBUG] Received message type: terminal_command
+[2026-01-17 20:14:18] [INFO] Executing terminal command: uptime (session: term-1-1768691658875)
+[2026-01-17 20:14:18] [INFO] Terminal command result: exit_code=0, output_length=67
+[2026-01-17 20:14:20] [DEBUG] Received (87 bytes): {"type":"terminal_command","sessionId":"term-1-1768691660038","command":"ip addr show"}
+[2026-01-17 20:14:20] [DEBUG] Parsed message type: terminal_command
+[2026-01-17 20:14:20] [INFO] >>> RECEIVED JOB: type=terminal_command
+[2026-01-17 20:14:20] [DEBUG] Received message type: terminal_command
+[2026-01-17 20:14:20] [INFO] Executing terminal command: ip addr show (session: term-1-1768691660038)
+[2026-01-17 20:14:20] [INFO] Terminal command result: exit_code=0, output_length=747
+[2026-01-17 20:14:21] [DEBUG] Received (80 bytes): {"type":"terminal_command","sessionId":"term-1-1768691661034","command":"df -h"}
+[2026-01-17 20:14:21] [DEBUG] Parsed message type: terminal_command
+[2026-01-17 20:14:21] [INFO] >>> RECEIVED JOB: type=terminal_command
+[2026-01-17 20:14:21] [DEBUG] Received message type: terminal_command
+[2026-01-17 20:14:21] [INFO] Executing terminal command: df -h (session: term-1-1768691661034)
+[2026-01-17 20:14:21] [INFO] Terminal command result: exit_code=0, output_length=519
+
