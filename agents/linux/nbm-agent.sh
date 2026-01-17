@@ -1949,33 +1949,42 @@ handle_message() {
         terminal_input)
             local session_id=$(echo "$message" | jq -r '.sessionId')
             local input_data=$(echo "$message" | jq -r '.data')
-            local session_file="/tmp/nbm-terminal-sessions/${session_id}.json"
             
-            if [[ -f "$session_file" ]]; then
-                local session_info=$(cat "$session_file")
-                local ip=$(echo "$session_info" | jq -r '.ip')
-                local port=$(echo "$session_info" | jq -r '.port')
-                local username=$(echo "$session_info" | jq -r '.username')
-                local password=$(echo "$session_info" | jq -r '.password')
-                local protocol=$(echo "$session_info" | jq -r '.protocol')
-                
-                # Execute command and return output
-                local output
-                if [[ "$protocol" == "telnet" ]]; then
-                    output=$(execute_terminal_command "$session_id" "$ip" "$port" "$username" "$password" "$protocol" "$input_data" "")
-                else
-                    output=$(timeout 30 sshpass -p "$password" ssh \
-                        -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
-                        -o ConnectTimeout=10 -o HostKeyAlgorithms=+ssh-rsa \
-                        -o KexAlgorithms=+diffie-hellman-group1-sha1,diffie-hellman-group14-sha1 \
-                        -p "$port" "$username@$ip" "$input_data" 2>&1 || echo "Command failed")
-                fi
-                
-                # Escape output for JSON
-                local escaped_output=$(echo "$output" | jq -Rs '.')
-                echo "{\"type\": \"terminal_output\", \"sessionId\": \"$session_id\", \"output\": $escaped_output, \"isComplete\": true}"
+            # Check if this is a local shell session
+            local shell_fifo_in="/tmp/nbm-shell-sessions/${session_id}.fifo.in"
+            if [[ -p "$shell_fifo_in" ]]; then
+                # Send input to local shell FIFO
+                echo -n "$input_data" > "$shell_fifo_in"
             else
-                echo "{\"type\": \"terminal_output\", \"sessionId\": \"$session_id\", \"output\": \"Sessao nao encontrada\", \"isComplete\": true}"
+                # Remote equipment session
+                local session_file="/tmp/nbm-terminal-sessions/${session_id}.json"
+                
+                if [[ -f "$session_file" ]]; then
+                    local session_info=$(cat "$session_file")
+                    local ip=$(echo "$session_info" | jq -r '.ip')
+                    local port=$(echo "$session_info" | jq -r '.port')
+                    local username=$(echo "$session_info" | jq -r '.username')
+                    local password=$(echo "$session_info" | jq -r '.password')
+                    local protocol=$(echo "$session_info" | jq -r '.protocol')
+                    
+                    # Execute command and return output
+                    local output
+                    if [[ "$protocol" == "telnet" ]]; then
+                        output=$(execute_terminal_command "$session_id" "$ip" "$port" "$username" "$password" "$protocol" "$input_data" "")
+                    else
+                        output=$(timeout 30 sshpass -p "$password" ssh \
+                            -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+                            -o ConnectTimeout=10 -o HostKeyAlgorithms=+ssh-rsa \
+                            -o KexAlgorithms=+diffie-hellman-group1-sha1,diffie-hellman-group14-sha1 \
+                            -p "$port" "$username@$ip" "$input_data" 2>&1 || echo "Command failed")
+                    fi
+                    
+                    # Escape output for JSON
+                    local escaped_output=$(echo "$output" | jq -Rs '.')
+                    echo "{\"type\": \"terminal_output\", \"sessionId\": \"$session_id\", \"output\": $escaped_output, \"isComplete\": true}"
+                else
+                    echo "{\"type\": \"terminal_output\", \"sessionId\": \"$session_id\", \"output\": \"Sessao nao encontrada\", \"isComplete\": true}"
+                fi
             fi
             ;;
             
@@ -1986,7 +1995,122 @@ handle_message() {
             # Clean up session files
             rm -f "/tmp/nbm-terminal-sessions/${session_id}.json"
             
+            # Kill any PTY process for this session
+            local pty_pid_file="/tmp/nbm-shell-sessions/${session_id}.pid"
+            if [[ -f "$pty_pid_file" ]]; then
+                local pty_pid=$(cat "$pty_pid_file")
+                kill -9 "$pty_pid" 2>/dev/null || true
+                rm -f "$pty_pid_file"
+                rm -f "/tmp/nbm-shell-sessions/${session_id}.fifo.in"
+                rm -f "/tmp/nbm-shell-sessions/${session_id}.fifo.out"
+            fi
+            
             echo "{\"type\": \"terminal_disconnected\", \"sessionId\": \"$session_id\"}"
+            ;;
+            
+        shell_connect)
+            # Interactive PTY shell connection to this agent's server
+            local session_id=$(echo "$message" | jq -r '.sessionId')
+            local cols=$(echo "$message" | jq -r '.cols // 80')
+            local rows=$(echo "$message" | jq -r '.rows // 24')
+            
+            log_info "Shell connect request: $session_id (${cols}x${rows})"
+            
+            # Create session directory
+            mkdir -p /tmp/nbm-shell-sessions
+            
+            # Create named pipes for communication
+            local fifo_in="/tmp/nbm-shell-sessions/${session_id}.fifo.in"
+            local fifo_out="/tmp/nbm-shell-sessions/${session_id}.fifo.out"
+            rm -f "$fifo_in" "$fifo_out"
+            mkfifo "$fifo_in" "$fifo_out"
+            
+            # Start PTY shell using script command in background
+            (
+                # Use script command to create a PTY
+                TERM=xterm-256color script -q -c "bash --login" /dev/null < "$fifo_in" > "$fifo_out" 2>&1 &
+                local shell_pid=$!
+                echo "$shell_pid" > "/tmp/nbm-shell-sessions/${session_id}.pid"
+                
+                # Read output from shell and send to WebSocket
+                while IFS= read -r -n 1 char || [[ -n "$char" ]]; do
+                    # Escape special characters for JSON
+                    local escaped_char
+                    case "$char" in
+                        $'\n') escaped_char="\\n" ;;
+                        $'\r') escaped_char="\\r" ;;
+                        $'\t') escaped_char="\\t" ;;
+                        '"') escaped_char="\\\"" ;;
+                        '\\') escaped_char="\\\\" ;;
+                        *) 
+                            if [[ "$char" =~ [[:cntrl:]] ]]; then
+                                escaped_char=$(printf '\\u%04x' "'$char")
+                            else
+                                escaped_char="$char"
+                            fi
+                            ;;
+                    esac
+                    echo "{\"type\": \"terminal_output\", \"sessionId\": \"$session_id\", \"output\": \"$escaped_char\", \"isComplete\": false}"
+                done < "$fifo_out"
+            ) &
+            
+            # Store session info
+            echo "{\"type\":\"shell\",\"cols\":$cols,\"rows\":$rows}" > "/tmp/nbm-shell-sessions/${session_id}.json"
+            
+            # Send welcome message
+            echo "{\"type\": \"terminal_output\", \"sessionId\": \"$session_id\", \"output\": \"Shell PTY iniciado\\r\\n\", \"isComplete\": false}"
+            ;;
+            
+        shell_resize)
+            local session_id=$(echo "$message" | jq -r '.sessionId')
+            local cols=$(echo "$message" | jq -r '.cols // 80')
+            local rows=$(echo "$message" | jq -r '.rows // 24')
+            
+            log_debug "Shell resize request: $session_id (${cols}x${rows})"
+            
+            # Update session info
+            local session_file="/tmp/nbm-shell-sessions/${session_id}.json"
+            if [[ -f "$session_file" ]]; then
+                echo "{\"type\":\"shell\",\"cols\":$cols,\"rows\":$rows}" > "$session_file"
+            fi
+            ;;
+            
+        admin_command)
+            local action=$(echo "$message" | jq -r '.action')
+            log_info "Admin command received: $action"
+            
+            local result=""
+            local success=true
+            
+            case "$action" in
+                reboot)
+                    echo "{\"type\": \"admin_result\", \"requestId\": \"$request_id\", \"success\": true, \"result\": {\"output\": \"Reiniciando servidor...\"}}"
+                    sleep 1
+                    sudo reboot || reboot
+                    ;;
+                shutdown)
+                    echo "{\"type\": \"admin_result\", \"requestId\": \"$request_id\", \"success\": true, \"result\": {\"output\": \"Desligando servidor...\"}}"
+                    sleep 1
+                    sudo shutdown -h now || shutdown -h now
+                    ;;
+                restart_service)
+                    result=$(systemctl restart nbm-agent 2>&1) || success=false
+                    echo "{\"type\": \"admin_result\", \"requestId\": \"$request_id\", \"success\": $success, \"result\": {\"output\": $(echo "$result" | jq -Rs '.')}}"
+                    ;;
+                restart_agent)
+                    echo "{\"type\": \"admin_result\", \"requestId\": \"$request_id\", \"success\": true, \"result\": {\"output\": \"Reiniciando processo do agente...\"}}"
+                    sleep 1
+                    exec "$0" run &
+                    exit 0
+                    ;;
+                service_status)
+                    result=$(systemctl status nbm-agent 2>&1) || true
+                    echo "{\"type\": \"admin_result\", \"requestId\": \"$request_id\", \"success\": true, \"result\": {\"output\": $(echo "$result" | jq -Rs '.')}}"
+                    ;;
+                *)
+                    echo "{\"type\": \"admin_result\", \"requestId\": \"$request_id\", \"success\": false, \"error\": \"Acao desconhecida: $action\"}"
+                    ;;
+            esac
             ;;
             
         test_connection)
@@ -2183,7 +2307,7 @@ connect_websocket() {
                 heartbeat_ack)
                     log_debug "Heartbeat acknowledged"
                     ;;
-                execute_backup|backup_job|test_connection|request_diagnostics|terminal_command|terminal_connect|terminal_input|terminal_disconnect|update_agent)
+                execute_backup|backup_job|test_connection|request_diagnostics|terminal_command|terminal_connect|terminal_input|terminal_disconnect|update_agent|shell_connect|shell_resize|admin_command)
                     log_info ">>> RECEIVED JOB: type=$msg_type"
                     if [[ "$msg_type" == "backup_job" || "$msg_type" == "execute_backup" ]]; then
                         local job_id_log=$(echo "$msg" | jq -r '.jobId // "unknown"' 2>/dev/null)
