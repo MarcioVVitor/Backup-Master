@@ -1,0 +1,263 @@
+root@SRV-NBM-CLOUD-01[~]# cd /opt/nbm-cloud
+git pull origin main
+npm run build
+pm2 restart nbm-cloud
+remote: Enumerating objects: 17, done.
+remote: Counting objects: 100% (17/17), done.
+remote: Compressing objects: 100% (3/3), done.
+remote: Total 12 (delta 8), reused 12 (delta 8), pack-reused 0 (from 0)
+Unpacking objects: 100% (12/12), 9.52 KiB | 886.00 KiB/s, done.
+From https://github.com/MarcioVVitor/Backup-Master
+ * branch            main       -> FETCH_HEAD
+   c0e6cb0..7403e72  main       -> origin/main
+Updating c0e6cb0..7403e72
+Fast-forward
+ agents/linux/nbm-agent.sh                                                   |  29 ++++--
+ ...oot-SRV-AGENTE-PROXY-NBM-CLOUD-01-No-servidor-do-agent_1768691546203.txt | 119 +++++++++++++++++++++
+ ...oot-SRV-AGENTE-PROXY-NBM-CLOUD-01-opt-nbm-agent-cd-roo_1768691676309.txt |  46 ++++++++
+ ...oot-SRV-NBM-CLOUD-01-Atualizar-c-digo-cd-opt-nbm-cloud_1768691555915.txt | 197 +++++++++++++++++++++++++++++++++++
+ 4 files changed, 384 insertions(+), 7 deletions(-)
+ create mode 100644 attached_assets/Pasted-root-SRV-AGENTE-PROXY-NBM-CLOUD-01-No-servidor-do-agent_1768691546203.txt
+ create mode 100644 attached_assets/Pasted-root-SRV-AGENTE-PROXY-NBM-CLOUD-01-opt-nbm-agent-cd-roo_1768691676309.txt
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-Atualizar-c-digo-cd-opt-nbm-cloud_1768691555915.txt
+
+> rest-express@1.0.0 build
+> tsx script/build.ts
+
+building client...
+vite v7.3.0 building client environment for production...
+0|nbm-cloud  | 2026-01-17T20:16:57: [ws-agents] Received message, size: 21 bytes
+0|nbm-cloud  | 2026-01-17T20:16:57: [ws-agents] Received message type: heartbeat
+0|nbm-cloud  | 2026-01-17T20:16:57: [ws-agents] Received message, size: 21 bytes
+2026-01-17T20:16:57: [ws-agents] Received message type: heartbeat
+2026-01-17T20:16:57: [ws-agents] Received message, size: 21 bytes
+0|nbm-cloud  | 2026-01-17T20:16:57: [ws-agents] Received message type: heartbeat
+transforming (2956) ../node_modules/lodash/_setCacheAdd.js2026-01-17T20:16:59: [ws-upgrade] Request to: /ws/agents from: 143.255.197.26
+2026-01-17T20:16:59: [ws-upgrade] Handling agent WebSocket upgrade
+0|nbm-cloud  | 2026-01-17T20:16:59: [ws-upgrade] Request to: /ws/agents from: 143.255.197.26
+0|nbm-cloud  | 2026-01-17T20:16:59: [ws-upgrade] Handling agent WebSocket upgrade
+0|nbm-cloud  | 0|nbm-cloud  | 2026-01-17T20:16:59: [ws-agents] New connection from: 143.255.197.26
+2026-01-17T20:16:59: [ws-agents] New connection from: 143.255.197.26
+0|nbm-cloud  | 2026-01-17T20:16:59: [ws-agents] Received message, size: 148 bytes
+2026-01-17T20:16:59: [ws-agents] Received message, size: 148 bytes
+0|nbm-cloud  | 2026-01-17T20:16:59: [ws-agents] Received message type: auth
+2026-01-17T20:16:59: [ws-upgrade] Request to: /ws/agents from: 143.255.197.26
+2026-01-17T20:16:59: [ws-agents] Auth attempt, token hash: 298fb94a3a461935...
+2026-01-17T20:16:59: [ws-agents] Received message type: auth
+0|nbm-cloud  | 0|nbm-cloud  | 2026-01-17T20:16:59: [ws-agents] Auth attempt, token hash: 298fb94a3a461935...
+2026-01-17T20:16:59: [ws-upgrade] Handling agent WebSocket upgrade
+0|nbm-cloud  | 2026-01-17T20:16:59: [ws-agents] New connection from: 143.255.197.26
+0|nbm-cloud  | 2026-01-17T20:16:59: [ws-agents] Received message, size: 148 bytes
+0|nbm-cloud  | 2026-01-17T20:16:59: [ws-agents] Received message type: auth
+0|nbm-cloud  | 2026-01-17T20:16:59: [ws-agents] Auth attempt, token hash: 298fb94a3a461935...
+2026-01-17T20:16:59: [ws-agents] Auth success for agent: 1 agente-grupojet-01
+0|nbm-cloud  | 0|nbm-cloud  | 2026-01-17T20:16:59: [ws-agents] Auth success for agent: 1 agente-grupojet-01
+2026-01-17T20:16:59: [ws-agents] Auth success for agent: 1 agente-grupojet-01
+✓ 3327 modules transformed.
+../dist/public/index.html                     2.87 kB │ gzip:   1.04 kB
+../dist/public/assets/index-CYXtfQtz.css     86.02 kB │ gzip:  14.56 kB
+../dist/public/assets/index-B5L89Ta3.js   1,754.04 kB │ gzip: 470.18 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 15.22s
+building server...
+
+  dist/index.cjs  1.4mb ⚠️
+
+⚡ Done in 132ms
+Use --update-env to update environment variables
+[PM2] Applying action restartProcessId on app [nbm-cloud](ids: [ 0 ])
+2026-01-17T20:17:14: [ws-agents] Received message, size: 21 bytes
+0|nbm-cloud  | 2026-01-17T20:17:14: [ws-agents] Received message, size: 21 bytes
+0|nbm-cloud  | 2026-01-17T20:17:14: [ws-agents] Received message type: heartbeat
+2026-01-17T20:17:14: [ws-agents] Received message type: heartbeat
+0|nbm-cloud  | 2026-01-17T20:17:14: [ws-agents] Received message, size: 21 bytes
+0|nbm-cloud  | 2026-01-17T20:17:14: [ws-agents] Received message type: heartbeat
+[PM2] [nbm-cloud](0) ✓
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+├────┼────────────────────┼──────────┼──────┼───────────┼──────────┼──────────┤
+│ 0  │ nbm-cloud          │ fork     │ 2    │ online    │ 0%       │ 17.0mb   │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+root@SRV-NBM-CLOUD-01[/opt/nbm-cloud]# 0|nbm-cloud  | 0|nbm-cloud  | 2026-01-17T20:17:19: [worker-pool] 17/01/2026, 20:17:19 - Worker pool initialized with concurrency: 50
+2026-01-17T20:17:19: [worker-pool] 17/01/2026, 20:17:19 - Worker pool initialized with concurrency: 50
+0|nbm-cloud  | 2026-01-17T20:17:19: [standalone-auth] Setting up standalone authentication routes
+0|nbm-cloud  | 2026-01-17T20:17:19: [standalone-auth] Setting up standalone authentication routes
+0|nbm-cloud  | 0|nbm-cloud  | 2026-01-17T20:17:19: [scheduler] 17/01/2026, 20:17:19 - Backup executor registered for scheduler and worker pool
+2026-01-17T20:17:19: [scheduler] 17/01/2026, 20:17:19 - Backup executor registered for scheduler and worker pool
+0|nbm-cloud  | 0|nbm-cloud  | 2026-01-17T20:17:19: [scheduler] 17/01/2026, 20:17:19 - Starting backup scheduler...
+2026-01-17T20:17:19: [scheduler] 17/01/2026, 20:17:19 - Starting backup scheduler...
+0|nbm-cloud  | 0|nbm-cloud  | 2026-01-17T20:17:19: [scheduler] 17/01/2026, 20:17:19 - Timezone: System (Linux)
+2026-01-17T20:17:19: [scheduler] 17/01/2026, 20:17:19 - Timezone: System (Linux)
+0|nbm-cloud  | 2026-01-17T20:17:19: [scheduler] 17/01/2026, 20:17:19 - Check interval: 60 seconds
+0|nbm-cloud  | 2026-01-17T20:17:19: [scheduler] 17/01/2026, 20:17:19 - Check interval: 60 seconds
+0|nbm-cloud  | 2026-01-17T20:17:19: [scheduler] 17/01/2026, 20:17:19 - Worker pool concurrency: 50
+0|nbm-cloud  | 2026-01-17T20:17:19: [scheduler] 17/01/2026, 20:17:19 - Current time: 20:17, Day of week: 6, Day of month: 17
+0|nbm-cloud  | 2026-01-17T20:17:19: [scheduler] 17/01/2026, 20:17:19 - Worker pool concurrency: 50
+0|nbm-cloud  | 2026-01-17T20:17:19: [scheduler] 17/01/2026, 20:17:19 - Current time: 20:17, Day of week: 6, Day of month: 17
+0|nbm-cloud  | 0|nbm-cloud  | 2026-01-17T20:17:19: [scheduler] 17/01/2026, 20:17:19 - Scheduler started successfully
+2026-01-17T20:17:19: [scheduler] 17/01/2026, 20:17:19 - Scheduler started successfully
+0|nbm-cloud  | 0|nbm-cloud  | 2026-01-17T20:17:19: [static] Serving static files from: /opt/nbm-cloud/dist/public
+2026-01-17T20:17:19: [static] Serving static files from: /opt/nbm-cloud/dist/public
+0|nbm-cloud  | 2026-01-17T20:17:19: 8:17:19 PM [express] serving on port 5000
+0|nbm-cloud  | 2026-01-17T20:17:19: 8:17:19 PM [express] serving on port 5000
+0|nbm-cloud  | 0|nbm-cloud  | 2026-01-17T20:17:32: [check-admin] Session state: {
+2026-01-17T20:17:32: [check-admin] Session state: {
+0|nbm-cloud  | 0|nbm-cloud  | 2026-01-17T20:17:32:   isReplitAuth: undefined,
+2026-01-17T20:17:32:   isReplitAuth: undefined,
+0|nbm-cloud  | 0|nbm-cloud  | 2026-01-17T20:17:32:   isStandaloneAuth: true,
+0|nbm-cloud  | 2026-01-17T20:17:32:   replitUserSub: undefined,
+0|nbm-cloud  | 2026-01-17T20:17:32:   isStandaloneAuth: true,
+0|nbm-cloud  | 2026-01-17T20:17:32:   replitUserSub: undefined,
+0|nbm-cloud  | 2026-01-17T20:17:32:   standaloneUserId: 1
+0|nbm-cloud  | 2026-01-17T20:17:32: }
+2026-01-17T20:17:32:   standaloneUserId: 1
+0|nbm-cloud  | 2026-01-17T20:17:32: }
+0|nbm-cloud  | 2026-01-17T20:17:32: [check-admin] User Marcio isServerAdmin: true
+0|nbm-cloud  | 2026-01-17T20:17:32: [check-admin] User Marcio isServerAdmin: true
+0|nbm-cloud  | 0|nbm-cloud  | 2026-01-17T20:17:32: 8:17:32 PM [express] GET /api/server/check-admin 304 in 17ms :: {"isServerAdmin":true,"serverRole":"server_admin","userCompanies":[]}
+2026-01-17T20:17:32: 8:17:32 PM [express] GET /api/server/check-admin 304 in 17ms :: {"isServerAdmin":true,"serverRole":"server_admin","userCompanies":[]}
+0|nbm-cloud  | 0|nbm-cloud  | 2026-01-17T20:17:32: 8:17:32 PM [express] GET /api/auth/user 304 in 23ms :: {"id":1,"name":"Marcio Vitor","email":"marcio.vitor@grupojet.com.br","isAdmin":true,"username":"Marcio"}
+2026-01-17T20:17:32: 8:17:32 PM [express] GET /api/auth/user 304 in 23ms :: {"id":1,"name":"Marcio Vitor","email":"marcio.vitor@grupojet.com.br","isAdmin":true,"username":"Marcio"}
+0|nbm-cloud  | 2026-01-17T20:17:32: 8:17:32 PM [express] GET /api/server/companies 304 in 9ms :: [{"id":1,"name":"GRUPOJET","slug":"grupojet","description":"GRUPOJET FULL","logo":null,"active":true,"maxUsers":100,"maxEquipment":10000,"maxAgents":50,"settings":null,"createdAt":"2026-01-14T21:08:31.683Z","updatedAt":"2026-01-14T21:08:31.683Z"}]
+2026-01-17T20:17:32: 8:17:32 PM [express] GET /api/server/companies 304 in 9ms :: [{"id":1,"name":"GRUPOJET","slug":"grupojet","description":"GRUPOJET FULL","logo":null,"active":true,"maxUsers":100,"maxEquipment":10000,"maxAgents":50,"settings":null,"createdAt":"2026-01-14T21:08:31.683Z","updatedAt":"2026-01-14T21:08:31.683Z"}]
+0|nbm-cloud  | 2026-01-17T20:17:32: 8:17:32 PM [express] GET /api/server/companies 304 in 9ms :: [{"id":1,"name":"GRUPOJET","slug":"grupojet","description":"GRUPOJET FULL","logo":null,"active":true,"maxUsers":100,"maxEquipment":10000,"maxAgents":50,"settings":null,"createdAt":"2026-01-14T21:08:31.683Z","updatedAt":"2026-01-14T21:08:31.683Z"}]
+0|nbm-cloud  | 0|nbm-cloud  | 2026-01-17T20:17:32: 8:17:32 PM [express] GET /api/agents 200 in 8ms :: [{"id":1,"companyId":1,"name":"agente-grupojet-01","siteName":"grupojet-full-01","description":"Agente Grupojet Full","publicIp":null,"status":"online","version":null,"ipAddress":"143.255.197.26","lastHeartbeat":"2026-01-17T23:17:14.530Z","capabilities":null,"config":null,"createdBy":null,"createdAt":"2026-01-14T21:09:47.145Z","updatedAt":"2026-01-17T23:17:14.530Z"}]
+2026-01-17T20:17:32: 8:17:32 PM [express] GET /api/agents 200 in 8ms :: [{"id":1,"companyId":1,"name":"agente-grupojet-01","siteName":"grupojet-full-01","description":"Agente Grupojet Full","publicIp":null,"status":"online","version":null,"ipAddress":"143.255.197.26","lastHeartbeat":"2026-01-17T23:17:14.530Z","capabilities":null,"config":null,"createdBy":null,"createdAt":"2026-01-14T21:09:47.145Z","updatedAt":"2026-01-17T23:17:14.530Z"}]
+2026-01-17T20:17:32: 8:17:32 PM [express] GET /api/agents 200 in 8ms :: [{"id":1,"companyId":1,"name":"agente-grupojet-01","siteName":"grupojet-full-01","description":"Agente Grupojet Full","publicIp":null,"status":"online","version":null,"ipAddress":"143.255.197.26","lastHeartbeat":"2026-01-17T23:17:14.530Z","capabilities":null,"config":null,"createdBy":null,"createdAt":"2026-01-14T21:09:47.145Z","updatedAt":"2026-01-17T23:17:14.530Z"}]
+0|nbm-cloud  | 0|nbm-cloud  | 2026-01-17T20:17:44: [isAdmin] Checking admin access, isStandalone: true
+2026-01-17T20:17:44: [isAdmin] Checking admin access, isStandalone: true
+0|nbm-cloud  | 2026-01-17T20:17:44: [isAdmin] Session user: Marcio isAdmin: true
+0|nbm-cloud  | 2026-01-17T20:17:44: [isAdmin] ALLOWED - user is admin
+0|nbm-cloud  | 2026-01-17T20:17:44: [isAdmin] Session user: Marcio isAdmin: true
+0|nbm-cloud  | 2026-01-17T20:17:44: [isAdmin] ALLOWED - user is admin
+2026-01-17T20:17:44: 8:17:44 PM [express] POST /api/agents/1/terminal 400 in 39ms :: {"success":false,"message":"Agente não está conectado"}
+0|nbm-cloud  | 0|nbm-cloud  | 2026-01-17T20:17:44: 8:17:44 PM [express] POST /api/agents/1/terminal 400 in 39ms :: {"success":false,"message":"Agente não está conectado"}
+2026-01-17T20:17:44: 8:17:44 PM [express] POST /api/agents/1/terminal 400 in 39ms :: {"success":false,"message":"Agente não está conectado"}
+0|nbm-cloud  | 2026-01-17T20:17:54: [ws-upgrade] Request to: /ws/agents from: 143.255.197.26
+0|nbm-cloud  | 2026-01-17T20:17:54: [ws-upgrade] Handling agent WebSocket upgrade
+0|nbm-cloud  | 2026-01-17T20:17:54: [ws-agents] New connection from: 143.255.197.26
+0|nbm-cloud  | 2026-01-17T20:17:54: [ws-upgrade] Request to: /ws/agents from: 143.255.197.26
+0|nbm-cloud  | 2026-01-17T20:17:54: [ws-upgrade] Handling agent WebSocket upgrade
+0|nbm-cloud  | 2026-01-17T20:17:54: [ws-agents] New connection from: 143.255.197.26
+2026-01-17T20:17:54: [ws-upgrade] Request to: /ws/agents from: 143.255.197.26
+2026-01-17T20:17:54: [ws-upgrade] Handling agent WebSocket upgrade
+2026-01-17T20:17:54: [ws-agents] New connection from: 143.255.197.26
+0|nbm-cloud  | 2026-01-17T20:17:54: [ws-agents] Received message, size: 148 bytes
+2026-01-17T20:17:54: [ws-agents] Received message, size: 148 bytes
+0|nbm-cloud  | 2026-01-17T20:17:54: [ws-agents] Received message, size: 148 bytes
+2026-01-17T20:17:54: [ws-agents] Received message type: auth
+0|nbm-cloud  | 2026-01-17T20:17:54: [ws-agents] Received message type: auth
+0|nbm-cloud  | 2026-01-17T20:17:54: [ws-agents] Received message type: auth
+0|nbm-cloud  | 2026-01-17T20:17:54: [ws-agents] Auth attempt, token hash: 298fb94a3a461935...
+2026-01-17T20:17:54: [ws-agents] Auth attempt, token hash: 298fb94a3a461935...
+0|nbm-cloud  | 2026-01-17T20:17:54: [ws-agents] Auth attempt, token hash: 298fb94a3a461935...
+2026-01-17T20:17:54: [ws-agents] Auth success for agent: 1 agente-grupojet-01
+0|nbm-cloud  | 0|nbm-cloud  | 2026-01-17T20:17:54: [ws-agents] Auth success for agent: 1 agente-grupojet-01
+2026-01-17T20:17:54: [ws-agents] Auth success for agent: 1 agente-grupojet-01
+0|nbm-cloud  | 2026-01-17T20:18:01: 8:18:01 PM [express] GET /api/auth/user 304 in 10ms :: {"id":1,"name":"Marcio Vitor","email":"marcio.vitor@grupojet.com.br","isAdmin":true,"username":"Marcio"}
+0|nbm-cloud  | 2026-01-17T20:18:01: 8:18:01 PM [express] GET /api/auth/user 304 in 10ms :: {"id":1,"name":"Marcio Vitor","email":"marcio.vitor@grupojet.com.br","isAdmin":true,"username":"Marcio"}
+0|nbm-cloud  | 2026-01-17T20:18:01: [check-admin] Session state: {
+0|nbm-cloud  | 2026-01-17T20:18:01:   isReplitAuth: undefined,
+0|nbm-cloud  | 2026-01-17T20:18:01:   isStandaloneAuth: true,
+0|nbm-cloud  | 2026-01-17T20:18:01:   replitUserSub: undefined,
+0|nbm-cloud  | 2026-01-17T20:18:01:   standaloneUserId: 1
+0|nbm-cloud  | 2026-01-17T20:18:01: }
+0|nbm-cloud  | 2026-01-17T20:18:01: [check-admin] Session state: {
+0|nbm-cloud  | 2026-01-17T20:18:01:   isReplitAuth: undefined,
+0|nbm-cloud  | 2026-01-17T20:18:01:   isStandaloneAuth: true,
+0|nbm-cloud  | 2026-01-17T20:18:01:   replitUserSub: undefined,
+0|nbm-cloud  | 2026-01-17T20:18:01:   standaloneUserId: 1
+0|nbm-cloud  | 2026-01-17T20:18:01: }
+0|nbm-cloud  | 2026-01-17T20:18:01: [check-admin] User Marcio isServerAdmin: true
+0|nbm-cloud  | 2026-01-17T20:18:01: [check-admin] User Marcio isServerAdmin: true
+0|nbm-cloud  | 0|nbm-cloud  | 2026-01-17T20:18:01: 8:18:01 PM [express] GET /api/server/check-admin 304 in 17ms :: {"isServerAdmin":true,"serverRole":"server_admin","userCompanies":[]}
+2026-01-17T20:18:01: 8:18:01 PM [express] GET /api/server/check-admin 304 in 17ms :: {"isServerAdmin":true,"serverRole":"server_admin","userCompanies":[]}
+0|nbm-cloud  | 2026-01-17T20:18:01: 8:18:01 PM [express] GET /api/server/companies 304 in 18ms :: [{"id":1,"name":"GRUPOJET","slug":"grupojet","description":"GRUPOJET FULL","logo":null,"active":true,"maxUsers":100,"maxEquipment":10000,"maxAgents":50,"settings":null,"createdAt":"2026-01-14T21:08:31.683Z","updatedAt":"2026-01-14T21:08:31.683Z"}]
+0|nbm-cloud  | 2026-01-17T20:18:01: 8:18:01 PM [express] GET /api/server/companies 304 in 18ms :: [{"id":1,"name":"GRUPOJET","slug":"grupojet","description":"GRUPOJET FULL","logo":null,"active":true,"maxUsers":100,"maxEquipment":10000,"maxAgents":50,"settings":null,"createdAt":"2026-01-14T21:08:31.683Z","updatedAt":"2026-01-14T21:08:31.683Z"}]
+2026-01-17T20:18:01: 8:18:01 PM [express] GET /api/server/companies 304 in 18ms :: [{"id":1,"name":"GRUPOJET","slug":"grupojet","description":"GRUPOJET FULL","logo":null,"active":true,"maxUsers":100,"maxEquipment":10000,"maxAgents":50,"settings":null,"createdAt":"2026-01-14T21:08:31.683Z","updatedAt":"2026-01-14T21:08:31.683Z"}]
+2026-01-17T20:18:01: 8:18:01 PM [express] GET /api/agents 200 in 43ms :: [{"id":1,"companyId":1,"name":"agente-grupojet-01","siteName":"grupojet-full-01","description":"Agente Grupojet Full","publicIp":null,"status":"online","version":null,"ipAddress":"143.255.197.26","lastHeartbeat":"2026-01-17T23:17:54.613Z","capabilities":null,"config":null,"createdBy":null,"createdAt":"2026-01-14T21:09:47.145Z","updatedAt":"2026-01-17T23:17:54.613Z"}]
+0|nbm-cloud  | 0|nbm-cloud  | 2026-01-17T20:18:01: 8:18:01 PM [express] GET /api/agents 200 in 43ms :: [{"id":1,"companyId":1,"name":"agente-grupojet-01","siteName":"grupojet-full-01","description":"Agente Grupojet Full","publicIp":null,"status":"online","version":null,"ipAddress":"143.255.197.26","lastHeartbeat":"2026-01-17T23:17:54.613Z","capabilities":null,"config":null,"createdBy":null,"createdAt":"2026-01-14T21:09:47.145Z","updatedAt":"2026-01-17T23:17:54.613Z"}]
+2026-01-17T20:18:01: 8:18:01 PM [express] GET /api/agents 200 in 43ms :: [{"id":1,"companyId":1,"name":"agente-grupojet-01","siteName":"grupojet-full-01","description":"Agente Grupojet Full","publicIp":null,"status":"online","version":null,"ipAddress":"143.255.197.26","lastHeartbeat":"2026-01-17T23:17:54.613Z","capabilities":null,"config":null,"createdBy":null,"createdAt":"2026-01-14T21:09:47.145Z","updatedAt":"2026-01-17T23:17:54.613Z"}]
+0|nbm-cloud  | 2026-01-17T20:18:06: [isAdmin] Checking admin access, isStandalone: true
+0|nbm-cloud  | 2026-01-17T20:18:06: [isAdmin] Session user: Marcio isAdmin: true
+0|nbm-cloud  | 2026-01-17T20:18:06: [isAdmin] Checking admin access, isStandalone: true
+0|nbm-cloud  | 2026-01-17T20:18:06: [isAdmin] Session user: Marcio isAdmin: true
+0|nbm-cloud  | 2026-01-17T20:18:06: [isAdmin] ALLOWED - user is admin
+0|nbm-cloud  | 2026-01-17T20:18:06: [isAdmin] ALLOWED - user is admin
+0|nbm-cloud  | 2026-01-17T20:18:06: [terminal] Sending command to agent 1: "ls" (sessionId: term-1-1768691886073)
+0|nbm-cloud  | 2026-01-17T20:18:06: [terminal] Sending command to agent 1: "ls" (sessionId: term-1-1768691886073)
+2026-01-17T20:18:06: [terminal] Sending command to agent 1: "ls" (sessionId: term-1-1768691886073)
+0|nbm-cloud  | 2026-01-17T20:18:06: [terminal] Command sent via WebSocket
+0|nbm-cloud  | 2026-01-17T20:18:06: [terminal] Command sent via WebSocket
+2026-01-17T20:18:06: [terminal] Command sent via WebSocket
+0|nbm-cloud  | 0|nbm-cloud  | 2026-01-17T20:18:06: [ws-agents] Received message, size: 225 bytes
+2026-01-17T20:18:06: [ws-agents] Received message, size: 225 bytes
+0|nbm-cloud  | 0|nbm-cloud  | 2026-01-17T20:18:06: [ws-agents] Received message type: terminal_output
+0|nbm-cloud  | 2026-01-17T20:18:06: [ws-agents] Received message type: terminal_output
+2026-01-17T20:18:06: [ws-agents] Terminal output received: sessionId=term-1-1768691886073, outputLength=117, isComplete=true
+0|nbm-cloud  | 2026-01-17T20:18:06: [ws-agents] Terminal output received: sessionId=term-1-1768691886073, outputLength=117, isComplete=true
+0|nbm-cloud  | 2026-01-17T20:18:06: [ws-agents] Forwarding terminal output to pending session
+0|nbm-cloud  | 2026-01-17T20:18:06: [terminal] Received output chunk: 117 chars, complete: true
+0|nbm-cloud  | 2026-01-17T20:18:06: [ws-agents] Forwarding terminal output to pending session
+0|nbm-cloud  | 2026-01-17T20:18:06: [terminal] Received output chunk: 117 chars, complete: true
+2026-01-17T20:18:06: [ws-agents] Received message, size: 225 bytes
+0|nbm-cloud  | 2026-01-17T20:18:06: [terminal] Command completed, output length: 117
+0|nbm-cloud  | 2026-01-17T20:18:06: [terminal] Command completed, output length: 117
+2026-01-17T20:18:06: [ws-agents] Received message type: terminal_output
+2026-01-17T20:18:06: [ws-agents] Terminal output received: sessionId=term-1-1768691886073, outputLength=117, isComplete=true
+2026-01-17T20:18:06: [ws-agents] Forwarding terminal output to pending session
+2026-01-17T20:18:06: [terminal] Received output chunk: 117 chars, complete: true
+2026-01-17T20:18:06: [terminal] Command completed, output length: 117
+2026-01-17T20:18:06: 8:18:06 PM [express] POST /api/agents/1/terminal 200 in 127ms :: {"success":true,"output":"agent.pid\nconfig.json\ncurrent\ndeploy-agent.sh\ndeploy-production.sh\ninstall.sh\nlogs\nnbm-agent.sh\nreleases\nuninstall.sh"}
+0|nbm-cloud  | 2026-01-17T20:18:06: 8:18:06 PM [express] POST /api/agents/1/terminal 200 in 127ms :: {"success":true,"output":"agent.pid\nconfig.json\ncurrent\ndeploy-agent.sh\ndeploy-production.sh\ninstall.sh\nlogs\nnbm-agent.sh\nreleases\nuninstall.sh"}
+0|nbm-cloud  | 2026-01-17T20:18:06: 8:18:06 PM [express] POST /api/agents/1/terminal 200 in 127ms :: {"success":true,"output":"agent.pid\nconfig.json\ncurrent\ndeploy-agent.sh\ndeploy-production.sh\ninstall.sh\nlogs\nnbm-agent.sh\nreleases\nuninstall.sh"}
+2026-01-17T20:18:09: [ws-agents] Received message, size: 21 bytes
+0|nbm-cloud  | 2026-01-17T20:18:09: [ws-agents] Received message, size: 21 bytes
+2026-01-17T20:18:09: [ws-agents] Received message type: heartbeat
+0|nbm-cloud  | 2026-01-17T20:18:09: [ws-agents] Received message type: heartbeat
+0|nbm-cloud  | 2026-01-17T20:18:09: [ws-agents] Received message, size: 21 bytes
+0|nbm-cloud  | 2026-01-17T20:18:09: [ws-agents] Received message type: heartbeat
+0|nbm-cloud  | 0|nbm-cloud  | 2026-01-17T20:18:09: [isAdmin] Checking admin access, isStandalone: true
+2026-01-17T20:18:09: [isAdmin] Checking admin access, isStandalone: true
+0|nbm-cloud  | 2026-01-17T20:18:09: [isAdmin] Session user: Marcio isAdmin: true
+0|nbm-cloud  | 2026-01-17T20:18:09: [isAdmin] ALLOWED - user is admin
+0|nbm-cloud  | 2026-01-17T20:18:09: [isAdmin] Session user: Marcio isAdmin: true
+0|nbm-cloud  | 2026-01-17T20:18:09: [isAdmin] ALLOWED - user is admin
+0|nbm-cloud  | 2026-01-17T20:18:09: [terminal] Sending command to agent 1: "logs" (sessionId: term-1-1768691889860)
+2026-01-17T20:18:09: [terminal] Sending command to agent 1: "logs" (sessionId: term-1-1768691889860)
+0|nbm-cloud  | 2026-01-17T20:18:09: [terminal] Sending command to agent 1: "logs" (sessionId: term-1-1768691889860)
+0|nbm-cloud  | 2026-01-17T20:18:09: [terminal] Command sent via WebSocket
+0|nbm-cloud  | 2026-01-17T20:18:09: [terminal] Command sent via WebSocket
+2026-01-17T20:18:09: [terminal] Command sent via WebSocket
+0|nbm-cloud  | 0|nbm-cloud  | 2026-01-17T20:18:09: [ws-agents] Received message, size: 136 bytes
+2026-01-17T20:18:09: [ws-agents] Received message, size: 136 bytes
+0|nbm-cloud  | 2026-01-17T20:18:09: [ws-agents] Received message type: terminal_output
+2026-01-17T20:18:09: [ws-agents] Received message, size: 136 bytes
+0|nbm-cloud  | 0|nbm-cloud  | 2026-01-17T20:18:09: [ws-agents] Terminal output received: sessionId=term-1-1768691889860, outputLength=37, isComplete=true
+2026-01-17T20:18:09: [ws-agents] Received message type: terminal_output
+0|nbm-cloud  | 0|nbm-cloud  | 2026-01-17T20:18:09: [ws-agents] Forwarding terminal output to pending session
+2026-01-17T20:18:09: [ws-agents] Terminal output received: sessionId=term-1-1768691889860, outputLength=37, isComplete=true
+0|nbm-cloud  | 0|nbm-cloud  | 2026-01-17T20:18:09: [terminal] Received output chunk: 37 chars, complete: true
+2026-01-17T20:18:09: [ws-agents] Forwarding terminal output to pending session
+0|nbm-cloud  | 2026-01-17T20:18:09: [terminal] Command completed, output length: 37
+0|nbm-cloud  | 2026-01-17T20:18:09: [terminal] Received output chunk: 37 chars, complete: true
+0|nbm-cloud  | 2026-01-17T20:18:09: [terminal] Command completed, output length: 37
+2026-01-17T20:18:09: [ws-agents] Received message type: terminal_output
+2026-01-17T20:18:09: [ws-agents] Terminal output received: sessionId=term-1-1768691889860, outputLength=37, isComplete=true
+2026-01-17T20:18:09: [ws-agents] Forwarding terminal output to pending session
+2026-01-17T20:18:09: [terminal] Received output chunk: 37 chars, complete: true
+2026-01-17T20:18:09: [terminal] Command completed, output length: 37
+2026-01-17T20:18:09: 8:18:09 PM [express] POST /api/agents/1/terminal 200 in 114ms :: {"success":true,"output":"bash: line 1: logs: command not found"}
+0|nbm-cloud  | 0|nbm-cloud  | 2026-01-17T20:18:09: 8:18:09 PM [express] POST /api/agents/1/terminal 200 in 114ms :: {"success":true,"output":"bash: line 1: logs: command not found"}
+2026-01-17T20:18:09: 8:18:09 PM [express] POST /api/agents/1/terminal 200 in 114ms :: {"success":true,"output":"bash: line 1: logs: command not found"}
+2026-01-17T20:18:24: [ws-agents] Received message, size: 21 bytes
+2026-01-17T20:18:24: [ws-agents] Received message type: heartbeat
+0|nbm-cloud  | 0|nbm-cloud  | 2026-01-17T20:18:24: [ws-agents] Received message, size: 21 bytes
+2026-01-17T20:18:24: [ws-agents] Received message, size: 21 bytes
+0|nbm-cloud  | 0|nbm-cloud  | 2026-01-17T20:18:24: [ws-agents] Received message type: heartbeat
+2026-01-17T20:18:24: [ws-agents] Received message type: heartbeat
+
