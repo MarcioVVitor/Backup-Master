@@ -1,0 +1,31 @@
+root@SRV-NBM-CLOUD-01[~]# pm2 logs nbm-cloud --lines 20 | grep -i static
+0|nbm-clou | 2026-01-17T18:51:43: [static] Serving static files from: /opt/nbm-cloud/dist/public
+0|nbm-clou | 2026-01-17T18:51:48: [static] Serving static files from: /opt/nbm-cloud/dist/public
+0|nbm-cloud  | 2026-01-17T18:51:54: [static] Serving static files from: /opt/nbm-cloud/dist/public
+0|nbm-cloud  | 2026-01-17T18:51:59: [static] Serving static files from: /opt/nbm-cloud/dist/public
+^C
+root@SRV-NBM-CLOUD-01[~]# pm2 stop nbm-cloud
+pm2 delete nbm-cloud
+pm2 start /opt/nbm-cloud/ecosystem.config.cjs
+[PM2] Applying action stopProcessId on app [nbm-cloud](ids: [ 0 ])
+[PM2] [nbm-cloud](0) ✓
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+├────┼────────────────────┼──────────┼──────┼───────────┼──────────┼──────────┤
+│ 0  │ nbm-cloud          │ fork     │ 29   │ stopped   │ 0%       │ 0b       │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+[PM2] Applying action deleteProcessId on app [nbm-cloud](ids: [ 0 ])
+[PM2] [nbm-cloud](0) ✓
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+[PM2][WARN] Applications nbm-cloud not running, starting...
+[PM2] App [nbm-cloud] launched (1 instances)
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+├────┼────────────────────┼──────────┼──────┼───────────┼──────────┼──────────┤
+│ 0  │ nbm-cloud          │ fork     │ 0    │ online    │ 0%       │ 15.5mb   │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+root@SRV-NBM-CLOUD-01[~]# curl -s http://127.0.0.1:5000/ | grep -o 'index-[^"]*\.js'
+index-ByG0Uy63.js
+root@SRV-NBM-CLOUD-01[~]# 
