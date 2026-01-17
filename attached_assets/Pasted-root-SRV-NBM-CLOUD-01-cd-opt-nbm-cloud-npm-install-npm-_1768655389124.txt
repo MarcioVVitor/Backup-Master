@@ -1,0 +1,97 @@
+root@SRV-NBM-CLOUD-01[~]# cd /opt/nbm-cloud
+npm install
+npm run build
+pm2 restart nbm-cloud --update-env
+
+added 3 packages, and audited 655 packages in 4s
+
+91 packages are looking for funding
+  run `npm fund` for details
+
+4 high severity vulnerabilities
+
+To address all issues, run:
+  npm audit fix
+
+Run `npm audit` for details.
+
+> rest-express@1.0.0 build
+> tsx script/build.ts
+
+building client...
+vite v7.3.0 building client environment for production...
+✓ 3327 modules transformed.
+../dist/public/index.html                     2.87 kB │ gzip:   1.04 kB
+../dist/public/assets/index-CYXtfQtz.css     86.02 kB │ gzip:  14.56 kB
+../dist/public/assets/index-B5L89Ta3.js   1,754.04 kB │ gzip: 470.18 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 13.81s
+building server...
+
+  dist/index.cjs  1.4mb ⚠️
+
+⚡ Done in 167ms
+[PM2] Applying action restartProcessId on app [nbm-cloud](ids: [ 0 ])
+[PM2] [nbm-cloud](0) ✓
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+├────┼────────────────────┼──────────┼──────┼───────────┼──────────┼──────────┤
+│ 0  │ nbm-cloud          │ fork     │ 6    │ online    │ 0%       │ 16.8mb   │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+root@SRV-NBM-CLOUD-01[/opt/nbm-cloud]# cd
+root@SRV-NBM-CLOUD-01[~]# 
+root@SRV-NBM-CLOUD-01[~]# 
+root@SRV-NBM-CLOUD-01[~]# 
+root@SRV-NBM-CLOUD-01[~]# 
+root@SRV-NBM-CLOUD-01[~]# 
+root@SRV-NBM-CLOUD-01[~]# 
+root@SRV-NBM-CLOUD-01[~]# cd /opt/nbm-cloud
+git rev-parse HEAD
+07bb5a01a0a47214d27a3a858305dcbde2262a4d
+root@SRV-NBM-CLOUD-01[/opt/nbm-cloud]# cd /opt/nbm-cloud
+git fetch origin main
+git reset --hard origin/main
+npm run build
+pm2 restart nbm-cloud --update-env
+remote: Enumerating objects: 10, done.
+remote: Counting objects: 100% (10/10), done.
+remote: Compressing objects: 100% (6/6), done.
+remote: Total 8 (delta 5), reused 5 (delta 2), pack-reused 0 (from 0)
+Unpacking objects: 100% (8/8), 199.47 KiB | 2.77 MiB/s, done.
+From https://github.com/MarcioVVitor/Backup-Master
+ * branch            main       -> FETCH_HEAD
+   07bb5a0..a08e362  main       -> origin/main
+HEAD is now at a08e362 Update the agent console to use a new interactive terminal interface
+
+> rest-express@1.0.0 build
+> tsx script/build.ts
+
+building client...
+vite v7.3.0 building client environment for production...
+✓ 3327 modules transformed.
+../dist/public/index.html                     2.87 kB │ gzip:   1.04 kB
+../dist/public/assets/index-CYXtfQtz.css     86.02 kB │ gzip:  14.56 kB
+../dist/public/assets/index-B5L89Ta3.js   1,754.04 kB │ gzip: 470.18 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 13.30s
+building server...
+
+  dist/index.cjs  1.4mb ⚠️
+
+⚡ Done in 185ms
+[PM2] Applying action restartProcessId on app [nbm-cloud](ids: [ 0 ])
+[PM2] [nbm-cloud](0) ✓
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+├────┼────────────────────┼──────────┼──────┼───────────┼──────────┼──────────┤
+│ 0  │ nbm-cloud          │ fork     │ 122  │ online    │ 0%       │ 19.3mb   │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+root@SRV-NBM-CLOUD-01[/opt/nbm-cloud]# 
