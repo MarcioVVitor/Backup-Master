@@ -1,0 +1,56 @@
+root@SRV-NBM-CLOUD-01[~]# 
+root@SRV-NBM-CLOUD-01[~]# 
+root@SRV-NBM-CLOUD-01[~]# 
+root@SRV-NBM-CLOUD-01[~]# cd /opt/nbm-cloud
+git pull origin main
+rm -rf dist
+npm run build
+pm2 restart nbm-cloud --update-env
+From https://github.com/MarcioVVitor/Backup-Master
+ * branch            main       -> FETCH_HEAD
+Updating a08e362..0b59139
+Fast-forward
+ ...oot-SRV-NBM-CLOUD-01-cd-opt-nbm-cloud-npm-install-npm-_1768655389124.txt |  97 +++++++++++++++++++++++++++++++++++
+ ...oot-SRV-NBM-CLOUD-01-cd-opt-nbm-cloud-rm-rf-dist-npm-r_1768670318467.txt |  35 +++++++++++++
+ attached_assets/image_1768655431626.png                                     | Bin 0 -> 251493 bytes
+ attached_assets/image_1768663793388.png                                     | Bin 0 -> 179564 bytes
+ attached_assets/image_1768671095717.png                                     | Bin 0 -> 328725 bytes
+ attached_assets/image_1768671288847.png                                     | Bin 0 -> 182064 bytes
+ attached_assets/image_1768685875587.png                                     | Bin 0 -> 1152092 bytes
+ 7 files changed, 132 insertions(+)
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-cd-opt-nbm-cloud-npm-install-npm-_1768655389124.txt
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-cd-opt-nbm-cloud-rm-rf-dist-npm-r_1768670318467.txt
+ create mode 100644 attached_assets/image_1768655431626.png
+ create mode 100644 attached_assets/image_1768663793388.png
+ create mode 100644 attached_assets/image_1768671095717.png
+ create mode 100644 attached_assets/image_1768671288847.png
+ create mode 100644 attached_assets/image_1768685875587.png
+
+> rest-express@1.0.0 build
+> tsx script/build.ts
+
+building client...
+vite v7.3.0 building client environment for production...
+✓ 3327 modules transformed.
+../dist/public/index.html                     2.87 kB │ gzip:   1.04 kB
+../dist/public/assets/index-CYXtfQtz.css     86.02 kB │ gzip:  14.56 kB
+../dist/public/assets/index-B5L89Ta3.js   1,754.04 kB │ gzip: 470.18 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 12.26s
+building server...
+
+  dist/index.cjs  1.4mb ⚠️
+
+⚡ Done in 135ms
+[PM2] Applying action restartProcessId on app [nbm-cloud](ids: [ 0 ])
+[PM2] [nbm-cloud](0) ✓
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+├────┼────────────────────┼──────────┼──────┼───────────┼──────────┼──────────┤
+│ 0  │ nbm-cloud          │ fork     │ 5560 │ online    │ 0%       │ 17.6mb   │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+root@SRV-NBM-CLOUD-01[/opt/nbm-cloud]# 
