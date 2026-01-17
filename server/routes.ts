@@ -3062,14 +3062,18 @@ export async function registerRoutes(
       const sessionId = `term-${agentId}-${Date.now()}`;
       let output = '';
       
+      console.log(`[terminal] Sending command to agent ${agentId}: "${command}" (sessionId: ${sessionId})`);
+      
       const result = await new Promise<string>((resolve, reject) => {
         const timeout = setTimeout(() => {
+          console.log(`[terminal] Command timeout for session ${sessionId}`);
           pendingTerminalSessions.delete(sessionId);
           resolve(output + '\n[Timeout: comando demorou mais de 60s]');
         }, 60000);
         
         pendingTerminalSessions.set(sessionId, {
           onOutput: (chunk: string, isComplete: boolean) => {
+            console.log(`[terminal] Received output chunk: ${chunk.length} chars, complete: ${isComplete}`);
             output += chunk;
             if (isComplete) {
               clearTimeout(timeout);
@@ -3083,8 +3087,10 @@ export async function registerRoutes(
           sessionId,
           command,
         }));
+        console.log(`[terminal] Command sent via WebSocket`);
       });
       
+      console.log(`[terminal] Command completed, output length: ${result.length}`);
       res.json({ success: true, output: result });
     } catch (e: any) {
       console.error('Error executing terminal command:', e);
@@ -3664,12 +3670,16 @@ export async function registerRoutes(
         // Handle terminal output from agent
         if (message.type === 'terminal_output') {
           const sessionId = message.sessionId;
+          console.log(`[ws-agents] Terminal output received: sessionId=${sessionId}, outputLength=${message.output?.length || 0}, isComplete=${message.isComplete}`);
           const pending = pendingTerminalSessions.get(sessionId);
           if (pending) {
+            console.log(`[ws-agents] Forwarding terminal output to pending session`);
             pending.onOutput(message.output, message.isComplete);
             if (message.isComplete) {
               pendingTerminalSessions.delete(sessionId);
             }
+          } else {
+            console.log(`[ws-agents] No pending session found for sessionId=${sessionId}`);
           }
         }
         

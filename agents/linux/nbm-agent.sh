@@ -1906,9 +1906,14 @@ handle_message() {
         terminal_command)
             local command=$(echo "$message" | jq -r '.command')
             local session_id=$(echo "$message" | jq -r '.sessionId')
+            log_info "Executing terminal command: $command (session: $session_id)"
             local result=$(execute_command "$command")
-            local output=$(echo "$result" | jq -r '.output // empty')
-            echo "{\"type\": \"terminal_output\", \"sessionId\": \"$session_id\", \"output\": $output, \"isComplete\": true}"
+            local exit_code=$(echo "$result" | jq -r '.exitCode // 0')
+            local raw_output=$(echo "$result" | jq -r '.output // empty')
+            # Re-escape output for JSON
+            local escaped_output=$(echo "$raw_output" | jq -Rs '.')
+            log_info "Terminal command result: exit_code=$exit_code, output_length=${#raw_output}"
+            echo "{\"type\": \"terminal_output\", \"sessionId\": \"$session_id\", \"output\": $escaped_output, \"isComplete\": true}"
             ;;
             
         terminal_connect)
