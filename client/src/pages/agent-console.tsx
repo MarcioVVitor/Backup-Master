@@ -57,6 +57,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Link } from "wouter";
+import { XTermTerminal } from "@/components/xterm-terminal";
 
 interface DiagnosticsData {
   system: {
@@ -394,50 +395,22 @@ Comandos disponíveis:
           </TabsList>
 
           <TabsContent value="terminal" className="mt-4">
-            <Card>
+            <Card className="overflow-hidden">
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-2">
                   <TerminalIcon className="h-5 w-5" />
-                  Terminal Remoto
+                  Terminal SSH Interativo
                 </CardTitle>
                 <CardDescription>
-                  Execute comandos diretamente no servidor do agente
+                  Shell interativo conectado diretamente ao servidor do agente via SSH
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-0">
-                <div 
-                  ref={terminalRef}
-                  className="bg-gray-900 text-green-400 font-mono text-sm p-4 rounded-lg h-[450px] overflow-y-auto cursor-text"
-                  onClick={() => inputRef.current?.focus()}
-                  data-testid="terminal-output"
-                >
-                  {terminalHistory.map((line, i) => (
-                    <div key={i} className="whitespace-pre-wrap">{line}</div>
-                  ))}
-                  {(terminalMutation.isPending || diagnosticsMutation.isPending || testConnectionMutation.isPending) && (
-                    <div className="flex items-center gap-2 text-yellow-400">
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Executando...
-                    </div>
-                  )}
-                  {!(terminalMutation.isPending || diagnosticsMutation.isPending || testConnectionMutation.isPending) && (
-                    <div className="flex items-center">
-                      <span className="text-green-400 mr-2">$</span>
-                      <input
-                        ref={inputRef}
-                        type="text"
-                        value={command}
-                        onChange={(e) => setCommand(e.target.value)}
-                        onKeyDown={handleKeyDown}
-                        className="flex-1 bg-transparent border-none outline-none text-green-400 font-mono caret-green-400"
-                        autoFocus
-                        spellCheck={false}
-                        autoComplete="off"
-                        data-testid="input-terminal-command"
-                      />
-                      <span className="w-2 h-5 bg-green-400 animate-pulse" />
-                    </div>
-                  )}
+                <div className="h-[500px]" data-testid="terminal-container">
+                  <XTermTerminal
+                    agentId={parseInt(selectedAgentId)}
+                    agentName={onlineAgents.find(a => a.id === parseInt(selectedAgentId))?.name || "Agente"}
+                  />
                 </div>
               </CardContent>
             </Card>

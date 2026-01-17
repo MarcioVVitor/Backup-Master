@@ -2291,6 +2291,68 @@ export async function registerRoutes(
             ws.send(JSON.stringify({ type: 'connected', protocol: equip.protocol || 'ssh', agent: selectedAgent.name }));
           }, 1000);
           
+        } else if (data.type === 'connect_shell') {
+          // Connect directly to agent's shell (PTY)
+          const { agentId } = data;
+          
+          if (!agentId) {
+            ws.send(JSON.stringify({ type: 'error', message: 'Agent ID não fornecido' }));
+            return;
+          }
+          
+          const agent = await storage.getAgentById(agentId);
+          if (!agent) {
+            ws.send(JSON.stringify({ type: 'error', message: 'Agente não encontrado' }));
+            return;
+          }
+          
+          const agentWs = connectedAgents.get(agentId);
+          if (!agentWs || agentWs.readyState !== 1) {
+            ws.send(JSON.stringify({ type: 'error', message: 'Agente offline' }));
+            return;
+          }
+          
+          ws.send(JSON.stringify({ type: 'status', message: `Conectando ao shell do agente ${agent.name}...` }));
+          
+          // Create shell session via agent
+          const sessionId = `shell-${agentId}-${Date.now()}`;
+          currentSessionId = sessionId;
+          currentAgentId = agentId;
+          
+          // Register session handler
+          pendingTerminalSessions.set(sessionId, {
+            onOutput: (output: string, isComplete: boolean) => {
+              ws.send(JSON.stringify({ type: 'output', data: output }));
+            }
+          });
+          
+          // Send shell_connect command to agent (PTY shell)
+          agentWs.send(JSON.stringify({
+            type: 'shell_connect',
+            sessionId,
+            cols: data.cols || 80,
+            rows: data.rows || 24
+          }));
+          
+          // Mark as connected
+          setTimeout(() => {
+            ws.send(JSON.stringify({ type: 'connected', protocol: 'shell', agent: agent.name }));
+          }, 500);
+          
+        } else if (data.type === 'resize') {
+          // Handle terminal resize
+          if (currentSessionId && currentAgentId) {
+            const agentWs = connectedAgents.get(currentAgentId);
+            if (agentWs && agentWs.readyState === 1) {
+              agentWs.send(JSON.stringify({
+                type: 'shell_resize',
+                sessionId: currentSessionId,
+                cols: data.cols,
+                rows: data.rows
+              }));
+            }
+          }
+          
         } else if (data.type === 'input') {
           // Send command to agent terminal session
           if (currentSessionId && currentAgentId) {
