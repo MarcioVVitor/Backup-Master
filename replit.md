@@ -250,3 +250,16 @@ pm2 logs nbm-cloud
 - **API Endpoint**: POST /api/agents/:id/admin with actions: reboot, shutdown, restart_service, restart_agent, service_status
 - **Timeout Handling**: 10s for reboot/shutdown (expected disconnect), 30s for other commands
 - **Console Button**: Quick access to agent console from agents list page (online agents only)
+
+### Interactive Terminal with xterm.js (v17.0)
+- **Component**: `client/src/components/xterm-terminal.tsx`
+- **Library**: @xterm/xterm with FitAddon and WebLinksAddon
+- **Theme**: Tokyo Night professional dark theme
+- **Features**:
+  - Command history navigation with arrow keys (↑/↓)
+  - Local commands: clear, help, exit
+  - Execute Linux commands on remote agent server
+  - Professional prompt with agent name
+- **Architecture**: Commands sent via REST API POST to `/api/agents/:id/terminal`
+- **Agent Handler**: WebSocket message type `terminal_command` processed by agent
+- **Security**: Admin-only access, tenant-isolated
