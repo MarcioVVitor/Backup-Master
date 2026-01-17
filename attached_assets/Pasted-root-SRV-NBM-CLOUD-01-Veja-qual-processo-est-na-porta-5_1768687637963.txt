@@ -1,0 +1,45 @@
+root@SRV-NBM-CLOUD-01[~]# # Veja qual processo está na porta 5000
+lsof -i :5000
+
+# Mate todos os processos Node.js
+pkill -9 node
+
+# Aguarde um momento
+sleep 2
+
+# Verifique que a porta está livre
+lsof -i :5000
+
+# Reinicie o PM2
+pm2 delete all 2>/dev/null
+cd /opt/nbm-cloud
+pm2 start ecosystem.config.cjs
+pm2 save
+
+# Verifique
+pm2 list
+lsof -i :5000
+COMMAND      PID USER FD   TYPE  DEVICE SIZE/OFF NODE NAME
+node\x20/ 194442  nbm 19u  IPv4 1079612      0t0  TCP SRV-NBM-CLOUD-PROXY-01:5000->143.255.197.26.grupojet.com.br:42612 (ESTABLISHED)
+node\x20/ 194442  nbm 20u  IPv4 1079567      0t0  TCP *:5000 (LISTEN)
+node\x20/ 194442  nbm 21u  IPv4 1092636      0t0  TCP SRV-NBM-CLOUD-PROXY-01:5000->143.255.197.62.grupojet.com.br:53753 (ESTABLISHED)
+[PM2] Applying action deleteProcessId on app [all](ids: [ 0 ])
+[PM2] [nbm-cloud](0) ✓
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+[PM2][WARN] Applications nbm-cloud not running, starting...
+[PM2] App [nbm-cloud] launched (1 instances)
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+├────┼────────────────────┼──────────┼──────┼───────────┼──────────┼──────────┤
+│ 0  │ nbm-cloud          │ fork     │ 0    │ online    │ 0%       │ 16.3mb   │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+[PM2] Saving current process list...
+[PM2] Successfully saved in /root/.pm2/dump.pm2
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+├────┼────────────────────┼──────────┼──────┼───────────┼──────────┼──────────┤
+│ 0  │ nbm-cloud          │ fork     │ 0    │ online    │ 0%       │ 86.1mb   │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+root@SRV-NBM-CLOUD-01[/opt/nbm-cloud]# 
