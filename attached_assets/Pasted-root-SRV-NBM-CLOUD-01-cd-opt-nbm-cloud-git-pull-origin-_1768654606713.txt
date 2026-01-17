@@ -1,0 +1,161 @@
+root@SRV-NBM-CLOUD-01[~]# cd /opt/nbm-cloud
+git pull origin main
+npm run build
+pm2 restart nbm-cloud --update-env
+remote: Enumerating objects: 45, done.
+remote: Counting objects: 100% (45/45), done.
+remote: Compressing objects: 100% (5/5), done.
+remote: Total 30 (delta 24), reused 30 (delta 24), pack-reused 0 (from 0)
+Unpacking objects: 100% (30/30), 81.46 KiB | 1.33 MiB/s, done.
+From https://github.com/MarcioVVitor/Backup-Master
+ * branch            main       -> FETCH_HEAD
+   50ca73b..07bb5a0  main       -> origin/main
+Updating 50ca73b..07bb5a0
+Fast-forward
+ agents/linux/nbm-agent.sh                                                  | 172 ++++++++++++++++++---
+ ...ot-SRV-NBM-CLOUD-01-cd-opt-nbm-cloud-git-pull-origin-_1768653433178.txt |  46 ++++++
+ attached_assets/image_1768653524267.png                                    | Bin 0 -> 97450 bytes
+ client/src/components/xterm-terminal.tsx                                   | 276 ++++++++++++++++++++++++++++++++++
+ client/src/pages/agent-console.tsx                                         |  45 ++----
+ package-lock.json                                                          |  24 +++
+ package.json                                                               |   3 +
+ replit.md                                                                  |  15 +-
+ server/routes.ts                                                           |  62 ++++++++
+ 9 files changed, 582 insertions(+), 61 deletions(-)
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-cd-opt-nbm-cloud-git-pull-origin-_1768653433178.txt
+ create mode 100644 attached_assets/image_1768653524267.png
+ create mode 100644 client/src/components/xterm-terminal.tsx
+
+> rest-express@1.0.0 build
+> tsx script/build.ts
+
+building client...
+vite v7.3.0 building client environment for production...
+✓ 1674 modules transformed.
+✗ Build failed in 5.33s
+[vite]: Rollup failed to resolve import "@xterm/xterm" from "/opt/nbm-cloud/client/src/components/xterm-terminal.tsx".
+This is most likely unintended because it can break your application at runtime.
+If you do want to externalize this module explicitly add it to
+`build.rollupOptions.external`
+    at viteLog (/opt/nbm-cloud/node_modules/vite/dist/node/chunks/config.js:33634:57)
+    at <anonymous> (/opt/nbm-cloud/node_modules/vite/dist/node/chunks/config.js:33668:73)
+    at onwarn (/opt/nbm-cloud/node_modules/@vitejs/plugin-react/dist/index.js:90:7)
+    at <anonymous> (/opt/nbm-cloud/node_modules/vite/dist/node/chunks/config.js:33668:28)
+    at onRollupLog (/opt/nbm-cloud/node_modules/vite/dist/node/chunks/config.js:33663:63)
+    at onLog (/opt/nbm-cloud/node_modules/vite/dist/node/chunks/config.js:33466:4)
+    at <anonymous> (/opt/nbm-cloud/node_modules/rollup/dist/es/shared/node-entry.js:21004:32)
+    at Object.logger (/opt/nbm-cloud/node_modules/rollup/dist/es/shared/node-entry.js:22891:9)
+    at ModuleLoader.handleInvalidResolvedId (/opt/nbm-cloud/node_modules/rollup/dist/es/shared/node-entry.js:21635:26)
+    at <anonymous> (/opt/nbm-cloud/node_modules/rollup/dist/es/shared/node-entry.js:21593:26) {
+  watchFiles: [
+    '/opt/nbm-cloud/client/index.html',
+    '/opt/nbm-cloud/client/src/main.tsx',
+    '/opt/nbm-cloud/package.json',
+    '/opt/nbm-cloud/node_modules/react/jsx-runtime.js',
+    '/opt/nbm-cloud/node_modules/react-dom/client.js',
+    '/opt/nbm-cloud/client/src/App.tsx',
+    '/opt/nbm-cloud/client/src/index.css',
+    '/opt/nbm-cloud/node_modules/react/cjs/react-jsx-runtime.production.min.js',
+    '/opt/nbm-cloud/node_modules/react-dom/index.js',
+    '/opt/nbm-cloud/node_modules/react/index.js',
+    '/opt/nbm-cloud/node_modules/wouter/esm/index.js',
+    '/opt/nbm-cloud/node_modules/@tanstack/react-query/build/modern/index.js',
+    '/opt/nbm-cloud/client/src/lib/queryClient.ts',
+    '/opt/nbm-cloud/client/src/components/ui/toaster.tsx',
+    '/opt/nbm-cloud/client/src/components/ui/tooltip.tsx',
+    '/opt/nbm-cloud/client/src/hooks/use-auth.ts',
+    '/opt/nbm-cloud/client/src/contexts/theme-context.tsx',
+    '/opt/nbm-cloud/client/src/contexts/i18n-context.tsx',
+    '/opt/nbm-cloud/client/src/contexts/company-context.tsx',
+    '/opt/nbm-cloud/client/src/components/company-selector.tsx',
+    '/opt/nbm-cloud/client/src/components/dynamic-backgrounds.tsx',
+    '/opt/nbm-cloud/client/src/pages/home.tsx',
+    '/opt/nbm-cloud/client/src/pages/equipment.tsx',
+    '/opt/nbm-cloud/client/src/pages/execute.tsx',
+    '/opt/nbm-cloud/node_modules/lucide-react/dist/esm/lucide-react.js',
+    '/opt/nbm-cloud/client/src/pages/backups.tsx',
+    '/opt/nbm-cloud/client/src/pages/backup-execute.tsx',
+    '/opt/nbm-cloud/client/src/pages/scripts.tsx',
+    '/opt/nbm-cloud/client/src/pages/manufacturers.tsx',
+    '/opt/nbm-cloud/client/src/pages/scheduler.tsx',
+    '/opt/nbm-cloud/client/src/pages/terminal.tsx',
+    '/opt/nbm-cloud/client/src/pages/firmware.tsx',
+    '/opt/nbm-cloud/client/src/pages/agents.tsx',
+    '/opt/nbm-cloud/client/src/pages/admin.tsx',
+    '/opt/nbm-cloud/client/src/pages/companies.tsx',
+    '/opt/nbm-cloud/client/src/pages/not-found.tsx',
+    '/opt/nbm-cloud/client/src/pages/login.tsx',
+    '/opt/nbm-cloud/client/src/pages/agent-console.tsx',
+    '/opt/nbm-cloud/client/src/components/ui/button.tsx',
+    '/opt/nbm-cloud/client/src/pages/server.tsx',
+    '/opt/nbm-cloud/client/src/components/ui/sidebar.tsx',
+    '/opt/nbm-cloud/client/src/components/ui/input.tsx',
+    '/opt/nbm-cloud/node_modules/react-dom/cjs/react-dom.production.min.js',
+    '/opt/nbm-cloud/client/src/components/ui/badge.tsx',
+    '/opt/nbm-cloud/client/src/pages/credentials.tsx',
+    '/opt/nbm-cloud/node_modules/@tanstack/react-query/build/modern/types.js',
+    '/opt/nbm-cloud/node_modules/@tanstack/react-query/build/modern/useQuery.js',
+    '/opt/nbm-cloud/node_modules/@tanstack/query-core/build/modern/index.js',
+    '/opt/nbm-cloud/node_modules/@tanstack/react-query/build/modern/useSuspenseQuery.js',
+    '/opt/nbm-cloud/node_modules/@tanstack/react-query/build/modern/useQueries.js',
+    '/opt/nbm-cloud/node_modules/@tanstack/react-query/build/modern/useSuspenseQueries.js',
+    '/opt/nbm-cloud/node_modules/@tanstack/react-query/build/modern/useSuspenseInfiniteQuery.js',
+    '/opt/nbm-cloud/node_modules/@tanstack/react-query/build/modern/usePrefetchInfiniteQuery.js',
+    '/opt/nbm-cloud/node_modules/@tanstack/react-query/build/modern/usePrefetchQuery.js',
+    '/opt/nbm-cloud/node_modules/@tanstack/react-query/build/modern/queryOptions.js',
+    '/opt/nbm-cloud/node_modules/@tanstack/react-query/build/modern/infiniteQueryOptions.js',
+    '/opt/nbm-cloud/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js',
+    '/opt/nbm-cloud/node_modules/@tanstack/react-query/build/modern/QueryErrorResetBoundary.js',
+    '/opt/nbm-cloud/node_modules/@tanstack/react-query/build/modern/useIsFetching.js',
+    '/opt/nbm-cloud/node_modules/@tanstack/react-query/build/modern/HydrationBoundary.js',
+    '/opt/nbm-cloud/node_modules/@tanstack/react-query/build/modern/useMutationState.js',
+    '/opt/nbm-cloud/node_modules/@tanstack/react-query/build/modern/useMutation.js',
+    '/opt/nbm-cloud/node_modules/@tanstack/react-query/build/modern/useInfiniteQuery.js',
+    '/opt/nbm-cloud/node_modules/@tanstack/react-query/build/modern/isRestoring.js',
+    '/opt/nbm-cloud/node_modules/wouter/esm/use-browser-location.js',
+    '/opt/nbm-cloud/node_modules/wouter/esm/react-deps.js',
+    '/opt/nbm-cloud/node_modules/regexparam/dist/index.mjs',
+    '/opt/nbm-cloud/node_modules/react/cjs/react.production.min.js',
+    '/opt/nbm-cloud/node_modules/scheduler/index.js',
+    '/opt/nbm-cloud/node_modules/lucide-react/dist/esm/icons/a-arrow-up.js',
+    '/opt/nbm-cloud/node_modules/lucide-react/dist/esm/icons/a-large-small.js',
+    '/opt/nbm-cloud/node_modules/lucide-react/dist/esm/icons/a-arrow-down.js',
+    '/opt/nbm-cloud/node_modules/lucide-react/dist/esm/icons/activity.js',
+    '/opt/nbm-cloud/node_modules/lucide-react/dist/esm/icons/accessibility.js',
+    '/opt/nbm-cloud/node_modules/lucide-react/dist/esm/icons/air-vent.js',
+    '/opt/nbm-cloud/node_modules/lucide-react/dist/esm/icons/alarm-clock-off.js',
+    '/opt/nbm-cloud/node_modules/lucide-react/dist/esm/icons/alarm-smoke.js',
+    '/opt/nbm-cloud/node_modules/lucide-react/dist/esm/icons/airplay.js',
+    '/opt/nbm-cloud/node_modules/lucide-react/dist/esm/icons/index.js',
+    '/opt/nbm-cloud/node_modules/lucide-react/dist/esm/icons/album.js',
+    '/opt/nbm-cloud/node_modules/lucide-react/dist/esm/icons/alarm-clock.js',
+    '/opt/nbm-cloud/node_modules/lucide-react/dist/esm/icons/align-center-horizontal.js',
+    '/opt/nbm-cloud/node_modules/lucide-react/dist/esm/icons/align-center-vertical.js',
+    '/opt/nbm-cloud/node_modules/lucide-react/dist/esm/icons/align-center.js',
+    '/opt/nbm-cloud/node_modules/lucide-react/dist/esm/icons/align-end-horizontal.js',
+    '/opt/nbm-cloud/node_modules/lucide-react/dist/esm/icons/align-end-vertical.js',
+    '/opt/nbm-cloud/node_modules/lucide-react/dist/esm/icons/align-horizontal-distribute-end.js',
+    '/opt/nbm-cloud/node_modules/lucide-react/dist/esm/icons/align-horizontal-distribute-start.js',
+    '/opt/nbm-cloud/node_modules/lucide-react/dist/esm/icons/align-horizontal-justify-center.js',
+    '/opt/nbm-cloud/node_modules/lucide-react/dist/esm/icons/align-horizontal-distribute-center.js',
+    '/opt/nbm-cloud/node_modules/lucide-react/dist/esm/icons/align-horizontal-justify-start.js',
+    '/opt/nbm-cloud/node_modules/lucide-react/dist/esm/icons/align-horizontal-space-around.js',
+    '/opt/nbm-cloud/node_modules/lucide-react/dist/esm/icons/align-horizontal-justify-end.js',
+    '/opt/nbm-cloud/node_modules/lucide-react/dist/esm/icons/align-horizontal-space-between.js',
+    '/opt/nbm-cloud/node_modules/lucide-react/dist/esm/icons/align-justify.js',
+    '/opt/nbm-cloud/node_modules/lucide-react/dist/esm/icons/align-left.js',
+    '/opt/nbm-cloud/node_modules/lucide-react/dist/esm/icons/align-start-horizontal.js',
+    '/opt/nbm-cloud/node_modules/lucide-react/dist/esm/icons/align-vertical-distribute-center.js',
+    '/opt/nbm-cloud/node_modules/lucide-react/dist/esm/icons/align-start-vertical.js',
+    '/opt/nbm-cloud/node_modules/lucide-react/dist/esm/icons/align-right.js',
+    ... 1597 more items
+  ]
+}
+[PM2] Applying action restartProcessId on app [nbm-cloud](ids: [ 0 ])
+[PM2] [nbm-cloud](0) ✓
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+├────┼────────────────────┼──────────┼──────┼───────────┼──────────┼──────────┤
+│ 0  │ nbm-cloud          │ fork     │ 5    │ online    │ 0%       │ 12.1mb   │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+root@SRV-NBM-CLOUD-01[/opt/nbm-cloud]# 
