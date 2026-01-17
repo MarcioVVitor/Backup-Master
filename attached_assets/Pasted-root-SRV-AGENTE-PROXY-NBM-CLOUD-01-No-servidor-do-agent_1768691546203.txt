@@ -1,0 +1,119 @@
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[~]# # No servidor do agente
+cd /opt/nbm-agent  # ou onde o agente está instalado
+git pull origin main
+systemctl restart nbm-agent
+
+# Verificar se reiniciou
+systemctl status nbm-agent
+remote: Enumerating objects: 213, done.
+remote: Counting objects: 100% (190/190), done.
+remote: Compressing objects: 100% (112/112), done.
+remote: Total 213 (delta 144), reused 117 (delta 76), pack-reused 23 (from 1)
+Receiving objects: 100% (213/213), 3.31 MiB | 23.53 MiB/s, done.
+Resolving deltas: 100% (155/155), completed with 18 local objects.
+From https://github.com/MarcioVVitor/Backup-Master
+ * branch            main       -> FETCH_HEAD
+   5fd8fe3..c0e6cb0  main       -> origin/main
+Updating 5fd8fe3..c0e6cb0
+Fast-forward
+ PRODUCTION.md                                                                                    | 308 ++++++++++++++++++++++
+ agents/linux/nbm-agent.sh                                                                        | 181 +++++++++++--
+ attached_assets/Pasted-root-SRV-NBM-CLOUD-01-Veja-qual-processo-est-na-porta-5_1768687637963.txt |  45 ++++
+ attached_assets/Pasted-root-SRV-NBM-CLOUD-01-cd-opt-nbm-cloud-git-pull-origin-_1768533136366.txt |  84 ++++++
+ attached_assets/Pasted-root-SRV-NBM-CLOUD-01-cd-opt-nbm-cloud-git-pull-origin-_1768653171196.txt |  47 ++++
+ attached_assets/Pasted-root-SRV-NBM-CLOUD-01-cd-opt-nbm-cloud-git-pull-origin-_1768653433178.txt |  46 ++++
+ attached_assets/Pasted-root-SRV-NBM-CLOUD-01-cd-opt-nbm-cloud-git-pull-origin-_1768654606713.txt | 161 ++++++++++++
+ attached_assets/Pasted-root-SRV-NBM-CLOUD-01-cd-opt-nbm-cloud-npm-install-npm-_1768655389124.txt |  97 +++++++
+ attached_assets/Pasted-root-SRV-NBM-CLOUD-01-cd-opt-nbm-cloud-rm-rf-dist-npm-r_1768670318467.txt |  35 +++
+ attached_assets/Pasted-root-SRV-NBM-CLOUD-01-cd-opt-nbm-cloud-sudo-bash-script_1768534101915.txt | 115 ++++++++
+ attached_assets/Pasted-root-SRV-NBM-CLOUD-01-curl-s-http-127-0-0-1-5000-agent-_1768686599875.txt |  28 ++
+ attached_assets/Pasted-root-SRV-NBM-CLOUD-01-ls-la-opt-nbm-cloud-dist-public-l_1768686820152.txt |  59 +++++
+ attached_assets/Pasted-root-SRV-NBM-CLOUD-01-pm2-logs-nbm-cloud-lines-20-grep-_1768686742022.txt |  31 +++
+ attached_assets/Pasted-root-SRV-NBM-CLOUD-01-pm2-show-nbm-cloud-grep-E-cwd-scr_1768686566365.txt |  81 ++++++
+ attached_assets/Pasted-root-SRV-NBM-CLOUD-01-root-SRV-NBM-CLOUD-01-root-SRV-NB_1768686297387.txt |  56 ++++
+ attached_assets/image_1768533565760.png                                                          | Bin 0 -> 91957 bytes
+ attached_assets/image_1768533848505.png                                                          | Bin 0 -> 91957 bytes
+ attached_assets/image_1768564531916.png                                                          | Bin 0 -> 116650 bytes
+ attached_assets/image_1768600088146.png                                                          | Bin 0 -> 189000 bytes
+ attached_assets/image_1768653242229.png                                                          | Bin 0 -> 242830 bytes
+ attached_assets/image_1768653524267.png                                                          | Bin 0 -> 97450 bytes
+ attached_assets/image_1768654653562.png                                                          | Bin 0 -> 256768 bytes
+ attached_assets/image_1768655431626.png                                                          | Bin 0 -> 251493 bytes
+ attached_assets/image_1768663793388.png                                                          | Bin 0 -> 179564 bytes
+ attached_assets/image_1768671095717.png                                                          | Bin 0 -> 328725 bytes
+ attached_assets/image_1768671288847.png                                                          | Bin 0 -> 182064 bytes
+ attached_assets/image_1768685875587.png                                                          | Bin 0 -> 1152092 bytes
+ attached_assets/image_1768686408506.png                                                          | Bin 0 -> 297129 bytes
+ attached_assets/image_1768687205343.png                                                          | Bin 0 -> 193343 bytes
+ attached_assets/image_1768687282316.png                                                          | Bin 0 -> 229229 bytes
+ attached_assets/image_1768687710242.png                                                          | Bin 0 -> 212066 bytes
+ client/src/App.tsx                                                                               |   6 +-
+ client/src/components/xterm-terminal.tsx                                                         | 276 ++++++++++++++++++++
+ client/src/index.css                                                                             |  73 +++++-
+ client/src/pages/agent-console.tsx                                                               | 347 +++++++++++++++++++++----
+ client/src/pages/agents.tsx                                                                      |  34 ++-
+ client/src/pages/backups.tsx                                                                     |   2 +-
+ client/src/pages/credentials.tsx                                                                 | 780 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ client/src/pages/equipment.tsx                                                                   | 150 +++++++++--
+ client/src/pages/home.tsx                                                                        |  12 +-
+ client/src/pages/scheduler.tsx                                                                   |  12 +-
+ client/src/pages/scripts.tsx                                                                     |  14 +-
+ package-lock.json                                                                                |  24 ++
+ package.json                                                                                     |   3 +
+ replit.md                                                                                        |  38 ++-
+ scripts/deploy.sh                                                                                | 432 +++++++++++++++++++-----------
+ scripts/install-production.sh                                                                    | 645 +++++++++++++++++++++++++++++++++++++++++++++
+ scripts/quick-update.sh                                                                          |  73 ++++++
+ server/routes.ts                                                                                 | 363 +++++++++++++++++++++++++-
+ server/storage.ts                                                                                | 116 ++++++++-
+ shared/schema.ts                                                                                 |  58 +++++
+ 51 files changed, 4556 insertions(+), 276 deletions(-)
+ create mode 100644 PRODUCTION.md
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-Veja-qual-processo-est-na-porta-5_1768687637963.txt
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-cd-opt-nbm-cloud-git-pull-origin-_1768533136366.txt
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-cd-opt-nbm-cloud-git-pull-origin-_1768653171196.txt
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-cd-opt-nbm-cloud-git-pull-origin-_1768653433178.txt
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-cd-opt-nbm-cloud-git-pull-origin-_1768654606713.txt
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-cd-opt-nbm-cloud-npm-install-npm-_1768655389124.txt
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-cd-opt-nbm-cloud-rm-rf-dist-npm-r_1768670318467.txt
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-cd-opt-nbm-cloud-sudo-bash-script_1768534101915.txt
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-curl-s-http-127-0-0-1-5000-agent-_1768686599875.txt
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-ls-la-opt-nbm-cloud-dist-public-l_1768686820152.txt
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-pm2-logs-nbm-cloud-lines-20-grep-_1768686742022.txt
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-pm2-show-nbm-cloud-grep-E-cwd-scr_1768686566365.txt
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-root-SRV-NBM-CLOUD-01-root-SRV-NB_1768686297387.txt
+ create mode 100644 attached_assets/image_1768533565760.png
+ create mode 100644 attached_assets/image_1768533848505.png
+ create mode 100644 attached_assets/image_1768564531916.png
+ create mode 100644 attached_assets/image_1768600088146.png
+ create mode 100644 attached_assets/image_1768653242229.png
+ create mode 100644 attached_assets/image_1768653524267.png
+ create mode 100644 attached_assets/image_1768654653562.png
+ create mode 100644 attached_assets/image_1768655431626.png
+ create mode 100644 attached_assets/image_1768663793388.png
+ create mode 100644 attached_assets/image_1768671095717.png
+ create mode 100644 attached_assets/image_1768671288847.png
+ create mode 100644 attached_assets/image_1768685875587.png
+ create mode 100644 attached_assets/image_1768686408506.png
+ create mode 100644 attached_assets/image_1768687205343.png
+ create mode 100644 attached_assets/image_1768687282316.png
+ create mode 100644 attached_assets/image_1768687710242.png
+ create mode 100644 client/src/components/xterm-terminal.tsx
+ create mode 100644 client/src/pages/credentials.tsx
+ mode change 100644 => 100755 scripts/deploy.sh
+ create mode 100755 scripts/install-production.sh
+ create mode 100755 scripts/quick-update.sh
+● nbm-agent.service - NBM CLOUD Agent - Network Backup Proxy
+     Loaded: loaded (/etc/systemd/system/nbm-agent.service; enabled; preset: enabled)
+     Active: active (running) since Sat 2026-01-17 20:11:12 -03; 25ms ago
+ Invocation: 3b193cae31434e0ab5c2b481d25974c9
+   Main PID: 117939 (nbm-agent.sh)
+      Tasks: 2 (limit: 9465)
+     Memory: 1.3M (peak: 1.7M)
+        CPU: 17ms
+     CGroup: /system.slice/nbm-agent.service
+             ├─117939 /bin/bash /opt/nbm-agent/nbm-agent.sh start
+             └─117943 jq -r .token /opt/nbm-agent/config.json
+
+Jan 17 20:11:12 SRV-AGENTE-PROXY-NBM-CLOUD-01 systemd[1]: Started nbm-agent.service - NBM CLOUD Agent - Network Backup Proxy.
+root@SRV-AGENTE-PROXY-NBM-CLOUD-01[/opt/nbm-agent]# 

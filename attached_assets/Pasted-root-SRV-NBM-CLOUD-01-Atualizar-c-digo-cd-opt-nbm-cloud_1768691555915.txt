@@ -1,0 +1,197 @@
+root@SRV-NBM-CLOUD-01[~]# # Atualizar código
+cd /opt/nbm-cloud
+git pull origin main
+
+# Reconstruir
+npm run build
+
+# Reiniciar aplicação
+pm2 restart nbm-cloud
+
+# Ver logs em tempo real
+pm2 logs nbm-cloud --lines 0
+remote: Enumerating objects: 54, done.
+remote: Counting objects: 100% (54/54), done.
+remote: Compressing objects: 100% (31/31), done.
+remote: Total 47 (delta 37), reused 25 (delta 15), pack-reused 0 (from 0)
+Unpacking objects: 100% (47/47), 699.03 KiB | 6.13 MiB/s, done.
+From https://github.com/MarcioVVitor/Backup-Master
+ * branch            main       -> FETCH_HEAD
+   0b59139..c0e6cb0  main       -> origin/main
+Updating 0b59139..c0e6cb0
+Fast-forward
+ agents/linux/nbm-agent.sh                                                   |   9 +++-
+ ...oot-SRV-NBM-CLOUD-01-Veja-qual-processo-est-na-porta-5_1768687637963.txt |  45 +++++++++++++++++++
+ ...oot-SRV-NBM-CLOUD-01-curl-s-http-127-0-0-1-5000-agent-_1768686599875.txt |  28 ++++++++++++
+ ...oot-SRV-NBM-CLOUD-01-ls-la-opt-nbm-cloud-dist-public-l_1768686820152.txt |  59 +++++++++++++++++++++++++
+ ...oot-SRV-NBM-CLOUD-01-pm2-logs-nbm-cloud-lines-20-grep-_1768686742022.txt |  31 ++++++++++++++
+ ...oot-SRV-NBM-CLOUD-01-pm2-show-nbm-cloud-grep-E-cwd-scr_1768686566365.txt |  81 +++++++++++++++++++++++++++++++++++
+ ...oot-SRV-NBM-CLOUD-01-root-SRV-NBM-CLOUD-01-root-SRV-NB_1768686297387.txt |  56 ++++++++++++++++++++++++
+ attached_assets/image_1768686408506.png                                     | Bin 0 -> 297129 bytes
+ attached_assets/image_1768687205343.png                                     | Bin 0 -> 193343 bytes
+ attached_assets/image_1768687282316.png                                     | Bin 0 -> 229229 bytes
+ attached_assets/image_1768687710242.png                                     | Bin 0 -> 212066 bytes
+ server/routes.ts                                                            |  10 +++++
+ 12 files changed, 317 insertions(+), 2 deletions(-)
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-Veja-qual-processo-est-na-porta-5_1768687637963.txt
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-curl-s-http-127-0-0-1-5000-agent-_1768686599875.txt
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-ls-la-opt-nbm-cloud-dist-public-l_1768686820152.txt
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-pm2-logs-nbm-cloud-lines-20-grep-_1768686742022.txt
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-pm2-show-nbm-cloud-grep-E-cwd-scr_1768686566365.txt
+ create mode 100644 attached_assets/Pasted-root-SRV-NBM-CLOUD-01-root-SRV-NBM-CLOUD-01-root-SRV-NB_1768686297387.txt
+ create mode 100644 attached_assets/image_1768686408506.png
+ create mode 100644 attached_assets/image_1768687205343.png
+ create mode 100644 attached_assets/image_1768687282316.png
+ create mode 100644 attached_assets/image_1768687710242.png
+
+> rest-express@1.0.0 build
+> tsx script/build.ts
+
+building client...
+vite v7.3.0 building client environment for production...
+transforming (1525) ../node_modules/lucide-react/dist/esm/icons/rectangle-ellipsis.js2026-01-17T20:10:18: [ws-agents] Received message, size: 21 bytes
+2026-01-17T20:10:18: [ws-agents] Received message type: heartbeat
+✓ 3327 modules transformed.
+../dist/public/index.html                     2.87 kB │ gzip:   1.04 kB
+../dist/public/assets/index-CYXtfQtz.css     86.02 kB │ gzip:  14.56 kB
+../dist/public/assets/index-B5L89Ta3.js   1,754.04 kB │ gzip: 470.18 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 13.39s
+building server...
+
+  dist/index.cjs  1.4mb ⚠️
+
+⚡ Done in 142ms
+Use --update-env to update environment variables
+[PM2] Applying action restartProcessId on app [nbm-cloud](ids: [ 0 ])
+2026-01-17T20:10:33: [ws-agents] Received message, size: 21 bytes
+2026-01-17T20:10:33: [ws-agents] Received message type: heartbeat
+[PM2] [nbm-cloud](0) ✓
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+├────┼────────────────────┼──────────┼──────┼───────────┼──────────┼──────────┤
+│ 0  │ nbm-cloud          │ fork     │ 1    │ online    │ 0%       │ 17.0mb   │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+0|nbm-cloud  | 2026-01-17T20:10:38: [worker-pool] 17/01/2026, 20:10:38 - Worker pool initialized with concurrency: 50
+0|nbm-cloud  | 2026-01-17T20:10:38: [standalone-auth] Setting up standalone authentication routes
+0|nbm-cloud  | 2026-01-17T20:10:38: [scheduler] 17/01/2026, 20:10:38 - Backup executor registered for scheduler and worker pool
+0|nbm-cloud  | 2026-01-17T20:10:38: [scheduler] 17/01/2026, 20:10:38 - Starting backup scheduler...
+0|nbm-cloud  | 2026-01-17T20:10:38: [scheduler] 17/01/2026, 20:10:38 - Timezone: System (Linux)
+0|nbm-cloud  | 2026-01-17T20:10:38: [scheduler] 17/01/2026, 20:10:38 - Check interval: 60 seconds
+0|nbm-cloud  | 2026-01-17T20:10:38: [scheduler] 17/01/2026, 20:10:38 - Worker pool concurrency: 50
+0|nbm-cloud  | 2026-01-17T20:10:38: [scheduler] 17/01/2026, 20:10:38 - Current time: 20:10, Day of week: 6, Day of month: 17
+0|nbm-cloud  | 2026-01-17T20:10:38: [scheduler] 17/01/2026, 20:10:38 - Scheduler started successfully
+0|nbm-cloud  | 2026-01-17T20:10:38: [static] Serving static files from: /opt/nbm-cloud/dist/public
+0|nbm-cloud  | 2026-01-17T20:10:38: 8:10:38 PM [express] serving on port 5000
+2026-01-17T20:11:12: [ws-upgrade] Request to: /ws/agents from: 143.255.197.26
+2026-01-17T20:11:12: [ws-upgrade] Handling agent WebSocket upgrade
+2026-01-17T20:11:12: [ws-agents] New connection from: 143.255.197.26
+0|nbm-cloud  | 2026-01-17T20:11:12: [ws-upgrade] Request to: /ws/agents from: 143.255.197.26
+0|nbm-cloud  | 2026-01-17T20:11:12: [ws-upgrade] Handling agent WebSocket upgrade
+0|nbm-cloud  | 2026-01-17T20:11:12: [ws-agents] New connection from: 143.255.197.26
+2026-01-17T20:11:12: [ws-agents] Received message, size: 148 bytes
+0|nbm-cloud  | 2026-01-17T20:11:12: [ws-agents] Received message, size: 148 bytes
+2026-01-17T20:11:12: [ws-agents] Received message type: auth
+0|nbm-cloud  | 2026-01-17T20:11:12: [ws-agents] Received message type: auth
+0|nbm-cloud  | 2026-01-17T20:11:12: [ws-agents] Auth attempt, token hash: 298fb94a3a461935...
+2026-01-17T20:11:12: [ws-agents] Auth attempt, token hash: 298fb94a3a461935...
+2026-01-17T20:11:12: [ws-agents] Auth success for agent: 1 agente-grupojet-01
+0|nbm-cloud  | 2026-01-17T20:11:12: [ws-agents] Auth success for agent: 1 agente-grupojet-01
+2026-01-17T20:11:27: [ws-agents] Received message, size: 21 bytes
+2026-01-17T20:11:27: [ws-agents] Received message type: heartbeat
+0|nbm-cloud  | 2026-01-17T20:11:27: [ws-agents] Received message, size: 21 bytes
+0|nbm-cloud  | 2026-01-17T20:11:27: [ws-agents] Received message type: heartbeat
+0|nbm-cloud  | 2026-01-17T20:11:29: 8:11:29 PM [express] GET /api/auth/user 401 in 2ms :: {"message":"Not authenticated"}
+0|nbm-cloud  | 2026-01-17T20:11:29: [check-admin] Session state: {
+0|nbm-cloud  | 2026-01-17T20:11:29:   isReplitAuth: undefined,
+0|nbm-cloud  | 2026-01-17T20:11:29:   isStandaloneAuth: false,
+0|nbm-cloud  | 2026-01-17T20:11:29:   replitUserSub: undefined,
+0|nbm-cloud  | 2026-01-17T20:11:29:   standaloneUserId: undefined
+0|nbm-cloud  | 2026-01-17T20:11:29: }
+0|nbm-cloud  | 2026-01-17T20:11:29: 8:11:29 PM [express] GET /api/server/check-admin 200 in 4ms :: {"isServerAdmin":false,"serverRole":null,"notAuthenticated":true}
+0|nbm-cloud  | 2026-01-17T20:11:29: 8:11:29 PM [express] GET /api/auth/mode 200 in 1ms :: {"standalone":true}
+0|nbm-cloud  | 2026-01-17T20:11:33: [standalone-auth] POST /api/auth/login received
+0|nbm-cloud  | 2026-01-17T20:11:33: [standalone-auth] Login attempt for user: Marcio
+0|nbm-cloud  | 2026-01-17T20:11:33: [standalone-auth] Session saved successfully for user: Marcio
+0|nbm-cloud  | 2026-01-17T20:11:33: 8:11:33 PM [express] POST /api/auth/login 200 in 50ms :: {"message":"Login successful","user":{"id":1,"username":"Marcio","name":"Marcio Vitor","isAdmin":true}}
+0|nbm-cloud  | 2026-01-17T20:11:33: 8:11:33 PM [express] GET /api/auth/user 200 in 6ms :: {"id":1,"name":"Marcio Vitor","email":"marcio.vitor@grupojet.com.br","isAdmin":true,"username":"Marcio"}
+0|nbm-cloud  | 2026-01-17T20:11:33: [check-admin] Session state: {
+0|nbm-cloud  | 2026-01-17T20:11:33:   isReplitAuth: undefined,
+0|nbm-cloud  | 2026-01-17T20:11:33:   isStandaloneAuth: true,
+0|nbm-cloud  | 2026-01-17T20:11:33:   replitUserSub: undefined,
+0|nbm-cloud  | 2026-01-17T20:11:33:   standaloneUserId: 1
+0|nbm-cloud  | 2026-01-17T20:11:33: }
+0|nbm-cloud  | 2026-01-17T20:11:33: [check-admin] User Marcio isServerAdmin: true
+0|nbm-cloud  | 2026-01-17T20:11:33: 8:11:33 PM [express] GET /api/server/check-admin 200 in 33ms :: {"isServerAdmin":true,"serverRole":"server_admin","userCompanies":[]}
+0|nbm-cloud  | 2026-01-17T20:11:33: 8:11:33 PM [express] GET /api/backups/history 200 in 19ms :: [{"id":58,"companyId":1,"equipmentId":4,"equipmentName":"SW3-PE-SVA-JET-01","manufacturer":"huawei","ip":"172.16.247.246","fileId":47,"status":"success","duration":7.769,"errorMessage":null,"executedBy":null,"executedAt":"2026-01-17T09:46:25.597Z"},{"id":57,"companyId":1,"equipmentId":3,"equipmentName":"SW2-ACE-SVA-JET-01","manufacturer":"huawei","ip":"10.15.176.253","fileId":46,"status":"success","duration":3.491,"errorMessage":null,"executedBy":null,"executedAt":"2026-01-17T09:46:22.045Z"},{"id":56,"companyId":1,"equipmentId":2,"equipmentName":"OLT-ACE-GNA-NOKIA-ANDRADE","manufacturer":"nokia","ip":"172.16.31.18","fileId":45,"status":"success","duration":42.109,"errorMessage":null,"executedBy":null,"executedAt":"2026-01-17T09:45:39.789Z"},{"id":55,"companyId":1,"equipmentId":1,"equipmentName":"OLT-ACE-GNA-GUANABARA-01","manufacturer":"nokia","ip":"172.16.31.10","fileId":44,"status":"success","duration":23.566,"errorMessage":null,"executedBy":null,"executedAt":"2026-01-17T09:44:54.258Z"},{"id":54,"companyId":1,"equipmentId":8,"equipmentName":"CPE-SVA-GER-POP-SILVANIA","manufacturer":"mikrotik","ip":"186.237.223.78","fileId":43,"status":"success","duration":12.273,"errorMessage":null,"executedBy":null,"executedAt":"2026-01-17T09:44:41.867Z"},{"id":53,"companyId":1,"equipmentId":7,"equipmentName":"CPE-GER-GNA-NOVO-MUNDO-01","manufacturer":"mikrotik","ip":"143.255.196.2","fileId":42,"status":"success","duration":15.258,"errorMessage":null,"executedBy":null,"executedAt":"2026-01-17T09:44:26.496Z"},{"id":52,"companyId":1,"equipmentId":6,"equipmentName":"CE-BSA-CGNAT-GRUPOJET-01","manufacturer":"mikrotik","ip":"143.255.198.6","fileId":41,"status":"success","duration":12.645,"errorMessage":null,"executedBy":null,"executedAt":"2026-01-17T09:44:13.810Z"},{"id":51,"companyId":1,"equipmentId":5,"equipmentName":"CE-BSA-BGP-GRUPOJET-01","manufacturer":"mikrotik","ip":"172.16.247.236","fileId":40,"status":"success","duration":19.682,"errorMessage":null,"executedBy":null,"executedAt":"2026-01-17T09:43:54.065Z"},{"id":50,"companyId":1,"equipmentId":4,"equipmentName":"SW3-PE-SVA-JET-01","manufacturer":"huawei","ip":"172.16.247.246","fileId":null,"status":"success","duration":7.596,"errorMessage":null,"executedBy":null,"executedAt":"2026-01-16T09:59:44.905Z"},{"id":49,"companyId":1,"equipmentId":3,"equipmentName":"SW2-ACE-SVA-JET-01","manufacturer":"huawei","ip":"10.15.176.253","fileId":null,"status":"success","duration":3.479,"errorMessage":null,"executedBy":null,"executedAt":"2026-01-16T09:59:41.402Z"},{"id":48,"companyId":1,"equipmentId":2,"equipmentName":"OLT-ACE-GNA-NOKIA-ANDRADE","manufacturer":"nokia","ip":"172.16.31.18","fileId":null,"status":"success","duration":41.942,"errorMessage":null,"executedBy":null,"executedAt":"2026-01-16T09:58:59.425Z"},{"id":47,"companyId":1,"equipmentId":1,"equipmentName":"OLT-ACE-GNA-GUANABARA-01","manufacturer":"nokia","ip":"172.16.31.10","fileId":null,"status":"success","duration":23.744,"errorMessage":null,"executedBy":null,"executedAt":"2026-01-16T09:58:35.664Z"},{"id":46,"companyId":1,"equipmentId":8,"equipmentName":"CPE-SVA-GER-POP-SILVANIA","manufacturer":"mikrotik","ip":"186.237.223.78","fileId":null,"status":"success","duration":12.354,"errorMessage":null,"executedBy":null,"executedAt":"2026-01-16T09:58:23.273Z"},{"id":45,"companyId":1,"equipmentId":7,"equipmentName":"CPE-GER-GNA-NOVO-MUNDO-01","manufacturer":"mikrotik","ip":"143.255.196.2","fileId":null,"status":"success","duration":15.34,"errorMessage":null,"executedBy":null,"executedAt":"2026-01-16T09:58:07.913Z"},{"id":44,"companyId":1,"equipmentId":6,"equipmentName":"CE-BSA-CGNAT-GRUPOJET-01","manufacturer":"mikrotik","ip":"143.255.198.6","fileId":null,"status":"success","duration":12.682,"errorMessage":null,"executedBy":null,"executedAt":"2026-01-16T09:57:55.205Z"},{"id":43,"companyId":1,"equipmentId":5,"equipmentName":"CE-BSA-BGP-GRUPOJET-01","manufacturer":"mikrotik","ip":"172.16.247.236","fileId":null,"status":"success","duration":12.381,"errorMessage":null,"executedBy":null,"executedAt":"2026-01-16T09:57:42.791Z"},{"id":42,"companyId":1,"equipmentId":8,"equipmentName":"CPE-SVA-GER-POP-SILVANIA","manufacturer":"mikrotik","ip":"186.237.223.78","fileId":null,"status":"success","duration":12.391,"errorMessage":null,"executedBy":null,"executedAt":"2026-01-16T09:19:50.104Z"},{"id":41,"companyId":1,"equipmentId":7,"equipmentName":"CPE-GER-GNA-NOVO-MUNDO-01","manufacturer":"mikrotik","ip":"143.255.196.2","fileId":null,"status":"success","duration":15.47,"errorMessage":null,"executedBy":null,"executedAt":"2026-01-16T09:19:34.596Z"},{"id":40,"companyId":1,"equipmentId":6,"equipmentName":"CE-BSA-CGNAT-GRUPOJET-01","manufacturer":"mikrotik","ip":"143.255.198.6","fileId":null,"status":"success","duration":12.774,"errorMessage":null,"executedBy":null,"executedAt":"2026-01-16T09:19:21.790Z"},{"id":39,"companyId":1,"equipmentId":5,"equipmentName":"CE-BSA-BGP-GRUPOJET-01","manufacturer":"mikrotik","ip":"172.16.247.236","fileId":null,"status":"success","duration":12.448,"errorMessage":null,"executedBy":null,"executedAt":"2026-01-16T09:19:09.299Z"},{"id":38,"companyId":1,"equipmentId":5,"equipmentName":"CE-BSA-BGP-GRUPOJET-01","manufacturer":"mikrotik","ip":"172.16.247.236","fileId":null,"status":"success","duration":17.253,"errorMessage":null,"executedBy":null,"executedAt":"2026-01-16T09:08:26.294Z"},{"id":37,"companyId":1,"equipmentId":8,"equipmentName":"CPE-SVA-GER-POP-SILVANIA","manufacturer":"mikrotik","ip":"186.237.223.78","fileId":null,"status":"success","duration":12.371,"errorMessage":null,"executedBy":null,"executedAt":"2026-01-15T23:41:17.081Z"},{"id":36,"companyId":1,"equipmentId":7,"equipmentName":"CPE-GER-GNA-NOVO-MUNDO-01","manufacturer":"mikrotik","ip":"143.255.196.2","fileId":null,"status":"success","duration":15.299,"errorMessage":null,"executedBy":null,"executedAt":"2026-01-15T23:41:01.764Z"},{"id":35,"companyId":1,"equipmentId":6,"equipmentName":"CE-BSA-CGNAT-GRUPOJET-01","manufacturer":"mikrotik","ip":"143.255.198.6","fileId":null,"status":"success","duration":12.723,"errorMessage":null,"executedBy":null,"executedAt":"2026-01-15T23:40:49.017Z"},{"id":34,"companyId":1,"equipmentId":5,"equipmentName":"CE-BSA-BGP-GRUPOJET-01","manufacturer":"mikrotik","ip":"172.16.247.236","fileId":null,"status":"success","duration":17.882,"errorMessage":null,"executedBy":null,"executedAt":"2026-01-15T23:40:30.998Z"},{"id":33,"companyId":1,"equipmentId":8,"equipmentName":"CPE-SVA-GER-POP-SILVANIA","manufacturer":"mikrotik","ip":"186.237.223.78","fileId":null,"status":"success","duration":12.571,"errorMessage":null,"executedBy":null,"executedAt":"2026-01-15T23:38:30.746Z"},{"id":32,"companyId":1,"equipmentId":7,"equipmentName":"CPE-GER-GNA-NOVO-MUNDO-01","manufacturer":"mikrotik","ip":"143.255.196.2","fileId":null,"status":"success","duration":15.211,"errorMessage":null,"executedBy":null,"executedAt":"2026-01-15T23:38:15.508Z"},{"id":31,"companyId":1,"equipmentId":6,"equipmentName":"CE-BSA-CGNAT-GRUPOJET-01","manufacturer":"mikrotik","ip":"143.255.198.6","fileId":null,"status":"success","duration":12.748,"errorMessage":null,"executedBy":null,"executedAt":"2026-01-15T23:38:02.720Z"},{"id":30,"companyId":1,"equipmentId":5,"equipmentName":"CE-BSA-BGP-GRUPOJET-01","manufacturer":"mikrotik","ip":"172.16.247.236","fileId":null,"status":"failed","duration":1.123,"errorMessage":"All configured authentication methods failed","executedBy":null,"executedAt":"2026-01-15T23:38:01.566Z"},{"id":29,"companyId":1,"equipmentId":3,"equipmentName":"SW2-ACE-SVA-JET-01","manufacturer":"huawei","ip":"10.15.176.253","fileId":null,"status":"success","duration":3.423,"errorMessage":null,"executedBy":null,"executedAt":"2026-01-15T23:25:58.547Z"},{"id":28,"companyId":1,"equipmentId":4,"equipmentName":"SW3-PE-SVA-JET-01","manufacturer":"huawei","ip":"172.16.247.246","fileId":null,"status":"success","duration":7.58,"errorMessage":null,"executedBy":null,"executedAt":"2026-01-15T23:25:50.948Z"},{"id":27,"companyId":1,"equipmentId":3,"equipmentName":"SW2-ACE-SVA-JET-01","manufacturer":"huawei","ip":"10.15.176.253","fileId":null,"status":"failed","duration":725.857,"errorMessage":"Handshake failed: signature verification failed","executedBy":null,"executedAt":"2026-01-15T19:17:13.423Z"},{"id":26,"companyId":1,"equipmentId":4,"equipmentName":"SW3-PE-SVA-JET-01","manufacturer":"huawei","ip":"172.16.247.246","fileId":null,"status":"success","duration":786.951,"errorMessage":null,"executedBy":null,"executedAt":"2026-01-15T19:04:06.430Z"},{"id":25,"companyId":1,"equipmentId":4,"equipmentName":"SW3-PE-SVA-JET-01","manufacturer":"huawei","ip":"172.16.247.246","fileId":null,"status":"success","duration":787.035,"errorMessage":null,"executedBy":null,"executedAt":"2026-01-15T17:51:05.496Z"},{"id":24,"companyId":1,"equipmentId":3,"equipmentName":"SW2-ACE-SVA-JET-01","manufacturer":"huawei","ip":"10.15.176.253","fileId":null,"status":"failed","duration":725.825,"errorMessage":"Handshake failed: signature verification failed","executedBy":null,"executedAt":"2026-01-15T17:38:59.599Z"},{"id":23,"companyId":1,"equipmentId":3,"equipmentName":"SW2-ACE-SVA-JET-01","manufacturer":"huawei","ip":"10.15.176.253","fileId":null,"status":"failed","duration":725.788,"errorMessage":"Handshake failed: signature verification failed","executedBy":null,"executedAt":"2026-01-15T16:50:02.298Z"},{"id":22,"companyId":1,"equipmentId":4,"equipmentName":"SW3-PE-SVA-JET-01","manufacturer":"huawei","ip":"172.16.247.246","fileId":null,"status":"success","duration":787.099,"errorMessage":null,"executedBy":null,"executedAt":"2026-01-15T16:45:17.307Z"},{"id":21,"companyId":1,"equipmentId":3,"equipmentName":"SW2-ACE-SVA-JET-01","manufacturer":"huawei","ip":"10.15.176.253","fileId":null,"status":"failed","duration":725.936,"errorMessage":"Handshake failed: signature verification failed","executedBy":null,"executedAt":"2026-01-15T16:44:38.658Z"},{"id":20,"companyId":1,"equipmentId":4,"equipmentName":"SW3-PE-SVA-JET-01","manufacturer":"huawei","ip":"172.16.247.246","fileId":null,"status":"success","duration":648.354,"errorMessage":null,"executedBy":null,"executedAt":"2026-01-15T15:26:49.920Z"},{"id":19,"companyId":1,"equipmentId":3,"equipmentName":"SW2-ACE-SVA-JET-01","manufacturer":"huawei","ip":"10.15.176.253","fileId":null,"status":"failed","duration":725.879,"errorMessage":"Handshake failed: signature verification failed","executedBy":null,"executedAt":"2026-01-15T15:14:43.995Z"},{"id":18,"companyId":1,"equipmentId":4,"equipmentName":"SW3-PE-SVA-JET-01","manufacturer":"huawei","ip":"172.16.247.246","fileId":null,"status":"success","duration":786.933,"errorMessage":null,"executedBy":null,"executedAt":"2026-01-15T14:58:16.749Z"},{"id":17,"companyId":1,"equipmentId":3,"equipmentName":"SW2-ACE-SVA-JET-01","manufacturer":"huawei","ip":"10.15.176.253","fileId":null,"status":"failed","duration":726.022,"errorMessage":"Handshake failed: signature verification failed","executedBy":null,"executedAt":"2026-01-15T14:56:20.353Z"},{"id":16,"companyId":1,"equipmentId":4,"equipmentName":"SW3-PE-SVA-JET-01","manufacturer":"huawei","ip":"172.16.247.246","fileId":null,"status":"failed","duration":476.462,"errorMessage":"connect ECONNREFUSED 172.16.247.246:16222","executedBy":null,"executedAt":"2026-01-15T13:44:10.203Z"},{"id":15,"companyId":1,"equipmentId":3,"equipmentName":"SW2-ACE-SVA-JET-01","manufacturer":"huawei","ip":"10.15.176.253","fileId":null,"status":"failed","duration":725.837,"errorMessage":"Handshake failed: signature verification failed","executedBy":null,"executedAt":"2026-01-15T13:32:04.319Z"},{"id":14,"companyId":1,"equipmentId":2,"equipmentName":"OLT-ACE-GNA-NOKIA-ANDRADE","manufacturer":"nokia","ip":"172.16.31.18","fileId":null,"status":"success","duration":42.965,"errorMessage":null,"executedBy":null,"executedAt":"2026-01-15T13:31:21.295Z"},{"id":13,"companyId":1,"equipmentId":1,"equipmentName":"OLT-ACE-GNA-GUANABARA-01","manufacturer":"nokia","ip":"172.16.31.10","fileId":null,"status":"success","duration":24.659,"errorMessage":null,"executedBy":null,"executedAt":"2026-01-15T13:30:56.590Z"},{"id":12,"companyId":1,"equipmentId":4,"equipmentName":"SW3-PE-SVA-JET-01","manufacturer":"huawei","ip":"172.16.247.246","fileId":null,"status":"failed","duration":476.03,"errorMessage":"connect ECONNREFUSED 172.16.247.246:16222","executedBy":null,"executedAt":"2026-01-15T09:57:18.476Z"},{"id":11,"companyId":1,"equipmentId":3,"equipmentName":"SW2-ACE-SVA-JET-01","manufacturer":"huawei","ip":"10.15.176.253","fileId":null,"status":"failed","duration":725.985,"errorMessage":"Handshake failed: signature verification failed","executedBy":null,"executedAt":"2026-01-15T09:45:12.435Z"},{"id":10,"companyId":1,"equipmentId":2,"equipmentName":"OLT-ACE-GNA-NOKIA-ANDRADE","manufacturer":"nokia","ip":"172.16.31.18","fileId":null,"status":"success","duration":42.677,"errorMessage":null,"executedBy":null,"executedAt":"2026-01-15T09:44:29.716Z"},{"id":9,"companyId":1,"equipmentId":1,"equipmentName":"OLT-ACE-GNA-GUANABARA-01","manufacturer":"nokia","ip":"172.16.31.10","fileId":null,"status":"success","duration":23.662,"errorMessage":null,"executedBy":null,"executedAt":"2026-01-15T09:44:06.019Z"},{"id":8,"companyId":1,"equipmentId":2,"equipmentName":"OLT-ACE-GNA-NOKIA-ANDRADE","manufacturer":"nokia","ip":"172.16.31.18","fileId":null,"status":"success","duration":60.456,"errorMessage":null,"executedBy":null,"executedAt":"2026-01-15T09:06:21.051Z"},{"id":7,"companyId":1,"equipmentId":1,"equipmentName":"OLT-ACE-GNA-GUANABARA-01","manufacturer":"nokia","ip":"172.16.31.10","fileId":null,"status":"success","duration":60.49,"errorMessage":null,"executedBy":null,"executedAt":"2026-01-15T09:05:20.507Z"},{"id":6,"companyId":1,"equipmentId":2,"equipmentName":"OLT-ACE-GNA-NOKIA-ANDRADE","manufacturer":"nokia","ip":"172.16.31.18","fileId":null,"status":"success","duration":60.44,"errorMessage":null,"executedBy":null,"executedAt":"2026-01-15T08:30:01.363Z"},{"id":5,"companyId":1,"equipmentId":1,"equipmentName":"OLT-ACE-GNA-GUANABARA-01","manufacturer":"nokia","ip":"172.16.31.10","fileId":null,"status":"success","duration":60.482,"errorMessage":null,"executedBy":null,"executedAt":"2026-01-15T08:29:00.823Z"},{"id":4,"companyId":1,"equipmentId":2,"equipmentName":"OLT-ACE-GNA-NOKIA-ANDRADE","manufacturer":"nokia","ip":"172.16.31.18","fileId":null,"status":"success","duration":48.127,"errorMessage":null,"executedBy":null,"executedAt":"2026-01-15T08:20:55.084Z"},{"id":3,"companyId":1,"equipmentId":1,"equipmentName":"OLT-ACE-GNA-GUANABARA-01","manufacturer":"nokia","ip":"172.16.31.10","fileId":null,"status":"success","duration":35.886,"errorMessage":null,"executedBy":null,"executedAt":"2026-01-15T08:20:19.164Z"},{"id":2,"companyId":1,"equipmentId":2,"equipmentName":"OLT-ACE-GNA-NOKIA-ANDRADE","manufacturer":"nokia","ip":"172.16.31.18","fileId":null,"status":"success","duration":6.133,"errorMessage":null,"executedBy":null,"executedAt":"2026-01-14T21:33:55.552Z"},{"id":1,"companyId":1,"equipmentId":1,"equipmentName":"OLT-ACE-GNA-GUANABARA-01","manufacturer":"nokia","ip":"172.16.31.10","fileId":null,"status":"success","duration":6.185,"errorMessage":null,"executedBy":null,"executedAt":"2026-01-14T21:31:19.515Z"}]
+2026-01-17T20:11:33: 8:11:33 PM [express] GET /api/server/companies 200 in 18ms :: [{"id":1,"name":"GRUPOJET","slug":"grupojet","description":"GRUPOJET FULL","logo":null,"active":true,"maxUsers":100,"maxEquipment":10000,"maxAgents":50,"settings":null,"createdAt":"2026-01-14T21:08:31.683Z","updatedAt":"2026-01-14T21:08:31.683Z"}]
+0|nbm-cloud  | 2026-01-17T20:11:33: 8:11:33 PM [express] GET /api/server/companies 200 in 18ms :: [{"id":1,"name":"GRUPOJET","slug":"grupojet","description":"GRUPOJET FULL","logo":null,"active":true,"maxUsers":100,"maxEquipment":10000,"maxAgents":50,"settings":null,"createdAt":"2026-01-14T21:08:31.683Z","updatedAt":"2026-01-14T21:08:31.683Z"}]
+0|nbm-cloud  | 2026-01-17T20:11:33: 8:11:33 PM [express] GET /api/equipment 200 in 49ms :: [{"id":8,"companyId":1,"name":"CPE-SVA-GER-POP-SILVANIA","ip":"186.237.223.78","manufacturer":"mikrotik","model":"CCR1009-7G-1C-1S+","credentialId":1,"username":"admin","enablePassword":"","port":2250,"protocol":"ssh","enabled":true,"createdAt":"2026-01-15T23:37:37.443Z"},{"id":7,"companyId":1,"name":"CPE-GER-GNA-NOVO-MUNDO-01","ip":"143.255.196.2","manufacturer":"mikrotik","model":"CCR1036-8G-2S+ ","credentialId":1,"username":"admin","enablePassword":"","port":2250,"protocol":"ssh","enabled":true,"createdAt":"2026-01-15T23:34:59.134Z"},{"id":6,"companyId":1,"name":"CE-BSA-CGNAT-GRUPOJET-01","ip":"143.255.198.6","manufacturer":"mikrotik","model":"CCR1036-8G-2S+","credentialId":1,"username":"admin","enablePassword":"","port":2250,"protocol":"ssh","enabled":true,"createdAt":"2026-01-15T23:33:30.058Z"},{"id":5,"companyId":1,"name":"CE-BSA-BGP-GRUPOJET-01","ip":"172.16.247.236","manufacturer":"mikrotik","model":"CCR2116-12G-4S+","credentialId":1,"username":"admin","enablePassword":"","port":2250,"protocol":"ssh","enabled":true,"createdAt":"2026-01-15T23:31:04.616Z"},{"id":4,"companyId":1,"name":"SW3-PE-SVA-JET-01","ip":"172.16.247.246","manufacturer":"huawei","model":"S6730","credentialId":null,"username":"marcio","enablePassword":"","port":12622,"protocol":"ssh","enabled":true,"createdAt":"2026-01-15T09:30:40.208Z"},{"id":3,"companyId":1,"name":"SW2-ACE-SVA-JET-01","ip":"10.15.176.253","manufacturer":"huawei","model":"ATN910C","credentialId":null,"username":"root","enablePassword":"","port":22,"protocol":"ssh","enabled":true,"createdAt":"2026-01-15T09:29:31.234Z"},{"id":2,"companyId":1,"name":"OLT-ACE-GNA-NOKIA-ANDRADE","ip":"172.16.31.18","manufacturer":"nokia","model":"ISAN-FX-8","credentialId":null,"username":"isadmin","enablePassword":"","port":22,"protocol":"ssh","enabled":true,"createdAt":"2026-01-14T21:33:45.393Z"},{"id":1,"companyId":1,"name":"OLT-ACE-GNA-GUANABARA-01","ip":"172.16.31.10","manufacturer":"nokia","model":"ISAN-FX-8","credentialId":null,"username":"isadmin","enablePassword":"","port":22,"protocol":"ssh","enabled":true,"createdAt":"2026-01-14T21:31:10.351Z"}]
+0|nbm-cloud  | 2026-01-17T20:11:33: 8:11:33 PM [express] GET /api/files 200 in 46ms :: [{"id":47,"companyId":1,"userId":1,"equipmentId":4,"filename":"SW3-PE-SVA-JET-01_20260117_094633.cfg","objectName":"backups/huawei/SW3-PE-SVA-JET-01/SW3-PE-SVA-JET-01_20260117_094633.cfg","size":30879,"mimeType":"text/plain","status":"success","errorMessage":null,"createdAt":"2026-01-17T12:46:33.362Z"},{"id":46,"companyId":1,"userId":1,"equipmentId":3,"filename":"SW2-ACE-SVA-JET-01_20260117_094625.cfg","objectName":"backups/huawei/SW2-ACE-SVA-JET-01/SW2-ACE-SVA-JET-01_20260117_094625.cfg","size":8847,"mimeType":"text/plain","status":"success","errorMessage":null,"createdAt":"2026-01-17T12:46:25.528Z"},{"id":45,"companyId":1,"userId":1,"equipmentId":2,"filename":"OLT-ACE-GNA-NOKIA-ANDRADE_20260117_094621.cfg","objectName":"backups/nokia/OLT-ACE-GNA-NOKIA-ANDRADE/OLT-ACE-GNA-NOKIA-ANDRADE_20260117_094621.cfg","size":155004,"mimeType":"text/plain","status":"success","errorMessage":null,"createdAt":"2026-01-17T12:46:21.891Z"},{"id":44,"companyId":1,"userId":1,"equipmentId":1,"filename":"OLT-ACE-GNA-GUANABARA-01_20260117_094517.cfg","objectName":"backups/nokia/OLT-ACE-GNA-GUANABARA-01/OLT-ACE-GNA-GUANABARA-01_20260117_094517.cfg","size":81026,"mimeType":"text/plain","status":"success","errorMessage":null,"createdAt":"2026-01-17T12:45:17.801Z"},{"id":43,"companyId":1,"userId":1,"equipmentId":8,"filename":"CPE-SVA-GER-POP-SILVANIA_20260117_094454.rsc","objectName":"backups/mikrotik/CPE-SVA-GER-POP-SILVANIA/CPE-SVA-GER-POP-SILVANIA_20260117_094454.rsc","size":19646,"mimeType":"text/plain","status":"success","errorMessage":null,"createdAt":"2026-01-17T12:44:54.137Z"},{"id":42,"companyId":1,"userId":1,"equipmentId":7,"filename":"CPE-GER-GNA-NOVO-MUNDO-01_20260117_094441.rsc","objectName":"backups/mikrotik/CPE-GER-GNA-NOVO-MUNDO-01/CPE-GER-GNA-NOVO-MUNDO-01_20260117_094441.rsc","size":118295,"mimeType":"text/plain","status":"success","errorMessage":null,"createdAt":"2026-01-17T12:44:41.751Z"},{"id":41,"companyId":1,"userId":1,"equipmentId":6,"filename":"CE-BSA-CGNAT-GRUPOJET-01_20260117_094426.rsc","objectName":"backups/mikrotik/CE-BSA-CGNAT-GRUPOJET-01/CE-BSA-CGNAT-GRUPOJET-01_20260117_094426.rsc","size":43484,"mimeType":"text/plain","status":"success","errorMessage":null,"createdAt":"2026-01-17T12:44:26.450Z"},{"id":40,"companyId":1,"userId":1,"equipmentId":5,"filename":"CE-BSA-BGP-GRUPOJET-01_20260117_094413.rsc","objectName":"backups/mikrotik/CE-BSA-BGP-GRUPOJET-01/CE-BSA-BGP-GRUPOJET-01_20260117_094413.rsc","size":245971,"mimeType":"text/plain","status":"success","errorMessage":null,"createdAt":"2026-01-17T12:44:13.736Z"}]
+2026-01-17T20:11:33: 8:11:33 PM [express] GET /api/agents 200 in 49ms :: [{"id":1,"companyId":1,"name":"agente-grupojet-01","siteName":"grupojet-full-01","description":"Agente Grupojet Full","publicIp":null,"status":"online","version":null,"ipAddress":"143.255.197.26","lastHeartbeat":"2026-01-17T23:11:27.084Z","capabilities":null,"config":null,"createdBy":null,"createdAt":"2026-01-14T21:09:47.145Z","updatedAt":"2026-01-17T23:11:27.084Z"}]
+0|nbm-cloud  | 2026-01-17T20:11:33: 8:11:33 PM [express] GET /api/agents 200 in 49ms :: [{"id":1,"companyId":1,"name":"agente-grupojet-01","siteName":"grupojet-full-01","description":"Agente Grupojet Full","publicIp":null,"status":"online","version":null,"ipAddress":"143.255.197.26","lastHeartbeat":"2026-01-17T23:11:27.084Z","capabilities":null,"config":null,"createdBy":null,"createdAt":"2026-01-14T21:09:47.145Z","updatedAt":"2026-01-17T23:11:27.084Z"}]
+2026-01-17T20:11:42: [ws-agents] Received message, size: 21 bytes
+2026-01-17T20:11:42: [ws-agents] Received message type: heartbeat
+0|nbm-cloud  | 2026-01-17T20:11:42: [ws-agents] Received message, size: 21 bytes
+0|nbm-cloud  | 2026-01-17T20:11:42: [ws-agents] Received message type: heartbeat
+0|nbm-cloud  | 2026-01-17T20:11:43: [isAdmin] Checking admin access, isStandalone: true
+0|nbm-cloud  | 2026-01-17T20:11:43: [isAdmin] Session user: Marcio isAdmin: true
+0|nbm-cloud  | 2026-01-17T20:11:43: [isAdmin] ALLOWED - user is admin
+2026-01-17T20:11:43: [terminal] Sending command to agent 1: "ls" (sessionId: term-1-1768691503304)
+0|nbm-cloud  | 2026-01-17T20:11:43: [terminal] Sending command to agent 1: "ls" (sessionId: term-1-1768691503304)
+2026-01-17T20:11:43: [terminal] Command sent via WebSocket
+0|nbm-cloud  | 2026-01-17T20:11:43: [terminal] Command sent via WebSocket
+2026-01-17T20:11:43: [ws-agents] Received message, size: 208 bytes
+0|nbm-cloud  | 2026-01-17T20:11:43: [ws-agents] Received message type: terminal_output
+2026-01-17T20:11:43: [ws-agents] Terminal output received: sessionId=term-1-1768691503304, outputLength=101, isComplete=true
+2026-01-17T20:11:43: [ws-agents] Forwarding terminal output to pending session
+2026-01-17T20:11:43: [ws-agents] Received message, size: 208 bytes
+2026-01-17T20:11:43: [terminal] Received output chunk: 101 chars, complete: true
+2026-01-17T20:11:43: [terminal] Command completed, output length: 101
+0|nbm-cloud  | 2026-01-17T20:11:43: [ws-agents] Received message type: terminal_output
+0|nbm-cloud  | 2026-01-17T20:11:43: [ws-agents] Terminal output received: sessionId=term-1-1768691503304, outputLength=101, isComplete=true
+0|nbm-cloud  | 2026-01-17T20:11:43: [ws-agents] Forwarding terminal output to pending session
+0|nbm-cloud  | 2026-01-17T20:11:43: [terminal] Received output chunk: 101 chars, complete: true
+0|nbm-cloud  | 2026-01-17T20:11:43: [terminal] Command completed, output length: 101
+0|nbm-cloud  | 2026-01-17T20:11:43: 8:11:43 PM [express] POST /api/agents/1/terminal 200 in 128ms :: {"success":true,"output":"agent.pid\nconfig.json\ndeploy-agent.sh\ndeploy-production.sh\ninstall.sh\nlogs\nnbm-agent.sh\nuninstall.sh\n"}
+2026-01-17T20:11:43: 8:11:43 PM [express] POST /api/agents/1/terminal 200 in 128ms :: {"success":true,"output":"agent.pid\nconfig.json\ndeploy-agent.sh\ndeploy-production.sh\ninstall.sh\nlogs\nnbm-agent.sh\nuninstall.sh\n"}
+0|nbm-cloud  | 2026-01-17T20:11:57: [ws-agents] Received message, size: 21 bytes
+2026-01-17T20:11:57: [ws-agents] Received message, size: 21 bytes
+0|nbm-cloud  | 2026-01-17T20:11:57: [ws-agents] Received message type: heartbeat
+2026-01-17T20:11:57: [ws-agents] Received message type: heartbeat
+0|nbm-cloud  | 2026-01-17T20:11:57: [isAdmin] Checking admin access, isStandalone: true
+0|nbm-cloud  | 2026-01-17T20:11:57: [isAdmin] Session user: Marcio isAdmin: true
+0|nbm-cloud  | 2026-01-17T20:11:57: [isAdmin] ALLOWED - user is admin
+2026-01-17T20:11:57: [terminal] Sending command to agent 1: "su -" (sessionId: term-1-1768691517539)
+0|nbm-cloud  | 2026-01-17T20:11:57: [terminal] Sending command to agent 1: "su -" (sessionId: term-1-1768691517539)
+0|nbm-cloud  | 2026-01-17T20:11:57: [terminal] Command sent via WebSocket
+2026-01-17T20:11:57: [terminal] Command sent via WebSocket
+2026-01-17T20:11:58: [ws-agents] Received message, size: 101 bytes
+0|nbm-cloud  | 2026-01-17T20:11:58: [ws-agents] Received message, size: 101 bytes
+0|nbm-cloud  | 2026-01-17T20:11:58: [ws-agents] Received message type: terminal_output
+0|nbm-cloud  | 2026-01-17T20:11:58: [ws-agents] Terminal output received: sessionId=term-1-1768691517539, outputLength=1, isComplete=true
+2026-01-17T20:11:58: [ws-agents] Received message type: terminal_output
+0|nbm-cloud  | 2026-01-17T20:11:58: [ws-agents] Terminal output received: sessionId=term-1-1768691517539, outputLength=1, isComplete=true
+2026-01-17T20:11:58: [ws-agents] Forwarding terminal output to pending session
+2026-01-17T20:11:58: [ws-agents] Forwarding terminal output to pending session
+2026-01-17T20:11:58: [terminal] Received output chunk: 1 chars, complete: true
+0|nbm-cloud  | 2026-01-17T20:11:58: [terminal] Command completed, output length: 1
+2026-01-17T20:11:58: [terminal] Received output chunk: 1 chars, complete: true
+0|nbm-cloud  | 2026-01-17T20:11:58: [terminal] Command completed, output length: 1
+2026-01-17T20:11:58: 8:11:58 PM [express] POST /api/agents/1/terminal 200 in 636ms :: {"success":true,"output":"\n"}
+0|nbm-cloud  | 2026-01-17T20:11:58: 8:11:58 PM [express] POST /api/agents/1/terminal 200 in 636ms :: {"success":true,"output":"\n"}
+2026-01-17T20:12:12: [ws-agents] Received message, size: 21 bytes
+0|nbm-cloud  | 2026-01-17T20:12:12: [ws-agents] Received message, size: 21 bytes
+2026-01-17T20:12:12: [ws-agents] Received message type: heartbeat
+0|nbm-cloud  | 2026-01-17T20:12:12: [ws-agents] Received message type: heartbeat
+2026-01-17T20:12:27: [ws-agents] Received message, size: 21 bytes
+0|nbm-cloud  | 2026-01-17T20:12:27: [ws-agents] Received message, size: 21 bytes
+0|nbm-cloud  | 2026-01-17T20:12:27: [ws-agents] Received message type: heartbeat
+2026-01-17T20:12:27: [ws-agents] Received message type: heartbeat
+0|nbm-cloud  | 2026-01-17T20:12:28: 8:12:28 PM [express] GET /api/auth/user 304 in 17ms :: {"id":1,"name":"Marcio Vitor","email":"marcio.vitor@grupojet.com.br","isAdmin":true,"username":"Marcio"}
+0|nbm-cloud  | 2026-01-17T20:12:31: 8:12:31 PM [express] GET /api/auth/user 304 in 4ms :: {"id":1,"name":"Marcio Vitor","email":"marcio.vitor@grupojet.com.br","isAdmin":true,"username":"Marcio"}
+
