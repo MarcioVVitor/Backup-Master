@@ -3,7 +3,6 @@ import { Terminal } from "@xterm/xterm";
 import { FitAddon } from "@xterm/addon-fit";
 import { WebLinksAddon } from "@xterm/addon-web-links";
 import "@xterm/xterm/css/xterm.css";
-import { apiRequest } from "@/lib/queryClient";
 
 interface XTermTerminalProps {
   agentId: number;
@@ -15,37 +14,109 @@ export function XTermTerminal({ agentId, agentName, onDisconnect }: XTermTermina
   const terminalRef = useRef<HTMLDivElement>(null);
   const terminalInstance = useRef<Terminal | null>(null);
   const fitAddon = useRef<FitAddon | null>(null);
+  const wsRef = useRef<WebSocket | null>(null);
   const [connected, setConnected] = useState(false);
-  const [executing, setExecuting] = useState(false);
+  const [connecting, setConnecting] = useState(true);
   const commandBuffer = useRef<string>("");
   const commandHistory = useRef<string[]>([]);
   const historyIndex = useRef<number>(-1);
+  const sessionIdRef = useRef<string>("");
 
-  const executeCommand = useCallback(async (cmd: string, term: Terminal) => {
-    if (!cmd.trim()) return;
+  const connectWebSocket = useCallback(() => {
+    if (wsRef.current?.readyState === WebSocket.OPEN) return;
+
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const wsUrl = `${protocol}//${window.location.host}/ws/terminal`;
     
-    setExecuting(true);
-    try {
-      const response = await apiRequest("POST", `/api/agents/${agentId}/terminal`, {
-        command: cmd
-      });
-      const data = await response.json();
-      
-      if (data.success && data.output) {
-        const output = data.output.replace(/\n/g, "\r\n");
-        term.write(output);
-        if (!output.endsWith("\n") && !output.endsWith("\r\n")) {
-          term.writeln("");
+    console.log("[xterm] Connecting to WebSocket:", wsUrl);
+    const ws = new WebSocket(wsUrl);
+    wsRef.current = ws;
+
+    ws.onopen = () => {
+      console.log("[xterm] WebSocket connected, sending connect_shell");
+      const cols = terminalInstance.current?.cols || 80;
+      const rows = terminalInstance.current?.rows || 24;
+      ws.send(JSON.stringify({
+        type: "connect_shell",
+        agentId,
+        cols,
+        rows
+      }));
+    };
+
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        console.log("[xterm] Received:", data.type);
+
+        if (data.type === "connected") {
+          setConnecting(false);
+          setConnected(true);
+          sessionIdRef.current = data.sessionId || `shell-${agentId}-${Date.now()}`;
+        } else if (data.type === "output") {
+          if (terminalInstance.current && data.data) {
+            terminalInstance.current.write(data.data);
+          }
+        } else if (data.type === "status") {
+          if (terminalInstance.current) {
+            terminalInstance.current.writeln(`\x1b[90m${data.message}\x1b[0m`);
+          }
+        } else if (data.type === "error") {
+          if (terminalInstance.current) {
+            terminalInstance.current.writeln(`\x1b[1;31mErro: ${data.message}\x1b[0m`);
+          }
+          setConnecting(false);
+        } else if (data.type === "disconnected") {
+          setConnected(false);
+          if (terminalInstance.current) {
+            terminalInstance.current.writeln("\x1b[1;33m═══ Conexão encerrada ═══\x1b[0m");
+          }
         }
-      } else if (data.message) {
-        term.writeln(`\x1b[1;31mErro: ${data.message}\x1b[0m`);
+      } catch (e) {
+        console.error("[xterm] Parse error:", e);
       }
-    } catch (error: any) {
-      term.writeln(`\x1b[1;31mErro: ${error.message || 'Falha ao executar comando'}\x1b[0m`);
-    } finally {
-      setExecuting(false);
-    }
+    };
+
+    ws.onclose = () => {
+      console.log("[xterm] WebSocket closed");
+      setConnected(false);
+      setConnecting(false);
+    };
+
+    ws.onerror = (error) => {
+      console.error("[xterm] WebSocket error:", error);
+      setConnecting(false);
+    };
   }, [agentId]);
+
+  const sendInput = useCallback((data: string) => {
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({
+        type: "input",
+        data
+      }));
+    }
+  }, []);
+
+  const sendResize = useCallback((cols: number, rows: number) => {
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({
+        type: "resize",
+        cols,
+        rows
+      }));
+    }
+  }, []);
+
+  const disconnect = useCallback(() => {
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({ type: "disconnect" }));
+      wsRef.current.close();
+    }
+    wsRef.current = null;
+    setConnected(false);
+    if (onDisconnect) onDisconnect();
+  }, [onDisconnect]);
 
   const init = useCallback(() => {
     if (!terminalRef.current) return;
@@ -93,60 +164,35 @@ export function XTermTerminal({ agentId, agentName, onDisconnect }: XTermTermina
     terminalInstance.current = term;
     fitAddon.current = fit;
 
-    const writePrompt = (t: Terminal) => {
-      t.write("\x1b[1;32m" + agentName + "\x1b[0m:\x1b[1;34m~\x1b[0m$ ");
-    };
-
     term.writeln("\x1b[1;36m╔════════════════════════════════════════════╗\x1b[0m");
     term.writeln("\x1b[1;36m║\x1b[0m   \x1b[1;33mNBM CLOUD\x1b[0m - Terminal Remoto              \x1b[1;36m║\x1b[0m");
     term.writeln("\x1b[1;36m╚════════════════════════════════════════════╝\x1b[0m");
     term.writeln("");
-    term.writeln(`\x1b[1;32m✓ Conectado ao agente: ${agentName}\x1b[0m`);
-    term.writeln("\x1b[90mDigite comandos Linux e pressione Enter para executar.\x1b[0m");
-    term.writeln("\x1b[90mUse ↑/↓ para histórico. Comandos: clear, help, exit\x1b[0m");
-    term.writeln("");
-    
-    setConnected(true);
-    writePrompt(term);
+    term.writeln(`\x1b[90mConectando ao agente: ${agentName}...\x1b[0m`);
 
-    term.onData(async (data) => {
-      if (executing) return;
+    connectWebSocket();
+
+    term.onData((data) => {
+      if (!connected && !connecting) return;
       
       if (data === "\r") {
-        term.writeln("");
-        const cmd = commandBuffer.current.trim();
+        const cmd = commandBuffer.current;
         commandBuffer.current = "";
         historyIndex.current = -1;
         
-        if (cmd) {
+        if (cmd.trim()) {
           commandHistory.current.push(cmd);
           if (commandHistory.current.length > 100) {
             commandHistory.current.shift();
           }
         }
-        
+
         if (cmd === "clear") {
           term.clear();
-          writePrompt(term);
         } else if (cmd === "exit") {
-          term.writeln("\x1b[1;33m═══ Sessão encerrada ═══\x1b[0m");
-          setConnected(false);
-          if (onDisconnect) onDisconnect();
-        } else if (cmd === "help") {
-          term.writeln("\x1b[1;33mComandos disponíveis:\x1b[0m");
-          term.writeln("  \x1b[36mclear\x1b[0m       - Limpar terminal");
-          term.writeln("  \x1b[36mexit\x1b[0m        - Encerrar sessão");
-          term.writeln("  \x1b[36mhelp\x1b[0m        - Exibir esta ajuda");
-          term.writeln("  \x1b[36m<comando>\x1b[0m   - Executar comando no servidor do agente");
-          term.writeln("");
-          term.writeln("\x1b[90mExemplos: ls -la, df -h, free -m, cat /etc/os-release\x1b[0m");
-          term.writeln("");
-          writePrompt(term);
-        } else if (cmd) {
-          await executeCommand(cmd, term);
-          writePrompt(term);
+          disconnect();
         } else {
-          writePrompt(term);
+          sendInput(cmd + "\r");
         }
       } else if (data === "\x7f" || data === "\b") {
         if (commandBuffer.current.length > 0) {
@@ -155,8 +201,8 @@ export function XTermTerminal({ agentId, agentName, onDisconnect }: XTermTermina
         }
       } else if (data === "\x03") {
         commandBuffer.current = "";
-        term.writeln("^C");
-        writePrompt(term);
+        sendInput("\x03");
+        term.write("^C");
       } else if (data === "\x1b[A") {
         if (commandHistory.current.length > 0) {
           const newIndex = historyIndex.current < commandHistory.current.length - 1 
@@ -198,6 +244,10 @@ export function XTermTerminal({ agentId, agentName, onDisconnect }: XTermTermina
       }
     });
 
+    term.onResize(({ cols, rows }) => {
+      sendResize(cols, rows);
+    });
+
     const handleResize = () => {
       if (fitAddon.current) {
         fitAddon.current.fit();
@@ -208,9 +258,12 @@ export function XTermTerminal({ agentId, agentName, onDisconnect }: XTermTermina
 
     return () => {
       window.removeEventListener("resize", handleResize);
+      if (wsRef.current) {
+        wsRef.current.close();
+      }
       term.dispose();
     };
-  }, [agentName, executing, executeCommand, onDisconnect]);
+  }, [agentName, connected, connecting, connectWebSocket, sendInput, sendResize, disconnect]);
 
   useEffect(() => {
     const cleanup = init();
@@ -220,56 +273,33 @@ export function XTermTerminal({ agentId, agentName, onDisconnect }: XTermTermina
   }, []);
 
   const handleDisconnect = () => {
-    setConnected(false);
-    if (onDisconnect) {
-      onDisconnect();
-    }
-  };
-
-  const handleReconnect = () => {
-    if (terminalInstance.current) {
-      terminalInstance.current.dispose();
-      terminalInstance.current = null;
-    }
-    commandBuffer.current = "";
-    commandHistory.current = [];
-    historyIndex.current = -1;
-    setTimeout(init, 100);
+    disconnect();
   };
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex items-center justify-between px-4 py-2 bg-gray-800 border-b border-gray-700">
-        <div className="flex items-center gap-3">
-          <div className={`w-2 h-2 rounded-full ${connected ? "bg-green-500" : executing ? "bg-yellow-500 animate-pulse" : "bg-red-500"}`} />
-          <span className="text-sm text-gray-300">
-            {connected ? (executing ? "Executando..." : `Conectado: ${agentName}`) : "Desconectado"}
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2">
+          <div className={`w-2 h-2 rounded-full ${connected ? 'bg-green-500' : connecting ? 'bg-yellow-500 animate-pulse' : 'bg-red-500'}`} />
+          <span className="text-sm text-muted-foreground">
+            {connected ? `Conectado: ${agentName}` : connecting ? 'Conectando...' : 'Desconectado'}
           </span>
         </div>
-        <div className="flex gap-2">
-          {!connected && (
-            <button
-              onClick={handleReconnect}
-              className="px-3 py-1 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded"
-              data-testid="button-reconnect"
-            >
-              Reconectar
-            </button>
-          )}
+        {connected && (
           <button
             onClick={handleDisconnect}
-            className="px-3 py-1 text-xs bg-red-600 hover:bg-red-700 text-white rounded"
-            data-testid="button-disconnect"
+            className="px-3 py-1 text-xs bg-destructive text-destructive-foreground rounded hover:bg-destructive/90"
+            data-testid="button-disconnect-terminal"
           >
             Desconectar
           </button>
-        </div>
+        )}
       </div>
       <div 
         ref={terminalRef} 
-        className="flex-1 bg-[#1a1b26]"
+        className="flex-1 rounded-md overflow-hidden border border-border"
         style={{ minHeight: "400px" }}
-        data-testid="xterm-container"
+        data-testid="terminal-container"
       />
     </div>
   );

@@ -1971,10 +1971,86 @@ handle_message() {
             local input_data=$(echo "$message" | jq -r '.data')
             
             # Check if this is a local shell session
-            local shell_fifo_in="/tmp/nbm-shell-sessions/${session_id}.fifo.in"
-            if [[ -p "$shell_fifo_in" ]]; then
-                # Send input to local shell FIFO
-                echo -n "$input_data" > "$shell_fifo_in"
+            local shell_session_file="/tmp/nbm-shell-sessions/${session_id}.json"
+            if [[ -f "$shell_session_file" ]]; then
+                # Local shell session - execute command in current directory
+                local session_info=$(cat "$shell_session_file")
+                local cwd=$(echo "$session_info" | jq -r '.cwd // "'"$HOME"'"')
+                
+                # Handle Ctrl+C (0x03) - just return prompt
+                if [[ "$input_data" == $'\x03' ]]; then
+                    local hostname=$(hostname)
+                    local user=$(whoami)
+                    local display_cwd="${cwd/#$HOME/\~}"
+                    local prompt_output="^C\r\n${user}@${hostname}:${display_cwd}\$ "
+                    local escaped_output=$(printf '%s' "$prompt_output" | jq -Rs '.')
+                    echo "{\"type\": \"terminal_output\", \"sessionId\": \"$session_id\", \"output\": $escaped_output, \"isComplete\": false}"
+                    return
+                fi
+                
+                # Remove only trailing newline/carriage return from input (keep content)
+                input_data="${input_data%$'\r'}"
+                input_data="${input_data%$'\n'}"
+                
+                log_info "Shell input: '$input_data' in $cwd"
+                
+                # Handle built-in commands
+                local output=""
+                local new_cwd="$cwd"
+                
+                if [[ "$input_data" == "exit" ]]; then
+                    rm -f "$shell_session_file"
+                    echo "{\"type\": \"terminal_output\", \"sessionId\": \"$session_id\", \"output\": \"logout\\r\\n\", \"isComplete\": true}"
+                elif [[ "$input_data" =~ ^cd[[:space:]]*(.*) ]]; then
+                    # Handle cd command specially to track directory changes
+                    local target_dir="${BASH_REMATCH[1]}"
+                    target_dir="${target_dir:-$HOME}"
+                    
+                    # Expand ~ to home directory
+                    target_dir="${target_dir/#\~/$HOME}"
+                    
+                    # Handle relative paths
+                    if [[ "$target_dir" != /* ]]; then
+                        target_dir="$cwd/$target_dir"
+                    fi
+                    
+                    # Normalize path
+                    if [[ -d "$target_dir" ]]; then
+                        new_cwd=$(cd "$target_dir" && pwd)
+                        # Update session file
+                        echo "$session_info" | jq --arg cwd "$new_cwd" '.cwd = $cwd' > "$shell_session_file"
+                        output=""
+                    else
+                        output="bash: cd: $target_dir: No such file or directory"
+                    fi
+                    
+                    # Generate new prompt
+                    local hostname=$(hostname)
+                    local user=$(whoami)
+                    local display_cwd="${new_cwd/#$HOME/\~}"
+                    local prompt_output="\r\n${output}\r\n${user}@${hostname}:${display_cwd}\$ "
+                    local escaped_output=$(printf '%s' "$prompt_output" | jq -Rs '.')
+                    echo "{\"type\": \"terminal_output\", \"sessionId\": \"$session_id\", \"output\": $escaped_output, \"isComplete\": false}"
+                elif [[ -z "$input_data" ]]; then
+                    # Just newline - show prompt again
+                    local hostname=$(hostname)
+                    local user=$(whoami)
+                    local display_cwd="${cwd/#$HOME/\~}"
+                    local prompt_output="\r\n${user}@${hostname}:${display_cwd}\$ "
+                    local escaped_output=$(printf '%s' "$prompt_output" | jq -Rs '.')
+                    echo "{\"type\": \"terminal_output\", \"sessionId\": \"$session_id\", \"output\": $escaped_output, \"isComplete\": false}"
+                else
+                    # Execute command in the current directory
+                    output=$(cd "$cwd" && timeout 30 bash -c "$input_data" 2>&1) || true
+                    
+                    # Generate prompt
+                    local hostname=$(hostname)
+                    local user=$(whoami)
+                    local display_cwd="${cwd/#$HOME/\~}"
+                    local prompt_output="\r\n${output}\r\n${user}@${hostname}:${display_cwd}\$ "
+                    local escaped_output=$(printf '%s' "$prompt_output" | jq -Rs '.')
+                    echo "{\"type\": \"terminal_output\", \"sessionId\": \"$session_id\", \"output\": $escaped_output, \"isComplete\": false}"
+                fi
             else
                 # Remote equipment session
                 local session_file="/tmp/nbm-terminal-sessions/${session_id}.json"
@@ -2036,49 +2112,20 @@ handle_message() {
             
             log_info "Shell connect request: $session_id (${cols}x${rows})"
             
-            # Create session directory
+            # Create session directory and state files
             mkdir -p /tmp/nbm-shell-sessions
             
-            # Create named pipes for communication
-            local fifo_in="/tmp/nbm-shell-sessions/${session_id}.fifo.in"
-            local fifo_out="/tmp/nbm-shell-sessions/${session_id}.fifo.out"
-            rm -f "$fifo_in" "$fifo_out"
-            mkfifo "$fifo_in" "$fifo_out"
+            # Store session info with current working directory
+            local cwd="$HOME"
+            echo "{\"type\":\"shell\",\"cols\":$cols,\"rows\":$rows,\"active\":true,\"cwd\":\"$cwd\"}" > "/tmp/nbm-shell-sessions/${session_id}.json"
             
-            # Start PTY shell using script command in background
-            (
-                # Use script command to create a PTY
-                TERM=xterm-256color script -q -c "bash --login" /dev/null < "$fifo_in" > "$fifo_out" 2>&1 &
-                local shell_pid=$!
-                echo "$shell_pid" > "/tmp/nbm-shell-sessions/${session_id}.pid"
-                
-                # Read output from shell and send to WebSocket
-                while IFS= read -r -n 1 char || [[ -n "$char" ]]; do
-                    # Escape special characters for JSON
-                    local escaped_char
-                    case "$char" in
-                        $'\n') escaped_char="\\n" ;;
-                        $'\r') escaped_char="\\r" ;;
-                        $'\t') escaped_char="\\t" ;;
-                        '"') escaped_char="\\\"" ;;
-                        '\\') escaped_char="\\\\" ;;
-                        *) 
-                            if [[ "$char" =~ [[:cntrl:]] ]]; then
-                                escaped_char=$(printf '\\u%04x' "'$char")
-                            else
-                                escaped_char="$char"
-                            fi
-                            ;;
-                    esac
-                    echo "{\"type\": \"terminal_output\", \"sessionId\": \"$session_id\", \"output\": \"$escaped_char\", \"isComplete\": false}"
-                done < "$fifo_out"
-            ) &
+            # Get initial shell prompt
+            local hostname=$(hostname)
+            local user=$(whoami)
+            local prompt_output="\r\nWelcome to NBM Cloud Shell\r\nConnected to: $hostname\r\n\r\n${user}@${hostname}:${cwd}\$ "
+            local escaped_prompt=$(printf '%s' "$prompt_output" | jq -Rs '.')
             
-            # Store session info
-            echo "{\"type\":\"shell\",\"cols\":$cols,\"rows\":$rows}" > "/tmp/nbm-shell-sessions/${session_id}.json"
-            
-            # Send welcome message
-            echo "{\"type\": \"terminal_output\", \"sessionId\": \"$session_id\", \"output\": \"Shell PTY iniciado\\r\\n\", \"isComplete\": false}"
+            echo "{\"type\": \"terminal_output\", \"sessionId\": \"$session_id\", \"output\": $escaped_prompt, \"isComplete\": false}"
             ;;
             
         shell_resize)
