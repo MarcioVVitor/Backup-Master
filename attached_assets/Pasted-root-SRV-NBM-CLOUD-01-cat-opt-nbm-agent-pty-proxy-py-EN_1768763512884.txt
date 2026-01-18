@@ -1,0 +1,65 @@
+root@SRV-NBM-CLOUD-01[~]# cat > /opt/nbm-agent/pty-proxy.py << 'ENDOFFILE'
+#!/usr/bin/env python3
+import os, sys, pty, select, signal, struct, fcntl, termios
+
+def set_winsize(fd, r, c):
+    fcntl.ioctl(fd, termios.TIOCSWINSZ, struct.pack('HHHH', r, c, 0, 0))
+
+def main():
+    if len(sys.argv) < 2:
+        print("Usage: pty-proxy.py <session_id> [rows] [cols]", file=sys.stderr)
+        sys.exit(1)
+    sid = sys.argv[1]
+    rows = int(sys.argv[2]) if len(sys.argv) > 2 else 24
+    cols = int(sys.argv[3]) if len(sys.argv) > 3 else 80
+    master, slave = pty.openpty()
+    set_winsize(master, rows, cols)
+    pid = os.fork()
+    if pid == 0:
+        os.close(master)
+        os.setsid()
+        os.dup2(slave, 0)
+        os.dup2(slave, 1)
+        os.dup2(slave, 2)
+        if slave > 2:
+            os.close(slave)
+        env = os.environ.copy()
+        env['TERM'] = 'xterm-256color'
+        env['SHELL'] = '/bin/bash'
+        os.execvpe('/bin/bash', ['/bin/bash', '--login'], env)
+    else:
+chmod +x /opt/nbm-agent/pty-proxy.py && echo "pty-proxy.py installed", int(p[2].split('__')[0]))
+pty-proxy.py installed
+root@SRV-NBM-CLOUD-01[~]# cat > /opt/nbm-agent/pty-reader.py << 'ENDOFFILE'
+#!/usr/bin/env python3
+import sys, os, base64, json, select, fcntl
+
+def main():
+    if len(sys.argv) < 3:
+        print("Usage: pty-reader.py <fifo_path> <session_id>", file=sys.stderr)
+        sys.exit(1)
+    fifo = sys.argv[1]
+    sid = sys.argv[2]
+    try:
+        fd = os.open(fifo, os.O_RDONLY)
+        fl = fcntl.fcntl(fd, fcntl.F_GETFL)
+        fcntl.fcntl(fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)
+    except OSError as e:
+        print(f"Failed to open FIFO: {e}", file=sys.stderr)
+        sys.exit(1)
+    try:
+        while True:
+            r, _, _ = select.select([fd], [], [], 1.0)
+            if r:
+                try:
+                    d = os.read(fd, 4096)
+                    if not d:
+                        break
+                    print(json.dumps({"type": "terminal_output", "sessionId": sid, "data": base64.b64encode(d).decode('ascii'), "encoding": "base64"}), flush=True)
+                except BlockingIOError:
+                    pass
+                except OSError:
+chmod +x /opt/nbm-agent/pty-reader.py && echo "pty-reader.py installed"lush=True)
+pty-reader.py installed
+root@SRV-NBM-CLOUD-01[~]# systemctl restart nbm-agent
+root@SRV-NBM-CLOUD-01[~]# 
