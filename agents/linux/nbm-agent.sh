@@ -1970,18 +1970,13 @@ handle_message() {
             local session_id=$(echo "$message" | jq -r '.sessionId')
             local input_data=$(echo "$message" | jq -r '.data')
             
-            # Check if this is a PTY session with FIFOs
+            # Check if this is a PTY session with FIFO
             local session_dir="/tmp/nbm-shell-sessions/${session_id}"
-            local fifo_in="${session_dir}/fifo.in"
+            local fifo_path="/tmp/nbm-pty-${session_id}.fifo"
             
-            if [[ -p "$fifo_in" ]]; then
-                # PTY session - write directly to FIFO (binary-safe)
-                # Decode if base64 encoded
-                if printf '%s' "$message" | jq -e '.encoding == "base64"' >/dev/null 2>&1; then
-                    printf '%s' "$input_data" | base64 -d > "$fifo_in" 2>/dev/null || true
-                else
-                    printf '%s' "$input_data" > "$fifo_in" 2>/dev/null || true
-                fi
+            if [[ -p "$fifo_path" ]]; then
+                # PTY session - write to FIFO (base64 encoded for binary safety)
+                printf '%s' "$input_data" > "$fifo_path" 2>/dev/null || true
                 log_debug "PTY input written to FIFO for session $session_id"
             elif [[ -f "${session_dir}/info.json" ]]; then
                 # Fallback simulated shell session
@@ -2093,13 +2088,14 @@ handle_message() {
             
             # Clean up PTY shell session
             local session_dir="/tmp/nbm-shell-sessions/${session_id}"
+            local fifo_path="/tmp/nbm-pty-${session_id}.fifo"
+            
+            # Send exit signal to PTY via FIFO
+            if [[ -p "$fifo_path" ]]; then
+                printf '__EXIT__' > "$fifo_path" 2>/dev/null || true
+            fi
+            
             if [[ -d "$session_dir" ]]; then
-                # Send exit signal to PTY
-                local fifo_in="${session_dir}/fifo.in"
-                if [[ -p "$fifo_in" ]]; then
-                    printf '__EXIT__' > "$fifo_in" 2>/dev/null || true
-                fi
-                
                 # Kill PTY process
                 local pty_pid_file="${session_dir}/pty.pid"
                 if [[ -f "$pty_pid_file" ]]; then
@@ -2109,22 +2105,18 @@ handle_message() {
                     kill -9 "$pty_pid" 2>/dev/null || true
                 fi
                 
-                # Kill reader process
-                local reader_pid_file="${session_dir}/reader.pid"
-                if [[ -f "$reader_pid_file" ]]; then
-                    local reader_pid=$(cat "$reader_pid_file")
-                    kill -9 "$reader_pid" 2>/dev/null || true
-                fi
-                
-                # Remove session directory and FIFOs
+                # Remove session directory
                 rm -rf "$session_dir"
             fi
+            
+            # Clean up FIFO
+            rm -f "$fifo_path"
             
             echo "{\"type\": \"terminal_disconnected\", \"sessionId\": \"$session_id\"}"
             ;;
             
         shell_connect)
-            # Interactive PTY shell connection using Python PTY proxy
+            # Interactive PTY shell connection using single Python script
             local session_id=$(echo "$message" | jq -r '.sessionId')
             local cols=$(echo "$message" | jq -r '.cols // 80')
             local rows=$(echo "$message" | jq -r '.rows // 24')
@@ -2136,48 +2128,23 @@ handle_message() {
             local session_dir="/tmp/nbm-shell-sessions/${session_id}"
             mkdir -p "$session_dir"
             
-            # Create FIFOs for bidirectional communication
-            local fifo_in="${session_dir}/fifo.in"
-            local fifo_out="${session_dir}/fifo.out"
-            rm -f "$fifo_in" "$fifo_out"
-            mkfifo "$fifo_in" "$fifo_out"
-            
-            # Path to PTY proxy script
-            local pty_script="$SCRIPT_DIR/pty-proxy.py"
+            # Path to PTY shell script (single script approach)
+            local pty_script="$SCRIPT_DIR/pty-shell.py"
             if [[ ! -f "$pty_script" ]]; then
-                pty_script="/opt/nbm-agent/pty-proxy.py"
+                pty_script="/opt/nbm-agent/pty-shell.py"
             fi
             
             if [[ -f "$pty_script" ]]; then
-                # Store session info first
+                # Store session info
                 echo "{\"type\":\"shell\",\"cols\":$cols,\"rows\":$rows,\"active\":true,\"pty\":true}" > "${session_dir}/info.json"
                 
-                # Start background reader FIRST to avoid FIFO deadlock
-                # Reader opens fifo_out for reading before PTY tries to write to it
-                # Use Python reader for reliable non-blocking streaming
-                local reader_script="$SCRIPT_DIR/pty-reader.py"
-                if [[ ! -f "$reader_script" ]]; then
-                    reader_script="/opt/nbm-agent/pty-reader.py"
-                fi
-                
-                python3 "$reader_script" "$fifo_out" "$session_id" &
-                local reader_pid=$!
-                echo "$reader_pid" > "${session_dir}/reader.pid"
-                log_info "Started reader PID: $reader_pid"
-                
-                # Small delay to ensure reader has opened the FIFO
-                sleep 0.1
-                
-                # Open FIFO for writing (keeps it open for PTY input)
-                exec 3>"$fifo_in"
-                
-                # Start PTY proxy with FIFOs (reader already opened fifo_out)
-                setsid python3 "$pty_script" "$session_id" "$rows" "$cols" < "$fifo_in" > "$fifo_out" 2>/dev/null &
+                # Start PTY shell - it outputs JSON directly to stdout
+                python3 "$pty_script" "$session_id" "$rows" "$cols" &
                 local pty_pid=$!
                 echo "$pty_pid" > "${session_dir}/pty.pid"
-                log_info "Started PTY proxy PID: $pty_pid"
+                log_info "Started PTY shell PID: $pty_pid"
                 
-                echo "{\"type\": \"shell_connected\", \"sessionId\": \"$session_id\", \"pty\": true}"
+                # The script will output shell_connected itself
             else
                 # Fallback to simulated shell
                 local cwd="$HOME"
@@ -2200,15 +2167,15 @@ handle_message() {
             log_debug "Shell resize request: $session_id (${cols}x${rows})"
             
             # Send resize command to PTY via FIFO
-            local session_dir="/tmp/nbm-shell-sessions/${session_id}"
-            local fifo_in="${session_dir}/fifo.in"
+            local fifo_path="/tmp/nbm-pty-${session_id}.fifo"
             
-            if [[ -p "$fifo_in" ]]; then
-                # Send resize command to PTY proxy
-                printf '__RESIZE__:%d:%d__' "$rows" "$cols" > "$fifo_in" 2>/dev/null || true
+            if [[ -p "$fifo_path" ]]; then
+                # Send resize command to PTY
+                printf '__RESIZE__:%d:%d__' "$rows" "$cols" > "$fifo_path" 2>/dev/null || true
             fi
             
             # Update session info
+            local session_dir="/tmp/nbm-shell-sessions/${session_id}"
             local info_file="${session_dir}/info.json"
             if [[ -f "$info_file" ]]; then
                 local info=$(cat "$info_file")
