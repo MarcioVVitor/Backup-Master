@@ -1970,11 +1970,22 @@ handle_message() {
             local session_id=$(echo "$message" | jq -r '.sessionId')
             local input_data=$(echo "$message" | jq -r '.data')
             
-            # Check if this is a local shell session
-            local shell_session_file="/tmp/nbm-shell-sessions/${session_id}.json"
-            if [[ -f "$shell_session_file" ]]; then
-                # Local shell session - execute command in current directory
-                local session_info=$(cat "$shell_session_file")
+            # Check if this is a PTY session with FIFOs
+            local session_dir="/tmp/nbm-shell-sessions/${session_id}"
+            local fifo_in="${session_dir}/fifo.in"
+            
+            if [[ -p "$fifo_in" ]]; then
+                # PTY session - write directly to FIFO (binary-safe)
+                # Decode if base64 encoded
+                if printf '%s' "$message" | jq -e '.encoding == "base64"' >/dev/null 2>&1; then
+                    printf '%s' "$input_data" | base64 -d > "$fifo_in" 2>/dev/null || true
+                else
+                    printf '%s' "$input_data" > "$fifo_in" 2>/dev/null || true
+                fi
+                log_debug "PTY input written to FIFO for session $session_id"
+            elif [[ -f "${session_dir}/info.json" ]]; then
+                # Fallback simulated shell session
+                local session_info=$(cat "${session_dir}/info.json")
                 local cwd=$(echo "$session_info" | jq -r '.cwd // "'"$HOME"'"')
                 
                 # Handle Ctrl+C (0x03) - just return prompt
@@ -1988,43 +1999,35 @@ handle_message() {
                     return
                 fi
                 
-                # Remove only trailing newline/carriage return from input (keep content)
+                # Remove trailing newline/carriage return
                 input_data="${input_data%$'\r'}"
                 input_data="${input_data%$'\n'}"
                 
                 log_info "Shell input: '$input_data' in $cwd"
                 
-                # Handle built-in commands
                 local output=""
                 local new_cwd="$cwd"
                 
                 if [[ "$input_data" == "exit" ]]; then
-                    rm -f "$shell_session_file"
+                    rm -rf "$session_dir"
                     echo "{\"type\": \"terminal_output\", \"sessionId\": \"$session_id\", \"output\": \"logout\\r\\n\", \"isComplete\": true}"
                 elif [[ "$input_data" =~ ^cd[[:space:]]*(.*) ]]; then
-                    # Handle cd command specially to track directory changes
                     local target_dir="${BASH_REMATCH[1]}"
                     target_dir="${target_dir:-$HOME}"
-                    
-                    # Expand ~ to home directory
                     target_dir="${target_dir/#\~/$HOME}"
                     
-                    # Handle relative paths
                     if [[ "$target_dir" != /* ]]; then
                         target_dir="$cwd/$target_dir"
                     fi
                     
-                    # Normalize path
                     if [[ -d "$target_dir" ]]; then
                         new_cwd=$(cd "$target_dir" && pwd)
-                        # Update session file
-                        echo "$session_info" | jq --arg cwd "$new_cwd" '.cwd = $cwd' > "$shell_session_file"
+                        echo "$session_info" | jq --arg cwd "$new_cwd" '.cwd = $cwd' > "${session_dir}/info.json"
                         output=""
                     else
                         output="bash: cd: $target_dir: No such file or directory"
                     fi
                     
-                    # Generate new prompt
                     local hostname=$(hostname)
                     local user=$(whoami)
                     local display_cwd="${new_cwd/#$HOME/\~}"
@@ -2032,7 +2035,6 @@ handle_message() {
                     local escaped_output=$(printf '%s' "$prompt_output" | jq -Rs '.')
                     echo "{\"type\": \"terminal_output\", \"sessionId\": \"$session_id\", \"output\": $escaped_output, \"isComplete\": false}"
                 elif [[ -z "$input_data" ]]; then
-                    # Just newline - show prompt again
                     local hostname=$(hostname)
                     local user=$(whoami)
                     local display_cwd="${cwd/#$HOME/\~}"
@@ -2040,10 +2042,8 @@ handle_message() {
                     local escaped_output=$(printf '%s' "$prompt_output" | jq -Rs '.')
                     echo "{\"type\": \"terminal_output\", \"sessionId\": \"$session_id\", \"output\": $escaped_output, \"isComplete\": false}"
                 else
-                    # Execute command in the current directory
                     output=$(cd "$cwd" && timeout 30 bash -c "$input_data" 2>&1) || true
                     
-                    # Generate prompt
                     local hostname=$(hostname)
                     local user=$(whoami)
                     local display_cwd="${cwd/#$HOME/\~}"
@@ -2088,44 +2088,108 @@ handle_message() {
             local session_id=$(echo "$message" | jq -r '.sessionId')
             log_info "Terminal disconnect request: $session_id"
             
-            # Clean up session files
+            # Clean up remote equipment session files
             rm -f "/tmp/nbm-terminal-sessions/${session_id}.json"
             
-            # Kill any PTY process for this session
-            local pty_pid_file="/tmp/nbm-shell-sessions/${session_id}.pid"
-            if [[ -f "$pty_pid_file" ]]; then
-                local pty_pid=$(cat "$pty_pid_file")
-                kill -9 "$pty_pid" 2>/dev/null || true
-                rm -f "$pty_pid_file"
-                rm -f "/tmp/nbm-shell-sessions/${session_id}.fifo.in"
-                rm -f "/tmp/nbm-shell-sessions/${session_id}.fifo.out"
+            # Clean up PTY shell session
+            local session_dir="/tmp/nbm-shell-sessions/${session_id}"
+            if [[ -d "$session_dir" ]]; then
+                # Send exit signal to PTY
+                local fifo_in="${session_dir}/fifo.in"
+                if [[ -p "$fifo_in" ]]; then
+                    printf '__EXIT__' > "$fifo_in" 2>/dev/null || true
+                fi
+                
+                # Kill PTY process
+                local pty_pid_file="${session_dir}/pty.pid"
+                if [[ -f "$pty_pid_file" ]]; then
+                    local pty_pid=$(cat "$pty_pid_file")
+                    kill -TERM "$pty_pid" 2>/dev/null || true
+                    sleep 0.2
+                    kill -9 "$pty_pid" 2>/dev/null || true
+                fi
+                
+                # Kill reader process
+                local reader_pid_file="${session_dir}/reader.pid"
+                if [[ -f "$reader_pid_file" ]]; then
+                    local reader_pid=$(cat "$reader_pid_file")
+                    kill -9 "$reader_pid" 2>/dev/null || true
+                fi
+                
+                # Remove session directory and FIFOs
+                rm -rf "$session_dir"
             fi
             
             echo "{\"type\": \"terminal_disconnected\", \"sessionId\": \"$session_id\"}"
             ;;
             
         shell_connect)
-            # Interactive PTY shell connection to this agent's server
+            # Interactive PTY shell connection using Python PTY proxy
             local session_id=$(echo "$message" | jq -r '.sessionId')
             local cols=$(echo "$message" | jq -r '.cols // 80')
             local rows=$(echo "$message" | jq -r '.rows // 24')
             
             log_info "Shell connect request: $session_id (${cols}x${rows})"
             
-            # Create session directory and state files
+            # Create session directory
             mkdir -p /tmp/nbm-shell-sessions
+            local session_dir="/tmp/nbm-shell-sessions/${session_id}"
+            mkdir -p "$session_dir"
             
-            # Store session info with current working directory
-            local cwd="$HOME"
-            echo "{\"type\":\"shell\",\"cols\":$cols,\"rows\":$rows,\"active\":true,\"cwd\":\"$cwd\"}" > "/tmp/nbm-shell-sessions/${session_id}.json"
+            # Create FIFOs for bidirectional communication
+            local fifo_in="${session_dir}/fifo.in"
+            local fifo_out="${session_dir}/fifo.out"
+            rm -f "$fifo_in" "$fifo_out"
+            mkfifo "$fifo_in" "$fifo_out"
             
-            # Get initial shell prompt
-            local hostname=$(hostname)
-            local user=$(whoami)
-            local prompt_output="\r\nWelcome to NBM Cloud Shell\r\nConnected to: $hostname\r\n\r\n${user}@${hostname}:${cwd}\$ "
-            local escaped_prompt=$(printf '%s' "$prompt_output" | jq -Rs '.')
+            # Path to PTY proxy script
+            local pty_script="$SCRIPT_DIR/pty-proxy.py"
+            if [[ ! -f "$pty_script" ]]; then
+                pty_script="/opt/nbm-agent/pty-proxy.py"
+            fi
             
-            echo "{\"type\": \"terminal_output\", \"sessionId\": \"$session_id\", \"output\": $escaped_prompt, \"isComplete\": false}"
+            if [[ -f "$pty_script" ]]; then
+                # Store session info first
+                echo "{\"type\":\"shell\",\"cols\":$cols,\"rows\":$rows,\"active\":true,\"pty\":true}" > "${session_dir}/info.json"
+                
+                # Start background reader FIRST to avoid FIFO deadlock
+                # Reader opens fifo_out for reading before PTY tries to write to it
+                # Use Python reader for reliable non-blocking streaming
+                local reader_script="$SCRIPT_DIR/pty-reader.py"
+                if [[ ! -f "$reader_script" ]]; then
+                    reader_script="/opt/nbm-agent/pty-reader.py"
+                fi
+                
+                python3 "$reader_script" "$fifo_out" "$session_id" &
+                local reader_pid=$!
+                echo "$reader_pid" > "${session_dir}/reader.pid"
+                log_info "Started reader PID: $reader_pid"
+                
+                # Small delay to ensure reader has opened the FIFO
+                sleep 0.1
+                
+                # Open FIFO for writing (keeps it open for PTY input)
+                exec 3>"$fifo_in"
+                
+                # Start PTY proxy with FIFOs (reader already opened fifo_out)
+                setsid python3 "$pty_script" "$session_id" "$rows" "$cols" < "$fifo_in" > "$fifo_out" 2>/dev/null &
+                local pty_pid=$!
+                echo "$pty_pid" > "${session_dir}/pty.pid"
+                log_info "Started PTY proxy PID: $pty_pid"
+                
+                echo "{\"type\": \"shell_connected\", \"sessionId\": \"$session_id\", \"pty\": true}"
+            else
+                # Fallback to simulated shell
+                local cwd="$HOME"
+                echo "{\"type\":\"shell\",\"cols\":$cols,\"rows\":$rows,\"active\":true,\"cwd\":\"$cwd\",\"pty\":false}" > "${session_dir}/info.json"
+                
+                local hostname=$(hostname)
+                local user=$(whoami)
+                local prompt_output="\r\nWelcome to NBM Cloud Shell (simulated)\r\nConnected to: $hostname\r\n\r\n${user}@${hostname}:~\$ "
+                local escaped_prompt=$(printf '%s' "$prompt_output" | jq -Rs '.')
+                
+                echo "{\"type\": \"terminal_output\", \"sessionId\": \"$session_id\", \"output\": $escaped_prompt, \"isComplete\": false}"
+            fi
             ;;
             
         shell_resize)
@@ -2135,10 +2199,20 @@ handle_message() {
             
             log_debug "Shell resize request: $session_id (${cols}x${rows})"
             
+            # Send resize command to PTY via FIFO
+            local session_dir="/tmp/nbm-shell-sessions/${session_id}"
+            local fifo_in="${session_dir}/fifo.in"
+            
+            if [[ -p "$fifo_in" ]]; then
+                # Send resize command to PTY proxy
+                printf '__RESIZE__:%d:%d__' "$rows" "$cols" > "$fifo_in" 2>/dev/null || true
+            fi
+            
             # Update session info
-            local session_file="/tmp/nbm-shell-sessions/${session_id}.json"
-            if [[ -f "$session_file" ]]; then
-                echo "{\"type\":\"shell\",\"cols\":$cols,\"rows\":$rows}" > "$session_file"
+            local info_file="${session_dir}/info.json"
+            if [[ -f "$info_file" ]]; then
+                local info=$(cat "$info_file")
+                echo "$info" | jq --argjson cols "$cols" --argjson rows "$rows" '.cols = $cols | .rows = $rows' > "$info_file"
             fi
             ;;
             

@@ -2265,8 +2265,8 @@ export async function registerRoutes(
           
           // Register session handler
           pendingTerminalSessions.set(sessionId, {
-            onOutput: (output: string, isComplete: boolean) => {
-              ws.send(JSON.stringify({ type: 'output', data: output }));
+            onOutput: (output: string, isComplete: boolean, encoding?: string) => {
+              ws.send(JSON.stringify({ type: 'output', data: output, encoding }));
             }
           });
           
@@ -2321,8 +2321,8 @@ export async function registerRoutes(
           
           // Register session handler
           pendingTerminalSessions.set(sessionId, {
-            onOutput: (output: string, isComplete: boolean) => {
-              ws.send(JSON.stringify({ type: 'output', data: output }));
+            onOutput: (output: string, isComplete: boolean, encoding?: string) => {
+              ws.send(JSON.stringify({ type: 'output', data: output, encoding }));
             }
           });
           
@@ -3670,16 +3670,35 @@ export async function registerRoutes(
         // Handle terminal output from agent
         if (message.type === 'terminal_output') {
           const sessionId = message.sessionId;
-          console.log(`[ws-agents] Terminal output received: sessionId=${sessionId}, outputLength=${message.output?.length || 0}, isComplete=${message.isComplete}`);
+          const output = message.output || message.data;
+          const encoding = message.encoding;
+          console.log(`[ws-agents] Terminal output received: sessionId=${sessionId}, outputLength=${output?.length || 0}, encoding=${encoding}, isComplete=${message.isComplete}`);
           const pending = pendingTerminalSessions.get(sessionId);
           if (pending) {
             console.log(`[ws-agents] Forwarding terminal output to pending session`);
-            pending.onOutput(message.output, message.isComplete);
+            pending.onOutput(output, message.isComplete, encoding);
             if (message.isComplete) {
               pendingTerminalSessions.delete(sessionId);
             }
           } else {
             console.log(`[ws-agents] No pending session found for sessionId=${sessionId}`);
+          }
+        }
+        
+        // Handle shell_connected from agent (PTY ready)
+        if (message.type === 'shell_connected') {
+          const sessionId = message.sessionId;
+          console.log(`[ws-agents] Shell connected: sessionId=${sessionId}, pty=${message.pty}`);
+        }
+        
+        // Handle shell_closed from agent (PTY exited)
+        if (message.type === 'shell_closed') {
+          const sessionId = message.sessionId;
+          console.log(`[ws-agents] Shell closed: sessionId=${sessionId}`);
+          const pending = pendingTerminalSessions.get(sessionId);
+          if (pending) {
+            pending.onOutput('', true);
+            pendingTerminalSessions.delete(sessionId);
           }
         }
         

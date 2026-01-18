@@ -55,7 +55,15 @@ export function XTermTerminal({ agentId, agentName, onDisconnect }: XTermTermina
           sessionIdRef.current = data.sessionId || `shell-${agentId}-${Date.now()}`;
         } else if (data.type === "output") {
           if (terminalInstance.current && data.data) {
-            terminalInstance.current.write(data.data);
+            let output = data.data;
+            if (data.encoding === "base64") {
+              try {
+                output = atob(data.data);
+              } catch (e) {
+                console.error("[xterm] Base64 decode error:", e);
+              }
+            }
+            terminalInstance.current.write(output);
           }
         } else if (data.type === "status") {
           if (terminalInstance.current) {
@@ -90,18 +98,20 @@ export function XTermTerminal({ agentId, agentName, onDisconnect }: XTermTermina
   }, [agentId]);
 
   const sendInput = useCallback((data: string) => {
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
+    if (wsRef.current?.readyState === WebSocket.OPEN && sessionIdRef.current) {
       wsRef.current.send(JSON.stringify({
         type: "input",
+        sessionId: sessionIdRef.current,
         data
       }));
     }
   }, []);
 
   const sendResize = useCallback((cols: number, rows: number) => {
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
+    if (wsRef.current?.readyState === WebSocket.OPEN && sessionIdRef.current) {
       wsRef.current.send(JSON.stringify({
         type: "resize",
+        sessionId: sessionIdRef.current,
         cols,
         rows
       }));
@@ -175,73 +185,9 @@ export function XTermTerminal({ agentId, agentName, onDisconnect }: XTermTermina
     term.onData((data) => {
       if (!connected && !connecting) return;
       
-      if (data === "\r") {
-        const cmd = commandBuffer.current;
-        commandBuffer.current = "";
-        historyIndex.current = -1;
-        
-        if (cmd.trim()) {
-          commandHistory.current.push(cmd);
-          if (commandHistory.current.length > 100) {
-            commandHistory.current.shift();
-          }
-        }
-
-        if (cmd === "clear") {
-          term.clear();
-        } else if (cmd === "exit") {
-          disconnect();
-        } else {
-          sendInput(cmd + "\r");
-        }
-      } else if (data === "\x7f" || data === "\b") {
-        if (commandBuffer.current.length > 0) {
-          commandBuffer.current = commandBuffer.current.slice(0, -1);
-          term.write("\b \b");
-        }
-      } else if (data === "\x03") {
-        commandBuffer.current = "";
-        sendInput("\x03");
-        term.write("^C");
-      } else if (data === "\x1b[A") {
-        if (commandHistory.current.length > 0) {
-          const newIndex = historyIndex.current < commandHistory.current.length - 1 
-            ? historyIndex.current + 1 
-            : historyIndex.current;
-          historyIndex.current = newIndex;
-          
-          while (commandBuffer.current.length > 0) {
-            term.write("\b \b");
-            commandBuffer.current = commandBuffer.current.slice(0, -1);
-          }
-          
-          const histCmd = commandHistory.current[commandHistory.current.length - 1 - newIndex];
-          commandBuffer.current = histCmd;
-          term.write(histCmd);
-        }
-      } else if (data === "\x1b[B") {
-        if (historyIndex.current > 0) {
-          historyIndex.current--;
-          
-          while (commandBuffer.current.length > 0) {
-            term.write("\b \b");
-            commandBuffer.current = commandBuffer.current.slice(0, -1);
-          }
-          
-          const histCmd = commandHistory.current[commandHistory.current.length - 1 - historyIndex.current];
-          commandBuffer.current = histCmd;
-          term.write(histCmd);
-        } else if (historyIndex.current === 0) {
-          historyIndex.current = -1;
-          while (commandBuffer.current.length > 0) {
-            term.write("\b \b");
-            commandBuffer.current = commandBuffer.current.slice(0, -1);
-          }
-        }
-      } else if (data >= " " && data <= "~") {
-        commandBuffer.current += data;
-        term.write(data);
-      }
+      // For true PTY mode, send all keystrokes directly to the server
+      // The PTY handles echo, line editing, and everything else
+      sendInput(data);
     });
 
     term.onResize(({ cols, rows }) => {
