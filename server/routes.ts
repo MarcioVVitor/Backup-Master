@@ -117,6 +117,28 @@ export async function registerRoutes(
     res.json({ standalone: isStandalone });
   });
 
+  // Public endpoint for downloading installation package (temporary)
+  app.get('/api/install/download', async (req, res) => {
+    try {
+      const fs = await import('fs');
+      const path = await import('path');
+      const packagePath = path.join(process.cwd(), 'dist', 'public', 'nbm-cloud-v17.tar.gz');
+      
+      if (!fs.existsSync(packagePath)) {
+        return res.status(404).json({ error: 'Installation package not found' });
+      }
+      
+      res.setHeader('Content-Type', 'application/gzip');
+      res.setHeader('Content-Disposition', 'attachment; filename=nbm-cloud-v17.tar.gz');
+      
+      const fileStream = fs.createReadStream(packagePath);
+      fileStream.pipe(res);
+    } catch (error) {
+      console.error('Download error:', error);
+      res.status(500).json({ error: 'Download failed' });
+    }
+  });
+
   // Diagnostic endpoint to check session state
   app.get('/api/debug/session', (req, res) => {
     const user = req.user as any;
