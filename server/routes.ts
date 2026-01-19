@@ -161,6 +161,34 @@ export async function registerRoutes(
     return rest;
   };
 
+  // Helper function to hydrate equipment with credential data when using saved credentials
+  async function hydrateEquipmentCredentials(equip: any): Promise<any> {
+    if (!equip.credentialId) {
+      // Equipment uses inline credentials
+      if (!equip.username) {
+        console.warn(`[hydrate] Equipment ${equip.name} has no username and no credentialId`);
+      }
+      return equip;
+    }
+    
+    // Fetch the saved credential
+    const credential = await storage.getCredentialById(equip.credentialId, equip.companyId);
+    if (!credential) {
+      console.warn(`[hydrate] Credential ${equip.credentialId} not found for equipment ${equip.name}`);
+      return equip;
+    }
+    
+    console.log(`[hydrate] Using saved credential "${credential.name}" for equipment ${equip.name}`);
+    
+    // Return equipment with hydrated credentials
+    return {
+      ...equip,
+      username: credential.username,
+      password: credential.password,
+      enablePassword: credential.enablePassword || equip.enablePassword,
+    };
+  }
+
   // API - Fabricantes suportados
   app.get('/api/manufacturers', isAuthenticated, (req, res) => {
     res.json(SUPPORTED_MANUFACTURERS);
@@ -747,6 +775,9 @@ export async function registerRoutes(
     try {
       const config = await getBackupConfig(equip.manufacturer);
       
+      // Hydrate equipment with saved credential data if using credentialId
+      const hydratedEquip = await hydrateEquipmentCredentials(equip);
+      
       // Try to use agent if available
       let result: string = "";
       const equipmentAgents = await storage.getEquipmentAgents(equipmentId);
@@ -756,7 +787,7 @@ export async function registerRoutes(
         if (getConnectedAgentRef && getConnectedAgentRef(mapping.agentId)) {
           console.log(`[backup] Using agent ${mapping.agentId} for equipment ${equip.name}`);
           try {
-            result = await executeBackupViaAgentRef!(mapping.agentId, equip, config);
+            result = await executeBackupViaAgentRef!(mapping.agentId, hydratedEquip, config);
             usedAgent = true;
             break;
           } catch (agentErr: any) {
@@ -768,7 +799,7 @@ export async function registerRoutes(
               if (getConnectedAgentRef && getConnectedAgentRef(mapping.agentId)) {
                 try {
                   console.log(`[backup] Retry with agent ${mapping.agentId}`);
-                  result = await executeBackupViaAgentRef!(mapping.agentId, equip, config);
+                  result = await executeBackupViaAgentRef!(mapping.agentId, hydratedEquip, config);
                   usedAgent = true;
                   break;
                 } catch (retryErr: any) {
@@ -782,7 +813,7 @@ export async function registerRoutes(
       
       if (!usedAgent) {
         console.log(`[backup] No agent available, trying direct SSH for ${equip.name}`);
-        result = await executeSSHBackup(equip, config);
+        result = await executeSSHBackup(hydratedEquip, config);
       }
 
       console.log(`[backup] Result length: ${result.length} bytes, first 100 chars: ${result.substring(0, 100)}`);
@@ -993,6 +1024,9 @@ export async function registerRoutes(
         try {
           const config = await getBackupConfig(equip.manufacturer);
           
+          // Hydrate equipment with saved credential data if using credentialId
+          const hydratedEquip = await hydrateEquipmentCredentials(equip);
+          
           // Try to use agent if available
           let result: string = "";
           const equipmentAgents = await storage.getEquipmentAgents(equipmentId);
@@ -1002,7 +1036,7 @@ export async function registerRoutes(
             if (getConnectedAgentRef && getConnectedAgentRef(mapping.agentId)) {
               console.log(`[batch-backup] Using agent ${mapping.agentId} for equipment ${equip.name}`);
               try {
-                result = await executeBackupViaAgentRef!(mapping.agentId, equip, config);
+                result = await executeBackupViaAgentRef!(mapping.agentId, hydratedEquip, config);
                 usedAgent = true;
                 break;
               } catch (agentErr: any) {
@@ -1013,7 +1047,7 @@ export async function registerRoutes(
           
           if (!usedAgent) {
             console.log(`[batch-backup] No agent available, trying direct SSH for ${equip.name}`);
-            result = await executeSSHBackup(equip, config);
+            result = await executeSSHBackup(hydratedEquip, config);
           }
 
           const now = getBrazilTime();
@@ -2226,7 +2260,10 @@ export async function registerRoutes(
             return;
           }
           
-          if (!equip.username || !equip.password) {
+          // Hydrate equipment with saved credential data if using credentialId
+          const hydratedEquip = await hydrateEquipmentCredentials(equip);
+          
+          if (!hydratedEquip.username || !hydratedEquip.password) {
             ws.send(JSON.stringify({ type: 'error', message: 'Credenciais nao configuradas' }));
             return;
           }
@@ -2270,19 +2307,19 @@ export async function registerRoutes(
             }
           });
           
-          // Send terminal_connect command to agent
+          // Send terminal_connect command to agent with hydrated credentials
           agentWs.send(JSON.stringify({
             type: 'terminal_connect',
             sessionId,
             equipment: {
-              id: equip.id,
-              ip: equip.ip,
-              port: equip.port || 22,
-              username: equip.username,
-              password: equip.password,
-              protocol: equip.protocol || 'ssh',
-              manufacturer: equip.manufacturer,
-              enablePassword: equip.enablePassword
+              id: hydratedEquip.id,
+              ip: hydratedEquip.ip,
+              port: hydratedEquip.port || 22,
+              username: hydratedEquip.username,
+              password: hydratedEquip.password,
+              protocol: hydratedEquip.protocol || 'ssh',
+              manufacturer: hydratedEquip.manufacturer,
+              enablePassword: hydratedEquip.enablePassword
             }
           }));
           
@@ -2982,7 +3019,7 @@ export async function registerRoutes(
   const connectedAgents = new Map<number, WebSocket>();
   const pendingBackupJobs = new Map<string, { resolve: (result: any) => void, reject: (err: any) => void, timeout: NodeJS.Timeout }>();
   const pendingDiagnosticsJobs = new Map<string, { resolve: (result: any) => void, reject: (err: any) => void, timeout: NodeJS.Timeout }>();
-  const pendingTerminalSessions = new Map<string, { onOutput: (output: string, isComplete: boolean) => void }>();
+  const pendingTerminalSessions = new Map<string, { onOutput: (output: string, isComplete: boolean, encoding?: string) => void }>();
   const pendingUpdateJobs = new Map<string, { resolve: (result: any) => void, reject: (err: any) => void, timeout: NodeJS.Timeout }>();
   const pendingTestConnectionJobs = new Map<string, { resolve: (result: any) => void, reject: (err: any) => void, timeout: NodeJS.Timeout }>();
   const pendingAdminJobs = new Map<string, { resolve: (result: any) => void, reject: (err: any) => void, timeout: NodeJS.Timeout }>();
@@ -3342,6 +3379,10 @@ export async function registerRoutes(
 
     try {
       const config = await getBackupConfig(equip.manufacturer);
+      
+      // Hydrate equipment with saved credential data if using credentialId
+      const hydratedEquip = await hydrateEquipmentCredentials(equip);
+      
       let result: string = "";
       const equipmentAgentsList = await storage.getEquipmentAgents(equipmentId);
       let usedAgent = false;
@@ -3350,7 +3391,7 @@ export async function registerRoutes(
         if (getConnectedAgentRef && getConnectedAgentRef(mapping.agentId)) {
           console.log(`[scheduler] Using agent ${mapping.agentId} for ${equip.name}`);
           try {
-            result = await executeBackupViaAgentRef!(mapping.agentId, equip, config);
+            result = await executeBackupViaAgentRef!(mapping.agentId, hydratedEquip, config);
             usedAgent = true;
             break;
           } catch (agentErr: any) {
@@ -3361,7 +3402,7 @@ export async function registerRoutes(
 
       if (!usedAgent) {
         console.log(`[scheduler] No agent available, trying direct SSH for ${equip.name}`);
-        result = await executeSSHBackup(equip, config);
+        result = await executeSSHBackup(hydratedEquip, config);
       }
 
       console.log(`[scheduler] Backup execution completed for ${equip.name}, result length: ${result.length} bytes`);
