@@ -1,9 +1,10 @@
 import { useFiles, useDeleteFile } from "@/hooks/use-files";
 import { useEquipment } from "@/hooks/use-equipment";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useI18n } from "@/contexts/i18n-context";
 import { Button } from "@/components/ui/button";
-import { Download, Trash2, FileText, Calendar, HardDrive, Search, Eye, Loader2, Server, Filter, ArrowUpDown, FolderOpen, ChevronDown, ChevronRight } from "lucide-react";
+import { Download, Trash2, FileText, Calendar, HardDrive, Search, Eye, Loader2, Server, Filter, ArrowUpDown, FolderOpen, ChevronDown, ChevronRight, Archive, ArchiveRestore } from "lucide-react";
+import { apiRequest } from "@/lib/queryClient";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -73,11 +74,15 @@ export default function BackupsPage() {
   const { data: manufacturers = [] } = useQuery<Manufacturer[]>({
     queryKey: ["/api/manufacturers"],
   });
+  const { data: archivedFiles = [], isLoading: isLoadingArchived } = useQuery<FileRecord[]>({
+    queryKey: ["/api/backups/archived"],
+  });
   const { t } = useI18n();
   
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedManufacturer, setSelectedManufacturer] = useState<string>("all");
   const [selectedModel, setSelectedModel] = useState<string>("all");
+  const [showArchived, setShowArchived] = useState(false);
   const { mutate: deleteFile } = useDeleteFile();
   const { toast } = useToast();
   const [selectedBackups, setSelectedBackups] = useState<Set<number>>(new Set());
@@ -87,6 +92,8 @@ export default function BackupsPage() {
   const [isLoadingContent, setIsLoadingContent] = useState(false);
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
   const [isDeletingBulk, setIsDeletingBulk] = useState(false);
+  const [bulkArchiveOpen, setBulkArchiveOpen] = useState(false);
+  const [isArchivingBulk, setIsArchivingBulk] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>("cards");
   const [sortField, setSortField] = useState<SortField>("date");
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
@@ -94,6 +101,35 @@ export default function BackupsPage() {
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set(["all"]));
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 30;
+
+  // Archive/Unarchive mutations
+  const archiveMutation = useMutation({
+    mutationFn: async (id: number) => {
+      await apiRequest("POST", `/api/backups/${id}/archive`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/files"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/backups/archived"] });
+      toast({ title: "Backup arquivado com sucesso" });
+    },
+    onError: () => {
+      toast({ title: "Erro ao arquivar backup", variant: "destructive" });
+    }
+  });
+
+  const unarchiveMutation = useMutation({
+    mutationFn: async (id: number) => {
+      await apiRequest("POST", `/api/backups/${id}/unarchive`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/files"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/backups/archived"] });
+      toast({ title: "Backup restaurado com sucesso" });
+    },
+    onError: () => {
+      toast({ title: "Erro ao restaurar backup", variant: "destructive" });
+    }
+  });
 
   const getEquipment = (id: number | null): Equipment | undefined => {
     if (!id) return undefined;
@@ -124,9 +160,11 @@ export default function BackupsPage() {
   );
 
   const filteredAndSortedFiles = useMemo(() => {
-    if (!files) return [];
+    // Use archived or active files based on toggle
+    const sourceFiles = showArchived ? archivedFiles : (files?.filter(f => !f.archived) || []);
+    if (!sourceFiles) return [];
     
-    let result = files.filter(file => {
+    let result = sourceFiles.filter(file => {
       const matchesSearch = 
         file.filename.toLowerCase().includes(searchTerm.toLowerCase()) ||
         getEquipmentName(file.equipmentId).toLowerCase().includes(searchTerm.toLowerCase());
@@ -162,7 +200,7 @@ export default function BackupsPage() {
     });
 
     return result;
-  }, [files, searchTerm, selectedManufacturer, selectedModel, sortField, sortOrder, equipment]);
+  }, [files, archivedFiles, showArchived, searchTerm, selectedManufacturer, selectedModel, sortField, sortOrder, equipment]);
 
   const groupedFiles = useMemo(() => {
     if (groupBy === "none") {
@@ -260,6 +298,35 @@ export default function BackupsPage() {
 
   const handleDownload = (id: number, filename: string) => {
     window.open(`/api/backups/${id}/download`, '_blank');
+  };
+
+  const handleBulkArchive = async () => {
+    setIsArchivingBulk(true);
+    const ids = Array.from(selectedBackups);
+    
+    try {
+      const response = await fetch('/api/backups/archive-bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ ids })
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        toast({ title: `${result.archivedCount} backups arquivados com sucesso` });
+        setSelectedBackups(new Set());
+        queryClient.invalidateQueries({ queryKey: ["/api/files"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/backups/archived"] });
+      } else {
+        toast({ title: "Erro ao arquivar backups", variant: "destructive" });
+      }
+    } catch {
+      toast({ title: "Erro ao arquivar backups", variant: "destructive" });
+    } finally {
+      setIsArchivingBulk(false);
+      setBulkArchiveOpen(false);
+    }
   };
 
   const handleView = async (id: number, filename: string, full: boolean = true) => {
@@ -407,6 +474,30 @@ export default function BackupsPage() {
                 <Download className="h-4 w-4" />
               </Button>
               
+              {showArchived ? (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => unarchiveMutation.mutate(file.id)}
+                  disabled={unarchiveMutation.isPending}
+                  title="Restaurar backup"
+                  data-testid={`button-unarchive-${file.id}`}
+                >
+                  <ArchiveRestore className="h-4 w-4" />
+                </Button>
+              ) : (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => archiveMutation.mutate(file.id)}
+                  disabled={archiveMutation.isPending}
+                  title="Arquivar backup"
+                  data-testid={`button-archive-${file.id}`}
+                >
+                  <Archive className="h-4 w-4" />
+                </Button>
+              )}
+              
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button 
@@ -501,6 +592,29 @@ export default function BackupsPage() {
           >
             <Download className="h-4 w-4" />
           </Button>
+          {showArchived ? (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => unarchiveMutation.mutate(file.id)}
+              disabled={unarchiveMutation.isPending}
+              title="Restaurar backup"
+              data-testid={`button-unarchive-${file.id}`}
+            >
+              <ArchiveRestore className="h-4 w-4" />
+            </Button>
+          ) : (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => archiveMutation.mutate(file.id)}
+              disabled={archiveMutation.isPending}
+              title="Arquivar backup"
+              data-testid={`button-archive-${file.id}`}
+            >
+              <Archive className="h-4 w-4" />
+            </Button>
+          )}
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button 
@@ -643,12 +757,36 @@ export default function BackupsPage() {
                       >
                         <Download className="h-4 w-4" />
                       </Button>
+                      {showArchived ? (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => unarchiveMutation.mutate(file.id)}
+                          disabled={unarchiveMutation.isPending}
+                          title="Restaurar backup"
+                          data-testid={`button-unarchive-table-${file.id}`}
+                        >
+                          <ArchiveRestore className="h-4 w-4" />
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => archiveMutation.mutate(file.id)}
+                          disabled={archiveMutation.isPending}
+                          title="Arquivar backup"
+                          data-testid={`button-archive-table-${file.id}`}
+                        >
+                          <Archive className="h-4 w-4" />
+                        </Button>
+                      )}
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button 
                             variant="ghost" 
                             size="icon" 
                             className="text-red-500 hover:text-red-600"
+                            data-testid={`button-delete-table-${file.id}`}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -795,7 +933,29 @@ export default function BackupsPage() {
           <h1 className="text-3xl font-bold tracking-tight">{t.backups.title}</h1>
           <p className="text-muted-foreground">{t.backups.subtitle}</p>
         </div>
-        <ViewToggle viewMode={viewMode} onViewModeChange={setViewMode} />
+        <div className="flex items-center gap-2">
+          <div className="flex rounded-lg border p-1">
+            <Button
+              variant={!showArchived ? "secondary" : "ghost"}
+              size="sm"
+              onClick={() => { setShowArchived(false); setSelectedBackups(new Set()); }}
+              data-testid="button-show-active"
+            >
+              <FileText className="h-4 w-4 mr-2" />
+              Ativos
+            </Button>
+            <Button
+              variant={showArchived ? "secondary" : "ghost"}
+              size="sm"
+              onClick={() => { setShowArchived(true); setSelectedBackups(new Set()); }}
+              data-testid="button-show-archived"
+            >
+              <Archive className="h-4 w-4 mr-2" />
+              Arquivados ({archivedFiles.length})
+            </Button>
+          </div>
+          <ViewToggle viewMode={viewMode} onViewModeChange={setViewMode} />
+        </div>
       </div>
 
       <div className="flex flex-col md:flex-row gap-4">
@@ -887,18 +1047,59 @@ export default function BackupsPage() {
               }
             </span>
           </div>
-          {selectedBackups.size > 0 && (
-            <AlertDialog open={bulkDeleteOpen} onOpenChange={setBulkDeleteOpen}>
-              <AlertDialogTrigger asChild>
-                <Button 
-                  variant="destructive" 
-                  size="sm"
-                  data-testid="button-bulk-delete"
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  {t.backups.deleteSelected} ({selectedBackups.size})
-                </Button>
-              </AlertDialogTrigger>
+          {selectedBackups.size > 0 && !showArchived && (
+            <div className="flex items-center gap-2">
+              <AlertDialog open={bulkArchiveOpen} onOpenChange={setBulkArchiveOpen}>
+                <AlertDialogTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    data-testid="button-bulk-archive"
+                  >
+                    <Archive className="h-4 w-4 mr-2" />
+                    Arquivar ({selectedBackups.size})
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Arquivar {selectedBackups.size} backups?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Os backups arquivados serão movidos para a aba de arquivados e não aparecerão na listagem principal.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel disabled={isArchivingBulk}>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction 
+                      onClick={handleBulkArchive}
+                      disabled={isArchivingBulk}
+                    >
+                      {isArchivingBulk ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Arquivando...
+                        </>
+                      ) : (
+                        <>
+                          <Archive className="h-4 w-4 mr-2" />
+                          Arquivar
+                        </>
+                      )}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+
+              <AlertDialog open={bulkDeleteOpen} onOpenChange={setBulkDeleteOpen}>
+                <AlertDialogTrigger asChild>
+                  <Button 
+                    variant="destructive" 
+                    size="sm"
+                    data-testid="button-bulk-delete"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    {t.backups.deleteSelected} ({selectedBackups.size})
+                  </Button>
+                </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
                   <AlertDialogTitle>{t.backups.confirmDeleteMultiple} ({selectedBackups.size})?</AlertDialogTitle>
@@ -924,7 +1125,8 @@ export default function BackupsPage() {
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
-            </AlertDialog>
+              </AlertDialog>
+            </div>
           )}
         </div>
       )}

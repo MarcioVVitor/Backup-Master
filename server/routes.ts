@@ -9,7 +9,7 @@ import { Client as SSHClient } from "ssh2";
 import net from "net";
 import { createServerRoutes } from "./routes/server-routes";
 import { withTenantContext } from "./middleware/tenant";
-import { startScheduler, setBackupExecutor, runPolicyNow, setWorkerPoolConcurrency, getWorkerPoolMetrics, clearWorkerQueue } from "./scheduler";
+import { startScheduler, setBackupExecutor, runPolicyNow, runArchivePolicyNow, setWorkerPoolConcurrency, getWorkerPoolMetrics, clearWorkerQueue } from "./scheduler";
 
 function getBrazilTime(): Date {
   const now = new Date();
@@ -735,6 +735,221 @@ export async function registerRoutes(
       await storage.deleteBackupScoped(id, companyId!);
     }
     res.sendStatus(204);
+  });
+
+  // ============================================
+  // ARQUIVAMENTO DE BACKUPS
+  // ============================================
+
+  // Arquivar um backup
+  app.post('/api/backups/:id/archive', isAuthenticated, async (req, res) => {
+    const id = parseInt(req.params.id);
+    const companyId = req.companyId;
+    const isServerAdmin = req.tenantUser?.isServerAdmin;
+    const user = req.user as any;
+    const userSub = user?.claims?.sub;
+    const userId = userSub ? await storage.getUserIdByReplitId(userSub) : null;
+
+    if (!userId) return res.status(401).json({ message: "User not found" });
+
+    const { allowed, backup, reason } = await checkBackupAccess(id, companyId, isServerAdmin);
+    if (!allowed) {
+      if (reason === "not_found") return res.status(404).json({ message: "Backup não encontrado" });
+      return res.status(403).json({ message: "Access denied" });
+    }
+
+    try {
+      let updated;
+      if (isServerAdmin) {
+        updated = await storage.archiveBackup(id, userId);
+      } else {
+        updated = await storage.archiveBackupScoped(id, companyId!, userId);
+      }
+      res.json(updated);
+    } catch (e) {
+      console.error("Error archiving backup:", e);
+      res.status(500).json({ error: "Erro ao arquivar backup" });
+    }
+  });
+
+  // Desarquivar um backup
+  app.post('/api/backups/:id/unarchive', isAuthenticated, async (req, res) => {
+    const id = parseInt(req.params.id);
+    const companyId = req.companyId;
+    const isServerAdmin = req.tenantUser?.isServerAdmin;
+
+    const { allowed, backup, reason } = await checkBackupAccess(id, companyId, isServerAdmin);
+    if (!allowed) {
+      if (reason === "not_found") return res.status(404).json({ message: "Backup não encontrado" });
+      return res.status(403).json({ message: "Access denied" });
+    }
+
+    try {
+      let updated;
+      if (isServerAdmin) {
+        updated = await storage.unarchiveBackup(id);
+      } else {
+        updated = await storage.unarchiveBackupScoped(id, companyId!);
+      }
+      res.json(updated);
+    } catch (e) {
+      console.error("Error unarchiving backup:", e);
+      res.status(500).json({ error: "Erro ao desarquivar backup" });
+    }
+  });
+
+  // Arquivar múltiplos backups em lote
+  app.post('/api/backups/archive-bulk', isAuthenticated, async (req, res) => {
+    const { ids } = req.body;
+    const companyId = req.companyId;
+    const isServerAdmin = req.tenantUser?.isServerAdmin;
+    const user = req.user as any;
+    const userSub = user?.claims?.sub;
+    const userId = userSub ? await storage.getUserIdByReplitId(userSub) : null;
+
+    if (!userId) return res.status(401).json({ message: "User not found" });
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ error: "IDs inválidos" });
+    }
+
+    try {
+      let count;
+      if (isServerAdmin) {
+        count = await storage.archiveBackupsBulk(ids, userId);
+      } else {
+        count = await storage.archiveBackupsBulkScoped(ids, companyId!, userId);
+      }
+      res.json({ success: true, archivedCount: count });
+    } catch (e) {
+      console.error("Error archiving backups in bulk:", e);
+      res.status(500).json({ error: "Erro ao arquivar backups" });
+    }
+  });
+
+  // Listar backups arquivados
+  app.get('/api/backups/archived', isAuthenticated, async (req, res) => {
+    const companyId = req.companyId;
+    if (!companyId) return res.status(400).json({ error: "Company not found" });
+
+    try {
+      const backups = await storage.getArchivedBackupsByCompany(companyId);
+      res.json(backups);
+    } catch (e) {
+      console.error("Error fetching archived backups:", e);
+      res.status(500).json({ error: "Erro ao buscar backups arquivados" });
+    }
+  });
+
+  // Listar backups ativos (não arquivados)
+  app.get('/api/backups/active', isAuthenticated, async (req, res) => {
+    const companyId = req.companyId;
+    if (!companyId) return res.status(400).json({ error: "Company not found" });
+
+    try {
+      const backups = await storage.getActiveBackupsByCompany(companyId);
+      res.json(backups);
+    } catch (e) {
+      console.error("Error fetching active backups:", e);
+      res.status(500).json({ error: "Erro ao buscar backups ativos" });
+    }
+  });
+
+  // ============================================
+  // POLÍTICAS DE ARQUIVAMENTO
+  // ============================================
+
+  // Listar políticas de arquivamento
+  app.get('/api/archive-policies', isAuthenticated, async (req, res) => {
+    const companyId = req.companyId;
+    if (!companyId) return res.status(400).json({ error: "Company not found" });
+
+    try {
+      const policies = await storage.getArchivePoliciesByCompany(companyId);
+      res.json(policies);
+    } catch (e) {
+      console.error("Error fetching archive policies:", e);
+      res.status(500).json({ error: "Erro ao buscar políticas de arquivamento" });
+    }
+  });
+
+  // Obter política específica
+  app.get('/api/archive-policies/:id', isAuthenticated, async (req, res) => {
+    const id = parseInt(req.params.id);
+    const companyId = req.companyId;
+    if (!companyId) return res.status(400).json({ error: "Company not found" });
+
+    try {
+      const policy = await storage.getArchivePolicyById(id, companyId);
+      if (!policy) return res.status(404).json({ error: "Política não encontrada" });
+      res.json(policy);
+    } catch (e) {
+      console.error("Error fetching archive policy:", e);
+      res.status(500).json({ error: "Erro ao buscar política" });
+    }
+  });
+
+  // Criar política de arquivamento
+  app.post('/api/archive-policies', isAuthenticated, async (req, res) => {
+    const companyId = req.companyId;
+    if (!companyId) return res.status(400).json({ error: "Company not found" });
+
+    try {
+      const policy = await storage.createArchivePolicy({ ...req.body, companyId });
+      res.status(201).json(policy);
+    } catch (e) {
+      console.error("Error creating archive policy:", e);
+      res.status(500).json({ error: "Erro ao criar política" });
+    }
+  });
+
+  // Atualizar política de arquivamento
+  app.patch('/api/archive-policies/:id', isAuthenticated, async (req, res) => {
+    const id = parseInt(req.params.id);
+    const companyId = req.companyId;
+    if (!companyId) return res.status(400).json({ error: "Company not found" });
+
+    try {
+      const policy = await storage.updateArchivePolicy(id, companyId, req.body);
+      if (!policy) return res.status(404).json({ error: "Política não encontrada" });
+      res.json(policy);
+    } catch (e) {
+      console.error("Error updating archive policy:", e);
+      res.status(500).json({ error: "Erro ao atualizar política" });
+    }
+  });
+
+  // Deletar política de arquivamento
+  app.delete('/api/archive-policies/:id', isAuthenticated, async (req, res) => {
+    const id = parseInt(req.params.id);
+    const companyId = req.companyId;
+    if (!companyId) return res.status(400).json({ error: "Company not found" });
+
+    try {
+      await storage.deleteArchivePolicy(id, companyId);
+      res.sendStatus(204);
+    } catch (e) {
+      console.error("Error deleting archive policy:", e);
+      res.status(500).json({ error: "Erro ao deletar política" });
+    }
+  });
+
+  // Executar política de arquivamento manualmente
+  app.post('/api/archive-policies/:id/run', isAuthenticated, async (req, res) => {
+    const id = parseInt(req.params.id);
+    const companyId = req.companyId;
+    if (!companyId) return res.status(400).json({ error: "Company not found" });
+
+    try {
+      const result = await runArchivePolicyNow(id, companyId);
+      if (result.success) {
+        res.json(result);
+      } else {
+        res.status(400).json(result);
+      }
+    } catch (e) {
+      console.error("Error running archive policy:", e);
+      res.status(500).json({ error: "Erro ao executar política" });
+    }
   });
 
   // Reference to agent execution function (set later when WebSocket is initialized)

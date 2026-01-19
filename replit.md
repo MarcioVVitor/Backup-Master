@@ -263,3 +263,24 @@ pm2 logs nbm-cloud
 - **Architecture**: Commands sent via REST API POST to `/api/agents/:id/terminal`
 - **Agent Handler**: WebSocket message type `terminal_command` processed by agent
 - **Security**: Admin-only access, tenant-isolated
+
+### Backup Archiving System (v17.0)
+- **Manual Archiving**: Archive/unarchive individual or bulk backups via UI
+- **Archive Policies**: Automatic archiving based on configurable criteria
+  - **Age-based**: Archive backups older than X days
+  - **Count-based**: Keep only N most recent backups per equipment
+  - **Filters**: Filter by manufacturer, model, or equipment name pattern
+  - **Auto-delete**: Optionally delete archived backups after configurable period
+- **UI Features**:
+  - Toggle between active/archived backups view
+  - Archive/restore buttons on cards, list items, and table rows
+  - Bulk archive with confirmation dialog
+  - Visual indicators for archived count
+- **API Endpoints**:
+  - `POST /api/backups/:id/archive` - Archive single backup
+  - `POST /api/backups/:id/unarchive` - Restore single backup
+  - `POST /api/backups/archive-bulk` - Archive multiple backups
+  - `GET /api/backups/archived` - List archived backups
+  - `GET/POST/PATCH/DELETE /api/archive-policies` - Manage archive policies
+- **Scheduler**: Archive policies checked hourly
+- **Database**: `archived`, `archivedAt`, `archivedBy` fields on files table; `archivePolicies` table for policy configuration

@@ -126,12 +126,16 @@ export const files = pgTable("files", {
   mimeType: text("mime_type"),
   status: text("status").default("success"),
   errorMessage: text("error_message"),
+  archived: boolean("archived").default(false),
+  archivedAt: timestamp("archived_at"),
+  archivedBy: integer("archived_by").references(() => users.id),
   createdAt: timestamp("created_at").defaultNow(),
 }, (table) => [
   index("idx_files_company").on(table.companyId),
   index("idx_files_equipment").on(table.equipmentId),
   index("idx_files_created_at").on(table.createdAt),
   index("idx_files_company_created").on(table.companyId, table.createdAt),
+  index("idx_files_archived").on(table.archived),
 ]);
 
 // Tabela de Histórico de Backups (logs de execução)
@@ -154,6 +158,30 @@ export const backupHistory = pgTable("backup_history", {
   index("idx_backup_history_executed_at").on(table.executedAt),
   index("idx_backup_history_company_executed").on(table.companyId, table.executedAt),
   index("idx_backup_history_status").on(table.status),
+]);
+
+// Tabela de Políticas de Arquivamento de Backups
+export const ARCHIVE_CRITERIA = ["age", "count", "size"] as const;
+export type ArchiveCriteria = typeof ARCHIVE_CRITERIA[number];
+
+export const archivePolicies = pgTable("archive_policies", {
+  id: serial("id").primaryKey(),
+  companyId: integer("company_id").references(() => companies.id),
+  name: text("name").notNull(),
+  description: text("description"),
+  enabled: boolean("enabled").default(true),
+  criteria: text("criteria").notNull().default("age"),
+  retentionDays: integer("retention_days").default(90),
+  maxBackupsPerEquipment: integer("max_backups_per_equipment").default(10),
+  manufacturerFilters: text("manufacturer_filters").array(),
+  modelFilters: text("model_filters").array(),
+  equipmentNamePattern: text("equipment_name_pattern"),
+  autoDelete: boolean("auto_delete").default(false),
+  deleteAfterDays: integer("delete_after_days").default(365),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => [
+  index("idx_archive_policies_company").on(table.companyId),
 ]);
 
 // Tabela de Configurações do Sistema
@@ -463,6 +491,10 @@ export const updateCredentialGroupSchema = insertCredentialGroupSchema.partial()
 export const insertCredentialSchema = createInsertSchema(credentials).omit({ id: true, createdAt: true, updatedAt: true });
 export const updateCredentialSchema = insertCredentialSchema.partial();
 
+// Schemas para Políticas de Arquivamento
+export const insertArchivePolicySchema = createInsertSchema(archivePolicies).omit({ id: true, createdAt: true, updatedAt: true });
+export const updateArchivePolicySchema = insertArchivePolicySchema.partial();
+
 // Tipos
 export type User = typeof users.$inferSelect;
 export type UpsertUser = typeof users.$inferInsert;
@@ -515,3 +547,7 @@ export type CredentialGroup = typeof credentialGroups.$inferSelect;
 export type InsertCredentialGroup = z.infer<typeof insertCredentialGroupSchema>;
 export type Credential = typeof credentials.$inferSelect;
 export type InsertCredential = z.infer<typeof insertCredentialSchema>;
+
+// Tipos para Políticas de Arquivamento
+export type ArchivePolicy = typeof archivePolicies.$inferSelect;
+export type InsertArchivePolicy = z.infer<typeof insertArchivePolicySchema>;

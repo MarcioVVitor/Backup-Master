@@ -10,6 +10,7 @@ import {
   systemUpdates,
   firmware,
   backupPolicies,
+  archivePolicies,
   agents,
   agentTokens,
   agentJobs,
@@ -40,6 +41,8 @@ import {
   type InsertFirmware,
   type BackupPolicy,
   type InsertBackupPolicy,
+  type ArchivePolicy,
+  type InsertArchivePolicy,
   type User,
   type Agent,
   type InsertAgent,
@@ -194,6 +197,23 @@ export interface IStorage {
   createCredential(data: InsertCredential): Promise<Credential>;
   updateCredential(id: number, companyId: number, data: Partial<InsertCredential>): Promise<Credential | undefined>;
   deleteCredential(id: number, companyId: number): Promise<void>;
+
+  // Arquivamento de Backups
+  archiveBackup(id: number, userId: number): Promise<FileRecord | undefined>;
+  archiveBackupScoped(id: number, companyId: number, userId: number): Promise<FileRecord | undefined>;
+  unarchiveBackup(id: number): Promise<FileRecord | undefined>;
+  unarchiveBackupScoped(id: number, companyId: number): Promise<FileRecord | undefined>;
+  archiveBackupsBulk(ids: number[], userId: number): Promise<number>;
+  archiveBackupsBulkScoped(ids: number[], companyId: number, userId: number): Promise<number>;
+  getArchivedBackupsByCompany(companyId: number): Promise<FileRecord[]>;
+  getActiveBackupsByCompany(companyId: number): Promise<FileRecord[]>;
+
+  // Políticas de Arquivamento
+  getArchivePoliciesByCompany(companyId: number): Promise<ArchivePolicy[]>;
+  getArchivePolicyById(id: number, companyId: number): Promise<ArchivePolicy | undefined>;
+  createArchivePolicy(data: InsertArchivePolicy): Promise<ArchivePolicy>;
+  updateArchivePolicy(id: number, companyId: number, data: Partial<InsertArchivePolicy>): Promise<ArchivePolicy | undefined>;
+  deleteArchivePolicy(id: number, companyId: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1140,6 +1160,104 @@ export class DatabaseStorage implements IStorage {
   async deleteCredential(id: number, companyId: number): Promise<void> {
     await db.delete(credentials)
       .where(and(eq(credentials.id, id), eq(credentials.companyId, companyId)));
+  }
+
+  // ============================================
+  // ARQUIVAMENTO DE BACKUPS
+  // ============================================
+
+  async archiveBackup(id: number, userId: number): Promise<FileRecord | undefined> {
+    const [updated] = await db.update(files)
+      .set({ archived: true, archivedAt: new Date(), archivedBy: userId })
+      .where(eq(files.id, id))
+      .returning();
+    return updated;
+  }
+
+  async archiveBackupScoped(id: number, companyId: number, userId: number): Promise<FileRecord | undefined> {
+    const [updated] = await db.update(files)
+      .set({ archived: true, archivedAt: new Date(), archivedBy: userId })
+      .where(and(eq(files.id, id), eq(files.companyId, companyId)))
+      .returning();
+    return updated;
+  }
+
+  async unarchiveBackup(id: number): Promise<FileRecord | undefined> {
+    const [updated] = await db.update(files)
+      .set({ archived: false, archivedAt: null, archivedBy: null })
+      .where(eq(files.id, id))
+      .returning();
+    return updated;
+  }
+
+  async unarchiveBackupScoped(id: number, companyId: number): Promise<FileRecord | undefined> {
+    const [updated] = await db.update(files)
+      .set({ archived: false, archivedAt: null, archivedBy: null })
+      .where(and(eq(files.id, id), eq(files.companyId, companyId)))
+      .returning();
+    return updated;
+  }
+
+  async archiveBackupsBulk(ids: number[], userId: number): Promise<number> {
+    if (ids.length === 0) return 0;
+    const result = await db.update(files)
+      .set({ archived: true, archivedAt: new Date(), archivedBy: userId })
+      .where(inArray(files.id, ids));
+    return ids.length;
+  }
+
+  async archiveBackupsBulkScoped(ids: number[], companyId: number, userId: number): Promise<number> {
+    if (ids.length === 0) return 0;
+    const result = await db.update(files)
+      .set({ archived: true, archivedAt: new Date(), archivedBy: userId })
+      .where(and(inArray(files.id, ids), eq(files.companyId, companyId)));
+    return ids.length;
+  }
+
+  async getArchivedBackupsByCompany(companyId: number): Promise<FileRecord[]> {
+    return await db.select().from(files)
+      .where(and(eq(files.companyId, companyId), eq(files.archived, true)))
+      .orderBy(desc(files.archivedAt));
+  }
+
+  async getActiveBackupsByCompany(companyId: number): Promise<FileRecord[]> {
+    return await db.select().from(files)
+      .where(and(eq(files.companyId, companyId), eq(files.archived, false)))
+      .orderBy(desc(files.createdAt));
+  }
+
+  // ============================================
+  // POLÍTICAS DE ARQUIVAMENTO
+  // ============================================
+
+  async getArchivePoliciesByCompany(companyId: number): Promise<ArchivePolicy[]> {
+    return await db.select().from(archivePolicies)
+      .where(eq(archivePolicies.companyId, companyId))
+      .orderBy(archivePolicies.name);
+  }
+
+  async getArchivePolicyById(id: number, companyId: number): Promise<ArchivePolicy | undefined> {
+    const [policy] = await db.select().from(archivePolicies)
+      .where(and(eq(archivePolicies.id, id), eq(archivePolicies.companyId, companyId)));
+    return policy;
+  }
+
+  async createArchivePolicy(data: InsertArchivePolicy): Promise<ArchivePolicy> {
+    const [created] = await db.insert(archivePolicies).values(data).returning();
+    return created;
+  }
+
+  async updateArchivePolicy(id: number, companyId: number, data: Partial<InsertArchivePolicy>): Promise<ArchivePolicy | undefined> {
+    const [updated] = await db.update(archivePolicies)
+      .set({ ...data, updatedAt: new Date() })
+      .where(and(eq(archivePolicies.id, id), eq(archivePolicies.companyId, companyId)))
+      .returning();
+    return updated;
+  }
+
+  async deleteArchivePolicy(id: number, companyId: number): Promise<void> {
+    await db.delete(archivePolicies)
+      .where(and(eq(archivePolicies.id, id), eq(archivePolicies.companyId, companyId)));
   }
 }
 

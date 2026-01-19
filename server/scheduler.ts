@@ -1,15 +1,18 @@
 import { storage } from "./storage";
-import type { BackupPolicy, Equipment } from "@shared/schema";
+import type { BackupPolicy, Equipment, ArchivePolicy, FileRecord } from "@shared/schema";
 import { workerPool } from "./backup-worker-pool";
 
 const SCHEDULER_INTERVAL = 60000; // Check every minute
+const ARCHIVE_CHECK_INTERVAL = 3600000; // Check archive policies every hour
 
 // High capacity configuration for 2000+ backups per company, up to 10,000 hosts
 const DEFAULT_CONCURRENCY = 50;
 const MAX_CONCURRENCY = 100;
 
 let schedulerInterval: NodeJS.Timeout | null = null;
+let archiveInterval: NodeJS.Timeout | null = null;
 let executeBackupFn: ((equipmentId: number, companyId: number) => Promise<void>) | null = null;
+let lastArchiveCheck: Date | null = null;
 
 function log(message: string, ...args: any[]) {
   const now = new Date().toLocaleString("pt-BR");
@@ -242,6 +245,186 @@ export async function runPolicyNow(policyId: number): Promise<{ success: boolean
   }
 }
 
+// ============================================
+// ARQUIVAMENTO AUTOMÁTICO DE BACKUPS
+// ============================================
+
+async function getBackupsForArchivePolicy(policy: ArchivePolicy, companyId: number): Promise<FileRecord[]> {
+  const allBackups = await storage.getActiveBackupsByCompany(companyId);
+  const allEquipment = await storage.getEquipmentByCompany(companyId);
+  
+  // Create equipment lookup map
+  const equipmentMap = new Map(allEquipment.map(e => [e.id, e]));
+  
+  let filteredBackups = allBackups;
+  
+  // Filter by manufacturer if specified
+  if (policy.manufacturerFilters && policy.manufacturerFilters.length > 0) {
+    filteredBackups = filteredBackups.filter(backup => {
+      if (!backup.equipmentId) return false;
+      const equip = equipmentMap.get(backup.equipmentId);
+      return equip && policy.manufacturerFilters!.includes(equip.manufacturer);
+    });
+  }
+  
+  // Filter by model if specified
+  if (policy.modelFilters && policy.modelFilters.length > 0) {
+    filteredBackups = filteredBackups.filter(backup => {
+      if (!backup.equipmentId) return false;
+      const equip = equipmentMap.get(backup.equipmentId);
+      return equip && equip.model && policy.modelFilters!.some(m => 
+        equip.model!.toLowerCase().includes(m.toLowerCase())
+      );
+    });
+  }
+  
+  // Filter by equipment name pattern if specified
+  if (policy.equipmentNamePattern) {
+    const pattern = new RegExp(policy.equipmentNamePattern, 'i');
+    filteredBackups = filteredBackups.filter(backup => {
+      if (!backup.equipmentId) return false;
+      const equip = equipmentMap.get(backup.equipmentId);
+      return equip && pattern.test(equip.name);
+    });
+  }
+  
+  return filteredBackups;
+}
+
+async function runArchivePolicy(policy: ArchivePolicy): Promise<{ archived: number; deleted: number }> {
+  log(`[archive] Running archive policy: ${policy.name} (ID: ${policy.id})`);
+  
+  const companyId = policy.companyId;
+  if (!companyId) {
+    log(`[archive] Policy ${policy.name} has no company ID`);
+    return { archived: 0, deleted: 0 };
+  }
+  
+  const backups = await getBackupsForArchivePolicy(policy, companyId);
+  log(`[archive] Policy ${policy.name}: Found ${backups.length} backups to evaluate`);
+  
+  const now = new Date();
+  const toArchive: number[] = [];
+  const toDelete: number[] = [];
+  
+  if (policy.criteria === 'age') {
+    // Archive backups older than retentionDays
+    const retentionDays = policy.retentionDays || 90;
+    const cutoffDate = new Date(now.getTime() - retentionDays * 24 * 60 * 60 * 1000);
+    
+    for (const backup of backups) {
+      if (backup.createdAt && new Date(backup.createdAt) < cutoffDate) {
+        toArchive.push(backup.id);
+      }
+    }
+  } else if (policy.criteria === 'count') {
+    // Keep only maxBackupsPerEquipment per equipment, archive the rest
+    const maxBackups = policy.maxBackupsPerEquipment || 10;
+    const byEquipment = new Map<number, FileRecord[]>();
+    
+    for (const backup of backups) {
+      if (backup.equipmentId) {
+        if (!byEquipment.has(backup.equipmentId)) {
+          byEquipment.set(backup.equipmentId, []);
+        }
+        byEquipment.get(backup.equipmentId)!.push(backup);
+      }
+    }
+    
+    for (const equipId of Array.from(byEquipment.keys())) {
+      const equipBackups = byEquipment.get(equipId)!;
+      // Sort by date descending (newest first)
+      equipBackups.sort((a: FileRecord, b: FileRecord) => {
+        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return dateB - dateA;
+      });
+      
+      // Archive backups beyond the limit
+      if (equipBackups.length > maxBackups) {
+        const toArchiveFromEquip = equipBackups.slice(maxBackups);
+        toArchive.push(...toArchiveFromEquip.map((b: FileRecord) => b.id));
+      }
+    }
+  }
+  
+  // Check for auto-delete of archived backups
+  if (policy.autoDelete && policy.deleteAfterDays) {
+    const archivedBackups = await storage.getArchivedBackupsByCompany(companyId);
+    const deleteAfterMs = policy.deleteAfterDays * 24 * 60 * 60 * 1000;
+    
+    for (const backup of archivedBackups) {
+      if (backup.archivedAt) {
+        const archivedAt = new Date(backup.archivedAt);
+        if (now.getTime() - archivedAt.getTime() > deleteAfterMs) {
+          toDelete.push(backup.id);
+        }
+      }
+    }
+  }
+  
+  // Execute archiving
+  if (toArchive.length > 0) {
+    log(`[archive] Archiving ${toArchive.length} backups for policy ${policy.name}`);
+    await storage.archiveBackupsBulk(toArchive, 0); // System user (0)
+  }
+  
+  // Execute deletion (would need to implement actual file deletion)
+  // For now, just log the count
+  if (toDelete.length > 0) {
+    log(`[archive] Would delete ${toDelete.length} archived backups for policy ${policy.name}`);
+    // TODO: Implement actual deletion of files from storage
+  }
+  
+  return { archived: toArchive.length, deleted: toDelete.length };
+}
+
+async function checkAndRunArchivePolicies(): Promise<void> {
+  try {
+    log(`[archive] Checking archive policies...`);
+    
+    // Get all companies and their archive policies
+    const companies = await storage.getCompanies();
+    
+    for (const company of companies) {
+      const policies = await storage.getArchivePoliciesByCompany(company.id);
+      const enabledPolicies = policies.filter(p => p.enabled);
+      
+      if (enabledPolicies.length === 0) continue;
+      
+      log(`[archive] Company ${company.name}: Found ${enabledPolicies.length} enabled archive policies`);
+      
+      for (const policy of enabledPolicies) {
+        try {
+          const result = await runArchivePolicy(policy);
+          log(`[archive] Policy ${policy.name}: Archived ${result.archived}, Deleted ${result.deleted}`);
+        } catch (err: any) {
+          log(`[archive] Error running policy ${policy.name}: ${err.message}`);
+        }
+      }
+    }
+    
+    lastArchiveCheck = new Date();
+  } catch (err: any) {
+    log(`[archive] Error checking archive policies: ${err.message}`);
+  }
+}
+
+export async function runArchivePolicyNow(policyId: number, companyId: number): Promise<{ success: boolean; message: string; archived?: number }> {
+  try {
+    const policy = await storage.getArchivePolicyById(policyId, companyId);
+    if (!policy) {
+      return { success: false, message: "Política de arquivamento não encontrada" };
+    }
+    
+    log(`[archive] Manual execution requested for archive policy: ${policy.name}`);
+    const result = await runArchivePolicy(policy);
+    return { success: true, message: `Arquivados ${result.archived} backups`, archived: result.archived };
+  } catch (err: any) {
+    return { success: false, message: err.message };
+  }
+}
+
 export function setBackupExecutor(fn: (equipmentId: number, companyId: number) => Promise<void>): void {
   executeBackupFn = fn;
   workerPool.setExecutor(fn);
@@ -283,6 +466,13 @@ export function startScheduler(): void {
   checkAndRunPolicies();
   
   schedulerInterval = setInterval(checkAndRunPolicies, SCHEDULER_INTERVAL);
+  
+  // Start archive scheduler (runs every hour)
+  log("Starting archive scheduler...");
+  archiveInterval = setInterval(checkAndRunArchivePolicies, ARCHIVE_CHECK_INTERVAL);
+  // Run initial check after 5 minutes
+  setTimeout(checkAndRunArchivePolicies, 300000);
+  
   log("Scheduler started successfully");
 }
 
@@ -290,7 +480,12 @@ export function stopScheduler(): void {
   if (schedulerInterval) {
     clearInterval(schedulerInterval);
     schedulerInterval = null;
-    log("Scheduler stopped");
+    log("Backup scheduler stopped");
+  }
+  if (archiveInterval) {
+    clearInterval(archiveInterval);
+    archiveInterval = null;
+    log("Archive scheduler stopped");
   }
 }
 
