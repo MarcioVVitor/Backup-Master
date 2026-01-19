@@ -117,6 +117,28 @@ export async function registerRoutes(
     res.json({ standalone: isStandalone });
   });
 
+  // Public endpoint for downloading bootstrap script
+  app.get('/api/install/bootstrap', async (req, res) => {
+    try {
+      const fs = await import('fs');
+      const path = await import('path');
+      const scriptPath = path.join(process.cwd(), 'bootstrap-nbm.sh');
+      
+      if (!fs.existsSync(scriptPath)) {
+        return res.status(404).json({ error: 'Bootstrap script not found' });
+      }
+      
+      res.setHeader('Content-Type', 'text/plain');
+      res.setHeader('Content-Disposition', 'attachment; filename=bootstrap-nbm.sh');
+      
+      const content = fs.readFileSync(scriptPath, 'utf-8');
+      res.send(content);
+    } catch (error) {
+      console.error('Bootstrap download error:', error);
+      res.status(500).json({ error: 'Download failed' });
+    }
+  });
+
   // Public endpoint for downloading installation package (temporary)
   app.get('/api/install/download', async (req, res) => {
     try {
@@ -130,6 +152,7 @@ export async function registerRoutes(
       
       res.setHeader('Content-Type', 'application/gzip');
       res.setHeader('Content-Disposition', 'attachment; filename=nbm-cloud-v17.tar.gz');
+      res.setHeader('Content-Length', (await import('fs')).statSync(packagePath).size);
       
       const fileStream = fs.createReadStream(packagePath);
       fileStream.pipe(res);
