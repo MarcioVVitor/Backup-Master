@@ -117,24 +117,23 @@ export async function registerRoutes(
     res.json({ standalone: isStandalone });
   });
 
-  // Public endpoint for downloading bootstrap script
-  app.get('/api/install/bootstrap', async (req, res) => {
+  // Public endpoint for downloading full install script
+  app.get('/api/install/script', async (req, res) => {
     try {
       const fs = await import('fs');
       const path = await import('path');
-      const scriptPath = path.join(process.cwd(), 'bootstrap-nbm.sh');
+      const scriptPath = path.join(process.cwd(), 'install-all.sh');
       
       if (!fs.existsSync(scriptPath)) {
-        return res.status(404).json({ error: 'Bootstrap script not found' });
+        return res.status(404).json({ error: 'Install script not found' });
       }
       
-      res.setHeader('Content-Type', 'text/plain');
-      res.setHeader('Content-Disposition', 'attachment; filename=bootstrap-nbm.sh');
+      res.setHeader('Content-Type', 'text/plain; charset=utf-8');
       
       const content = fs.readFileSync(scriptPath, 'utf-8');
       res.send(content);
     } catch (error) {
-      console.error('Bootstrap download error:', error);
+      console.error('Script download error:', error);
       res.status(500).json({ error: 'Download failed' });
     }
   });
