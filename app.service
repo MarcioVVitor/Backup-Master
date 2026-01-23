@@ -1,0 +1,15 @@
+[Unit]
+Description=Rest Express Application
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/opt/rest-express
+ExecStart=/usr/bin/node dist/index.cjs
+Restart=always
+Environment=NODE_ENV=production
+EnvironmentFile=/opt/rest-express/.env
+
+[Install]
+WantedBy=multi-user.target
