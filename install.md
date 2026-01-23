@@ -90,5 +90,18 @@ Ative o site:
 ```bash
 sudo ln -s /etc/nginx/sites-available/rest-express /etc/nginx/sites-enabled/
 sudo nginx -t
-sudo systemctl restart nginx
+## 8. Instalação Automática (Standalone Mode)
+
+Para uma instalação rápida em modo standalone, você pode usar o script automatizado:
+
+```bash
+chmod +x install-standalone.sh
+sudo ./install-standalone.sh
 ```
+
+Este script irá:
+1. Instalar dependências (Node.js, PostgreSQL, Nginx).
+2. Configurar o banco de dados.
+3. Fazer o build do projeto.
+4. Configurar o serviço systemd.
+5. Configurar o Nginx como proxy reverso.
