@@ -74,7 +74,7 @@ DEBIAN_FRONTEND=noninteractive apt-get upgrade -y -qq
 log_info "Instalando dependências..."
 DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
     curl wget gnupg2 lsb-release ca-certificates \
-    apt-transport-https software-properties-common \
+    apt-transport-https \
     build-essential openssl jq
 
 # Step 3: Install Node.js 20
