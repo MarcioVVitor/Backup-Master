@@ -75,7 +75,7 @@ log_info "Instalando dependências..."
 DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
     curl wget gnupg2 lsb-release ca-certificates \
     apt-transport-https \
-    build-essential openssl jq
+    build-essential openssl jq sudo
 
 # Step 3: Install Node.js 20
 if ! command -v node &> /dev/null || [[ ! "$(node -v)" =~ ^v20 ]]; then
@@ -169,14 +169,20 @@ log_success "Dependências instaladas"
 
 # Step 12: Build application
 log_info "Compilando aplicação..."
-sudo -u $APP_USER npm run build > /dev/null 2>&1
+if command -v sudo &> /dev/null; then
+    sudo -u $APP_USER npm run build
+else
+    npm run build
+fi
 log_success "Aplicação compilada"
 
 # Step 13: Push database schema
 log_info "Aplicando schema do banco..."
-sudo -u $APP_USER bash -c "cd $APP_DIR && source .env && npm run db:push" > /dev/null 2>&1 || {
-    sudo -u $APP_USER bash -c "cd $APP_DIR && source .env && npm run db:push --force" > /dev/null 2>&1
-}
+if command -v sudo &> /dev/null; then
+    sudo -u $APP_USER bash -c "cd $APP_DIR && source .env && npm run db:push"
+else
+    bash -c "cd $APP_DIR && source .env && npm run db:push"
+fi
 log_success "Schema aplicado"
 
 # Step 14: Create PM2 ecosystem
