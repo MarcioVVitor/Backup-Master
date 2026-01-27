@@ -159,7 +159,12 @@ log_success "Configuração criada"
 # Step 11: Install npm dependencies
 log_info "Instalando dependências npm (pode demorar)..."
 cd $APP_DIR
-sudo -u $APP_USER npm install --legacy-peer-deps > /dev/null 2>&1
+# Usando --no-fund --no-audit para evitar interações e logs excessivos
+# Removendo redirecionamento para o limbo para ver o erro se falhar
+if ! sudo -u $APP_USER npm install --legacy-peer-deps --no-fund --no-audit; then
+    log_error "Falha ao instalar dependências npm. Tentando sem sudo direto..."
+    npm install --legacy-peer-deps --no-fund --no-audit
+fi
 log_success "Dependências instaladas"
 
 # Step 12: Build application
