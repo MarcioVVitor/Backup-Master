@@ -158,6 +158,7 @@ log_success "Configuração criada"
 
 # Step 11: Configure Nginx Default
 log_info "Ajustando configuração do Nginx..."
+mkdir -p /etc/nginx/sites-available /etc/nginx/sites-enabled
 cat > /etc/nginx/sites-available/nbm-cloud << EOF
 server {
     listen 80 default_server;
