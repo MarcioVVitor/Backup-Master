@@ -156,6 +156,32 @@ chown $APP_USER:$APP_GROUP $APP_DIR/.env
 chmod 600 $APP_DIR/.env
 log_success "Configuração criada"
 
+# Step 11: Configure Nginx Default
+log_info "Ajustando configuração do Nginx..."
+cat > /etc/nginx/sites-available/nbm-cloud << EOF
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    server_name _;
+    
+    location / {
+        proxy_pass http://localhost:5000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host \$host;
+        proxy_cache_bypass \$http_upgrade;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+    }
+}
+EOF
+rm -f /etc/nginx/sites-enabled/default
+ln -sf /etc/nginx/sites-available/nbm-cloud /etc/nginx/sites-enabled/
+systemctl restart nginx
+log_success "Nginx configurado como default"
+
 # Step 11: Install npm dependencies
 log_info "Instalando dependências npm (pode demorar)..."
 cd $APP_DIR
