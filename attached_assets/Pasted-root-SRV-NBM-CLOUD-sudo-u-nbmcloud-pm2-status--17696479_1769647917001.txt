@@ -1,0 +1,47 @@
+root@SRV-NBM-CLOUD[~]# sudo -u nbmcloud pm2 status
+┌────┬──────────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name         │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+├────┼──────────────┼─────────────┼─────────┼─────────┼──────────┼────────┼──────┼───────────┼──────────┼──────────┼──────────┼──────────┤
+│ 0  │ nbm-cloud    │ default     │ 1.0.0   │ cluster │ 14730    │ 5m     │ 1    │ online    │ 0%       │ 76.3mb   │ nbmcloud │ disabled │
+└────┴──────────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+root@SRV-NBM-CLOUD[~]# sudo -u nbmcloud pm2 logs nbm-cloud --lines 20
+[TAILING] Tailing last 20 lines for [nbm-cloud] process (change the value with --lines option)
+/var/log/nbm-cloud/out-0.log last 20 lines:
+/var/log/nbm-cloud/error-0.log last 20 lines:
+0|nbm-clou |     at /opt/nbm-cloud/dist/index.cjs:70:123057
+0|nbm-clou |     at /opt/nbm-cloud/dist/index.cjs:1:225
+0|nbm-clou |     at Object.<anonymous> (/opt/nbm-cloud/dist/index.cjs:184:33482)
+0|nbm-clou |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+0|nbm-clou |     at Module._extensions..js (node:internal/modules/cjs/loader:1623:10)
+0|nbm-clou |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+0|nbm-clou |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+0|nbm-clou |     at cjsLoader (node:internal/modules/esm/translators:298:15)
+0|nbm-clou | You have triggered an unhandledRejection, you may have forgotten to catch a Promise rejection:
+0|nbm-clou | Error: DATABASE_URL must be set. Did you forget to provision a database?
+0|nbm-clou |     at /opt/nbm-cloud/dist/index.cjs:70:122868
+0|nbm-clou |     at /opt/nbm-cloud/dist/index.cjs:1:225
+0|nbm-clou |     at /opt/nbm-cloud/dist/index.cjs:70:123057
+0|nbm-clou |     at /opt/nbm-cloud/dist/index.cjs:1:225
+0|nbm-clou |     at Object.<anonymous> (/opt/nbm-cloud/dist/index.cjs:184:33482)
+0|nbm-clou |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+0|nbm-clou |     at Module._extensions..js (node:internal/modules/cjs/loader:1623:10)
+0|nbm-clou |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+0|nbm-clou |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+0|nbm-clou |     at cjsLoader (node:internal/modules/esm/translators:298:15)
+
+^C
+root@SRV-NBM-CLOUD[~]# cd /opt/nbm-cloud
+echo "PORT=5000" >> .env
+echo "HOST=0.0.0.0" >> .env
+root@SRV-NBM-CLOUD[/opt/nbm-cloud]# rm -f /etc/nginx/sites-enabled/default
+root@SRV-NBM-CLOUD[/opt/nbm-cloud]# systemctl restart nginx
+Failed to restart nginx.service: Unit nginx.service not found.
+root@SRV-NBM-CLOUD[/opt/nbm-cloud]# sudo -u nbmcloud pm2 restart nbm-cloud --update-env
+[PM2] Applying action restartProcessId on app [nbm-cloud](ids: [ 0 ])
+[PM2] [nbm-cloud](0) ✓
+┌────┬──────────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name         │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+├────┼──────────────┼─────────────┼─────────┼─────────┼──────────┼────────┼──────┼───────────┼──────────┼──────────┼──────────┼──────────┤
+│ 0  │ nbm-cloud    │ default     │ 1.0.0   │ cluster │ 14893    │ 0s     │ 2    │ online    │ 0%       │ 41.3mb   │ nbmcloud │ disabled │
+└────┴──────────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+root@SRV-NBM-CLOUD[/opt/nbm-cloud]# 
