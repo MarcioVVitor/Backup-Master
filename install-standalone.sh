@@ -269,8 +269,12 @@ systemctl enable nbm-cloud > /dev/null 2>&1
 
 # Step 17: Configure firewall
 if command -v ufw &> /dev/null; then
-    ufw allow $PORT/tcp > /dev/null 2>&1
+    log_info "Configurando firewall (UFW)..."
+    ufw allow 80/tcp > /dev/null 2>&1
+    ufw allow 443/tcp > /dev/null 2>&1
     ufw allow 22/tcp > /dev/null 2>&1
+    ufw allow $PORT/tcp > /dev/null 2>&1
+    log_success "Firewall configurado (Portas 80, 443, 22, $PORT)"
 fi
 
 # Verify
