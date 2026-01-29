@@ -1,0 +1,122 @@
+root@SRV-NBM-CLOUD[~]# cd /opt/nbm-cloud/
+root@SRV-NBM-CLOUD[/opt/nbm-cloud]# ./install-standalone.sh
+
+╔══════════════════════════════════════════╗
+║  NBM CLOUD v17.0 - Instalação Standalone ║
+╚══════════════════════════════════════════╝
+
+[INFO] Instalando de: /opt/nbm-cloud
+[INFO] Atualizando sistema...
+W: https://apt.postgresql.org/pub/repos/apt/dists/bookworm-pgdg/InRelease: Key is stored in legacy trusted.gpg keyring (/etc/apt/trusted.gpg), see the DEPRECATION section in apt-key(8) for details.
+[INFO] Instalando dependências...
+[OK] Node.js v20.20.0 já instalado
+[OK] PostgreSQL já instalado
+[OK] PM2 já instalado
+[OK] Usuário nbmcloud já existe
+[INFO] Criando diretórios...
+[INFO] Configurando banco de dados...
+[OK] Banco de dados configurado
+[INFO] Copiando arquivos para /opt/nbm-cloud...
+[OK] Arquivos copiados
+[INFO] Criando arquivo de configuração...
+[OK] Configuração criada
+[INFO] Ajustando configuração do Nginx...
+[OK] Nginx configurado como default
+[INFO] Instalando dependências npm (pode demorar)...
+
+up to date in 998ms
+[OK] Dependências instaladas
+[INFO] Compilando aplicação...
+
+> rest-express@1.0.0 build
+> tsx script/build.ts
+
+building client...
+vite v7.3.0 building client environment for production...
+✓ 3321 modules transformed.
+../dist/public/index.html                     2.87 kB │ gzip:   1.04 kB
+../dist/public/assets/index-CTIexubf.css     80.98 kB │ gzip:  13.61 kB
+../dist/public/assets/index-1kXFtoPP.js   1,401.14 kB │ gzip: 380.55 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 8.08s
+building server...
+
+  dist/index.cjs  1.4mb ⚠️
+
+⚡ Done in 98ms
+[OK] Aplicação compilada
+[INFO] Aplicando schema do banco...
+
+> rest-express@1.0.0 db:push
+> drizzle-kit push
+
+No config path provided, using default 'drizzle.config.ts'
+Reading config file '/opt/nbm-cloud/drizzle.config.ts'
+Using 'pg' driver for database querying
+[⣷] Pulling schema from database...
+error: password authentication failed for user "nbmcloud"
+    at /opt/nbm-cloud/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Object.query (/opt/nbm-cloud/node_modules/drizzle-kit/bin.cjs:80622:26)
+    at async fromDatabase2 (/opt/nbm-cloud/node_modules/drizzle-kit/bin.cjs:19276:25) {
+  length: 104,
+  severity: 'FATAL',
+  code: '28P01',
+  detail: undefined,
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'auth.c',
+  line: '331',
+  routine: 'auth_failed'
+}
+[OK] Schema aplicado
+[INFO] Iniciando aplicação...
+[PM2] Applying action deleteProcessId on app [nbm-cloud](ids: [ 0 ])
+[PM2] [nbm-cloud](0) ✓
+┌────┬───────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name      │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+└────┴───────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+[PM2][WARN] Applications nbm-cloud not running, starting...
+[PM2] App [nbm-cloud] launched (1 instances)
+┌────┬──────────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name         │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+├────┼──────────────┼─────────────┼─────────┼─────────┼──────────┼────────┼──────┼───────────┼──────────┼──────────┼──────────┼──────────┤
+│ 0  │ nbm-cloud    │ default     │ 1.0.0   │ cluster │ 20209    │ 0s     │ 0    │ online    │ 0%       │ 38.8mb   │ nbmcloud │ disabled │
+└────┴──────────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+[OK] Aplicação iniciada
+
+╔══════════════════════════════════════════╗
+║        Instalação Concluída!             ║
+╚══════════════════════════════════════════╝
+
+Acesse: http://143.255.197.25:5000
+
+┌─────────────────────────────────────────┐
+│ Banco de Dados                          │
+├─────────────────────────────────────────┤
+│ Host: localhost                         │
+│ Porta: 5432                             │
+│ Banco: nbm_cloud
+│ Usuário: nbmcloud
+│ Senha: 6KqEM5XhlpulUSuo9prCRtPR4vQgam
+└─────────────────────────────────────────┘
+
+Arquivo de config: /opt/nbm-cloud/.env
+Diretório backups: /opt/nbm/backups
+
+Comandos úteis:
+  pm2 status             - Ver status
+  pm2 logs nbm-cloud     - Ver logs
+  pm2 restart nbm-cloud  - Reiniciar
