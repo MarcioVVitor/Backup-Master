@@ -28,7 +28,7 @@ function sanitizePathSegment(str: string): string {
     .substring(0, 64);
 }
 
-const isStandalone = !process.env.REPL_ID;
+const isStandalone = process.env.IS_STANDALONE === "true" || !process.env.REPL_ID;
 
 const updateUserSchema = z.object({
   role: z.enum(["admin", "operator", "viewer"]).optional(),
