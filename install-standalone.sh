@@ -212,23 +212,25 @@ fi
 log_success "Schema aplicado"
 
 # Step 14: Create PM2 ecosystem
-cat > $APP_DIR/ecosystem.config.cjs << 'EOF'
+cat > $APP_DIR/ecosystem.config.cjs << EOF
 module.exports = {
   apps: [{
     name: 'nbm-cloud',
     script: 'dist/index.cjs',
-    cwd: '/opt/nbm-cloud',
+    cwd: '$APP_DIR',
     instances: 1,
     autorestart: true,
     watch: false,
     max_memory_restart: '1G',
     env: {
       NODE_ENV: 'production',
-      PORT: 5000
+      PORT: 5000,
+      HOST: '0.0.0.0',
+      IS_STANDALONE: 'true'
     },
     env_file: '.env',
-    error_file: '/var/log/nbm-cloud/error.log',
-    out_file: '/var/log/nbm-cloud/out.log',
+    error_file: '$LOG_DIR/error.log',
+    out_file: '$LOG_DIR/out.log',
     log_date_format: 'YYYY-MM-DD HH:mm:ss Z'
   }]
 };
@@ -237,9 +239,15 @@ chown $APP_USER:$APP_GROUP $APP_DIR/ecosystem.config.cjs
 
 # Step 15: Start with PM2
 log_info "Iniciando aplicação..."
-sudo -u $APP_USER bash -c "cd $APP_DIR && pm2 delete nbm-cloud 2>/dev/null; pm2 start ecosystem.config.cjs"
-sudo -u $APP_USER pm2 save > /dev/null 2>&1
-env PATH=$PATH:/usr/bin pm2 startup systemd -u $APP_USER --hp /home/$APP_USER > /dev/null 2>&1
+# Garantir que o diretório de logs existe e tem permissão
+mkdir -p $LOG_DIR
+chown -R $APP_USER:$APP_GROUP $LOG_DIR
+# Limpar processos antigos e iniciar novo
+if command -v sudo &> /dev/null; then
+    sudo -u $APP_USER bash -c "cd $APP_DIR && pm2 delete nbm-cloud 2>/dev/null || true; pm2 start ecosystem.config.cjs --update-env && pm2 save"
+else
+    bash -c "cd $APP_DIR && pm2 delete nbm-cloud 2>/dev/null || true; pm2 start ecosystem.config.cjs --update-env && pm2 save"
+fi
 log_success "Aplicação iniciada"
 
 # Step 16: Create systemd service
