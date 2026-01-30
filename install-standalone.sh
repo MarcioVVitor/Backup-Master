@@ -189,27 +189,25 @@ log_info "Instalando dependências npm (pode demorar)..."
 cd $APP_DIR
 # Usando --no-fund --no-audit para evitar interações e logs excessivos
 # Removendo redirecionamento para o limbo para ver o erro se falhar
-if ! sudo -u $APP_USER npm install --legacy-peer-deps --no-fund --no-audit; then
-    log_error "Falha ao instalar dependências npm. Tentando sem sudo direto..."
-    npm install --legacy-peer-deps --no-fund --no-audit
+if ! npm install --legacy-peer-deps --no-fund --no-audit; then
+    log_error "Falha ao instalar dependências npm."
+    exit 1
 fi
 log_success "Dependências instaladas"
 
 # Step 12: Build application
 log_info "Compilando aplicação..."
-if command -v sudo &> /dev/null; then
-    sudo -u $APP_USER npm run build
-else
-    npm run build
+if ! npm run build; then
+    log_error "Falha ao compilar aplicação."
+    exit 1
 fi
 log_success "Aplicação compilada"
 
 # Step 13: Push database schema
 log_info "Aplicando schema do banco..."
-if command -v sudo &> /dev/null; then
-    sudo -u $APP_USER bash -c "cd $APP_DIR && source .env && npm run db:push"
-else
-    bash -c "cd $APP_DIR && source .env && npm run db:push"
+if ! bash -c "cd $APP_DIR && source .env && npm run db:push"; then
+    log_warn "Falha ao aplicar schema, tentando --force..."
+    bash -c "cd $APP_DIR && source .env && npm run db:push --force"
 fi
 log_success "Schema aplicado"
 

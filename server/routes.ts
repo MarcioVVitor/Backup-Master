@@ -114,7 +114,7 @@ export async function registerRoutes(
   }
 
   app.get('/api/auth/mode', (req, res) => {
-    res.json({ standalone: isStandalone });
+    res.json({ standalone: isStandalone || process.env.NODE_ENV === 'production' });
   });
 
   // Public endpoint for downloading full install script
