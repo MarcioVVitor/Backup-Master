@@ -248,6 +248,20 @@ if command -v sudo &> /dev/null; then
 else
     bash -c "cd $APP_DIR && pm2 delete nbm-cloud 2>/dev/null || true; pm2 start ecosystem.config.cjs --update-env && pm2 save"
 fi
+
+# Step 15.5: Final check for local port
+log_info "Verificando se o serviço subiu na porta $PORT..."
+sleep 5
+if ! ss -tuln | grep -q ":$PORT "; then
+    log_warn "O serviço não parece estar ouvindo na porta $PORT. Verificando logs..."
+    if command -v sudo &> /dev/null; then
+        sudo -u $APP_USER pm2 logs nbm-cloud --lines 20 --no-daemon &
+    else
+        pm2 logs nbm-cloud --lines 20 --no-daemon &
+    fi
+    sleep 2
+    kill $! 2>/dev/null
+fi
 log_success "Aplicação iniciada"
 
 # Step 16: Create systemd service
