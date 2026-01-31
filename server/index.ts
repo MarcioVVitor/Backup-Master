@@ -86,6 +86,24 @@ app.use((req, res, next) => {
   // It is the only port that is not firewalled.
   const port = parseInt(process.env.PORT || "5000", 10);
   const host = process.env.HOST || "0.0.0.0";
+  
+  if (!process.env.DATABASE_URL) {
+    console.error("CRITICAL ERROR: DATABASE_URL is not set!");
+    // In standalone mode, we might want to try reading .env manually if process.env is empty
+    const fs = await import("fs");
+    const path = await import("path");
+    const envPath = path.resolve(process.cwd(), ".env");
+    if (fs.existsSync(envPath)) {
+      console.log("Attempting to load .env manually from:", envPath);
+      const envContent = fs.readFileSync(envPath, "utf-8");
+      const match = envContent.match(/DATABASE_URL=["']?(.+?)["']?(\s|$)/);
+      if (match) {
+        process.env.DATABASE_URL = match[1];
+        console.log("DATABASE_URL loaded manually.");
+      }
+    }
+  }
+
   httpServer.listen(
     {
       port,

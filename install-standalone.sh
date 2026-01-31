@@ -228,7 +228,8 @@ module.exports = {
       PORT: 5000,
       HOST: '0.0.0.0',
       IS_STANDALONE: 'true',
-      DATABASE_URL: 'postgresql://$DB_USER:$DB_PASS@localhost:5432/$DB_NAME'
+      DATABASE_URL: '$DATABASE_URL',
+      SESSION_SECRET: '$SESSION_SECRET'
     },
     env_file: '.env',
     error_file: '$LOG_DIR/error.log',
