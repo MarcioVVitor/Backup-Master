@@ -1,0 +1,322 @@
+root@SRV-NBM-CLOUD[/opt/nbm-cloud]# ./install-standalone.sh
+
+╔══════════════════════════════════════════╗
+║  NBM CLOUD v17.0 - Instalação Standalone ║
+╚══════════════════════════════════════════╝
+
+[INFO] Instalando de: /opt/nbm-cloud
+[INFO] Atualizando sistema...
+W: https://apt.postgresql.org/pub/repos/apt/dists/bookworm-pgdg/InRelease: Key is stored in legacy trusted.gpg keyring (/etc/apt/trusted.gpg), see the DEPRECATION section in apt-key(8) for details.
+[INFO] Instalando dependências...
+[OK] Node.js v20.20.0 já instalado
+[OK] PostgreSQL já instalado
+[OK] PM2 já instalado
+[OK] Usuário nbmcloud já existe
+[INFO] Criando diretórios...
+[INFO] Configurando banco de dados...
+[OK] Banco de dados configurado
+[INFO] Copiando arquivos para /opt/nbm-cloud...
+[OK] Arquivos copiados
+[INFO] Criando arquivo de configuração...
+[OK] Configuração criada
+[INFO] Ajustando configuração do Nginx...
+[OK] Nginx configurado como default
+[INFO] Instalando dependências npm (pode demorar)...
+
+up to date in 1s
+[OK] Dependências instaladas
+[INFO] Compilando aplicação...
+
+> rest-express@1.0.0 build
+> tsx script/build.ts
+
+building client...
+vite v7.3.0 building client environment for production...
+✓ 3321 modules transformed.
+../dist/public/index.html                     2.87 kB │ gzip:   1.04 kB
+../dist/public/assets/index-CTIexubf.css     80.98 kB │ gzip:  13.61 kB
+../dist/public/assets/index-1kXFtoPP.js   1,401.14 kB │ gzip: 380.55 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 7.99s
+building server...
+
+  dist/index.cjs  1.4mb ⚠️
+
+⚡ Done in 101ms
+[OK] Aplicação compilada
+[INFO] Aplicando schema do banco...
+
+> rest-express@1.0.0 db:push
+> drizzle-kit push
+
+No config path provided, using default 'drizzle.config.ts'
+Reading config file '/opt/nbm-cloud/drizzle.config.ts'
+Using 'pg' driver for database querying
+[⣷] Pulling schema from database...
+error: password authentication failed for user "nbmcloud"
+    at /opt/nbm-cloud/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Object.query (/opt/nbm-cloud/node_modules/drizzle-kit/bin.cjs:80622:26)
+    at async fromDatabase2 (/opt/nbm-cloud/node_modules/drizzle-kit/bin.cjs:19276:25) {
+  length: 104,
+  severity: 'FATAL',
+  code: '28P01',
+  detail: undefined,
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'auth.c',
+  line: '331',
+  routine: 'auth_failed'
+}
+[OK] Schema aplicado
+[INFO] Iniciando aplicação...
+[PM2] Applying action deleteProcessId on app [nbm-cloud](ids: [ 0 ])
+[PM2] [nbm-cloud](0) ✓
+┌────┬───────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name      │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+└────┴───────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+[PM2][WARN] Applications nbm-cloud not running, starting...
+[PM2] App [nbm-cloud] launched (1 instances)
+┌────┬──────────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name         │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+├────┼──────────────┼─────────────┼─────────┼─────────┼──────────┼────────┼──────┼───────────┼──────────┼──────────┼──────────┼──────────┤
+│ 0  │ nbm-cloud    │ default     │ 1.0.0   │ cluster │ 32678    │ 0s     │ 0    │ online    │ 0%       │ 38.8mb   │ nbmcloud │ disabled │
+└────┴──────────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+[OK] Aplicação iniciada
+
+╔══════════════════════════════════════════╗
+║        Instalação Concluída!             ║
+╚══════════════════════════════════════════╝
+
+Acesse: http://143.255.197.25:5000
+
+┌─────────────────────────────────────────┐
+│ Banco de Dados                          │
+├─────────────────────────────────────────┤
+│ Host: localhost                         │
+│ Porta: 5432                             │
+│ Banco: nbm_cloud
+│ Usuário: nbmcloud
+│ Senha: u7POd8uA1CG0yO3cJgVizIo5KLsylV4
+└─────────────────────────────────────────┘
+
+Arquivo de config: /opt/nbm-cloud/.env
+Diretório backups: /opt/nbm/backups
+
+Comandos úteis:
+  pm2 status             - Ver status
+  pm2 logs nbm-cloud     - Ver logs
+  pm2 restart nbm-cloud  - Reiniciar
+
+Primeiro acesso: Crie um usuário em /auth
+O primeiro usuário será administrador.
+
+[OK] NBM CLOUD v17.0 instalado com sucesso!
+root@SRV-NBM-CLOUD[/opt/nbm-cloud]# 
+root@SRV-NBM-CLOUD[/opt/nbm-cloud]# 
+root@SRV-NBM-CLOUD[/opt/nbm-cloud]# git pull origin main
+fatal: detected dubious ownership in repository at '/opt/nbm-cloud'
+To add an exception for this directory, call:
+
+	git config --global --add safe.directory /opt/nbm-cloud
+root@SRV-NBM-CLOUD[/opt/nbm-cloud]# CD
+-bash: CD: command not found
+root@SRV-NBM-CLOUD[/opt/nbm-cloud]# CD 
+-bash: CD: command not found
+root@SRV-NBM-CLOUD[/opt/nbm-cloud]# cd ..
+root@SRV-NBM-CLOUD[/opt]# git pull origin main
+fatal: not a git repository (or any of the parent directories): .git
+root@SRV-NBM-CLOUD[/opt]# cd nbm-cloud/
+agent/           attached_assets/ deploy/          docs/            install/         script/          server/          
+agents/          client/          dist/            .git/            node_modules/    scripts/         shared/          
+root@SRV-NBM-CLOUD[/opt]# cd nbm-cloud/.git/
+root@SRV-NBM-CLOUD[/opt/nbm-cloud/.git]# git pull origin main
+fatal: detected dubious ownership in repository at '/opt/nbm-cloud/.git'
+To add an exception for this directory, call:
+
+	git config --global --add safe.directory /opt/nbm-cloud/.git
+root@SRV-NBM-CLOUD[/opt/nbm-cloud/.git]# cd
+root@SRV-NBM-CLOUD[~]# rm -rf /opt/nbm
+root@SRV-NBM-CLOUD[~]# rm -rf /opt/nbm-cloud/
+root@SRV-NBM-CLOUD[~]# 
+root@SRV-NBM-CLOUD[~]# 
+root@SRV-NBM-CLOUD[~]# 
+root@SRV-NBM-CLOUD[~]# git clone https://github.com/MarcioVVitor/Backup-Master.git /opt/nbm-cloud
+Cloning into '/opt/nbm-cloud'...
+remote: Enumerating objects: 3579, done.
+remote: Counting objects: 100% (28/28), done.
+remote: Compressing objects: 100% (18/18), done.
+remote: Total 3579 (delta 15), reused 20 (delta 10), pack-reused 3551 (from 2)
+Receiving objects: 100% (3579/3579), 88.57 MiB | 31.15 MiB/s, done.
+Resolving deltas: 100% (2755/2755), done.
+root@SRV-NBM-CLOUD[~]# cd /opt/nbm-cloud/
+root@SRV-NBM-CLOUD[/opt/nbm-cloud]# chmod +x install-standalone.sh
+root@SRV-NBM-CLOUD[/opt/nbm-cloud]# ./install-standalone.sh
+
+╔══════════════════════════════════════════╗
+║  NBM CLOUD v17.0 - Instalação Standalone ║
+╚══════════════════════════════════════════╝
+
+[INFO] Instalando de: /opt/nbm-cloud
+[INFO] Atualizando sistema...
+W: https://apt.postgresql.org/pub/repos/apt/dists/bookworm-pgdg/InRelease: Key is stored in legacy trusted.gpg keyring (/etc/apt/trusted.gpg), see the DEPRECATION section in apt-key(8) for details.
+[INFO] Instalando dependências...
+[OK] Node.js v20.20.0 já instalado
+[OK] PostgreSQL já instalado
+[OK] PM2 já instalado
+[OK] Usuário nbmcloud já existe
+[INFO] Criando diretórios...
+[INFO] Configurando banco de dados...
+[OK] Banco de dados configurado
+[INFO] Copiando arquivos para /opt/nbm-cloud...
+[OK] Arquivos copiados
+[INFO] Criando arquivo de configuração...
+[OK] Configuração criada
+[INFO] Ajustando configuração do Nginx...
+[OK] Nginx configurado como default
+[INFO] Instalando dependências npm (pode demorar)...
+npm warn deprecated node-domexception@1.0.0: Use your platform's native DOMException instead
+
+added 654 packages in 14s
+[OK] Dependências instaladas
+[INFO] Compilando aplicação...
+
+> rest-express@1.0.0 build
+> tsx script/build.ts
+
+building client...
+vite v7.3.0 building client environment for production...
+✓ 3321 modules transformed.
+../dist/public/index.html                     2.87 kB │ gzip:   1.04 kB
+../dist/public/assets/index-CTIexubf.css     80.98 kB │ gzip:  13.61 kB
+../dist/public/assets/index-1kXFtoPP.js   1,401.14 kB │ gzip: 380.55 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 7.98s
+building server...
+
+  dist/index.cjs  1.4mb ⚠️
+
+⚡ Done in 110ms
+[OK] Aplicação compilada
+[INFO] Aplicando schema do banco...
+
+> rest-express@1.0.0 db:push
+> drizzle-kit push
+
+No config path provided, using default 'drizzle.config.ts'
+Reading config file '/opt/nbm-cloud/drizzle.config.ts'
+Using 'pg' driver for database querying
+[⣷] Pulling schema from database...
+error: password authentication failed for user "nbmcloud"
+    at /opt/nbm-cloud/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Object.query (/opt/nbm-cloud/node_modules/drizzle-kit/bin.cjs:80622:26)
+    at async fromDatabase2 (/opt/nbm-cloud/node_modules/drizzle-kit/bin.cjs:19276:25) {
+  length: 104,
+  severity: 'FATAL',
+  code: '28P01',
+  detail: undefined,
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'auth.c',
+  line: '331',
+  routine: 'auth_failed'
+}
+[OK] Schema aplicado
+[INFO] Iniciando aplicação...
+[PM2] Applying action deleteProcessId on app [nbm-cloud](ids: [ 0 ])
+[PM2] [nbm-cloud](0) ✓
+┌────┬───────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name      │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+└────┴───────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+[PM2][WARN] Applications nbm-cloud not running, starting...
+[PM2] App [nbm-cloud] launched (1 instances)
+┌────┬──────────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name         │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+├────┼──────────────┼─────────────┼─────────┼─────────┼──────────┼────────┼──────┼───────────┼──────────┼──────────┼──────────┼──────────┤
+│ 0  │ nbm-cloud    │ default     │ 1.0.0   │ cluster │ 33989    │ 0s     │ 0    │ online    │ 0%       │ 38.8mb   │ nbmcloud │ disabled │
+└────┴──────────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+[PM2] Saving current process list...
+[PM2] Successfully saved in /home/nbmcloud/.pm2/dump.pm2
+[INFO] Verificando se o serviço subiu na porta 5000...
+[WARN] O serviço não parece estar ouvindo na porta 5000. Verificando logs...
+pm2 launched in no-daemon mode (you can add DEBUG="*" env variable to get more messages)
+[TAILING] Tailing last 20 lines for [nbm-cloud] process (change the value with --lines option)
+/var/log/nbm-cloud/out-0.log last 20 lines:
+/var/log/nbm-cloud/error-0.log last 20 lines:
+0|nbm-clou |     at /opt/nbm-cloud/dist/index.cjs:70:123057
+0|nbm-clou |     at /opt/nbm-cloud/dist/index.cjs:1:225
+0|nbm-clou |     at Object.<anonymous> (/opt/nbm-cloud/dist/index.cjs:184:33482)
+0|nbm-clou |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+0|nbm-clou |     at Module._extensions..js (node:internal/modules/cjs/loader:1623:10)
+0|nbm-clou |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+0|nbm-clou |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+0|nbm-clou |     at cjsLoader (node:internal/modules/esm/translators:298:15)
+0|nbm-clou | You have triggered an unhandledRejection, you may have forgotten to catch a Promise rejection:
+0|nbm-clou | Error: DATABASE_URL must be set. Did you forget to provision a database?
+0|nbm-clou |     at /opt/nbm-cloud/dist/index.cjs:70:122868
+0|nbm-clou |     at /opt/nbm-cloud/dist/index.cjs:1:225
+0|nbm-clou |     at /opt/nbm-cloud/dist/index.cjs:70:123057
+0|nbm-clou |     at /opt/nbm-cloud/dist/index.cjs:1:225
+0|nbm-clou |     at Object.<anonymous> (/opt/nbm-cloud/dist/index.cjs:184:33482)
+0|nbm-clou |     at Module._compile (node:internal/modules/cjs/loader:1521:14)
+0|nbm-clou |     at Module._extensions..js (node:internal/modules/cjs/loader:1623:10)
+0|nbm-clou |     at Module.load (node:internal/modules/cjs/loader:1266:32)
+0|nbm-clou |     at Module._load (node:internal/modules/cjs/loader:1091:12)
+0|nbm-clou |     at cjsLoader (node:internal/modules/esm/translators:298:15)
+
+[OK] Aplicação iniciada
+
+╔══════════════════════════════════════════╗
+║        Instalação Concluída!             ║
+╚══════════════════════════════════════════╝
+
+Acesse: http://143.255.197.25:5000
+
+┌─────────────────────────────────────────┐
+│ Banco de Dados                          │
+├─────────────────────────────────────────┤
+│ Host: localhost                         │
+│ Porta: 5432                             │
+│ Banco: nbm_cloud
+│ Usuário: nbmcloud
+│ Senha: xjekkIKGZUtyQjBU0HznWcw6P8K8Yp
+└─────────────────────────────────────────┘
+
+Arquivo de config: /opt/nbm-cloud/.env
+Diretório backups: /opt/nbm/backups
+
+Comandos úteis:
+  pm2 status             - Ver status
+  pm2 logs nbm-cloud     - Ver logs
+  pm2 restart nbm-cloud  - Reiniciar
+
+Primeiro acesso: Crie um usuário em /auth
+O primeiro usuário será administrador.
+
+[OK] NBM CLOUD v17.0 instalado com sucesso!
+root@SRV-NBM-CLOUD[/opt/nbm-cloud]# 

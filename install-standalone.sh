@@ -126,13 +126,14 @@ chown -R $APP_USER:$APP_GROUP $BACKUP_DIR $LOG_DIR
 
 # Step 8: Setup PostgreSQL
 log_info "Configurando banco de dados..."
-su - postgres -c "psql -tc \"SELECT 1 FROM pg_user WHERE usename = '$DB_USER'\"" | grep -q 1 || {
-    su - postgres -c "psql -c \"CREATE USER $DB_USER WITH PASSWORD '$DB_PASS';\"" > /dev/null
-}
+# Drop existing user if exists to ensure password matches .env
+su - postgres -c "psql -c \"DROP USER IF EXISTS $DB_USER;\"" > /dev/null
+su - postgres -c "psql -c \"CREATE USER $DB_USER WITH PASSWORD '$DB_PASS';\"" > /dev/null
+
 su - postgres -c "psql -tc \"SELECT 1 FROM pg_database WHERE datname = '$DB_NAME'\"" | grep -q 1 || {
     su - postgres -c "psql -c \"CREATE DATABASE $DB_NAME OWNER $DB_USER;\"" > /dev/null
-    su - postgres -c "psql -c \"GRANT ALL PRIVILEGES ON DATABASE $DB_NAME TO $DB_USER;\"" > /dev/null
 }
+su - postgres -c "psql -c \"GRANT ALL PRIVILEGES ON DATABASE $DB_NAME TO $DB_USER;\"" > /dev/null
 log_success "Banco de dados configurado"
 
 DATABASE_URL="postgresql://$DB_USER:$DB_PASS@localhost:5432/$DB_NAME"
