@@ -791,8 +791,14 @@ export async function registerRoutes(
     const companyId = req.companyId;
     const isServerAdmin = req.tenantUser?.isServerAdmin;
     const user = req.user as any;
-    const userSub = user?.claims?.sub;
-    const userId = userSub ? await storage.getUserIdByReplitId(userSub) : null;
+    let userId: number | null = null;
+    
+    if (isStandalone) {
+      userId = (req.session as any)?.user?.id || null;
+    } else {
+      const userSub = user?.claims?.sub;
+      userId = userSub ? await storage.getUserIdByReplitId(userSub) : null;
+    }
 
     if (!userId) return res.status(401).json({ message: "User not found" });
 
@@ -848,8 +854,14 @@ export async function registerRoutes(
     const companyId = req.companyId;
     const isServerAdmin = req.tenantUser?.isServerAdmin;
     const user = req.user as any;
-    const userSub = user?.claims?.sub;
-    const userId = userSub ? await storage.getUserIdByReplitId(userSub) : null;
+    let userId: number | null = null;
+    
+    if (isStandalone) {
+      userId = (req.session as any)?.user?.id || null;
+    } else {
+      const userSub = user?.claims?.sub;
+      userId = userSub ? await storage.getUserIdByReplitId(userSub) : null;
+    }
 
     if (!userId) return res.status(401).json({ message: "User not found" });
     if (!Array.isArray(ids) || ids.length === 0) {
