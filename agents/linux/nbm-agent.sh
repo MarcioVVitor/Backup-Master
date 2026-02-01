@@ -50,6 +50,9 @@ load_config() {
         exit 1
     fi
     
+    # Ensure SERVER_URL is cleaned (remove trailing slash)
+    SERVER_URL="${SERVER_URL%/}"
+    
     log_info "Configuration loaded: Agent=$AGENT_NAME, Server=$SERVER_URL"
 }
 
@@ -57,6 +60,9 @@ load_config() {
 check_dependencies() {
     local deps=("jq" "curl" "sshpass" "ssh" "websocat" "git" "expect")
     local missing=()
+    
+    # Update PATH to include common locations
+    export PATH=$PATH:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
     
     for dep in "${deps[@]}"; do
         if ! command -v "$dep" &> /dev/null; then
@@ -66,8 +72,23 @@ check_dependencies() {
     
     if [[ ${#missing[@]} -gt 0 ]]; then
         log_error "Missing dependencies: ${missing[*]}"
-        log_info "Install with: apt-get install ${missing[*]}"
-        exit 1
+        log_info "Attempting to fix missing dependencies..."
+        if command -v apt-get &> /dev/null; then
+            apt-get update -qq && apt-get install -y "${missing[@]}"
+        fi
+        
+        # Re-check after attempt
+        missing=()
+        for dep in "${deps[@]}"; do
+            if ! command -v "$dep" &> /dev/null; then
+                missing+=("$dep")
+            fi
+        done
+        
+        if [[ ${#missing[@]} -gt 0 ]]; then
+            log_error "Still missing dependencies: ${missing[*]}"
+            exit 1
+        fi
     fi
 }
 

@@ -36,11 +36,11 @@ echo "Installing dependencies..."
 # Detect package manager and install dependencies
 if command -v apt-get &> /dev/null; then
     apt-get update -qq
-    apt-get install -y curl gnupg jq sshpass openssh-client wget
+    apt-get install -y curl gnupg jq sshpass openssh-client wget expect git
 elif command -v yum &> /dev/null; then
-    yum install -y curl jq sshpass openssh-clients wget
+    yum install -y curl jq sshpass openssh-clients wget expect git
 elif command -v dnf &> /dev/null; then
-    dnf install -y curl jq sshpass openssh-clients wget
+    dnf install -y curl jq sshpass openssh-clients wget expect git
 else
     echo -e "${RED}Unsupported package manager. Please install manually: curl jq sshpass ssh wget${NC}"
     exit 1
