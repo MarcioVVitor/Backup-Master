@@ -126,13 +126,20 @@ chown -R $APP_USER:$APP_GROUP $BACKUP_DIR $LOG_DIR
 
 # Step 8: Setup PostgreSQL
 log_info "Configurando banco de dados..."
-# Drop existing user if exists to ensure password matches .env
+# Change owner to postgres temporarily if database exists, then update user
+su - postgres -c "psql -tc \"SELECT 1 FROM pg_database WHERE datname = '$DB_NAME'\"" | grep -q 1 && {
+    su - postgres -c "psql -c \"ALTER DATABASE $DB_NAME OWNER TO postgres;\"" > /dev/null
+}
+
+# Now we can safely drop and recreate the user
 su - postgres -c "psql -c \"DROP USER IF EXISTS $DB_USER;\"" > /dev/null
 su - postgres -c "psql -c \"CREATE USER $DB_USER WITH PASSWORD '$DB_PASS';\"" > /dev/null
 
+# Re-create database if not exists, or just fix ownership
 su - postgres -c "psql -tc \"SELECT 1 FROM pg_database WHERE datname = '$DB_NAME'\"" | grep -q 1 || {
     su - postgres -c "psql -c \"CREATE DATABASE $DB_NAME OWNER $DB_USER;\"" > /dev/null
 }
+su - postgres -c "psql -c \"ALTER DATABASE $DB_NAME OWNER TO $DB_USER;\"" > /dev/null
 su - postgres -c "psql -c \"GRANT ALL PRIVILEGES ON DATABASE $DB_NAME TO $DB_USER;\"" > /dev/null
 log_success "Banco de dados configurado"
 
