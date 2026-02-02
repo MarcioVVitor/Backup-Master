@@ -126,9 +126,14 @@ chown -R $APP_USER:$APP_GROUP $BACKUP_DIR $LOG_DIR
 
 # Step 8: Setup PostgreSQL
 log_info "Configurando banco de dados..."
-# Change owner to postgres temporarily if database exists, then update user
-su - postgres -c "psql -tc \"SELECT 1 FROM pg_database WHERE datname = '$DB_NAME'\"" | grep -q 1 && {
-    su - postgres -c "psql -c \"ALTER DATABASE $DB_NAME OWNER TO postgres;\"" > /dev/null
+# If user exists, reassign their objects to postgres before dropping
+su - postgres -c "psql -tc \"SELECT 1 FROM pg_user WHERE usename = '$DB_USER'\"" | grep -q 1 && {
+    # Reassign objects in nbm_cloud database if it exists
+    su - postgres -c "psql -tc \"SELECT 1 FROM pg_database WHERE datname = '$DB_NAME'\"" | grep -q 1 && {
+        su - postgres -c "psql -d $DB_NAME -c \"REASSIGN OWNED BY $DB_USER TO postgres;\"" > /dev/null
+        su - postgres -c "psql -d $DB_NAME -c \"DROP OWNED BY $DB_USER;\"" > /dev/null
+        su - postgres -c "psql -c \"ALTER DATABASE $DB_NAME OWNER TO postgres;\"" > /dev/null
+    }
 }
 
 # Now we can safely drop and recreate the user
