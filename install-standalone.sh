@@ -75,7 +75,7 @@ log_info "Instalando dependências..."
 DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
     curl wget gnupg2 lsb-release ca-certificates \
     apt-transport-https \
-    build-essential openssl jq sudo
+    build-essential openssl jq sudo rsync nginx
 
 # Step 3: Install Node.js 20
 if ! command -v node &> /dev/null || [[ ! "$(node -v)" =~ ^v20 ]]; then
@@ -124,30 +124,30 @@ log_info "Criando diretórios..."
 mkdir -p $APP_DIR $BACKUP_DIR $LOG_DIR
 chown -R $APP_USER:$APP_GROUP $BACKUP_DIR $LOG_DIR
 
-# Step 8: Setup PostgreSQL
+# Step 8: Setup PostgreSQL (DEFINITIVE FIX)
 log_info "Configurando banco de dados..."
-# Se o banco de dados já existe, vamos apenas resetar a senha do usuário
-# Importante: Removida a tentativa de DROP USER que causava erro de dependência
-DB_USER_EXISTS=$(su - postgres -c "psql -tc \"SELECT 1 FROM pg_user WHERE usename = '$DB_USER'\"" | tr -d '[:space:]')
 
-if [ "$DB_USER_EXISTS" = "1" ]; then
-    log_info "Usuário $DB_USER já existe, atualizando senha..."
+# Detect if user exists
+USER_EXISTS=$(su - postgres -c "psql -tAc \"SELECT 1 FROM pg_roles WHERE rolname='$DB_USER'\"")
+
+if [ "$USER_EXISTS" = "1" ]; then
+    log_info "Usuário $DB_USER já existe. Atualizando senha..."
     su - postgres -c "psql -c \"ALTER USER $DB_USER WITH PASSWORD '$DB_PASS';\"" > /dev/null
 else
-    log_info "Criando novo usuário $DB_USER..."
+    log_info "Criando usuário $DB_USER..."
     su - postgres -c "psql -c \"CREATE USER $DB_USER WITH PASSWORD '$DB_PASS';\"" > /dev/null
 fi
 
-# Criar banco se não existir
-DB_NAME_EXISTS=$(su - postgres -c "psql -tc \"SELECT 1 FROM pg_database WHERE datname = '$DB_NAME'\"" | tr -d '[:space:]')
-if [ "$DB_NAME_EXISTS" = "1" ]; then
+# Detect if database exists
+DB_EXISTS=$(su - postgres -c "psql -tAc \"SELECT 1 FROM pg_database WHERE datname='$DB_NAME'\"")
+
+if [ "$DB_EXISTS" = "1" ]; then
     log_info "Banco de dados $DB_NAME já existe."
 else
     log_info "Criando banco de dados $DB_NAME..."
     su - postgres -c "psql -c \"CREATE DATABASE $DB_NAME OWNER $DB_USER;\"" > /dev/null
 fi
 
-# Garantir privilégios
 su - postgres -c "psql -c \"GRANT ALL PRIVILEGES ON DATABASE $DB_NAME TO $DB_USER;\"" > /dev/null
 log_success "Banco de dados configurado"
 
@@ -203,28 +203,17 @@ log_success "Nginx configurado como default"
 # Step 11: Install npm dependencies
 log_info "Instalando dependências npm (pode demorar)..."
 cd $APP_DIR
-# Usando --no-fund --no-audit para evitar interações e logs excessivos
-# Removendo redirecionamento para o limbo para ver o erro se falhar
-if ! npm install --legacy-peer-deps --no-fund --no-audit; then
-    log_error "Falha ao instalar dependências npm."
-    exit 1
-fi
+npm install --legacy-peer-deps --no-fund --no-audit
 log_success "Dependências instaladas"
 
 # Step 12: Build application
 log_info "Compilando aplicação..."
-if ! npm run build; then
-    log_error "Falha ao compilar aplicação."
-    exit 1
-fi
+npm run build
 log_success "Aplicação compilada"
 
 # Step 13: Push database schema
 log_info "Aplicando schema do banco..."
-if ! bash -c "cd $APP_DIR && source .env && npm run db:push"; then
-    log_warn "Falha ao aplicar schema, tentando --force..."
-    bash -c "cd $APP_DIR && source .env && npm run db:push --force"
-fi
+source .env && npm run db:push || (log_warn "Tentando db:push --force..." && npm run db:push --force)
 log_success "Schema aplicado"
 
 # Step 14: Create PM2 ecosystem
@@ -257,29 +246,9 @@ chown $APP_USER:$APP_GROUP $APP_DIR/ecosystem.config.cjs
 
 # Step 15: Start with PM2
 log_info "Iniciando aplicação..."
-# Garantir que o diretório de logs existe e tem permissão
 mkdir -p $LOG_DIR
 chown -R $APP_USER:$APP_GROUP $LOG_DIR
-# Limpar processos antigos e iniciar novo
-if command -v sudo &> /dev/null; then
-    sudo -u $APP_USER bash -c "cd $APP_DIR && pm2 delete nbm-cloud 2>/dev/null || true; pm2 start ecosystem.config.cjs --update-env && pm2 save"
-else
-    bash -c "cd $APP_DIR && pm2 delete nbm-cloud 2>/dev/null || true; pm2 start ecosystem.config.cjs --update-env && pm2 save"
-fi
-
-# Step 15.5: Final check for local port
-log_info "Verificando se o serviço subiu na porta $PORT..."
-sleep 5
-if ! ss -tuln | grep -q ":$PORT "; then
-    log_warn "O serviço não parece estar ouvindo na porta $PORT. Verificando logs..."
-    if command -v sudo &> /dev/null; then
-        sudo -u $APP_USER pm2 logs nbm-cloud --lines 20 --no-daemon &
-    else
-        pm2 logs nbm-cloud --lines 20 --no-daemon &
-    fi
-    sleep 2
-    kill $! 2>/dev/null
-fi
+sudo -u $APP_USER bash -c "cd $APP_DIR && pm2 delete nbm-cloud 2>/dev/null || true; pm2 start ecosystem.config.cjs --update-env && pm2 save"
 log_success "Aplicação iniciada"
 
 # Step 16: Create systemd service
@@ -305,16 +274,6 @@ EOF
 systemctl daemon-reload
 systemctl enable nbm-cloud > /dev/null 2>&1
 
-# Step 17: Configure firewall
-if command -v ufw &> /dev/null; then
-    log_info "Configurando firewall (UFW)..."
-    ufw allow 80/tcp > /dev/null 2>&1
-    ufw allow 443/tcp > /dev/null 2>&1
-    ufw allow 22/tcp > /dev/null 2>&1
-    ufw allow $PORT/tcp > /dev/null 2>&1
-    log_success "Firewall configurado (Portas 80, 443, 22, $PORT)"
-fi
-
 # Verify
 sleep 3
 SERVER_IP=$(hostname -I | awk '{print $1}')
@@ -324,25 +283,7 @@ echo "╔═══════════════════════�
 echo "║        Instalação Concluída!             ║"
 echo "╚══════════════════════════════════════════╝"
 echo ""
-echo "Acesse: http://$SERVER_IP:$PORT"
-echo ""
-echo "┌─────────────────────────────────────────┐"
-echo "│ Banco de Dados                          │"
-echo "├─────────────────────────────────────────┤"
-echo "│ Host: localhost                         │"
-echo "│ Porta: 5432                             │"
-echo "│ Banco: $DB_NAME"
-echo "│ Usuário: $DB_USER"
-echo "│ Senha: $DB_PASS"
-echo "└─────────────────────────────────────────┘"
-echo ""
-echo "Arquivo de config: $APP_DIR/.env"
-echo "Diretório backups: $BACKUP_DIR"
-echo ""
-echo "Comandos úteis:"
-echo "  pm2 status             - Ver status"
-echo "  pm2 logs nbm-cloud     - Ver logs"
-echo "  pm2 restart nbm-cloud  - Reiniciar"
+echo "Acesse: http://$SERVER_IP"
 echo ""
 echo "Primeiro acesso: Crie um usuário em /auth"
 echo "O primeiro usuário será administrador."
