@@ -126,20 +126,17 @@ chown -R $APP_USER:$APP_GROUP $BACKUP_DIR $LOG_DIR
 
 # Step 8: Setup PostgreSQL
 log_info "Configurando banco de dados..."
-# Se o banco de dados já existe, vamos apenas resetar a senha do usuário
-su - postgres -c "psql -tc \"SELECT 1 FROM pg_user WHERE usename = '$DB_USER'\"" | grep -q 1 && {
-    log_info "Usuário já existe, atualizando senha..."
-    su - postgres -c "psql -c \"ALTER USER $DB_USER WITH PASSWORD '$DB_PASS';\"" > /dev/null
-} || {
-    log_info "Criando novo usuário..."
-    su - postgres -c "psql -c \"CREATE USER $DB_USER WITH PASSWORD '$DB_PASS';\"" > /dev/null
-}
+# Verifica se o banco existe
+DB_EXISTS=$(su - postgres -c "psql -tc \"SELECT 1 FROM pg_database WHERE datname = '$DB_NAME'\"" | tr -d '[:space:]')
 
-# Criar banco se não existir
-su - postgres -c "psql -tc \"SELECT 1 FROM pg_database WHERE datname = '$DB_NAME'\"" | grep -q 1 || {
-    log_info "Criando banco de dados..."
+if [ "$DB_EXISTS" = "1" ]; then
+    log_info "Banco de dados já existe, atualizando senha do usuário..."
+    su - postgres -c "psql -c \"ALTER USER $DB_USER WITH PASSWORD '$DB_PASS';\"" > /dev/null
+else
+    log_info "Criando novo usuário e banco de dados..."
+    su - postgres -c "psql -c \"CREATE USER $DB_USER WITH PASSWORD '$DB_PASS';\"" > /dev/null
     su - postgres -c "psql -c \"CREATE DATABASE $DB_NAME OWNER $DB_USER;\"" > /dev/null
-}
+fi
 
 # Garantir privilégios
 su - postgres -c "psql -c \"GRANT ALL PRIVILEGES ON DATABASE $DB_NAME TO $DB_USER;\"" > /dev/null
