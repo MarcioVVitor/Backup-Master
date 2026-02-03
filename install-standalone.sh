@@ -126,15 +126,24 @@ chown -R $APP_USER:$APP_GROUP $BACKUP_DIR $LOG_DIR
 
 # Step 8: Setup PostgreSQL
 log_info "Configurando banco de dados..."
-# Verifica se o banco existe
-DB_EXISTS=$(su - postgres -c "psql -tc \"SELECT 1 FROM pg_database WHERE datname = '$DB_NAME'\"" | tr -d '[:space:]')
+# Se o banco de dados já existe, vamos apenas resetar a senha do usuário
+# Importante: Removida a tentativa de DROP USER que causava erro de dependência
+DB_USER_EXISTS=$(su - postgres -c "psql -tc \"SELECT 1 FROM pg_user WHERE usename = '$DB_USER'\"" | tr -d '[:space:]')
 
-if [ "$DB_EXISTS" = "1" ]; then
-    log_info "Banco de dados já existe, atualizando senha do usuário..."
+if [ "$DB_USER_EXISTS" = "1" ]; then
+    log_info "Usuário $DB_USER já existe, atualizando senha..."
     su - postgres -c "psql -c \"ALTER USER $DB_USER WITH PASSWORD '$DB_PASS';\"" > /dev/null
 else
-    log_info "Criando novo usuário e banco de dados..."
+    log_info "Criando novo usuário $DB_USER..."
     su - postgres -c "psql -c \"CREATE USER $DB_USER WITH PASSWORD '$DB_PASS';\"" > /dev/null
+fi
+
+# Criar banco se não existir
+DB_NAME_EXISTS=$(su - postgres -c "psql -tc \"SELECT 1 FROM pg_database WHERE datname = '$DB_NAME'\"" | tr -d '[:space:]')
+if [ "$DB_NAME_EXISTS" = "1" ]; then
+    log_info "Banco de dados $DB_NAME já existe."
+else
+    log_info "Criando banco de dados $DB_NAME..."
     su - postgres -c "psql -c \"CREATE DATABASE $DB_NAME OWNER $DB_USER;\"" > /dev/null
 fi
 
