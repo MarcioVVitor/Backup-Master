@@ -124,30 +124,31 @@ log_info "Criando diretórios..."
 mkdir -p $APP_DIR $BACKUP_DIR $LOG_DIR
 chown -R $APP_USER:$APP_GROUP $BACKUP_DIR $LOG_DIR
 
-# Step 8: Setup PostgreSQL (DEFINITIVE FIX)
+# Step 8: Setup PostgreSQL (DEFINITIVE FIX - NO DROP COMMANDS)
 log_info "Configurando banco de dados..."
 
-# Detect if user exists
-USER_EXISTS=$(su - postgres -c "psql -tAc \"SELECT 1 FROM pg_roles WHERE rolname='$DB_USER'\"")
+# Detect if user exists using pg_roles
+USER_EXISTS=$(su - postgres -c "psql -tAc \"SELECT 1 FROM pg_roles WHERE rolname='$DB_USER'\"" | tr -d '[:space:]')
 
 if [ "$USER_EXISTS" = "1" ]; then
-    log_info "Usuário $DB_USER já existe. Atualizando senha..."
+    log_info "Usuário $DB_USER já existe. Sincronizando senha..."
     su - postgres -c "psql -c \"ALTER USER $DB_USER WITH PASSWORD '$DB_PASS';\"" > /dev/null
 else
-    log_info "Criando usuário $DB_USER..."
+    log_info "Criando novo usuário $DB_USER..."
     su - postgres -c "psql -c \"CREATE USER $DB_USER WITH PASSWORD '$DB_PASS';\"" > /dev/null
 fi
 
-# Detect if database exists
-DB_EXISTS=$(su - postgres -c "psql -tAc \"SELECT 1 FROM pg_database WHERE datname='$DB_NAME'\"")
+# Detect if database exists using pg_database
+DB_EXISTS=$(su - postgres -c "psql -tAc \"SELECT 1 FROM pg_database WHERE datname='$DB_NAME'\"" | tr -d '[:space:]')
 
 if [ "$DB_EXISTS" = "1" ]; then
-    log_info "Banco de dados $DB_NAME já existe."
+    log_info "Banco de dados $DB_NAME já existe. Garantindo permissões..."
 else
     log_info "Criando banco de dados $DB_NAME..."
     su - postgres -c "psql -c \"CREATE DATABASE $DB_NAME OWNER $DB_USER;\"" > /dev/null
 fi
 
+# Always ensure privileges without dropping anything
 su - postgres -c "psql -c \"GRANT ALL PRIVILEGES ON DATABASE $DB_NAME TO $DB_USER;\"" > /dev/null
 log_success "Banco de dados configurado"
 
