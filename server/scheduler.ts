@@ -45,7 +45,8 @@ function shouldRunPolicy(policy: BackupPolicy, currentTime: ReturnType<typeof ge
   
   if (lastRun) {
     const minutesSinceLastRun = (now.getTime() - lastRun.getTime()) / (1000 * 60);
-    if (minutesSinceLastRun < 2) {
+    // Reduzido para 45 segundos para evitar pular ciclos de 1 minuto
+    if (minutesSinceLastRun < 0.75) {
       return false;
     }
   }
@@ -220,9 +221,12 @@ async function checkAndRunPolicies(): Promise<void> {
     
     for (const policy of enabledPolicies) {
       const shouldRun = shouldRunPolicy(policy, currentTime);
-      log(`Policy "${policy.name}": time=${policy.time}, freq=${policy.frequencyType}, shouldRun=${shouldRun}`);
       if (shouldRun) {
-        await runPolicy(policy);
+        log(`Policy "${policy.name}" (ID: ${policy.id}) is triggered at ${currentTimeStr}`);
+        // Run policies asynchronously but don't await them inside the loop to avoid blocking other policies
+        runPolicy(policy).catch(err => {
+          log(`Error in background run of policy "${policy.name}": ${err.message}`);
+        });
       }
     }
   } catch (err: any) {
