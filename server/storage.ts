@@ -522,10 +522,10 @@ export class DatabaseStorage implements IStorage {
       datacom: { command: `# Script de Backup Datacom\n# Placeholders: {{EQUIPMENT_IP}}\nshow running-config`, description: "Script padrao de backup para switches Datacom", fileExtension: ".cfg" },
       "datacom-dmos": { command: `# Script de Backup Datacom DMOS\n# Placeholders: {{EQUIPMENT_IP}}\nshow configuration`, description: "Script padrao de backup para Datacom DMOS", fileExtension: ".cfg" },
       juniper: { command: `# Script de Backup Juniper Junos\n# Placeholders: {{EQUIPMENT_IP}}\nshow configuration | display set`, description: "Script padrao de backup para roteadores Juniper", fileExtension: ".cfg" },
-      fortinet: { command: `# Script de Backup Fortinet FortiGate\n# Placeholders: {{EQUIPMENT_IP}}\nconfig system console\nset output standard\nend\nshow full-configuration`, description: "Script padrao de backup para firewalls Fortinet", fileExtension: ".cfg" },
-      ubiquiti: { command: `# Script de Backup Ubiquiti EdgeOS\n# Placeholders: {{EQUIPMENT_IP}}\nset terminal length 0\nshow configuration commands`, description: "Script padrao de backup para Ubiquiti EdgeOS", fileExtension: ".cfg" },
-      intelbras: { command: `# Script de Backup Intelbras\n# Placeholders: {{EQUIPMENT_IP}}\nterminal length 0\nshow running-config`, description: "Script padrao de backup para switches Intelbras", fileExtension: ".cfg" },
-      "hp-aruba": { command: `# Script de Backup HP/Aruba\n# Placeholders: {{EQUIPMENT_IP}}\nno page\nshow running-config`, description: "Script padrao de backup para switches HP/Aruba", fileExtension: ".cfg" },
+      fortinet: { command: `config system console\nset output standard\nend\nshow full-configuration`, description: "Script padrao de backup para firewalls Fortinet", fileExtension: ".cfg" },
+      ubiquiti: { command: `set terminal length 0\nshow configuration commands`, description: "Script padrao de backup para Ubiquiti EdgeOS", fileExtension: ".cfg" },
+      intelbras: { command: `terminal length 0\nshow running-config`, description: "Script padrao de backup para switches Intelbras", fileExtension: ".cfg" },
+      "hp-aruba": { command: `no page\nshow running-config`, description: "Script padrao de backup para switches HP/Aruba", fileExtension: ".cfg" },
       grandstream: { command: `# Script de Backup Grandstream\n# Placeholders: {{EQUIPMENT_IP}}\ngsconf export`, description: "Script padrao de backup para equipamentos Grandstream", fileExtension: ".cfg" },
     };
 

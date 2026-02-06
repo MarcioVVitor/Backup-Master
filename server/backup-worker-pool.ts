@@ -248,7 +248,17 @@ class BackupWorkerPool {
         throw new Error("No backup executor configured");
       }
       
-      await this.executeBackupFn(job.equipmentId, job.companyId);
+      this.log(`Running job ${job.id} for equipment ${job.equipmentId} (Company ${job.companyId})`);
+      
+      // Adicionamos um timeout de segurança global para a execução da função
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error("Global backup execution timeout")), 1200000)
+      );
+
+      await Promise.race([
+        this.executeBackupFn(job.equipmentId, job.companyId),
+        timeoutPromise
+      ]);
       
       job.status = "completed";
       job.completedAt = new Date();

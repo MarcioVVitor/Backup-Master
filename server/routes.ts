@@ -4415,18 +4415,19 @@ const DEFAULT_VENDOR_SCRIPTS: Record<string, VendorDefaultScript> = {
     command: 'config system console\nset output standard\nend\nshow full-configuration',
     extension: '.cfg',
     useShell: true,
-    timeout: 300000,
+    timeout: 1200000,
     description: 'Desabilita paginacao no console e exporta configuracao completa do FortiGate.',
     prompt: /[#>$]\s*$/,
-    endPattern: /end\s*$/m,
+    readTimeout: 60000,
   },
   ubiquiti: {
     command: 'set terminal length 0\nshow configuration commands',
     extension: '.cfg',
     useShell: true,
-    timeout: 300000,
+    timeout: 1200000,
     description: 'Desabilita paginacao e exporta comandos de configuracao do EdgeOS/VyOS.',
     prompt: /[#>$]\s*$/,
+    readTimeout: 60000,
   },
 };
 
