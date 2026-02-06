@@ -4345,10 +4345,9 @@ const DEFAULT_VENDOR_SCRIPTS: Record<string, VendorDefaultScript> = {
     command: '/export compact',
     extension: '.rsc',
     useShell: true,
-    timeout: 120000,
-    description: 'Exporta configuracao completa do RouterOS em formato RSC. Conexao via SSH usando credenciais do equipamento (usuario, senha, porta do cadastro).',
-    prompt: /\[.*@.*\]\s*>\s*$/,
-    endPattern: /\[.*@.*\]\s*>\s*$/,
+    timeout: 300000,
+    description: 'Exporta configuracao do RouterOS. Conexao via SSH usando credenciais do equipamento.',
+    prompt: /[\]>]\s*$/,
   },
   huawei: {
     command: 'screen-length 0 temporary\ndisplay current-configuration',
@@ -4356,7 +4355,7 @@ const DEFAULT_VENDOR_SCRIPTS: Record<string, VendorDefaultScript> = {
     useShell: true,
     timeout: 300000,
     description: 'Desabilita paginacao e exporta configuracao atual. Conexao via SSH usando credenciais do equipamento (usuario, senha, porta do cadastro).',
-    prompt: /<.*>|\[.*\]/,
+    prompt: /[<\[].*[>\]]/,
     endPattern: /return/,
   },
   cisco: {
@@ -4418,7 +4417,7 @@ const DEFAULT_VENDOR_SCRIPTS: Record<string, VendorDefaultScript> = {
     useShell: true,
     timeout: 300000,
     description: 'Desabilita paginacao no console e exporta configuracao completa do FortiGate.',
-    prompt: /[#>]\s*$/,
+    prompt: /[#>$]\s*$/,
     endPattern: /end\s*$/m,
   },
   ubiquiti: {
@@ -4427,7 +4426,7 @@ const DEFAULT_VENDOR_SCRIPTS: Record<string, VendorDefaultScript> = {
     useShell: true,
     timeout: 300000,
     description: 'Desabilita paginacao e exporta comandos de configuracao do EdgeOS/VyOS.',
-    prompt: /[#$]\s*$/,
+    prompt: /[#>$]\s*$/,
   },
 };
 
