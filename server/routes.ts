@@ -4419,7 +4419,7 @@ const DEFAULT_VENDOR_SCRIPTS: Record<string, VendorDefaultScript> = {
     description: 'Desabilita paginacao no console e exporta configuracao completa do FortiGate.',
     prompt: /[#>$]\s*$/,
     readTimeout: 900000,
-    endPattern: /#\s*$/,
+    endPattern: /#\s*$/m,
   },
   ubiquiti: {
     command: 'terminal length 0\nshow configuration',
@@ -4429,7 +4429,7 @@ const DEFAULT_VENDOR_SCRIPTS: Record<string, VendorDefaultScript> = {
     description: 'Desabilita paginacao e exporta comandos de configuracao do EdgeOS/VyOS.',
     prompt: /[#>$]\s*$/,
     readTimeout: 900000,
-    endPattern: /#\s*$/,
+    endPattern: /#\s*$/m,
   },
 };
 
