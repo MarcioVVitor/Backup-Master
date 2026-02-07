@@ -4418,7 +4418,7 @@ const DEFAULT_VENDOR_SCRIPTS: Record<string, VendorDefaultScript> = {
     timeout: 1800000,
     description: 'Desabilita paginacao no console e exporta configuracao completa do FortiGate.',
     prompt: /[#>$]\s*$/,
-    readTimeout: 900000,
+    readTimeout: 120000,
     endPattern: /#\s*$/m,
   },
   ubiquiti: {
@@ -4428,7 +4428,7 @@ const DEFAULT_VENDOR_SCRIPTS: Record<string, VendorDefaultScript> = {
     timeout: 1800000,
     description: 'Desabilita paginacao e exporta comandos de configuracao do EdgeOS/VyOS.',
     prompt: /[#>$]\s*$/,
-    readTimeout: 900000,
+    readTimeout: 120000,
     endPattern: /[#>$]\s*$/m,
   },
 };
@@ -4514,6 +4514,8 @@ async function executeSSHBackup(equip: any, config: BackupConfig): Promise<strin
       /Press any key to continue/i,
       /\[42D/,  // Huawei cursor movement before More
       /---- More ----/,
+      /[Pp]agination/i,
+      /--[Mm]ais--/i,
     ];
 
     const cleanup = () => {
@@ -4522,6 +4524,7 @@ async function executeSSHBackup(equip: any, config: BackupConfig): Promise<strin
       if (absoluteTimer) clearTimeout(absoluteTimer);
       try {
         conn.end();
+        conn.destroy();
       } catch (e) {
         // Ignore connection cleanup errors
       }
@@ -4580,8 +4583,14 @@ async function executeSSHBackup(equip: any, config: BackupConfig): Promise<strin
           const resetIdleTimer = () => {
             if (timer) clearTimeout(timer);
             timer = setTimeout(() => {
-              console.log(`[ssh-backup] ${equip.name}: Timeout de inatividade (${idleTimeout}ms). Finalizando com o que foi recebido.`);
-              finishBackup();
+              if (output.length > 500) {
+                console.log(`[ssh-backup] ${equip.name}: Timeout de inatividade (${idleTimeout}ms). Finalizando com o que foi recebido (${output.length} bytes).`);
+                finishBackup();
+              } else {
+                console.log(`[ssh-backup] ${equip.name}: Timeout de inatividade (${idleTimeout}ms) sem dados suficientes. Falhando.`);
+                cleanup();
+                reject(new Error("Timeout de inatividade - dados insuficientes recebidos"));
+              }
             }, idleTimeout);
           };
 
