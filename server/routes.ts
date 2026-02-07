@@ -4429,7 +4429,7 @@ const DEFAULT_VENDOR_SCRIPTS: Record<string, VendorDefaultScript> = {
     description: 'Desabilita paginacao e exporta comandos de configuracao do EdgeOS/VyOS.',
     prompt: /[#>$]\s*$/,
     readTimeout: 900000,
-    endPattern: /#\s*$/m,
+    endPattern: /[#>$]\s*$/m,
   },
 };
 
@@ -4580,7 +4580,7 @@ async function executeSSHBackup(equip: any, config: BackupConfig): Promise<strin
           const resetIdleTimer = () => {
             if (timer) clearTimeout(timer);
             timer = setTimeout(() => {
-              console.log(`[ssh-backup] ${equip.name}: Timeout de inatividade (${idleTimeout}ms)`);
+              console.log(`[ssh-backup] ${equip.name}: Timeout de inatividade (${idleTimeout}ms). Finalizando com o que foi recebido.`);
               finishBackup();
             }, idleTimeout);
           };
@@ -4693,6 +4693,14 @@ async function executeSSHBackup(equip: any, config: BackupConfig): Promise<strin
           'aes256-cbc',
           'aes128-cbc',
           '3des-cbc',
+        ],
+        serverHostKey: [
+          'ssh-rsa',
+          'ssh-dss',
+          'ecdsa-sha2-nistp256',
+          'ecdsa-sha2-nistp384',
+          'ecdsa-sha2-nistp521',
+          'ssh-ed25519'
         ],
       },
     });
