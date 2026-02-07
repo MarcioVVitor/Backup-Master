@@ -250,9 +250,9 @@ class BackupWorkerPool {
       
       this.log(`Running job ${job.id} for equipment ${job.equipmentId} (Company ${job.companyId})`);
       
-      // Adicionamos um timeout de segurança global para a execução da função
+      // Aumentado timeout de segurança global para 35 minutos
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error("Global backup execution timeout")), 1200000)
+        setTimeout(() => reject(new Error("Global backup execution timeout")), 2100000)
       );
 
       await Promise.race([

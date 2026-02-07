@@ -67,7 +67,7 @@ import {
   type Credential,
   type InsertCredential
 } from "@shared/schema";
-import { eq, desc, sql, and, gte, lt, inArray } from "drizzle-orm";
+import { eq, desc, sql, and, gte, lt, inArray, asc } from "drizzle-orm";
 
 export interface IStorage {
   getUserIdByReplitId(replitId: string): Promise<number | null>;
@@ -366,11 +366,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getVendorScripts(): Promise<VendorScript[]> {
-    return await db.select().from(vendorScripts).orderBy(vendorScripts.manufacturer, vendorScripts.name);
+    return await db.select().from(vendorScripts).orderBy(asc(vendorScripts.manufacturer), asc(vendorScripts.name));
   }
 
   async getVendorScriptsByManufacturer(manufacturer: string): Promise<VendorScript[]> {
-    return await db.select().from(vendorScripts).where(eq(vendorScripts.manufacturer, manufacturer)).orderBy(vendorScripts.name);
+    return await db.select().from(vendorScripts).where(eq(vendorScripts.manufacturer, manufacturer.toLowerCase())).orderBy(asc(vendorScripts.name));
   }
 
   async getVendorScriptById(id: number): Promise<VendorScript | undefined> {
@@ -523,7 +523,7 @@ export class DatabaseStorage implements IStorage {
       "datacom-dmos": { command: `# Script de Backup Datacom DMOS\n# Placeholders: {{EQUIPMENT_IP}}\nshow configuration`, description: "Script padrao de backup para Datacom DMOS", fileExtension: ".cfg" },
       juniper: { command: `# Script de Backup Juniper Junos\n# Placeholders: {{EQUIPMENT_IP}}\nshow configuration | display set`, description: "Script padrao de backup para roteadores Juniper", fileExtension: ".cfg" },
       fortinet: { command: `config system console\nset output standard\nend\nshow full-configuration`, description: "Script padrao de backup para firewalls Fortinet", fileExtension: ".cfg" },
-      ubiquiti: { command: `set terminal length 0\nshow configuration commands`, description: "Script padrao de backup para Ubiquiti EdgeOS", fileExtension: ".cfg" },
+      ubiquiti: { command: `terminal length 0\nshow configuration`, description: "Script padrao de backup para Ubiquiti EdgeOS", fileExtension: ".cfg" },
       intelbras: { command: `terminal length 0\nshow running-config`, description: "Script padrao de backup para switches Intelbras", fileExtension: ".cfg" },
       "hp-aruba": { command: `no page\nshow running-config`, description: "Script padrao de backup para switches HP/Aruba", fileExtension: ".cfg" },
       grandstream: { command: `# Script de Backup Grandstream\n# Placeholders: {{EQUIPMENT_IP}}\ngsconf export`, description: "Script padrao de backup para equipamentos Grandstream", fileExtension: ".cfg" },
