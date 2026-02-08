@@ -4414,22 +4414,16 @@ const DEFAULT_VENDOR_SCRIPTS: Record<string, VendorDefaultScript> = {
   fortinet: {
     command: 'config system console\nset output standard\nend\nshow full-configuration',
     extension: '.cfg',
-    useShell: true,
+    useShell: false,
     timeout: 1800000,
-    description: 'Desabilita paginacao no console e exporta configuracao completa do FortiGate.',
-    prompt: /[#>$]\s*$/,
-    readTimeout: 120000,
-    endPattern: /#\s*$/m,
+    description: 'Desabilita paginacao no console e exporta configuracao completa do FortiGate via exec.',
   },
   ubiquiti: {
-    command: 'terminal length 0\nshow configuration',
+    command: 'show configuration',
     extension: '.cfg',
-    useShell: true,
+    useShell: false,
     timeout: 1800000,
-    description: 'Desabilita paginacao e exporta comandos de configuracao do EdgeOS/VyOS.',
-    prompt: /[#>$]\s*$/,
-    readTimeout: 120000,
-    endPattern: /[#>$]\s*$/m,
+    description: 'Exporta comandos de configuracao do EdgeOS/VyOS via exec.',
   },
 };
 
@@ -4637,35 +4631,44 @@ async function executeSSHBackup(equip: any, config: BackupConfig): Promise<strin
               stream.write(cmd + '\n');
               cmdIndex++;
               
-              // Aguarda antes do próximo comando
+              // Aguarda antes do próximo comando - AUMENTADO PARA ESTABILIDADE
               if (cmdIndex < commands.length) {
-                setTimeout(sendNextCommand, 1500);
+                setTimeout(sendNextCommand, 3000);
               } else {
                 commandsSent = true;
               }
             }
           };
           
-          // Aguarda prompt inicial antes de enviar comandos
-          setTimeout(sendNextCommand, 1500);
+          // Aguarda prompt inicial antes de enviar comandos - AUMENTADO
+          setTimeout(sendNextCommand, 5000);
         });
       } else {
+        // Modo EXEC - Muito mais rápido e estável para comandos únicos
+        console.log(`[ssh-backup] ${equip.name}: Iniciando em modo EXEC para comando: ${config.command}`);
         conn.exec(config.command, (err, stream) => {
           if (err) {
             cleanup();
             return reject(err);
           }
 
+          // Timeout máximo absoluto para EXEC
+          absoluteTimer = setTimeout(() => {
+            console.log(`[ssh-backup] ${equip.name}: Timeout EXEC atingido`);
+            finishBackup();
+          }, maxTimeout);
+
           stream.on('data', (data: Buffer) => {
             output += data.toString();
           });
 
           stream.on('close', () => {
-            cleanup();
-            resolve(output);
+            console.log(`[ssh-backup] ${equip.name}: EXEC concluído`);
+            finishBackup();
           });
 
           stream.stderr.on('data', (data: Buffer) => {
+            console.error(`[ssh-backup] ${equip.name} EXEC STDERR:`, data.toString());
             output += data.toString();
           });
         });
