@@ -4414,16 +4414,32 @@ const DEFAULT_VENDOR_SCRIPTS: Record<string, VendorDefaultScript> = {
   fortinet: {
     command: 'config system console\nset output standard\nend\nshow full-configuration',
     extension: '.cfg',
-    useShell: false,
+    useShell: true,
     timeout: 1800000,
-    description: 'Desabilita paginacao no console e exporta configuracao completa do FortiGate via exec.',
+    description: 'Desabilita paginacao no console e exporta configuracao completa do FortiGate.',
+    prompt: /[#>$]\s*$/,
+    readTimeout: 60000,
+    endPattern: /#\s*$/m,
   },
   ubiquiti: {
     command: 'show configuration',
     extension: '.cfg',
-    useShell: false,
+    useShell: true,
     timeout: 1800000,
-    description: 'Exporta comandos de configuracao do EdgeOS/VyOS via exec.',
+    description: 'Exporta comandos de configuracao do EdgeOS/VyOS.',
+    prompt: /[#>$]\s*$/,
+    readTimeout: 60000,
+    endPattern: /[#>$]\s*$/m,
+  },
+  ubiquiti_legacy: {
+    command: 'terminal length 0\nshow configuration',
+    extension: '.cfg',
+    useShell: true,
+    timeout: 1800000,
+    description: 'Modo legado para Ubiquiti EdgeRouter antigos.',
+    prompt: /[#>$]\s*$/,
+    readTimeout: 60000,
+    endPattern: /[#>$]\s*$/m,
   },
 };
 
@@ -4560,8 +4576,12 @@ async function executeSSHBackup(equip: any, config: BackupConfig): Promise<strin
     conn.on('ready', () => {
       console.log(`[ssh-backup] ${equip.name}: Conexão SSH estabelecida`);
       
-      if (config.useShell) {
-        conn.shell((err, stream) => {
+      // Forçar o uso de shell interativo com PTY VT100 para todos, exceto se especificado
+      const useShell = config.useShell !== false;
+      
+      if (useShell) {
+        console.log(`[ssh-backup] ${equip.name}: Iniciando shell interativo (VT100)`);
+        conn.shell({ term: 'vt100' }, (err, stream) => {
           if (err) {
             cleanup();
             return reject(err);
@@ -4596,13 +4616,19 @@ async function executeSSHBackup(equip: any, config: BackupConfig): Promise<strin
             const chunk = data.toString();
             output += chunk;
             
+          // Log do progresso para diagnóstico (a cada 2KB)
+            if (output.length % 2000 < chunk.length) {
+              console.log(`[ssh-backup] ${equip.name}: Recebidos ${output.length} bytes...`);
+            }
+            
             // Verifica e responde a prompts "More" (paginação)
             if (commandsSent) {
               checkForMorePrompt(chunk, stream);
               
               // Verifica se chegou ao fim da configuração
               if (checkEndPattern()) {
-                setTimeout(() => finishBackup(), 500);
+                console.log(`[ssh-backup] ${equip.name}: Fim detectado via pattern`);
+                setTimeout(() => finishBackup(), 3000);
                 return;
               }
             }
@@ -4612,12 +4638,8 @@ async function executeSSHBackup(equip: any, config: BackupConfig): Promise<strin
           });
 
           stream.on('close', () => {
+            console.log(`[ssh-backup] ${equip.name}: Stream fechado remotamente`);
             finishBackup();
-          });
-
-          stream.stderr.on('data', (data: Buffer) => {
-            output += data.toString();
-            resetIdleTimer();
           });
 
           // Envia comandos sequencialmente
@@ -4626,27 +4648,31 @@ async function executeSSHBackup(equip: any, config: BackupConfig): Promise<strin
           
           const sendNextCommand = () => {
             if (cmdIndex < commands.length && !finished) {
-              const cmd = commands[cmdIndex];
-              console.log(`[ssh-backup] ${equip.name}: Enviando comando ${cmdIndex + 1}/${commands.length}: ${cmd.substring(0, 50)}...`);
-              stream.write(cmd + '\n');
+              const cmd = commands[cmdIndex].trim();
+              if (cmd) {
+                console.log(`[ssh-backup] ${equip.name}: Enviando comando ${cmdIndex + 1}/${commands.length}: ${cmd}`);
+                stream.write(cmd + '\n');
+              }
               cmdIndex++;
               
               // Aguarda antes do próximo comando - AUMENTADO PARA ESTABILIDADE
               if (cmdIndex < commands.length) {
                 setTimeout(sendNextCommand, 3000);
               } else {
+                console.log(`[ssh-backup] ${equip.name}: Todos os comandos enviados, aguardando saída...`);
                 commandsSent = true;
               }
             }
           };
           
-          // Aguarda prompt inicial antes de enviar comandos - AUMENTADO
-          setTimeout(sendNextCommand, 5000);
+          // Aguarda um pouco o banner inicial antes de começar - AUMENTADO PARA 12s
+          console.log(`[ssh-backup] ${equip.name}: Aguardando banner inicial por 12s...`);
+          setTimeout(sendNextCommand, 12000);
         });
       } else {
-        // Modo EXEC - Muito mais rápido e estável para comandos únicos
-        console.log(`[ssh-backup] ${equip.name}: Iniciando em modo EXEC para comando: ${config.command}`);
-        conn.exec(config.command, (err, stream) => {
+        // Modo EXEC
+        console.log(`[ssh-backup] ${equip.name}: Iniciando modo EXEC para: ${config.command}`);
+        conn.exec(config.command, { pty: { term: 'vt100', rows: 1000, cols: 1000 } }, (err, stream) => {
           if (err) {
             cleanup();
             return reject(err);
@@ -4686,6 +4712,7 @@ async function executeSSHBackup(equip: any, config: BackupConfig): Promise<strin
       username: equip.username,
       password: equip.password,
       readyTimeout: 30000,
+      tryKeyboard: true,
       algorithms: {
         kex: [
           'ecdh-sha2-nistp256',
