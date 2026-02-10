@@ -75,9 +75,18 @@ log_info "Instalando dependências..."
 DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
     curl wget gnupg2 lsb-release ca-certificates \
     apt-transport-https \
-    build-essential openssl jq sudo rsync nginx
+    build-essential openssl jq sudo rsync nginx git ufw
 
-# Step 3: Install Node.js 20
+# Step 3: Configure Firewall (UFW)
+log_info "Configurando Firewall..."
+ufw allow 80/tcp
+ufw allow 5000/tcp
+ufw allow 22/tcp
+echo "y" | ufw enable
+ufw reload
+log_success "Firewall configurado"
+
+# Step 4: Install Node.js 20
 if ! command -v node &> /dev/null || [[ ! "$(node -v)" =~ ^v20 ]]; then
     log_info "Instalando Node.js 20..."
     curl -fsSL https://deb.nodesource.com/setup_20.x | bash - > /dev/null 2>&1
@@ -87,16 +96,16 @@ else
     log_success "Node.js $(node -v) já instalado"
 fi
 
-# Step 4: Install PostgreSQL 16
+# Step 5: Install PostgreSQL 16
 if ! command -v psql &> /dev/null; then
     log_info "Instalando PostgreSQL 16..."
-    sh -c 'echo "deb https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
-    wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - 2>/dev/null
+    apt install -y postgresql-common ca-certificates
+    /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh || true
     apt-get update -y -qq
-    apt-get install -y -qq postgresql-16 postgresql-contrib-16
+    apt-get install -y -qq postgresql-client postgresql postgresql-contrib
     systemctl enable postgresql
     systemctl start postgresql
-    log_success "PostgreSQL 16 instalado"
+    log_success "PostgreSQL instalado"
 else
     log_success "PostgreSQL já instalado"
 fi
